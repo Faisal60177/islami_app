@@ -1,0 +1,52 @@
+import 'package:flutter/material.dart';
+import 'package:islamic_app/Quran/quran_page.dart';
+import 'package:islamic_app/Duas/pages/duas_page.dart';
+import 'package:islamic_app/tools/tools_page.dart';
+import 'package:islamic_app/home/home_page.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+
+class MenuPage extends StatefulWidget {
+  const MenuPage({super.key});
+
+  @override
+  State<MenuPage> createState() => _MenuPageState();
+}
+
+class _MenuPageState extends State<MenuPage> {
+  final List<Widget> _pages = const [
+    PrayerTimesPage(),
+    ToolsPage(),
+    QuranPage(),
+    DuasPage(),
+    MenuPage(),
+  ];
+
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Color(0xFF004225),
+      appBar: AppBar(title: Text('Menu page'), backgroundColor: Colors.blue,),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: 4,
+        type: BottomNavigationBarType.fixed,
+        selectedItemColor: Colors.red,
+        unselectedItemColor: Colors.blue,
+        backgroundColor: Colors.white,
+        onTap: (index){
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => _pages[index]),
+            );
+        },
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.today), label: "Today"),
+          BottomNavigationBarItem(icon: FaIcon(FontAwesomeIcons.tools), label: "tools"),
+          BottomNavigationBarItem(icon: FaIcon(FontAwesomeIcons.quran), label: "Quran"),
+          BottomNavigationBarItem(icon: FaIcon(FontAwesomeIcons.pray), label: "Duas"),
+          BottomNavigationBarItem(icon: Icon(Icons.menu), label: "Menu"),
+        ],
+      ),
+    );
+  }
+}
