@@ -35,14 +35,20 @@ class _DuasDetailPageState extends State<DuasDetailPage> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final padding = screenWidth * 0.04;
+    final spacing = screenHeight * 0.015;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Dua Detail"),
+        title: Text("Dua Detail", style: TextStyle(fontSize: screenWidth * 0.05)),
         actions: [
           IconButton(
             icon: Icon(
               dua.isFavorite ? Icons.favorite : Icons.favorite_border,
               color: Colors.redAccent,
+              size: screenWidth * 0.07,
             ),
             onPressed: toggleFavorite,
           ),
@@ -50,86 +56,92 @@ class _DuasDetailPageState extends State<DuasDetailPage> {
             icon: Icon(
               dua.isBookmarked ? Icons.bookmark : Icons.bookmark_border,
               color: Colors.blueAccent,
+              size: screenWidth * 0.07,
             ),
             onPressed: toggleBookmark,
           ),
         ],
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(padding),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            // Arabic
             Text(
               "Arabic",
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: screenWidth * 0.05),
             ),
-            const SizedBox(height: 6),
+            SizedBox(height: spacing / 2),
             Text(
               dua.arabic,
-              style: const TextStyle(fontSize: 22, color: Colors.black87),
+              style: TextStyle(fontSize: screenWidth * 0.055, color: Colors.black87),
               textAlign: TextAlign.right,
             ),
-            const Divider(height: 24),
+            Divider(height: spacing * 2),
 
+            // Transliteration
             Text(
               "Transliteration",
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: screenWidth * 0.05),
             ),
-            const SizedBox(height: 6),
+            SizedBox(height: spacing / 2),
             Text(
               dua.transliteration,
-              style: const TextStyle(fontSize: 18, color: Colors.black87),
+              style: TextStyle(fontSize: screenWidth * 0.045, color: Colors.black87),
             ),
-            const Divider(height: 24),
+            Divider(height: spacing * 2),
 
+            // Translation English
             Text(
               "Translation (English)",
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: screenWidth * 0.05),
             ),
-            const SizedBox(height: 6),
+            SizedBox(height: spacing / 2),
             Text(
               dua.translation['en'] ?? '',
-              style: const TextStyle(fontSize: 16, color: Colors.black87),
+              style: TextStyle(fontSize: screenWidth * 0.04, color: Colors.black87),
             ),
-            const Divider(height: 24),
+            Divider(height: spacing * 2),
 
+            // Translation Bangla
             Text(
               "Translation (Bangla)",
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: screenWidth * 0.05),
             ),
-            const SizedBox(height: 6),
+            SizedBox(height: spacing / 2),
             Text(
               dua.translation['bn'] ?? '',
-              style: const TextStyle(fontSize: 16, color: Colors.black87),
+              style: TextStyle(fontSize: screenWidth * 0.04, color: Colors.black87),
             ),
-            const Divider(height: 24),
+            Divider(height: spacing * 2),
 
+            // Reference
             if (dua.reference.isNotEmpty)
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     "Reference",
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: screenWidth * 0.05),
                   ),
-                  const SizedBox(height: 6),
+                  SizedBox(height: spacing / 2),
                   Text(
                     dua.reference,
-                    style: const TextStyle(fontSize: 14, color: Colors.black54),
+                    style: TextStyle(fontSize: screenWidth * 0.038, color: Colors.black54),
                   ),
-                  const Divider(height: 24),
+                  Divider(height: spacing * 2),
                 ],
               ),
 
-            // 🔊 Audio button
+            // Audio Button
             if (dua.audioUrl != null && dua.audioUrl!.isNotEmpty)
               ElevatedButton.icon(
                 onPressed: () {
-                  // Play audio logic here (use just_audio or audioplayers package)
+                  // Audio playback logic here
                 },
-                icon: const Icon(Icons.play_arrow),
-                label: const Text("Play Audio"),
+                icon: Icon(Icons.play_arrow, size: screenWidth * 0.06),
+                label: Text("Play Audio", style: TextStyle(fontSize: screenWidth * 0.045)),
               ),
           ],
         ),

@@ -33,7 +33,7 @@ class _TasbihPageState extends State<TasbihPage>
       ..addListener(() {
         setState(() {});
       });
-    _audioPlayer.setSource(AssetSource('assets/sounds/click.mp3.wav'));
+    _audioPlayer.setSource(AssetSource('assets/sounds/tasbih_sound.mp3'));
     _targetController.text = target.toString();
   }
 

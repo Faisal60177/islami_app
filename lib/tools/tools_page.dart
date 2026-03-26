@@ -2,14 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:islamic_app/Menu/menu_page.dart';
 import 'package:islamic_app/Quran/quran_page.dart';
 import 'package:islamic_app/home/home_page.dart';
-import 'package:islamic_app/home/home_page.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:islamic_app/Quran/quran_page.dart';
-import 'package:islamic_app/Duas/cubit/duas_cubit.dart';
 import 'package:islamic_app/Duas/pages/duas_page.dart';
 import 'package:islamic_app/tasbih/tasbih_page.dart';
 import 'package:islamic_app/inspiration/inspiration_page.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:islamic_app/notification/page/notification_page.dart';
+import 'package:islamic_app/calendar/pages/calendar_page.dart';
+import 'package:islamic_app/qibla/pages/qibla_page.dart';
 
 class ToolsPage extends StatefulWidget {
   const ToolsPage({super.key});
@@ -19,7 +18,6 @@ class ToolsPage extends StatefulWidget {
 }
 
 class _ToolsPageState extends State<ToolsPage> {
-
   final List<Widget> _pages = const [
     PrayerTimesPage(),
     ToolsPage(),
@@ -30,432 +28,260 @@ class _ToolsPageState extends State<ToolsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Tools'), backgroundColor: Color(0xFF49796B),),
-      backgroundColor: Color(0xFF004225),
+    // SCREEN DIMENSIONS
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final padding = screenWidth * 0.04;
 
+    // Scalable sizes
+    final iconSize = screenWidth * 0.08; // ~8% of screen width
+    final fontSize = screenWidth * 0.035; // ~3.5% of screen width
+
+    // Dynamic crossAxisCount based on screen width
+    int crossAxisCount = screenWidth > 900
+        ? 5
+        : screenWidth > 600
+        ? 4
+        : 3;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text(
+          'Tools',
+          textAlign: TextAlign.center,
+        ),
+        backgroundColor: const Color(0xFF49796B),
+      ),
+      backgroundColor: const Color(0xFF013220),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(12.0),
-        child: Column(
-          children: [
-            /// Card 1
-            Card(
-              color: Colors.white,
-              elevation: 6,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
+        child: Padding(
+          padding: EdgeInsets.symmetric(
+            vertical: screenHeight * 0.03,
+            horizontal: padding,
+          ),
+          child: Column(
+            children: [
+              // Knowledge Section
+              _buildSection(
+                context,
+                title: "Knowledge",
+                tools: [
+                  _toolItem(
+                    "Quran",
+                    FaIcon(FontAwesomeIcons.quran,
+                        size: iconSize, color: const Color(0xFF004225)),
+                        () {
+                      Navigator.push(context,
+                          MaterialPageRoute(builder: (_) => QuranPage()));
+                    },
+                    fontSize,
+                  ),
+                  _toolItem(
+                    "Duas",
+                    FaIcon(FontAwesomeIcons.pray,
+                        size: iconSize, color: const Color(0xFF004225)),
+                        () {
+                      Navigator.push(context,
+                          MaterialPageRoute(builder: (_) => DuasPage()));
+                    },
+                    fontSize,
+                  ),
+                  _toolItem(
+                    "Masail",
+                    Icon(Icons.book, size: iconSize, color: const Color(0xFF004225)),
+                        () => print("Masail tapped"),
+                    fontSize,
+                  ),
+                ],
+                crossAxisCount: crossAxisCount,
               ),
-              margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            child: SizedBox(
-            width: double.infinity, // take full width minus margin
-            height: 140, // fixed height, adjust as needed
-              child: Padding(
-                padding: const EdgeInsets.all(8),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // 🔹 Card Title
-                    const Text(
-                      "Knowledge",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+
+              SizedBox(height: screenHeight * 0.03),
+
+              // Amal Section
+              _buildSection(
+                context,
+                title: "Amal",
+                tools: [
+                  _toolItem(
+                    "Tasbih",
+                    SizedBox(
+                      width: iconSize,  // same as your iconSize
+                      height: iconSize, // same as your iconSize
+                      child: Image.asset(
+                        'assets/icons/tasbih.png',  // your image path
+                        fit: BoxFit.contain,
                       ),
                     ),
-                    const SizedBox(height: 16),
-                    // 🔹 Buttons Grid / Wrap
-
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-
-                        // Button 1
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (_) => QuranPage()),
-                              );
-                            },
-                            child: Column(
-                              children: const [
-                                FaIcon(FontAwesomeIcons.quran, color: Color(0xFF414A4C), size: 50),
-                                SizedBox(height: 6),
-                                Text(
-                                  "Quran",
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-
-                        // Button 2
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (_) => DuasPage()),
-                              );
-                            },
-                            child: Column(
-                              children: const [
-                                FaIcon(FontAwesomeIcons.pray, color: Colors.green, size: 50),
-                                SizedBox(height: 6),
-                                Text(
-                                  "Dua",
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-
-                        // Button 3
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: () => print("Masail tapped"),
-                            child: Column(
-                              children: const [
-                                Icon(Icons.book, color: Colors.blue, size: 50),
-                                SizedBox(height: 6),
-                                Text(
-                                  "Masail",
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    )
-
-                  ],
-                ),
-              ),
-            ),
-            ),
-
-            /// Card 2
-            Card(
-              color: Colors.white,
-              elevation: 6,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-              margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              child: SizedBox(
-                width: double.infinity, // take full width minus margin
-                height: 140, // fixed height, adjust as needed
-                child: Padding(
-                  padding: const EdgeInsets.all(8),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // 🔹 Card Title
-                      const Text(
-                        "Amal",
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      // 🔹 Buttons Grid / Wrap
-
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-
-                          // Button 1
-                          Expanded(
-                            child: GestureDetector(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (_) => TasbihPage()),
-                                );
-                              },
-                              child: Column(
-                                children: const [
-                                  FaIcon(FontAwesomeIcons.quran, color: Colors.blue, size: 50),
-                                  SizedBox(height: 6),
-                                  Text(
-                                    "Tasbih",
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-
-                          // Button 2
-                          Expanded(
-                            child: GestureDetector(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (_) => PrayerTimesPage()),
-                                );
-                              },
-                              child: Column(
-                                children: const [
-                                  FaIcon(FontAwesomeIcons.pray, color: Colors.blue, size: 50),
-                                  SizedBox(height: 6),
-                                  Text(
-                                    "Prayer Times",
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-
-                        ],
-                      )
-
-                    ],
+                        () {
+                      Navigator.push(context,
+                          MaterialPageRoute(builder: (_) => TasbihPage()));
+                    },
+                    fontSize,
                   ),
-                ),
-              ),
-            ),
-
-            /// Card 3
-            Card(
-              color: Colors.white,
-              elevation: 6,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-              margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              child: SizedBox(
-                width: double.infinity, // take full width minus margin
-                height: 140, // fixed height, adjust as needed
-                child: Padding(
-                  padding: const EdgeInsets.all(8),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // 🔹 Card Title
-                      const Text(
-                        "Tools",
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      // 🔹 Buttons Grid / Wrap
-
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-
-                          // Button 1
-                          Expanded(
-                            child: GestureDetector(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (_) => QuranPage()),
-                                );
-                              },
-                              child: Column(
-                                children: const [
-                                  FaIcon(FontAwesomeIcons.quran, color: Colors.blue, size: 50),
-                                  SizedBox(height: 6),
-                                  Text(
-                                    "Qibla",
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-
-                          // Button 2
-                          Expanded(
-                            child: GestureDetector(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (_) => InspirationPage()),
-                                );
-                              },
-                              child: Column(
-                                children: const [
-                                  FaIcon(FontAwesomeIcons.penClip, color: Colors.red, size: 50),
-                                  SizedBox(height: 6),
-                                  Text(
-                                    "Inspiration",
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-
-                          // Button 3
-                          Expanded(
-                            child: GestureDetector(
-                              onTap: () => print("Masail tapped"),
-                              child: Column(
-                                children: const [
-                                  Icon(Icons.book, color: Colors.blue, size: 50),
-                                  SizedBox(height: 6),
-                                  Text(
-                                    "Masail",
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      )
-
-                    ],
+                  _toolItem(
+                    "Prayer Times",
+                    FaIcon(FontAwesomeIcons.clock,
+                        size: iconSize, color: const Color(0xFF004225)),
+                        () {
+                      Navigator.push(context,
+                          MaterialPageRoute(builder: (_) => PrayerTimesPage()));
+                    },
+                    fontSize,
                   ),
-                ),
-              ),
-            ),
-
-            ///Card 3
-            Card(
-              color: Colors.white,
-              elevation: 6,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-              margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              child: SizedBox(
-                width: double.infinity, // take full width minus margin
-                height: 200, // fixed height, adjust as needed
-                child: Padding(
-                  padding: const EdgeInsets.all(8),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // 🔹 Card Title
-                      const Text(
-                        "Knowledge",
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      // 🔹 Buttons Grid / Wrap
-
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-
-                          // Button 1
-                          Expanded(
-                            child: GestureDetector(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (_) => QuranPage()),
-                                );
-                              },
-                              child: Column(
-                                children: const [
-                                  FaIcon(FontAwesomeIcons.quran, color: Colors.blue, size: 50),
-                                  SizedBox(height: 6),
-                                  Text(
-                                    "Quran",
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-
-                          // Button 2
-                          Expanded(
-                            child: GestureDetector(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (_) => DuasPage()),
-                                );
-                              },
-                              child: Column(
-                                children: const [
-                                  FaIcon(FontAwesomeIcons.pray, color: Colors.blue, size: 50),
-                                  SizedBox(height: 6),
-                                  Text(
-                                    "Dua",
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-
-                          // Button 3
-                          Expanded(
-                            child: GestureDetector(
-                              onTap: () => print("Masail tapped"),
-                              child: Column(
-                                children: const [
-                                  Icon(Icons.book, color: Colors.blue, size: 50),
-                                  SizedBox(height: 6),
-                                  Text(
-                                    "Masail",
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      )
-
-                    ],
+                  _toolItem(
+                    "Inspiration",
+                    FaIcon(FontAwesomeIcons.penClip,
+                        size: iconSize, color: const Color(0xFF004225)),
+                        () {
+                      Navigator.push(context,
+                          MaterialPageRoute(builder: (_) => InspirationPage()));
+                    },
+                    fontSize,
                   ),
-                ),
+                ],
+                crossAxisCount: crossAxisCount,
               ),
-            ),
 
+              SizedBox(height: screenHeight * 0.03),
 
-          ],
+              // Tools Section
+              _buildSection(
+                context,
+                title: "Tools",
+                tools: [
+                  _toolItem(
+                    "Qibla",
+                    FaIcon(FontAwesomeIcons.compass,
+                        size: iconSize, color: const Color(0xFF004225)),
+                        () {
+                      Navigator.push(context,
+                          MaterialPageRoute(builder: (_) => QiblaPage()));
+                    },
+                    fontSize,
+                  ),
+                  _toolItem(
+                    "Calendar",
+                    Icon(Icons.calendar_month,
+                        size: iconSize, color: const Color(0xFF004225)),
+                        () {
+                      Navigator.push(context,
+                          MaterialPageRoute(builder: (_) => CalendarPage()));
+                    },
+                    fontSize,
+                  ),
+                  _toolItem(
+                    "Notification",
+                    Icon(Icons.notifications, size: iconSize, color: const Color(0xFF004225)),
+                        () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => NotificationPage()));
+                    },
+                    fontSize,
+                  ),
+                  _toolItem(
+                    "Menu",
+                    Icon(Icons.menu, size: iconSize, color: const Color(0xFF004225)),
+                        () {
+                      Navigator.push(
+                          context, MaterialPageRoute(builder: (_) => MenuPage()));
+                    },
+                    fontSize,
+                  ),
+                ],
+                crossAxisCount: crossAxisCount,
+              ),
+            ],
+          ),
         ),
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: 1,
         type: BottomNavigationBarType.fixed,
-        selectedItemColor: Colors.red,
-        unselectedItemColor: Colors.blue,
-        backgroundColor: Colors.white,
+        selectedItemColor: Colors.white,
+        unselectedItemColor: const Color(0xFF536878),
+        backgroundColor: const Color(0xFF013220),
         onTap: (index) {
+          if (index != 1) {
             Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => _pages[index]),
             );
+          }
         },
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.today), label: "Today"),
-          BottomNavigationBarItem(icon: FaIcon(FontAwesomeIcons.tools), label: "tools"),
-          BottomNavigationBarItem(icon: FaIcon(FontAwesomeIcons.quran), label: "Quran"),
-          BottomNavigationBarItem(icon: FaIcon(FontAwesomeIcons.pray), label: "Duas"),
-          BottomNavigationBarItem(icon: Icon(Icons.menu), label: "Menu"),
+        items:  [
+          const BottomNavigationBarItem(icon: Icon(Icons.today), label: "Today"),
+          const BottomNavigationBarItem(icon: FaIcon(FontAwesomeIcons.tools), label: "tools"),
+          BottomNavigationBarItem(
+            icon: SizedBox(
+              width: 30,
+              height: 30,
+              child: Image.asset('assets/icons/quran.png'),
+            ),
+            label: "Quran",
+          ),
+          BottomNavigationBarItem(icon: SizedBox(
+            width: 30,
+            height: 30,
+            child: Image.asset('assets/icons/duas.png', color: Colors.amberAccent,),
+          ),
+            label: "Duas",),
+          const BottomNavigationBarItem(icon: Icon(Icons.menu), label: "Menu"),
         ],
+      ),
+    );
+  }
+
+  /// Reusable section builder
+  Widget _buildSection(BuildContext context,
+      {required String title,
+        required List<Widget> tools,
+        required int crossAxisCount}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: const TextStyle(
+              color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 12),
+        GridView.count(
+          physics: const NeverScrollableScrollPhysics(),
+          shrinkWrap: true,
+          crossAxisCount: crossAxisCount,
+          mainAxisSpacing: 12,
+          crossAxisSpacing: 12,
+          childAspectRatio: 0.9,
+          children: tools,
+        ),
+      ],
+    );
+  }
+
+  /// Tool item widget (works for Icon or FaIcon)
+  Widget _toolItem(String title, Widget iconWidget, VoidCallback onTap, double fontSize) {
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: onTap,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            iconWidget,
+            const SizedBox(height: 8),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                  fontSize: fontSize, fontWeight: FontWeight.w500, color: Colors.black87),
+            ),
+          ],
+        ),
       ),
     );
   }

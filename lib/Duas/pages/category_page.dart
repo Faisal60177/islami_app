@@ -3,37 +3,45 @@ import '../repository/duas_repository.dart';
 import '../model/category_model.dart';
 import 'category_duas_page.dart';
 
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'all_duas_page.dart';
-import 'category_page.dart';
-import 'favorite_page.dart';
-import 'bookmark_page.dart';
-
 class CategoryPage extends StatelessWidget {
   final String searchQuery;
   const CategoryPage({super.key, required this.searchQuery});
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final padding = screenWidth * 0.03;
+
     return FutureBuilder<List<CategoryModel>>(
       future: DuasRepository().getAllCategories(),
       builder: (context, snapshot) {
-        if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
+        if (!snapshot.hasData) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
         final categories = snapshot.data!
-            .where((cat) => cat.categoryTitle.toLowerCase().contains(searchQuery.toLowerCase()))
+            .where((cat) =>
+            cat.categoryTitle.toLowerCase().contains(searchQuery.toLowerCase()))
             .toList();
 
-        if (categories.isEmpty) return const Center(child: Text('No categories found'));
+        if (categories.isEmpty) {
+          return Center(
+            child: Text(
+              'No categories found',
+              style: TextStyle(fontSize: screenWidth * 0.045),
+            ),
+          );
+        }
 
         return Padding(
-          padding: const EdgeInsets.all(12),
+          padding: EdgeInsets.all(padding),
           child: GridView.builder(
             itemCount: categories.length,
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
+              crossAxisSpacing: padding,
+              mainAxisSpacing: padding,
               childAspectRatio: 3 / 2,
             ),
             itemBuilder: (context, index) {
@@ -48,7 +56,8 @@ class CategoryPage extends StatelessWidget {
                   );
                 },
                 child: Card(
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(screenWidth * 0.03)),
                   elevation: 4,
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -57,13 +66,16 @@ class CategoryPage extends StatelessWidget {
                         cat.categoryIcon == 'sun'
                             ? Icons.wb_sunny
                             : Icons.nightlight_round,
-                        size: 40,
+                        size: screenWidth * 0.12,
                         color: Colors.teal,
                       ),
-                      const SizedBox(height: 8),
+                      SizedBox(height: screenHeight * 0.01),
                       Text(
                         cat.categoryTitle,
-                        style: const TextStyle(fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: screenWidth * 0.045,
+                        ),
                         textAlign: TextAlign.center,
                       ),
                     ],

@@ -13,7 +13,7 @@ class MenuPage extends StatefulWidget {
 }
 
 class _MenuPageState extends State<MenuPage> {
-  final List<Widget> _pages = const [
+  final List<Widget> _pages =  const [
     PrayerTimesPage(),
     ToolsPage(),
     QuranPage(),
@@ -25,26 +25,46 @@ class _MenuPageState extends State<MenuPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFF004225),
-      appBar: AppBar(title: Text('Menu page'), backgroundColor: Colors.blue,),
+      backgroundColor: const Color(0xFF013220),
+      appBar: AppBar(
+        title: const Text(
+          'Menu',
+          textAlign: TextAlign.center,
+        ),
+        backgroundColor: const Color(0xFF49796B),
+      ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: 4,
         type: BottomNavigationBarType.fixed,
-        selectedItemColor: Colors.red,
-        unselectedItemColor: Colors.blue,
-        backgroundColor: Colors.white,
-        onTap: (index){
+        selectedItemColor: Colors.white,
+        unselectedItemColor: Color(0xFF536878),
+        backgroundColor: const Color(0xFF013220),
+        onTap: (index) {
+          if (index != 4) { // 4 = MenuPage current index
             Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => _pages[index]),
             );
+          }
         },
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.today), label: "Today"),
-          BottomNavigationBarItem(icon: FaIcon(FontAwesomeIcons.tools), label: "tools"),
-          BottomNavigationBarItem(icon: FaIcon(FontAwesomeIcons.quran), label: "Quran"),
-          BottomNavigationBarItem(icon: FaIcon(FontAwesomeIcons.pray), label: "Duas"),
-          BottomNavigationBarItem(icon: Icon(Icons.menu), label: "Menu"),
+        items:  [
+          const BottomNavigationBarItem(icon: Icon(Icons.today), label: "Today"),
+          const BottomNavigationBarItem(icon: FaIcon(FontAwesomeIcons.tools), label: "tools"),
+           BottomNavigationBarItem(
+            icon: SizedBox(
+              width: 30,
+              height: 30,
+              child: Image.asset('assets/icons/quran.png'),
+            ),
+            label: "Quran",
+          ),
+           BottomNavigationBarItem(icon: SizedBox(
+             width: 30,
+             height: 30,
+             child: Image.asset('assets/icons/duas.png', color: Colors.amberAccent,),
+           ),
+             label: "Duas",),
+          const BottomNavigationBarItem(icon: Icon(Icons.menu), label: "Menu"),
         ],
       ),
     );

@@ -28,9 +28,11 @@ class _LocationPageState extends State<LocationPage> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final padding = screenWidth * 0.04;
+
     return Scaffold(
-      // Gradient Background
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
@@ -41,159 +43,165 @@ class _LocationPageState extends State<LocationPage> {
         ),
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: EdgeInsets.all(padding),
             child: BlocBuilder<LocationCubit, LocationState>(
               builder: (context, state) {
-                // Loading
-                if (state is LocationInitial || state is LocationLoading) {
-                  return const Center(child: CircularProgressIndicator(color: Colors.white));
-                }
-
-                // Error
-                if (state is LocationError) {
-                  return Center(
-                      child: Text("Error: ${state.message}", style: const TextStyle(color: Colors.white, fontSize: 16)));
-                }
-
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                return Stack(
                   children: [
-                    // AppBar replacement (custom header)
-                    Row(
-                      children: [
-                        InkWell(
-                          onTap: () => Navigator.pop(context),
-                          borderRadius: BorderRadius.circular(12),
-                          child: const Padding(
-                            padding: EdgeInsets.all(8.0),
-                            child: Icon(Icons.arrow_back, color: Colors.white, size: 28),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        const Text(
-                          "Set Up Location",
-                          style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-
-                    // Search Bar
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF004953),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: TextField(
-                              controller: searchController,
-                              onSubmitted: (value) => context.read<LocationCubit>().searchLocation(value),
-                              style: const TextStyle(color: Colors.white),
-                              decoration: InputDecoration(
-                                hintText: "Search City",
-                                hintStyle: const TextStyle(color: Colors.white54),
-                                prefixIcon: const Icon(Icons.search, color: Colors.white),
-                                border: InputBorder.none,
-                                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        ElevatedButton(
-                          onPressed: () => context.read<LocationCubit>().searchLocation(searchController.text),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blueAccent,
-                            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                            elevation: 4,
-                          ),
-                          child: const Text("Search", style: TextStyle(fontSize: 16)),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-
-                    // Saved / Current Location
-                    if (state is LocationLoaded)
-                      Card(
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                        color: const Color(0xFF1E4D2B),
-                        elevation: 6,
-                        child: ListTile(
-                          leading: const Icon(Icons.location_on, color: Colors.red, size: 28),
-                          title: Text(
-                            "${state.location.city}, ${state.location.country}",
-                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 18),
-                          ),
-                        ),
-                      ),
-
-                    const SizedBox(height: 16),
-
-                    //GPS Button for current Location
-                    if (state is LocationLoaded)
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                    // Main Column content
+                    Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          ElevatedButton.icon(
-                            onPressed: () => context.read<LocationCubit>().getGPSLocation(),
-                            icon: const Padding(
-                              padding: EdgeInsets.only(right: 8.0),
-                              child: Icon(Icons.gps_fixed, color: Colors.white),
-                            ),
-                            label: const Padding(
-                              padding: EdgeInsets.only(left: 4.0),
-                              child: Text("Use Current Location", style: TextStyle(fontSize: 16)),
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.teal,
-                              padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                              elevation: 4,
-                            ),
-                          ),
-                        ],
-                      ),
-
-
-
-                    const SizedBox(height: 20),
-
-                    // Search Results
-                    if (state is LocationSearchResults)
-                      Expanded(
-                        child: ListView.separated(
-                          itemCount: state.results.length,
-                          separatorBuilder: (context, index) => const SizedBox(height: 12),
-                          itemBuilder: (context, index) {
-                            final LocationModel loc = state.results[index];
-                            return Card(
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                              color: const Color(0xFF004953),
-                              elevation: 4,
-                              child: ListTile(
-                                leading: const Icon(Icons.place, color: Colors.green),
-                                title: Text(loc.city, style: const TextStyle(color: Colors.white, fontSize: 16)),
-                                onTap: () => context.read<LocationCubit>().selectLocation(loc),
-                                trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.white54),
+                          // AppBar replacement
+                          Row(
+                            children: [
+                              InkWell(
+                                onTap: () => Navigator.pop(context),
+                                borderRadius: BorderRadius.circular(12),
+                                child: Padding(
+                                  padding: EdgeInsets.all(screenWidth * 0.02),
+                                  child: Icon(Icons.arrow_back, color: Colors.white, size: screenWidth * 0.07),
+                                ),
                               ),
-                            );
-                          },
-                        ),
-                      ),
+                              SizedBox(width: screenWidth * 0.03),
+                              Text(
+                                "Set Up Location",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: screenWidth * 0.06,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: screenHeight * 0.02),
 
-                    // Permission Denied
-                    if (state is LocationPermissionDenied)
-                      Center(
-                        child: Text(
-                          "Location permission denied. Please enable GPS.",
-                          style: const TextStyle(color: Colors.white, fontSize: 16),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
+                          // Search bar + button
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF004953),
+                                    borderRadius: BorderRadius.circular(screenWidth * 0.03),
+                                  ),
+                                  child: TextField(
+                                    controller: searchController,
+                                    onSubmitted: (value) => context.read<LocationCubit>().searchLocation(value),
+                                    style: TextStyle(color: Colors.white, fontSize: screenWidth * 0.045),
+                                    decoration: InputDecoration(
+                                      hintText: "Search City",
+                                      hintStyle: TextStyle(color: Colors.white54, fontSize: screenWidth * 0.045),
+                                      prefixIcon: Icon(Icons.search, color: Colors.white, size: screenWidth * 0.06),
+                                      border: InputBorder.none,
+                                      contentPadding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04, vertical: screenHeight * 0.015),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              SizedBox(width: screenWidth * 0.03),
+                              ElevatedButton(
+                                onPressed: () => context.read<LocationCubit>().searchLocation(searchController.text),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.blueAccent,
+                                  padding: EdgeInsets.symmetric(vertical: screenHeight * 0.018, horizontal: screenWidth * 0.04),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(screenWidth * 0.03)),
+                                  elevation: 4,
+                                ),
+                                child: Text(
+                                  "Search",
+                                  style: TextStyle(fontSize: screenWidth * 0.045),
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: screenHeight * 0.025),
+
+                          // Saved / Current Location Card
+                          if (state is LocationLoaded)
+                            Card(
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(screenWidth * 0.04)),
+                              color: const Color(0xFF1E4D2B),
+                              elevation: 6,
+                              child: ListTile(
+                                leading: Icon(Icons.location_on, color: Colors.red, size: screenWidth * 0.07),
+                                title: Text(
+                                  "${state.location.city}, ${state.location.country}",
+                                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: screenWidth * 0.05),
+                                ),
+                              ),
+                            ),
+                          SizedBox(height: screenHeight * 0.02),
+
+                          // GPS button
+                          if (state is LocationLoaded)
+                            Center(
+                              child: ElevatedButton.icon(
+                                onPressed: state is LocationLoading ? null : () => context.read<LocationCubit>().getGPSLocation(),
+                                icon: state is LocationLoading
+                                    ? SizedBox(
+                                  width: screenWidth * 0.06,
+                                  height: screenWidth * 0.06,
+                                  child: const CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                                )
+                                    : Icon(Icons.gps_fixed, color: Colors.white, size: screenWidth * 0.06),
+                                label: Padding(
+                                  padding: EdgeInsets.only(left: screenWidth * 0.01),
+                                  child: Text(
+                                    state is LocationLoading ? "Locating..." : "Use Current Location",
+                                    style: TextStyle(fontSize: screenWidth * 0.045),
+                                  ),
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.teal,
+                                  padding: EdgeInsets.symmetric(vertical: screenHeight * 0.018, horizontal: screenWidth * 0.05),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(screenWidth * 0.04)),
+                                  elevation: 4,
+                                ),
+                              ),
+                            ),
+
+                          SizedBox(height: screenHeight * 0.03),
+
+                          // Search Results
+                          if (state is LocationSearchResults)
+                            Expanded(
+                              child: ListView.separated(
+                                itemCount: state.results.length,
+                                separatorBuilder: (_, __) => SizedBox(height: screenHeight * 0.015),
+                                itemBuilder: (context, index) {
+                                  final LocationModel loc = state.results[index];
+                                  return Card(
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(screenWidth * 0.04)),
+                                    color: const Color(0xFF004953),
+                                    elevation: 4,
+                                    child: ListTile(
+                                      leading: const Icon(Icons.place, color: Colors.green),
+                                      title: Text(loc.city,style: TextStyle(color: Colors.white, fontSize: screenWidth * 0.045)),
+                                      trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.white54),
+                                      onTap: () => context.read<LocationCubit>().selectLocation(loc),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+
+                          // Permission Denied
+                          if (state is LocationPermissionDenied)
+                            Center(
+                              child: Text(
+                                "Location permission denied. Please enable GPS.",
+                                style: TextStyle(color: Colors.white, fontSize: screenWidth * 0.045),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          // 🔹 Overlay loader for GPS fetching
+                          if (state is LocationLoading)
+                              const Center(child: CircularProgressIndicator(color: Colors.white)),
+                        ],
+                    ),
+
+
                   ],
                 );
               },

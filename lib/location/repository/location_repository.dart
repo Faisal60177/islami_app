@@ -23,8 +23,18 @@ class LocationRepository {
 
   /// Search location via OpenStreetMap API
   Future<List<LocationModel>> searchLocation(String query) async {
-    final url = "https://nominatim.openstreetmap.org/search?q=$query&format=json&limit=5";
-    final response = await http.get(Uri.parse(url));
+    final encodedQuery = Uri.encodeComponent(query); // ✅ added
+    final url = "https://nominatim.openstreetmap.org/search?q=$encodedQuery&format=json&limit=5";
+
+    final response = await http
+        .get(
+      Uri.parse(url),
+      headers: {
+        'User-Agent': 'islamic_app (your_email@gmail.com)', // ✅ added
+        'Accept': 'application/json', // ✅ added
+      },
+    )
+        .timeout(const Duration(seconds: 10)); // ✅ added
 
     final data = jsonDecode(response.body) as List;
     List<LocationModel> results = [];

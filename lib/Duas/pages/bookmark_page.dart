@@ -6,6 +6,7 @@ import 'duas_detail_page.dart';
 class BookmarkedDuasPage extends StatefulWidget {
   final String searchQuery;
   const BookmarkedDuasPage({super.key, required this.searchQuery});
+
   @override
   State<BookmarkedDuasPage> createState() => _BookmarkedDuasPageState();
 }
@@ -36,40 +37,69 @@ class _BookmarkedDuasPageState extends State<BookmarkedDuasPage> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final padding = screenWidth * 0.03;
+
     return Scaffold(
-      appBar: AppBar(title: const Text("Bookmarked Duas")),
+      appBar: AppBar(
+        title: Text(
+          "Bookmarked Duas",
+          style: TextStyle(fontSize: screenWidth * 0.05),
+        ),
+      ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : bookmarkedDuas.isEmpty
-          ? const Center(child: Text("No bookmarked duas yet"))
+          ? Center(
+        child: Text(
+          "No bookmarked duas yet",
+          style: TextStyle(fontSize: screenWidth * 0.045),
+        ),
+      )
           : ListView.builder(
-        padding: const EdgeInsets.all(8),
+        padding: EdgeInsets.all(padding),
         itemCount: bookmarkedDuas.length,
         itemBuilder: (context, index) {
           final dua = bookmarkedDuas[index];
           return Card(
             elevation: 3,
-            margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
+            margin: EdgeInsets.symmetric(
+              vertical: screenHeight * 0.01,
+              horizontal: screenWidth * 0.02,
+            ),
             shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10)),
+                borderRadius:
+                BorderRadius.circular(screenWidth * 0.03)),
             child: ListTile(
-              contentPadding: const EdgeInsets.symmetric(
-                  vertical: 8, horizontal: 12),
+              contentPadding: EdgeInsets.symmetric(
+                vertical: screenHeight * 0.015,
+                horizontal: screenWidth * 0.04,
+              ),
               leading: CircleAvatar(
-                child: Text(dua.id.toString()),
+                radius: screenWidth * 0.06,
                 backgroundColor: Colors.green[200],
+                child: Text(
+                  dua.id.toString(),
+                  style: TextStyle(fontSize: screenWidth * 0.045),
+                ),
               ),
               title: Text(
                 getShortDescription(dua.arabic),
                 textAlign: TextAlign.right,
-                style: const TextStyle(fontSize: 16),
+                style: TextStyle(
+                  fontSize: screenWidth * 0.045,
+                ),
               ),
               subtitle: Text(
                 "Category: ${dua.category}",
-                style:
-                const TextStyle(fontSize: 12, color: Colors.black54),
+                style: TextStyle(
+                  fontSize: screenWidth * 0.038,
+                  color: Colors.black54,
+                ),
               ),
-              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+              trailing: Icon(Icons.arrow_forward_ios,
+                  size: screenWidth * 0.045),
               onTap: () {
                 Navigator.push(
                   context,

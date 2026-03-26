@@ -1,12 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:islamic_app/Duas/cubit/duas_state.dart';
-import 'package:islamic_app/Duas/cubit/duas_cubit.dart';
-import 'duas_page.dart';
 import 'duas_detail_page.dart';
-
-import 'package:flutter/material.dart';
 import '../model/duas_model.dart';
 import '../repository/duas_repository.dart';
 
@@ -54,34 +47,47 @@ class _AllDuasPageState extends State<AllDuasPage> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return isLoading
         ? const Center(child: CircularProgressIndicator())
         : ListView.builder(
-      padding: const EdgeInsets.all(8),
+      padding: EdgeInsets.all(screenWidth * 0.02),
       itemCount: filteredDuas.length,
       itemBuilder: (context, index) {
         final dua = filteredDuas[index];
         return Card(
           elevation: 3,
-          margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
+          margin: EdgeInsets.symmetric(
+              vertical: screenHeight * 0.008,
+              horizontal: screenWidth * 0.02),
           shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10)),
+              borderRadius: BorderRadius.circular(screenWidth * 0.03)),
           child: ListTile(
-            contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+            contentPadding: EdgeInsets.symmetric(
+                vertical: screenHeight * 0.012,
+                horizontal: screenWidth * 0.03),
             leading: CircleAvatar(
-              child: Text(dua.id.toString()),
+              radius: screenWidth * 0.06,
               backgroundColor: Colors.teal[200],
+              child: Text(
+                dua.id.toString(),
+                style: TextStyle(fontSize: screenWidth * 0.035),
+              ),
             ),
             title: Text(
               getShortDescription(dua.arabic),
               textAlign: TextAlign.right,
-              style: const TextStyle(fontSize: 16),
+              style: TextStyle(fontSize: screenWidth * 0.045),
             ),
             subtitle: Text(
               "Category: ${dua.category}",
-              style: const TextStyle(fontSize: 12, color: Colors.black54),
+              style: TextStyle(
+                  fontSize: screenWidth * 0.035, color: Colors.black54),
             ),
-            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+            trailing: Icon(Icons.arrow_forward_ios,
+                size: screenWidth * 0.04),
             onTap: () {
               Navigator.push(
                 context,

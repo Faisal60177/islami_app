@@ -11,9 +11,15 @@ import 'home/services/prayer_times_storage.dart';
 import 'Duas/cubit/duas_cubit.dart';
 import 'package:islamic_app/Duas/repository/duas_repository.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // Lock orientation to portrait only
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown, // optional, allows upside-down portrait
+  ]);
 
   // Initialize timezone package
   tz.initializeTimeZones();
@@ -28,7 +34,9 @@ void main() async {
   final duasRepository = DuasRepository();
 
   // 🔥 VERY IMPORTANT: Sync JSON → SQLite
-  await duasRepository.syncDuasFromJson('assets/duas.json');
+  // First sync categories
+  await duasRepository.syncCategoriesFromJson('assets/json/categories.json');
+  await duasRepository.syncDuasFromJson('assets/json/duas.json');
 
 
   // Run app

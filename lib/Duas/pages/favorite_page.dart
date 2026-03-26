@@ -40,19 +40,61 @@ class _FavoriteDuasPageState extends State<FavoriteDuasPage> {
     ).toList();
   }
 
+  String getShortDescription(String text, [int limit = 60]) {
+    if (text.length <= limit) return text;
+    return text.substring(0, limit) + '...';
+  }
+
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final padding = screenWidth * 0.03;
+
     return isLoading
         ? const Center(child: CircularProgressIndicator())
         : ListView.builder(
+      padding: EdgeInsets.all(padding),
       itemCount: filteredDuas.length,
       itemBuilder: (context, index) {
         final dua = filteredDuas[index];
-        return ListTile(
-          title: Text(dua.arabic),
-          subtitle: Text("Category: ${dua.category}"),
-          onTap: () => Navigator.push(context,
-              MaterialPageRoute(builder: (_) => DuasDetailPage(dua: dua))),
+        return Card(
+          elevation: 3,
+          margin: EdgeInsets.symmetric(
+            vertical: screenHeight * 0.01,
+            horizontal: screenWidth * 0.02,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(screenWidth * 0.03),
+          ),
+          child: ListTile(
+            contentPadding: EdgeInsets.symmetric(
+              vertical: screenHeight * 0.015,
+              horizontal: screenWidth * 0.04,
+            ),
+            title: Text(
+              getShortDescription(dua.arabic),
+              textAlign: TextAlign.right,
+              style: TextStyle(
+                fontSize: screenWidth * 0.045,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            subtitle: Text(
+              "Category: ${dua.category}",
+              style: TextStyle(
+                fontSize: screenWidth * 0.038,
+                color: Colors.black54,
+              ),
+            ),
+            trailing: Icon(Icons.arrow_forward_ios, size: screenWidth * 0.045),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => DuasDetailPage(dua: dua)),
+              );
+            },
+          ),
         );
       },
     );

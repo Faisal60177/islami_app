@@ -49,6 +49,9 @@ dependencies:
   vibration: ^3.1.8
   audioplayers: ^6.6.0
   sqflite: ^2.4.2
+  marquee: ^2.3.0
+  syncfusion_flutter_pdfviewer: ^33.1.44
+  qcf_quran: ^0.0.5
 
 dev_dependencies:
   flutter_test:
@@ -71,33 +74,40 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
-
-  # To add assets to your application, add an assets section, like this:
-  # assets:
+  assets:
+    - assets/json/categories.json
+    - assets/json/duas.json
+    - assets/sounds/tasbih_sound.mp3
+    - assets/pdf/quran.pdf
+    - assets/icons/quran.png
+    - assets/icons/duas.png
+    - assets/icons/tasbih.png
+  # To add json to your application, add an json section, like this:
+  # json:
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 
-  # An image assets can refer to one or more resolution-specific "variants", see
+  # An image json can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
 
-  # For details regarding adding assets from package dependencies, see
+  # For details regarding adding json from package dependencies, see
   # https://flutter.dev/to/asset-from-package
 
   # To add custom fonts to your application, add a fonts section here,
   # in this "flutter" section. Each entry in this list should have a
   # "family" key with the font family name, and a "fonts" key with a
-  # list giving the assets and other descriptors for the font. For
+  # list giving the json and other descriptors for the font. For
   # example:
   # fonts:
   #   - family: Schyler
   #     fonts:
-  #       - assets: fonts/Schyler-Regular.ttf
-  #       - assets: fonts/Schyler-Italic.ttf
+  #       - json: fonts/Schyler-Regular.ttf
+  #       - json: fonts/Schyler-Italic.ttf
   #         style: italic
   #   - family: Trajan Pro
   #     fonts:
-  #       - assets: fonts/TrajanPro.ttf
-  #       - assets: fonts/TrajanPro_Bold.ttf
+  #       - json: fonts/TrajanPro.ttf
+  #       - json: fonts/TrajanPro_Bold.ttf
   #         weight: 700
   #
   # For details regarding fonts from package dependencies,
