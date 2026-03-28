@@ -51,6 +51,21 @@
     "tags": ["Morning and Evening", "দশটি দাস মুক্তির অনুরূপ ও একশত সাওয়াব"],
     "audio_url": "https://example.com/audio/dua2.mp3"
   },
+
+  {
+    "id": 5,
+    "category": "Iman",
+    "arabic": "لَاۤ اِلٰهَ اِلَّا اللهُ مُحَمَّدٌ رَّسُوْلُ اللهِ",
+    "transliteration": "লা-ইলাহা ইল্লাল্লাহু মুহাম্মাদুর রাসূলুল্লাহ।",
+    "translation": {
+      "en": "There is no god but Allah, Muhammad (PBUH) is the Messenger of Allah.",
+      "bn":  "আল্লাহ্ ব্যতীত ইবাদত বন্দেগীর উপযুক্ত আর কেউ নেই। হযরত মুহাম্মাদ(SAAS) আল্লাহ্’র প্রেরিত রাসূল।"
+    },
+    "reference": "কানযুল উম্মাল, হাদীস নং: ১৭৪",
+    "tags": ["iman", "faith"],
+    "audio_url": "https://example.com/audio/dua1.mp3"
+  },
+
   {
     "id": 11,
     "category": "Salat",

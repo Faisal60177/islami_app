@@ -5,7 +5,7 @@ class DuasModel {
   final String transliteration;
   final Map<String, String> translation;
   final String reference;
-  final List<String> tags;
+  final String tags;
   final String? audioUrl;
   bool isFavorite;
   bool isBookmarked;
@@ -34,7 +34,7 @@ class DuasModel {
         'bn': map['translation_bn'] ?? '',
       },
       reference: map['reference'],
-      tags: (map['tags'] as String?)?.split(',') ?? [],
+      tags: map['tags'],
       audioUrl: map['audio_url'],
       isFavorite: map['is_favorite'] == 1,
       isBookmarked: map['is_bookmarked'] == 1,
@@ -50,7 +50,7 @@ class DuasModel {
       'translation_en': translation['en'],
       'translation_bn': translation['bn'],
       'reference': reference,
-      'tags': tags.join(','),
+      'tags': tags,
       'audio_url': audioUrl,
       'is_favorite': isFavorite ? 1 : 0,
       'is_bookmarked': isBookmarked ? 1 : 0,

@@ -77,7 +77,7 @@ class _AllDuasPageState extends State<AllDuasPage> {
               ),
             ),
             title: Text(
-              getShortDescription(dua.arabic),
+              getShortDescription(dua.tags),
               textAlign: TextAlign.right,
               style: TextStyle(fontSize: screenWidth * 0.045),
             ),

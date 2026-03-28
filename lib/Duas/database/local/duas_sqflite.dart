@@ -18,8 +18,12 @@ class DuasSqflite {
     final path = join(await getDatabasesPath(), 'duas.db');
     return await openDatabase(
       path,
-      version: 2,
+      version: 1,
+      onConfigure: (db) async {
+        await db.execute('PRAGMA foreign_keys = ON');
+      },
       onCreate: (db, version) async {
+
         // 🔹 Categories Table
         await db.execute('''
           CREATE TABLE categories(
@@ -54,7 +58,7 @@ class DuasSqflite {
   Future<void> insertCategory(Map<String, dynamic> data) async {
     final db = await database;
     await db.insert('categories', data,
-        conflictAlgorithm: ConflictAlgorithm.ignore);
+        conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
   Future<List<Map<String, dynamic>>> getAllCategories() async {
@@ -65,7 +69,7 @@ class DuasSqflite {
   /// Duas CRUD
   Future<void> insertDua(Map<String, dynamic> data) async {
     final db = await database;
-    await db.insert('duas', data, conflictAlgorithm: ConflictAlgorithm.ignore);
+    await db.insert('duas', data, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
   Future<List<Map<String, dynamic>>> getAllDuas() async {

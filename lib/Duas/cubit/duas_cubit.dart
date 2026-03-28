@@ -60,4 +60,21 @@ class DuasCubit extends Cubit<DuasState> {
     final bookmarks = allDuas.where((d) => d.isBookmarked).toList();
     emit(DuaLoaded(bookmarks));
   }
+  /// 🔹 🔥 Firestore sync → SQLite → UI
+  Future<void> syncFromFirestore() async {
+    try {
+      // Sync categories & duas from Firestore
+      await repository.syncCategoriesFromFirestore();
+      await repository.syncDuasFromFirestore();
+
+      // Reload all duas in UI after sync
+      loadAllDuas();
+
+      // Optional debug
+      print("🔥 Firestore sync completed");
+    } catch (e) {
+      print("❌ Firestore sync error: $e");
+    }
+  }
+
 }
