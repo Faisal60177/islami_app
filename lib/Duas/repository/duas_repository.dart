@@ -3,6 +3,8 @@ import 'dart:convert';
 import '../database/local/duas_sqflite.dart';
 import '../model/duas_model.dart';
 import '../model/category_model.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class DuasRepository {
   final DuasSqflite dbHelper = DuasSqflite();
@@ -26,6 +28,25 @@ class DuasRepository {
       await insertCategory(category); // insert only new categories
     }
   }
+
+  /// 🔹 Firestore → SQLite (Categories) ✅ SAME STYLE AS JSON
+  Future<void> syncCategoriesFromFirestore() async {
+    final snapshot =
+    await FirebaseFirestore.instance.collection('categories duas').get();
+
+    for (var doc in snapshot.docs) {
+      final data = doc.data();
+
+      final category = CategoryModel.fromMap({
+        'category': data['category'],
+        'category_title': data['category_title'],
+        'category_icon': data['category_icon'],
+      });
+
+      await insertCategory(category); // same as JSON
+    }
+  }
+
 
   /// 🔹 Duas
   Future<List<DuasModel>> getAllDuas() async {
@@ -96,6 +117,54 @@ class DuasRepository {
           isFavorite: old.isFavorite,
           isBookmarked: old.isBookmarked,
         );
+        await updateDua(updated);
+      }
+    }
+  }
+
+  /// 🔥 Firestore → SQLite (Duas) ✅ NOW EXACTLY SAME AS JSON
+  Future<void> syncDuasFromFirestore() async {
+    final dbDuas = await getAllDuas();
+    final existingMap = {for (var d in dbDuas) d.id: d};
+
+    final snapshot =
+    await FirebaseFirestore.instance.collection('duas').get();
+
+    for (var doc in snapshot.docs) {
+      final data = doc.data();
+
+      final dua = DuasModel.fromMap({
+        'id': data['id'] ?? int.parse(doc.id),
+        'category': data['category'],
+        'arabic': data['arabic'],
+        'transliteration': data['transliteration'],
+        'translation_en': data['translation_en'],
+        'translation_bn': data['translation_bn'],
+        'reference': data['reference'],
+        'tags': (data['tags'] as List?)?.join(','), // ✅ SAME AS JSON
+        'audio_url': data['audio_url'],
+      });
+
+      if (!existingMap.containsKey(dua.id)) {
+        // 🆕 INSERT
+        await insertDua(dua);
+      } else {
+        // 🔄 UPDATE (preserve user data)
+        final old = existingMap[dua.id]!;
+
+        final updated = DuasModel(
+          id: dua.id,
+          category: dua.category,
+          arabic: dua.arabic,
+          transliteration: dua.transliteration,
+          translation: dua.translation,
+          reference: dua.reference,
+          tags: dua.tags,
+          audioUrl: dua.audioUrl,
+          isFavorite: old.isFavorite,
+          isBookmarked: old.isBookmarked,
+        );
+
         await updateDua(updated);
       }
     }

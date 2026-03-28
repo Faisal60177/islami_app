@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../repository/duas_repository.dart';
 import '../model/category_model.dart';
 import 'category_duas_page.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class CategoryPage extends StatelessWidget {
   final String searchQuery;
@@ -62,13 +63,7 @@ class CategoryPage extends StatelessWidget {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(
-                        cat.categoryIcon == 'sun'
-                            ? Icons.wb_sunny
-                            : Icons.nightlight_round,
-                        size: screenWidth * 0.12,
-                        color: Colors.teal,
-                      ),
+                      getCategoryIcon(cat.categoryIcon, screenWidth * 0.12), // ✅ fixed
                       SizedBox(height: screenHeight * 0.01),
                       Text(
                         cat.categoryTitle,
@@ -87,5 +82,19 @@ class CategoryPage extends StatelessWidget {
         );
       },
     );
+  }
+
+
+  Icon getCategoryIcon(String iconName, double size) {
+    switch (iconName) {
+      case 'sun':
+        return Icon(Icons.wb_sunny, color: Colors.orange, size: size);
+      case 'moon':
+        return Icon(Icons.nights_stay, color: Colors.blueGrey, size: size);
+      case 'star':
+        return Icon(Icons.star, color: Colors.yellow, size: size);
+      default:
+        return Icon(Icons.help_outline, size: size);
+    }
   }
 }

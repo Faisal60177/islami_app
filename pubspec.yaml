@@ -52,6 +52,8 @@ dependencies:
   marquee: ^2.3.0
   syncfusion_flutter_pdfviewer: ^33.1.44
   qcf_quran: ^0.0.5
+  cloud_firestore: ^6.2.0
+  firebase_core: ^4.6.0
 
 dev_dependencies:
   flutter_test:
