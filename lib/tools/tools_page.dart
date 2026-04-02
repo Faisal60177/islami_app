@@ -46,6 +46,8 @@ class _ToolsPageState extends State<ToolsPage> {
 
     return Scaffold(
       appBar: AppBar(
+        centerTitle: true,
+        automaticallyImplyLeading: false,
         title: const Text(
           'Tools',
           textAlign: TextAlign.center,
