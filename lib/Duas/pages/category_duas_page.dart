@@ -8,6 +8,11 @@ class CategoryDuasPage extends StatelessWidget {
   final CategoryModel category;
   const CategoryDuasPage({super.key, required this.category});
 
+  String getShortDescription(String text, [int limit = 60]) {
+    if (text.length <= limit) return text;
+    return text.substring(0, limit) + '...';
+  }
+
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
@@ -49,37 +54,33 @@ class CategoryDuasPage extends StatelessWidget {
             itemBuilder: (context, index) {
               final dua = filteredDuas[index];
               return Card(
-                margin: EdgeInsets.symmetric(vertical: screenHeight * 0.01),
+                elevation: 3,
+                margin: EdgeInsets.symmetric(
+                    vertical: screenHeight * 0.008,
+                    horizontal: screenWidth * 0.02),
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(screenWidth * 0.03)),
-                elevation: 3,
                 child: ListTile(
                   contentPadding: EdgeInsets.symmetric(
-                    vertical: screenHeight * 0.015,
-                    horizontal: screenWidth * 0.04,
-                  ),
+                      vertical: screenHeight * 0.012,
+                      horizontal: screenWidth * 0.03),
                   leading: CircleAvatar(
                     radius: screenWidth * 0.06,
+                    backgroundColor: Colors.teal[200],
                     child: Text(
                       dua.id.toString(),
-                      style: TextStyle(fontSize: screenWidth * 0.04),
+                      style: TextStyle(fontSize: screenWidth * 0.035),
                     ),
-                    backgroundColor: Colors.teal[100],
                   ),
                   title: Text(
-                    dua.arabic,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: screenWidth * 0.045,
-                    ),
+                    getShortDescription(dua.tags),
+                    textAlign: TextAlign.right,
+                    style: TextStyle(fontSize: screenWidth * 0.045),
                   ),
                   subtitle: Text(
-                    dua.translation['en'] ?? '',
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(fontSize: screenWidth * 0.04),
+                    "Category: ${dua.category}",
+                    style: TextStyle(
+                        fontSize: screenWidth * 0.035, color: Colors.black54),
                   ),
                   trailing: Icon(Icons.arrow_forward_ios,
                       size: screenWidth * 0.04),
