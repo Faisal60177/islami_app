@@ -260,8 +260,8 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: 0,
         type: BottomNavigationBarType.fixed,
-        selectedItemColor: Colors.white,
-        unselectedItemColor: Color(0xFF536878),
+        selectedItemColor: Colors.blue,
+        unselectedItemColor: Colors.white,
         backgroundColor: const Color(0xFF013220),
         onTap: (index) {
           if (index != 0) { // 4 = MenuPage current index
@@ -273,7 +273,14 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
         },
         items:  [
           const BottomNavigationBarItem(icon: Icon(Icons.today), label: "Today"),
-          const BottomNavigationBarItem(icon: FaIcon(FontAwesomeIcons.tools), label: "tools"),
+          BottomNavigationBarItem(
+            icon: SizedBox(
+              width: 30,
+              height: 30,
+              child: Image.asset('assets/icons/tools.png'),
+            ),
+            label: "Tools",
+          ),
           BottomNavigationBarItem(
             icon: SizedBox(
               width: 30,
@@ -285,10 +292,15 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
           BottomNavigationBarItem(icon: SizedBox(
             width: 30,
             height: 30,
-            child: Image.asset('assets/icons/duas.png', color: Colors.amberAccent,),
+            child: Image.asset('assets/icons/duas.png',),
           ),
             label: "Duas",),
-          const BottomNavigationBarItem(icon: Icon(Icons.menu), label: "Menu"),
+          BottomNavigationBarItem(icon: SizedBox(
+            width: 30,
+            height: 30,
+            child: Image.asset('assets/icons/menu.png',),
+          ),
+          label: "Menu",),
         ],
       ),
     );

@@ -86,6 +86,8 @@ flutter:
     - assets/icons/quran.png
     - assets/icons/duas.png
     - assets/icons/tasbih.png
+    - assets/icons/menu.png
+    - assets/icons/tools.png
   # To add json to your application, add an json section, like this:
   # json:
   #   - images/a_dot_burr.jpeg
