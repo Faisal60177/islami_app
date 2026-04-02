@@ -48,7 +48,11 @@ class _MenuPageState extends State<MenuPage> {
           }
         },
         items:  [
-          const BottomNavigationBarItem(icon: Icon(Icons.today), label: "Today"),
+          BottomNavigationBarItem(icon: SizedBox(
+            width: 30,
+            height: 30,
+            child: Image.asset('assets/icons/today.png'),
+          ), label: "Today"),
           BottomNavigationBarItem(
             icon: SizedBox(
               width: 30,

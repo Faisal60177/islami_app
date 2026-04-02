@@ -68,8 +68,14 @@ class _ToolsPageState extends State<ToolsPage> {
                 tools: [
                   _toolItem(
                     "Quran",
-                    FaIcon(FontAwesomeIcons.quran,
-                        size: iconSize, color: const Color(0xFF004225)),
+                       Padding(
+                        padding: const EdgeInsets.all(12.0),
+                        child: Image.asset(
+                          'assets/icons/quran.png',  // your image path
+                          fit: BoxFit.contain,
+                        ),
+                      ),
+
                         () {
                       Navigator.push(context,
                           MaterialPageRoute(builder: (_) => QuranPage()));
@@ -78,8 +84,13 @@ class _ToolsPageState extends State<ToolsPage> {
                   ),
                   _toolItem(
                     "Duas",
-                    FaIcon(FontAwesomeIcons.pray,
-                        size: iconSize, color: const Color(0xFF004225)),
+                    Padding(
+                        padding: const EdgeInsets.all(12.0),
+                        child: Image.asset(
+                          'assets/icons/duas.png',  // your image path
+                          fit: BoxFit.contain,
+                        ),
+                    ),
                         () {
                       Navigator.push(context,
                           MaterialPageRoute(builder: (_) => DuasPage()));
@@ -88,7 +99,13 @@ class _ToolsPageState extends State<ToolsPage> {
                   ),
                   _toolItem(
                     "Masail",
-                    Icon(Icons.book, size: iconSize, color: const Color(0xFF004225)),
+                    Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: Image.asset(
+                        'assets/icons/masail.png',  // your image path
+                        fit: BoxFit.contain,
+                      ),
+                    ),
                         () => print("Masail tapped"),
                     fontSize,
                   ),
@@ -105,9 +122,8 @@ class _ToolsPageState extends State<ToolsPage> {
                 tools: [
                   _toolItem(
                     "Tasbih",
-                    SizedBox(
-                      width: iconSize,  // same as your iconSize
-                      height: iconSize, // same as your iconSize
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
                       child: Image.asset(
                         'assets/icons/tasbih.png',  // your image path
                         fit: BoxFit.contain,
@@ -121,8 +137,13 @@ class _ToolsPageState extends State<ToolsPage> {
                   ),
                   _toolItem(
                     "Prayer Times",
-                    FaIcon(FontAwesomeIcons.clock,
-                        size: iconSize, color: const Color(0xFF004225)),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Image.asset(
+                        'assets/icons/prayer_time.png',  // your image path
+                        fit: BoxFit.contain,
+                      ),
+                    ),
                         () {
                       Navigator.push(context,
                           MaterialPageRoute(builder: (_) => PrayerTimesPage()));
@@ -131,8 +152,13 @@ class _ToolsPageState extends State<ToolsPage> {
                   ),
                   _toolItem(
                     "Inspiration",
-                    FaIcon(FontAwesomeIcons.penClip,
-                        size: iconSize, color: const Color(0xFF004225)),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Image.asset(
+                        'assets/icons/inspiration.png',  // your image path
+                        fit: BoxFit.contain,
+                      ),
+                    ),
                         () {
                       Navigator.push(context,
                           MaterialPageRoute(builder: (_) => InspirationPage()));
@@ -152,8 +178,13 @@ class _ToolsPageState extends State<ToolsPage> {
                 tools: [
                   _toolItem(
                     "Qibla",
-                    FaIcon(FontAwesomeIcons.compass,
-                        size: iconSize, color: const Color(0xFF004225)),
+                    Padding(
+                      padding: const EdgeInsets.all(10.0),
+                      child: Image.asset(
+                        'assets/icons/qibla.png',  // your image path
+                        fit: BoxFit.contain,
+                      ),
+                    ),
                         () {
                       Navigator.push(context,
                           MaterialPageRoute(builder: (_) => QiblaPage()));
@@ -162,8 +193,13 @@ class _ToolsPageState extends State<ToolsPage> {
                   ),
                   _toolItem(
                     "Calendar",
-                    Icon(Icons.calendar_month,
-                        size: iconSize, color: const Color(0xFF004225)),
+                    Padding(
+                      padding: const EdgeInsets.all(10.0),
+                      child: Image.asset(
+                        'assets/icons/calendar.png',  // your image path
+                        fit: BoxFit.contain,
+                      ),
+                    ),
                         () {
                       Navigator.push(context,
                           MaterialPageRoute(builder: (_) => CalendarPage()));
@@ -172,7 +208,13 @@ class _ToolsPageState extends State<ToolsPage> {
                   ),
                   _toolItem(
                     "Notification",
-                    Icon(Icons.notifications, size: iconSize, color: const Color(0xFF004225)),
+                    Padding(
+                      padding: const EdgeInsets.all(10.0),
+                      child: Image.asset(
+                        'assets/icons/notification.png',  // your image path
+                        fit: BoxFit.contain,
+                      ),
+                    ),
                         () {
                       Navigator.push(
                           context,
@@ -183,8 +225,14 @@ class _ToolsPageState extends State<ToolsPage> {
                   ),
                   _toolItem(
                     "Menu",
-                    Icon(Icons.menu, size: iconSize, color: const Color(0xFF004225)),
-                        () {
+                    Padding(
+                      padding: const EdgeInsets.all(10.0),
+                    child: Image.asset(
+                      'assets/icons/menu.png',  // your image path
+                      fit: BoxFit.contain,
+                      ),
+                    ),
+                                    () {
                       Navigator.push(
                           context, MaterialPageRoute(builder: (_) => MenuPage()));
                     },
@@ -212,7 +260,11 @@ class _ToolsPageState extends State<ToolsPage> {
           }
         },
         items:  [
-          const BottomNavigationBarItem(icon: Icon(Icons.today), label: "Today"),
+          BottomNavigationBarItem(icon: SizedBox(
+            width: 30,
+            height: 30,
+            child: Image.asset('assets/icons/today.png'),
+          ), label: "Today"),
           BottomNavigationBarItem(
             icon: SizedBox(
               width: 30,
@@ -281,18 +333,40 @@ class _ToolsPageState extends State<ToolsPage> {
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
         onTap: onTap,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+        child: Padding(padding: EdgeInsets.all(5),
+          child:
+        Column(
           children: [
-            iconWidget,
-            const SizedBox(height: 8),
-            Text(
-              title,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                  fontSize: fontSize, fontWeight: FontWeight.w500, color: Colors.black87),
+            Expanded(
+              flex: 3, // 🔥 icon takes more space
+              child: Align(
+                alignment: Alignment.bottomCenter, // 🔥 push icon down
+                child: iconWidget,
+              ),
+            ),
+
+            // 🔽 VERY SMALL GAP
+            const SizedBox(height: 0.1),
+
+            Expanded(
+              flex: 1, // 🔥 text takes less space
+              child: Center(
+                child: Align(
+                  alignment: Alignment.topCenter, // 🔥 pull text up
+                child: Text(
+                  title,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: fontSize * 1, // 🔥 slightly smaller
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black,
+                  ),
+                ),
+              ),
+              ),
             ),
           ],
+        ),
         ),
       ),
     );
