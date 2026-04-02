@@ -12,17 +12,9 @@ import 'Duas/cubit/duas_cubit.dart';
 import 'package:islamic_app/Duas/repository/duas_repository.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:islamic_app/Duas/database/local/duas_sqflite.dart';
-import 'package:path/path.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
-
   // Lock orientation to portrait only
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
@@ -41,20 +33,13 @@ void main() async {
   // 🔹 NEW: Duas Repository
   final duasRepository = DuasRepository();
 
-
-  // 🔥 SharedPreferences for control
-  final prefs = await SharedPreferences.getInstance();
-
-  /// 🔹 STEP 1: JSON → SQLite
-    await duasRepository.syncCategoriesFromJson('assets/json/categories.json');
-    await duasRepository.syncDuasFromJson('assets/json/duas.json');
+  // 🔥 VERY IMPORTANT: Sync JSON → SQLite
+  // First sync categories
+  await duasRepository.syncCategoriesFromJson('assets/json/categories.json');
+  await duasRepository.syncDuasFromJson('assets/json/duas.json');
 
 
-  /// 🔹 STEP 2: Run Firestore sync in background
-       await duasRepository.syncCategoriesFromFirestore();
-       await duasRepository.syncDuasFromFirestore();
-
-  /// 🔹 Run App (FAST - no waiting)
+  // Run app
   runApp(
     MultiBlocProvider(
       providers: [
@@ -74,8 +59,7 @@ void main() async {
 
         // 🔹 NEW: Duas Cubit
         BlocProvider(
-          create: (_) => DuasCubit(duasRepository)..loadAllDuas()
-            ..syncFromFirestore(), // ✅ ADD THIS
+          create: (_) => DuasCubit(duasRepository)..loadAllDuas(),
         ),
 
       ],

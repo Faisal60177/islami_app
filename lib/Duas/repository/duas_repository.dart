@@ -134,14 +134,14 @@ class DuasRepository {
       final data = doc.data();
 
       final dua = DuasModel.fromMap({
-        'id': data['id'],
+        'id': data['id'] ?? int.parse(doc.id),
         'category': data['category'],
         'arabic': data['arabic'],
         'transliteration': data['transliteration'],
         'translation_en': data['translation_en'],
         'translation_bn': data['translation_bn'],
         'reference': data['reference'],
-        'tags': data['tags'], // ✅ SAME AS JSON
+        'tags': (data['tags'] as List?)?.join(','), // ✅ SAME AS JSON
         'audio_url': data['audio_url'],
       });
 
