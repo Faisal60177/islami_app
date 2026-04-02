@@ -141,7 +141,7 @@ class DuasRepository {
         'translation_en': data['translation_en'],
         'translation_bn': data['translation_bn'],
         'reference': data['reference'],
-        'tags': (data['tags'] as List?)?.join(','), // ✅ SAME AS JSON
+        'tags': data['tags'] , // ✅ SAME AS JSON
         'audio_url': data['audio_url'],
       });
 
