@@ -18,6 +18,12 @@ import 'package:marquee/marquee.dart';
 import 'mosque.dart';
 import 'ring_animation.dart';
 
+// ─── Palette ────────────────────────────────────────────────────────────────
+const _surface   = Color(0xFF0D2E1C);   // card base
+const _accent    = Color(0xFF4CAF82);   // vibrant jade
+const _accentSoft= Color(0xFF2E7D5A);   // muted jade
+const _textLo    = Color(0xFF7BAF92);   // muted sage
+
 
 
 class PrayerTimesPage extends StatefulWidget {
@@ -80,8 +86,8 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
       PrayerRingEntry(name: 'Dhuhr', start: t.dhuhrStart, end: t.asrStart),
       PrayerRingEntry(name: 'Asr', start: t.asrStart, end: t.maghribStart),
       PrayerRingEntry(name: 'SunSet', start: t.sunSetStart, end: t.sunSetEnd),
-      PrayerRingEntry(name: 'Maghrib', start: t.maghribStart, end: t.ishaStart),
-      PrayerRingEntry(name: 'Isha', start: t.ishaStart, end: t.tahajjudStart),
+      PrayerRingEntry(name: 'Maghrib', start: t.maghribStart, end: t.maghribEnd),
+      PrayerRingEntry(name: 'Isha', start: t.ishaStart, end: t.ishaEnd),
     ];
   }
 
@@ -324,56 +330,8 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
         ),
       ),
 
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 0,
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: Colors.blue,
-        unselectedItemColor: Colors.white,
-        backgroundColor: const Color(0xFF013220),
-        onTap: (index) {
-          if (index != 0) { // 4 = MenuPage current index
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => _pages[index]),
-            );
-          }
-        },
-        items:  [
-          BottomNavigationBarItem(icon: SizedBox(
-            width: 30,
-            height: 30,
-            child: Image.asset('assets/icons/today.png'),
-          ), label: "Today"),
-          BottomNavigationBarItem(
-            icon: SizedBox(
-              width: 30,
-              height: 30,
-              child: Image.asset('assets/icons/tools.png'),
-            ),
-            label: "Tools",
-          ),
-          BottomNavigationBarItem(
-            icon: SizedBox(
-              width: 30,
-              height: 30,
-              child: Image.asset('assets/icons/quran.png'),
-            ),
-            label: "Quran",
-          ),
-          BottomNavigationBarItem(icon: SizedBox(
-            width: 30,
-            height: 30,
-            child: Image.asset('assets/icons/duas.png',),
-          ),
-            label: "Duas",),
-          BottomNavigationBarItem(icon: SizedBox(
-            width: 30,
-            height: 30,
-            child: Image.asset('assets/icons/menu.png',),
-          ),
-          label: "Menu",),
-        ],
-      ),
+      bottomNavigationBar: _buildNav(),
+
     );
   }
 
@@ -468,5 +426,76 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
     final minute = dt.minute.toString().padLeft(2, '0');
     final ampm = dt.hour >= 12 ? 'PM' : 'AM';
     return "$hour:$minute $ampm";
+  }
+
+  // ── Bottom Nav ──────────────────────────────────────────────────────────
+  Widget _buildNav() {
+    final items = [
+      ('Today',  'assets/icons/today.png'),
+      ('Tools',  'assets/icons/tools.png'),
+      ('Quran',  'assets/icons/quran.png'),
+      ('Duas',   'assets/icons/duas.png'),
+      ('Menu',   'assets/icons/menu.png'),
+    ];
+
+    return Container(
+      decoration: BoxDecoration(
+        color: _surface,
+        border: Border(top: BorderSide(color: _accentSoft.withOpacity(0.25), width: 1)),
+        boxShadow: [BoxShadow(color: Colors.black54, blurRadius: 20)],
+      ),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: items.asMap().entries.map((e) {
+              final i = e.key;
+              final label = e.value.$1;
+              final asset = e.value.$2;
+              final active = i == 0;
+
+              return GestureDetector(
+                onTap: () {
+                  if (!active) {
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (_) => _pages[i]));
+                  }
+                },
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 250),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 14, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: active
+                        ? _accentSoft.withOpacity(0.22)
+                        : Colors.transparent,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Image.asset(asset,
+                          width: 24, height: 24,
+                          ),
+                      const SizedBox(height: 4),
+                      Text(label,
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: active
+                                ? FontWeight.w700
+                                : FontWeight.w400,
+                            color: active ? _accent : _textLo,
+                          )),
+                    ],
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+      ),
+    );
   }
 }

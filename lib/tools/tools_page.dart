@@ -142,7 +142,7 @@ class _ToolsPageState extends State<ToolsPage>
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('بِسْمِ اللَّهِ',
+                          Text('بِسْمِ اللهِ الرَّحْمَٰنِ الرَّحِيْمِ',
                               style: TextStyle(
                                 fontFamily: 'Amiri',
                                 fontSize: sw * 0.07,
@@ -319,7 +319,7 @@ class _ToolsPageState extends State<ToolsPage>
                     children: [
                       Image.asset(asset,
                           width: 24, height: 24,
-                          color: active ? _accent : _textLo),
+                          ),
                       const SizedBox(height: 4),
                       Text(label,
                           style: TextStyle(

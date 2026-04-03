@@ -141,7 +141,7 @@ class _PrayerProgressRingState extends State<PrayerProgressRing>
                     ),
                     SizedBox(height: widget.size * 0.018),
                     Text(
-                      'ends ${_fmt(widget.entries[active].end)}',
+                      'ends ${_formatTime(widget.entries[active].end)}',
                       style: TextStyle(
                         color: Colors.white38,
                         fontSize: widget.size * 0.052,
@@ -161,13 +161,18 @@ class _PrayerProgressRingState extends State<PrayerProgressRing>
     );
   }
 
-  String _clock(DateTime dt) =>
-      '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+  String _clock(DateTime dt) {
+    final hour = dt.hour > 12 ? dt.hour - 12 : dt.hour;
+    final minute = dt.minute.toString().padLeft(2, '0');
+    final ampm = dt.hour >= 12 ? 'PM' : 'AM';
+    return "$hour:$minute $ampm";
+  }
 
-  String _fmt(DateTime dt) {
-    final h = dt.hour % 12 == 0 ? 12 : dt.hour % 12;
-    final m = dt.minute.toString().padLeft(2, '0');
-    return '$h:$m ${dt.hour >= 12 ? 'PM' : 'AM'}';
+  String _formatTime(DateTime dt) {
+    final hour = dt.hour > 12 ? dt.hour - 12 : dt.hour;
+    final minute = dt.minute.toString().padLeft(2, '0');
+    final ampm = dt.hour >= 12 ? 'PM' : 'AM';
+    return "$hour:$minute $ampm";
   }
 }
 
