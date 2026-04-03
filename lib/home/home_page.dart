@@ -234,6 +234,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                     return Column(
                       children: [
 
+
                         // 🔥 MOSQUE + RING
                         Stack(
                           alignment: Alignment.center,
