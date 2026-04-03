@@ -16,11 +16,12 @@ import 'package:flutter/services.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
   // Lock orientation to portrait only
-  await SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-    DeviceOrientation.portraitDown, // optional, allows upside-down portrait
-  ]);
+  //await SystemChrome.setPreferredOrientations([
+    //DeviceOrientation.portraitUp,
+    //DeviceOrientation.portraitDown, // optional, allows upside-down portrait
+  //]);
 
   // Initialize timezone package
   tz.initializeTimeZones();
