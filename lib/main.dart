@@ -13,9 +13,12 @@ import 'Duas/cubit/duas_cubit.dart';
 import 'package:islamic_app/Duas/repository/duas_repository.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:get/get.dart';
+import 'package:islamic_app/Menu/auth/auth_controller.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
 
   // Lock orientation to portrait only
   await SystemChrome.setPreferredOrientations([
@@ -35,6 +38,7 @@ void main() async {
   // 🔹 NEW: Duas Repository
   final duasRepository = DuasRepository();
   await Firebase.initializeApp();
+  Get.put(AuthController());
 
   // 🔥 VERY IMPORTANT: Sync JSON → SQLite
   // First sync categories
@@ -81,7 +85,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return GetMaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Prayer Times App',
       theme: ThemeData(
