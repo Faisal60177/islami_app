@@ -204,7 +204,7 @@ class _ToolsPageState extends State<ToolsPage> {
                     ),
                         () {
                       Navigator.push(context,
-                          MaterialPageRoute(builder: (_) => CalendarPage()));
+                          MaterialPageRoute(builder: (_) => MonthlyCalendarPage()));
                     },
                     fontSize,
                   ),

@@ -11,40 +11,55 @@ class PrayerTimesCubit extends Cubit<PrayerTimesState> {
   final LocationCubit locationCubit;
   final PrayerTimesStorage storage;
 
+  static const String _timezone = "Asia/Dhaka";
+
   late final Stream<LocationState> _locationStream;
 
   PrayerTimesCubit({required this.locationCubit, required this.storage})
       : super(PrayerTimesInitial()) {
-    // Listen to any location change
     _locationStream = locationCubit.stream;
     _locationStream.listen((state) {
       if (state is LocationLoaded) {
-        // Calculate and save prayer times whenever location changes
         _calculateAndSavePrayerTimes(state.location);
       }
     });
   }
 
-  /// Calculate prayer times and save immediately
+  // ── today's times on location change ─────────────────────────────────────
+
   Future<void> _calculateAndSavePrayerTimes(LocationModel location) async {
     emit(PrayerTimesLoading());
-
     try {
       final times = await PrayerTimesService.getPrayerTimesForLocation(
         location,
-        "Asia/Dhaka", // Change your timezone if needed
+        _timezone,
       );
-
-      // Save to SharedPreferences
       await storage.savePrayerTimes(times);
-
       emit(PrayerTimesLoaded(times));
     } catch (e) {
       emit(PrayerTimesError("Failed to calculate prayer times: $e"));
     }
   }
 
-  /// Optional: manually update prayer times
+  // ── any date — called by MonthlyCalendarPage ──────────────────────────────
+
+  Future<PrayerTimesModel?> calculateForDate(DateTime date) async {
+    final locState = locationCubit.state;
+    if (locState is! LocationLoaded) return null;
+
+    try {
+      return await PrayerTimesService.getPrayerTimesForDate(
+        locState.location,
+        _timezone,
+        date,
+      );
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // ── manual override ───────────────────────────────────────────────────────
+
   Future<void> updatePrayerTimes(LocationModel location, PrayerTimesModel updated) async {
     await storage.savePrayerTimes(updated);
     emit(PrayerTimesLoaded(updated));
