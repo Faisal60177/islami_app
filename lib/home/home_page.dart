@@ -15,6 +15,10 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:islamic_app/notification/page/notification_page.dart';
 import 'package:hijri/hijri_calendar.dart';
 import 'package:marquee/marquee.dart';
+import 'mosque.dart';
+import 'ring_animation.dart';
+
+
 
 class PrayerTimesPage extends StatefulWidget {
   const PrayerTimesPage({super.key});
@@ -42,6 +46,46 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
     DuasPage(),
     MenuPage(),
   ];
+
+
+  // ✅ CURRENT PRAYER
+  String getCurrentPrayer(PrayerTimesModel t) {
+    final now = DateTime.now();
+
+    if (now.isAfter(t.fajrStart) && now.isBefore(t.fajrEnd)) return "Fajr";
+    if (now.isAfter(t.sunRiseStart) && now.isBefore(t.sunRiseEnd)) return "SunRise";
+    if (now.isAfter(t.sunRiseEnd) && now.isBefore(t.noonStart)) return "Ishraq";
+    if (now.isAfter(t.noonStart) && now.isBefore(t.noonEnd)) return "Noon";
+    if (now.isAfter(t.dhuhrStart) && now.isBefore(t.dhuhrEnd)) return "Dhuhr";
+    if (now.isAfter(t.asrStart) && now.isBefore(t.asrEnd)) return "Asr";
+    if (now.isAfter(t.sunSetStart) && now.isBefore(t.sunSetEnd)) return "SunSet";
+    if (now.isAfter(t.maghribStart) && now.isBefore(t.maghribEnd)) return "Maghrib";
+    if (now.isAfter(t.ishaStart) && now.isBefore(t.ishaEnd)) return "Isha";
+
+    return "";
+  }
+
+  // ✅ COLOR FIX
+  Color _prayerAccentColor(String name, String current) {
+    return name == current ? Colors.green : Colors.red;
+  }
+
+  // ✅ RING DATA BUILDER
+  List<PrayerRingEntry> buildRing(PrayerTimesModel t) {
+    return [
+      PrayerRingEntry(name: 'Fajr', start: t.fajrStart, end: t.sunRiseStart),
+      PrayerRingEntry(name: 'SunRise', start: t.sunRiseStart, end: t.sunRiseEnd),
+      PrayerRingEntry(name: 'Ishraq', start: t.sunRiseEnd, end: t.noonStart),
+      PrayerRingEntry(name: 'Noon', start: t.noonStart, end: t.noonEnd),
+      PrayerRingEntry(name: 'Dhuhr', start: t.dhuhrStart, end: t.asrStart),
+      PrayerRingEntry(name: 'Asr', start: t.asrStart, end: t.maghribStart),
+      PrayerRingEntry(name: 'SunSet', start: t.sunSetStart, end: t.sunSetEnd),
+      PrayerRingEntry(name: 'Maghrib', start: t.maghribStart, end: t.ishaStart),
+      PrayerRingEntry(name: 'Isha', start: t.ishaStart, end: t.tahajjudStart),
+    ];
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -183,9 +227,31 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                     return Center(child: CircularProgressIndicator());
                   } else if (state is PrayerTimesLoaded) {
                     final times = state.prayerTimes;
+                    final current = getCurrentPrayer(times);
+                    final ring = buildRing(times);
+
 
                     return Column(
                       children: [
+
+                        // 🔥 MOSQUE + RING
+                        Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            MosqueIllustration(height: screenHeight * 0.28),
+                            Positioned(
+                              bottom: 10,
+                              child: PrayerProgressRing(
+                                entries: ring,
+                                size: screenWidth * 0.55,
+                              ),
+                            ),
+                          ],
+                        ),
+
+                        SizedBox(height: screenHeight * 0.0),
+
+                        /// Now the Prayer times Card
                         buildPrayerCard(
                           screenWidth,
                           "Salat Prayers",
@@ -366,7 +432,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
   // RESPONSIVE PRAYER CARD
   Widget buildPrayerCard(double screenWidth, String title, List<Widget> children) {
     return Card(
-      color: const Color(0xFF013220),
+      color: const Color(0xFF74C365),
       elevation: 5,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(screenWidth * 0.04),
