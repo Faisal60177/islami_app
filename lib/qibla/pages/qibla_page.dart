@@ -46,12 +46,12 @@ class _QiblaPageState extends State<QiblaPage>
     //
     // Fix: unlock all orientations while this page is open.
     // dispose() re-locks portrait before the user returns to other pages.
-    //SystemChrome.setPreferredOrientations([
-      //DeviceOrientation.portraitUp,
-      //DeviceOrientation.portraitDown,
-     // DeviceOrientation.landscapeLeft,
-     // DeviceOrientation.landscapeRight,
-    //]);
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
 
     WidgetsBinding.instance.addObserver(this);
 
