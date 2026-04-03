@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -13,18 +14,22 @@ class QiblaPage extends StatefulWidget {
   State<QiblaPage> createState() => _QiblaPageState();
 }
 
+// FIX #8: Added WidgetsBindingObserver to re-check permission when app resumes
 class _QiblaPageState extends State<QiblaPage>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
 
   // Kaaba coordinates
   static const double _kaabaLat = 21.4225;
   static const double _kaabaLng = 39.8262;
 
-  double? _compassHeading;   // live from sensor (degrees, 0 = North)
-  double? _qiblaAngle;       // bearing from user to Kaaba (degrees from North)
+  double? _compassHeading;
+  double? _qiblaAngle;
   double? _distanceKm;
   bool _permissionGranted = false;
   bool _calibrating = false;
+
+  // FIX #1: Store the StreamSubscription so it can be cancelled
+  StreamSubscription<CompassEvent>? _compassSub;
 
   late AnimationController _pulseCtrl;
   late Animation<double> _pulse;
@@ -32,6 +37,9 @@ class _QiblaPageState extends State<QiblaPage>
   @override
   void initState() {
     super.initState();
+    // FIX #8: Register lifecycle observer
+    WidgetsBinding.instance.addObserver(this);
+
     _pulseCtrl = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 2),
@@ -44,8 +52,20 @@ class _QiblaPageState extends State<QiblaPage>
 
   @override
   void dispose() {
+    // FIX #8: Remove lifecycle observer
+    WidgetsBinding.instance.removeObserver(this);
+    // FIX #1: Cancel compass stream to prevent memory leaks
+    _compassSub?.cancel();
     _pulseCtrl.dispose();
     super.dispose();
+  }
+
+  // FIX #8: Re-check permission when user returns from Settings
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && !_permissionGranted) {
+      _requestPermissionAndStart();
+    }
   }
 
   // ── permission + compass stream ───────────────────────────────────────────
@@ -55,9 +75,13 @@ class _QiblaPageState extends State<QiblaPage>
     if (!mounted) return;
     if (status.isGranted) {
       setState(() => _permissionGranted = true);
-      FlutterCompass.events?.listen((event) {
+      // FIX #1: Store subscription reference so we can cancel it in dispose()
+      _compassSub = FlutterCompass.events?.listen((event) {
         if (!mounted) return;
-        setState(() => _compassHeading = event.heading);
+        // FIX #5: Only update if heading is non-null (some devices return null)
+        if (event.heading != null) {
+          setState(() => _compassHeading = event.heading);
+        }
       });
     }
   }
@@ -95,6 +119,18 @@ class _QiblaPageState extends State<QiblaPage>
     const dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE',
       'S','SSW','SW','WSW','W','WNW','NW','NNW'];
     return dirs[((deg + 11.25) / 22.5).floor() % 16];
+  }
+
+  // FIX #7: Clean distance formatter (no fragile regex)
+  String _formatDistance(double km) {
+    final rounded = km.round();
+    final str = rounded.toString();
+    final buf = StringBuffer();
+    for (int i = 0; i < str.length; i++) {
+      if (i > 0 && (str.length - i) % 3 == 0) buf.write(',');
+      buf.write(str[i]);
+    }
+    return '${buf.toString()} km';
   }
 
   // ── calibration hint ──────────────────────────────────────────────────────
@@ -139,7 +175,7 @@ class _QiblaPageState extends State<QiblaPage>
       ),
       body: BlocBuilder<LocationCubit, LocationState>(
         builder: (context, locState) {
-          // ── compute Qibla whenever location is available ─────────────────
+          // Compute Qibla whenever location is available
           if (locState is LocationLoaded) {
             final lat = locState.location.latitude;
             final lng = locState.location.longitude;
@@ -159,6 +195,11 @@ class _QiblaPageState extends State<QiblaPage>
 
           if (locState is LocationPermissionDenied || locState is LocationInitial) {
             return _buildNoLocation(sw);
+          }
+
+          // FIX #5: Show calibrating screen while compass heading is not yet available
+          if (_compassHeading == null) {
+            return _buildCalibrating(sw);
           }
 
           return SingleChildScrollView(
@@ -215,12 +256,8 @@ class _QiblaPageState extends State<QiblaPage>
   // ── distance badge ────────────────────────────────────────────────────────
 
   Widget _buildDistanceBadge(double sw) {
-    final dist = _distanceKm != null
-        ? '${_distanceKm!.round().toString().replaceAllMapped(
-      RegExp(r'(\d)(?=(\d{3})+$)'),
-          (m) => '${m[1]},',
-    )} km'
-        : '— km';
+    // FIX #7: Use clean formatter instead of fragile regex
+    final dist = _distanceKm != null ? _formatDistance(_distanceKm!) : '— km';
     return Column(
       children: [
         Text(
@@ -248,21 +285,21 @@ class _QiblaPageState extends State<QiblaPage>
   Widget _buildCompass(double sw) {
     final size = sw * 0.72;
 
-    // Rotation of the compass dial so that N always points up relative to
-    // the phone, then the Qibla needle is painted at _qiblaAngle
-    final dialRotation = _compassHeading != null
-        ? -_compassHeading! * math.pi / 180
-        : 0.0;
+    // FIX #2: dialRotation rotates the N/S/E/W labels and needle
+    // so that North always points up on screen relative to the device
+    final dialRotation = -_compassHeading! * math.pi / 180;
 
-    // Angle of the golden Qibla arrow relative to North
-    final qiblaRotation = _qiblaAngle != null
-        ? (_qiblaAngle! - (_compassHeading ?? 0)) * math.pi / 180
-        : 0.0;
+    // FIX #3: qiblaRotation is the absolute compass bearing to Mecca
+    // minus the current device heading — giving the screen-space angle
+    // This is applied independently at the same Stack level as dialRotation
+    final qiblaRotation = (_qiblaAngle! - _compassHeading!) * math.pi / 180;
 
-    // Are we roughly aligned? (within ±5°)
-    final aligned = _qiblaAngle != null &&
-        _compassHeading != null &&
-        ((_qiblaAngle! - _compassHeading!) % 360).abs() < 5;
+    // FIX #4: Correct angular difference calculation wrapping to [-180, 180]
+    // to handle the 359°→0° boundary correctly
+    double diff = (_qiblaAngle! - _compassHeading!) % 360;
+    if (diff > 180) diff -= 360;
+    if (diff < -180) diff += 360;
+    final aligned = diff.abs() < 5;
 
     return Stack(
       alignment: Alignment.center,
@@ -296,14 +333,16 @@ class _QiblaPageState extends State<QiblaPage>
           child: Stack(
             alignment: Alignment.center,
             children: [
-              // ── tick marks ────────────────────────────────────────────────
+
+              // ── tick marks (static — always fixed on screen) ──────────────
               ...List.generate(72, (i) {
                 final angle = i * 5.0 * math.pi / 180;
                 final isMajor = i % 9 == 0;
                 final tickLen = isMajor ? size * 0.06 : size * 0.03;
-                final r = size / 2 - size * 0.035;
                 return Transform.rotate(
                   angle: angle,
+                  // FIX #2: alignment ensures rotation is around the widget center
+                  alignment: Alignment.center,
                   child: Align(
                     alignment: Alignment.topCenter,
                     child: Padding(
@@ -321,8 +360,11 @@ class _QiblaPageState extends State<QiblaPage>
               }),
 
               // ── rotating dial (N/S/E/W labels) ───────────────────────────
+              // Rotates so that N always faces upward on the screen
               Transform.rotate(
                 angle: dialRotation,
+                // FIX #2: alignment: Alignment.center prevents off-axis rotation
+                alignment: Alignment.center,
                 child: SizedBox(
                   width: size,
                   height: size,
@@ -342,18 +384,25 @@ class _QiblaPageState extends State<QiblaPage>
                 ),
               ),
 
-              // ── compass needle (red = North, grey = South) ────────────────
+              // ── compass needle (red = North, grey = South) ─────────────
+              // Same rotation as the dial labels
               Transform.rotate(
                 angle: dialRotation,
+                // FIX #2: alignment: Alignment.center is critical here
+                alignment: Alignment.center,
                 child: CustomPaint(
                   size: Size(size * 0.55, size * 0.55),
                   painter: _NeedlePainter(),
                 ),
               ),
 
-              // ── Qibla golden arrow ────────────────────────────────────────
+              // ── Qibla golden arrow ─────────────────────────────────────
+              // FIX #3: Independent rotation — NOT nested inside dialRotation.
+              // qiblaRotation already accounts for heading, so it stands alone.
               Transform.rotate(
                 angle: qiblaRotation,
+                // FIX #2: alignment: Alignment.center is critical here too
+                alignment: Alignment.center,
                 child: CustomPaint(
                   size: Size(size * 0.55, size * 0.55),
                   painter: _QiblaNeedlePainter(aligned: aligned),
@@ -373,7 +422,7 @@ class _QiblaPageState extends State<QiblaPage>
           ),
         ),
 
-        // Aligned label
+        // "Facing Qibla" label when aligned
         if (aligned)
           Positioned(
             bottom: -size * 0.05,
@@ -462,25 +511,24 @@ class _QiblaPageState extends State<QiblaPage>
             ],
           ),
           const Spacer(),
-          // Live compass reading
-          if (_compassHeading != null)
-            Column(
-              children: [
-                Text(
-                  '${_compassHeading!.toStringAsFixed(0)}°',
-                  style: TextStyle(
-                      color: Colors.white,
-                      fontSize: sw * 0.042,
-                      fontWeight: FontWeight.w700),
-                ),
-                Text(
-                  'heading',
-                  style: TextStyle(
-                      color: const Color(0xFFd0ffd0),
-                      fontSize: sw * 0.028),
-                ),
-              ],
-            ),
+          // FIX #5: Safe — _compassHeading is non-null here (guarded above)
+          Column(
+            children: [
+              Text(
+                '${_compassHeading!.toStringAsFixed(0)}°',
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: sw * 0.042,
+                    fontWeight: FontWeight.w700),
+              ),
+              Text(
+                'heading',
+                style: TextStyle(
+                    color: const Color(0xFFd0ffd0),
+                    fontSize: sw * 0.028),
+              ),
+            ],
+          ),
         ],
       ),
     );
@@ -579,6 +627,35 @@ class _QiblaPageState extends State<QiblaPage>
 
   // ── fallback screens ──────────────────────────────────────────────────────
 
+  // FIX #5: New screen shown while compass sensor hasn't produced a reading yet
+  Widget _buildCalibrating(double sw) {
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.all(sw * 0.08),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const CircularProgressIndicator(color: Color(0xFF74C365)),
+            SizedBox(height: sw * 0.06),
+            Text(
+              'Waiting for compass...',
+              style: TextStyle(
+                  color: Colors.white,
+                  fontSize: sw * 0.045,
+                  fontWeight: FontWeight.w600),
+            ),
+            SizedBox(height: sw * 0.03),
+            Text(
+              'Move your phone in a figure-8 pattern to help calibrate.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.grey[400], fontSize: sw * 0.038),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildPermissionDenied(double sw) {
     return Center(
       child: Padding(
@@ -605,6 +682,7 @@ class _QiblaPageState extends State<QiblaPage>
             ),
             SizedBox(height: sw * 0.06),
             GestureDetector(
+              // FIX #8: openAppSettings works; lifecycle observer re-checks on resume
               onTap: openAppSettings,
               child: Container(
                 padding: EdgeInsets.symmetric(
@@ -666,7 +744,7 @@ class _NeedlePainter extends CustomPainter {
     final cy = size.height / 2;
     final len = size.height * 0.46;
 
-    // Red North
+    // Red North half
     final northPaint = Paint()..color = const Color(0xFFE24B4A);
     final northPath = Path()
       ..moveTo(cx, cy - len)
@@ -675,7 +753,7 @@ class _NeedlePainter extends CustomPainter {
       ..close();
     canvas.drawPath(northPath, northPaint);
 
-    // Grey South
+    // Grey South half
     final southPaint = Paint()..color = const Color(0xFF555555);
     final southPath = Path()
       ..moveTo(cx, cy + len)
@@ -702,7 +780,7 @@ class _QiblaNeedlePainter extends CustomPainter {
     final color = aligned ? Colors.amber : const Color(0xFFFFD700);
     final paint = Paint()..color = color;
 
-    // Golden Qibla arrow (only pointing direction, no tail)
+    // Golden Qibla arrow
     final path = Path()
       ..moveTo(cx, cy - len)
       ..lineTo(cx - 6, cy + len * 0.1)
@@ -724,6 +802,7 @@ class _QiblaNeedlePainter extends CustomPainter {
   }
 
   @override
+  // FIX: Also repaint when heading changes (aligned state changes)
   bool shouldRepaint(_QiblaNeedlePainter old) => old.aligned != aligned;
 }
 

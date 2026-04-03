@@ -83,7 +83,7 @@ flutter:
   assets:
     - assets/json/categories.json
     - assets/json/duas.json
-    - assets/sounds/tasbih_sound.mp3
+    - assets/sounds/tasbih_click.mp3
     - assets/pdf/quran.pdf
     - assets/icons/quran.png
     - assets/icons/duas.png
