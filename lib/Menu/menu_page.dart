@@ -3,18 +3,13 @@ import 'package:get/get.dart';
 
 // Pages
 import 'profile/profile_page.dart';
+import 'package:islamic_app/settings/settings_page.dart';
 import 'contact/contact_page.dart';
 import 'share/share_page.dart';
 import 'rate/rate_page.dart';
 import 'about/about_page.dart';
 import 'auth/sign_out_page.dart';
 import 'auth/auth_controller.dart';
-
-// App pages (your existing ones)
-// import 'package:islamic_app/Quran/quran_page.dart';
-// import 'package:islamic_app/Duas/pages/duas_page.dart';
-// import 'package:islamic_app/tools/tools_page.dart';
-// import 'package:islamic_app/home/home_page.dart';
 
 // ─── Palette ────────────────────────────────────────────────────────────────
 const _bg        = Color(0xFF011A0E);
@@ -29,12 +24,11 @@ const _textLo    = Color(0xFF7BAF92);
 class MenuPage extends StatelessWidget {
   const MenuPage({super.key});
 
-  // Bottom nav pages — replace with your real widgets
   static final List<Widget> _pages = [
-    const _PlaceholderPage('Today'),   // PrayerTimesPage()
-    const _PlaceholderPage('Tools'),   // ToolsPage()
-    const _PlaceholderPage('Quran'),   // QuranPage()
-    const _PlaceholderPage('Duas'),    // DuasPage()
+    const _PlaceholderPage('Today'),
+    const _PlaceholderPage('Tools'),
+    const _PlaceholderPage('Quran'),
+    const _PlaceholderPage('Duas'),
     const MenuPage(),
   ];
 
@@ -118,78 +112,89 @@ class MenuPage extends StatelessWidget {
 
   // ── Body ──────────────────────────────────────────────────────────────────
   Widget _buildBody() {
-    return SingleChildScrollView(
-      child: Column(
-        children: [
-          // User greeting card
-          _UserGreetingCard(),
-          // Menu items
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _sectionLabel('Account'),
-                const SizedBox(height: 10),
-                _MenuSection(items: [
-                  _MenuItem(
-                    icon: Icons.person_rounded,
-                    iconColor: const Color(0xFF4CAF82),
-                    title: 'Profile',
-                    subtitle: 'View & edit your profile',
-                    page: const ProfilePage(),
-                  ),
-                ]),
-                const SizedBox(height: 24),
-                _sectionLabel('Support'),
-                const SizedBox(height: 10),
-                _MenuSection(items: [
-                  _MenuItem(
-                    icon: Icons.headset_mic_outlined,
-                    iconColor: const Color(0xFF2196F3),
-                    title: 'Contact Us',
-                    subtitle: 'Get help from our team',
-                    page: const ContactPage(),
-                  ),
-                  _MenuItem(
-                    icon: Icons.share_rounded,
-                    iconColor: const Color(0xFF25D366),
-                    title: 'Share App',
-                    subtitle: 'Spread the good',
-                    page: const SharePage(),
-                  ),
-                  _MenuItem(
-                    icon: Icons.star_rounded,
-                    iconColor: _gold,
-                    title: 'Rate Us',
-                    subtitle: 'Your review means a lot',
-                    page: const RatePage(),
-                    badge: '⭐',
-                  ),
-                ]),
-                const SizedBox(height: 24),
-                _sectionLabel('Info'),
-                const SizedBox(height: 10),
-                _MenuSection(items: [
-                  _MenuItem(
-                    icon: Icons.info_outline_rounded,
-                    iconColor: const Color(0xFFFF9800),
-                    title: 'About App',
-                    subtitle: 'Version 2.5.0 — What\'s new',
-                    page: const AboutPage(),
-                  ),
-                ]),
-                const SizedBox(height: 24),
-                _sectionLabel('Session'),
-                const SizedBox(height: 10),
-                _SignOutTile(),
-                const SizedBox(height: 32),
-                _bottomQuote(),
-              ],
-            ),
+    return LayoutBuilder(                                         // ← responsive
+      builder: (context, constraints) {
+        final horizontal = constraints.maxWidth > 600 ? 24.0 : 16.0;
+        return SingleChildScrollView(
+          child: Column(
+            children: [
+              _UserGreetingCard(),
+              Padding(
+                padding: EdgeInsets.fromLTRB(horizontal, 0, horizontal, 24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _sectionLabel('Account'),
+                    const SizedBox(height: 10),
+                    _MenuSection(items: [
+                      _MenuItem(
+                        icon: Icons.person_rounded,
+                        iconColor: const Color(0xFF4CAF82),
+                        title: 'Profile',
+                        subtitle: 'View & edit your profile',
+                        page: const ProfilePage(),
+                      ),
+                      // ── NEW Settings entry ──────────────────────────────
+                      _MenuItem(
+                        icon: Icons.settings_rounded,
+                        iconColor: const Color(0xFF9E9E9E),
+                        title: 'Settings',
+                        subtitle: 'App preferences & configuration',
+                        page: const SettingsPage(),
+                      ),
+                    ]),
+                    const SizedBox(height: 24),
+                    _sectionLabel('Support'),
+                    const SizedBox(height: 10),
+                    _MenuSection(items: [
+                      _MenuItem(
+                        icon: Icons.headset_mic_outlined,
+                        iconColor: const Color(0xFF2196F3),
+                        title: 'Contact Us',
+                        subtitle: 'Get help from our team',
+                        page: const ContactPage(),
+                      ),
+                      _MenuItem(
+                        icon: Icons.share_rounded,
+                        iconColor: const Color(0xFF25D366),
+                        title: 'Share App',
+                        subtitle: 'Spread the good',
+                        page: const SharePage(),
+                      ),
+                      _MenuItem(
+                        icon: Icons.star_rounded,
+                        iconColor: _gold,
+                        title: 'Rate Us',
+                        subtitle: 'Your review means a lot',
+                        page: const RatePage(),
+                        badge: '⭐',
+                      ),
+                    ]),
+                    const SizedBox(height: 24),
+                    _sectionLabel('Info'),
+                    const SizedBox(height: 10),
+                    _MenuSection(items: [
+                      _MenuItem(
+                        icon: Icons.info_outline_rounded,
+                        iconColor: const Color(0xFFFF9800),
+                        title: 'About App',
+                        subtitle: 'Version 2.5.0 — What\'s new',
+                        page: const AboutPage(),
+                      ),
+                    ]),
+                    const SizedBox(height: 24),
+                    _sectionLabel('Session'),
+                    const SizedBox(height: 10),
+                    _SignOutTile(),
+                    const SizedBox(height: 32),
+                    _bottomQuote(),
+                  ],
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -223,10 +228,7 @@ class MenuPage extends StatelessWidget {
       ),
       child: const Column(
         children: [
-          Text(
-            '🌙',
-            style: TextStyle(fontSize: 32),
-          ),
+          Text('🌙', style: TextStyle(fontSize: 32)),
           SizedBox(height: 10),
           Text(
             '"Indeed, with hardship comes ease."',
@@ -238,10 +240,8 @@ class MenuPage extends StatelessWidget {
             ),
           ),
           SizedBox(height: 4),
-          Text(
-            '— Quran 94:5',
-            style: TextStyle(color: _textLo, fontSize: 12),
-          ),
+          Text('— Quran 94:5',
+              style: TextStyle(color: _textLo, fontSize: 12)),
         ],
       ),
     );
@@ -250,19 +250,18 @@ class MenuPage extends StatelessWidget {
   // ── Bottom Nav ────────────────────────────────────────────────────────────
   Widget _buildNav(BuildContext context) {
     final items = [
-      ('Today',  '🕐'),
-      ('Tools',  '🔧'),
-      ('Quran',  '📖'),
-      ('Duas',   '🤲'),
-      ('Menu',   '☰'),
+      ('Today', '🕐'),
+      ('Tools', '🔧'),
+      ('Quran', '📖'),
+      ('Duas',  '🤲'),
+      ('Menu',  '☰'),
     ];
 
     return Container(
       decoration: BoxDecoration(
         color: _surface,
         border: Border(
-            top: BorderSide(
-                color: _accentSoft.withOpacity(0.2), width: 1)),
+            top: BorderSide(color: _accentSoft.withOpacity(0.2), width: 1)),
         boxShadow: const [
           BoxShadow(color: Colors.black54, blurRadius: 20)
         ],
@@ -274,18 +273,16 @@ class MenuPage extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: items.asMap().entries.map((e) {
-              final i = e.key;
-              final label = e.value.$1;
-              final emoji = e.value.$2;
+              final i      = e.key;
+              final label  = e.value.$1;
+              final emoji  = e.value.$2;
               final active = i == 4;
 
               return GestureDetector(
                 onTap: () {
                   if (!active) {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (_) => _pages[i]));
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (_) => _pages[i]));
                   }
                 },
                 child: AnimatedContainer(
@@ -302,8 +299,7 @@ class MenuPage extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(emoji,
-                          style: TextStyle(
-                              fontSize: active ? 22 : 20)),
+                          style: TextStyle(fontSize: active ? 22 : 20)),
                       const SizedBox(height: 3),
                       Text(label,
                           style: TextStyle(
@@ -331,7 +327,6 @@ class _UserGreetingCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Obx(() {
       final auth = Get.find<AuthController>();
-
       return Container(
         margin: const EdgeInsets.all(16),
         padding: const EdgeInsets.all(20),
@@ -346,7 +341,8 @@ class _UserGreetingCard extends StatelessWidget {
           boxShadow: [
             BoxShadow(
                 color: Colors.black.withOpacity(0.3),
-                blurRadius: 12, offset: const Offset(0, 4))
+                blurRadius: 12,
+                offset: const Offset(0, 4))
           ],
         ),
         child: Row(
@@ -358,7 +354,8 @@ class _UserGreetingCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: _accentSoft,
-                  border: Border.all(color: _gold.withOpacity(0.5), width: 2),
+                  border:
+                  Border.all(color: _gold.withOpacity(0.5), width: 2),
                 ),
                 child: auth.isLoggedIn && auth.photoUrl.value.isNotEmpty
                     ? ClipOval(
@@ -366,7 +363,8 @@ class _UserGreetingCard extends StatelessWidget {
                         fit: BoxFit.cover))
                     : Center(
                   child: Text(
-                    auth.isLoggedIn && auth.displayName.value.isNotEmpty
+                    auth.isLoggedIn &&
+                        auth.displayName.value.isNotEmpty
                         ? auth.displayName.value[0].toUpperCase()
                         : '🙋',
                     style: const TextStyle(
@@ -384,8 +382,7 @@ class _UserGreetingCard extends StatelessWidget {
                 children: [
                   Text(
                     auth.isLoggedIn ? 'Assalamu Alaikum,' : 'Welcome!',
-                    style: const TextStyle(
-                        color: _textLo, fontSize: 12),
+                    style: const TextStyle(color: _textLo, fontSize: 12),
                   ),
                   const SizedBox(height: 2),
                   Text(
@@ -403,8 +400,7 @@ class _UserGreetingCard extends StatelessWidget {
                   ),
                   if (!auth.isLoggedIn)
                     GestureDetector(
-                      onTap: () =>
-                          Get.to(() => const ProfilePage()),
+                      onTap: () => Get.to(() => const ProfilePage()),
                       child: Container(
                         margin: const EdgeInsets.only(top: 6),
                         padding: const EdgeInsets.symmetric(
@@ -434,8 +430,7 @@ class _UserGreetingCard extends StatelessWidget {
                 ),
                 child: const Column(
                   children: [
-                    Text('🌙',
-                        style: TextStyle(fontSize: 16)),
+                    Text('🌙', style: TextStyle(fontSize: 16)),
                     Text('Active',
                         style: TextStyle(
                             color: _gold,
@@ -466,13 +461,14 @@ class _MenuSection extends StatelessWidget {
         boxShadow: [
           BoxShadow(
               color: Colors.black.withOpacity(0.2),
-              blurRadius: 10, offset: const Offset(0, 4))
+              blurRadius: 10,
+              offset: const Offset(0, 4))
         ],
       ),
       child: Column(
         children: items.asMap().entries.map((e) {
-          final i = e.key;
-          final item = e.value;
+          final i      = e.key;
+          final item   = e.value;
           final isLast = i == items.length - 1;
           return Column(
             children: [
@@ -614,8 +610,7 @@ class _SignOutTile extends StatelessWidget {
                               fontSize: 15)),
                       SizedBox(height: 2),
                       Text('End your current session',
-                          style:
-                          TextStyle(color: _textLo, fontSize: 12)),
+                          style: TextStyle(color: _textLo, fontSize: 12)),
                     ],
                   ),
                 ),
@@ -641,8 +636,7 @@ class _PlaceholderPage extends StatelessWidget {
       backgroundColor: _bg,
       appBar: AppBar(
         backgroundColor: _surface,
-        title: Text(title,
-            style: const TextStyle(color: _textHi)),
+        title: Text(title, style: const TextStyle(color: _textHi)),
       ),
       body: Center(
         child: Text(title,
