@@ -18,13 +18,19 @@ import 'package:marquee/marquee.dart';
 import 'mosque.dart';
 import 'ring_animation.dart';
 
-// ─── Palette ────────────────────────────────────────────────────────────────
-const _surface   = Color(0xFF0D2E1C);   // card base
-const _accent    = Color(0xFF4CAF82);   // vibrant jade
-const _accentSoft= Color(0xFF2E7D5A);   // muted jade
-const _textLo    = Color(0xFF7BAF92);   // muted sage
+// ─── Palette ─────────────────────────────────────────────────────────────────
+const _bgDeep    = Color(0xFF011A0D);
+const _bgBase    = Color(0xFF013220);
+const _surface   = Color(0xFF0D2E1C);
+const _accent    = Color(0xFF4CAF82);
+const _accentSoft= Color(0xFF2E7D5A);
+const _textLo    = Color(0xFF7BAF92);
 
-
+// Card colours by category
+const _cardSalat    = Color(0xFF0A3D25);
+const _cardProhib   = Color(0xFF3B0E0E);
+const _cardSawm     = Color(0xFF0E2A3B);
+const _cardNafal    = Color(0xFF1A1A3B);
 
 class PrayerTimesPage extends StatefulWidget {
   const PrayerTimesPage({super.key});
@@ -34,15 +40,15 @@ class PrayerTimesPage extends StatefulWidget {
 }
 
 class _PrayerTimesPageState extends State<PrayerTimesPage> {
+
+  // ── Date helpers ────────────────────────────────────────────────────────────
   String getHijriDate() {
     final hijri = HijriCalendar.now();
     return "${hijri.hDay} ${hijri.longMonthName} ${hijri.hYear} AH";
   }
 
   String getEnglishDate() {
-    final now = DateTime.now();
-    final formatter = DateFormat('EEEE, d MMMM yyyy');
-    return formatter.format(now);
+    return DateFormat('EEEE, d MMMM yyyy').format(DateTime.now());
   }
 
   final List<Widget> _pages = const [
@@ -53,334 +59,231 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
     MenuPage(),
   ];
 
-
-  // ✅ CURRENT PRAYER
+  // ── Current prayer ──────────────────────────────────────────────────────────
   String getCurrentPrayer(PrayerTimesModel t) {
     final now = DateTime.now();
-
-    if (now.isAfter(t.fajrStart) && now.isBefore(t.fajrEnd)) return "Fajr";
+    if (now.isAfter(t.fajrStart) && now.isBefore(t.fajrEnd))       return "Fajr";
     if (now.isAfter(t.sunRiseStart) && now.isBefore(t.sunRiseEnd)) return "SunRise";
-    if (now.isAfter(t.sunRiseEnd) && now.isBefore(t.noonStart)) return "Ishraq";
-    if (now.isAfter(t.noonStart) && now.isBefore(t.noonEnd)) return "Noon";
-    if (now.isAfter(t.dhuhrStart) && now.isBefore(t.dhuhrEnd)) return "Dhuhr";
-    if (now.isAfter(t.asrStart) && now.isBefore(t.asrEnd)) return "Asr";
-    if (now.isAfter(t.sunSetStart) && now.isBefore(t.sunSetEnd)) return "SunSet";
+    if (now.isAfter(t.sunRiseEnd) && now.isBefore(t.noonStart))    return "Ishraq";
+    if (now.isAfter(t.noonStart) && now.isBefore(t.noonEnd))       return "Noon";
+    if (now.isAfter(t.dhuhrStart) && now.isBefore(t.dhuhrEnd))     return "Dhuhr";
+    if (now.isAfter(t.asrStart) && now.isBefore(t.asrEnd))         return "Asr";
+    if (now.isAfter(t.sunSetStart) && now.isBefore(t.sunSetEnd))   return "SunSet";
     if (now.isAfter(t.maghribStart) && now.isBefore(t.maghribEnd)) return "Maghrib";
-    if (now.isAfter(t.ishaStart) && now.isBefore(t.ishaEnd)) return "Isha";
-
+    if (now.isAfter(t.ishaStart) && now.isBefore(t.ishaEnd))       return "Isha";
     return "";
   }
 
-  // ✅ COLOR FIX
-  Color _prayerAccentColor(String name, String current) {
-    return name == current ? Colors.green : Colors.red;
-  }
-
-  // ✅ RING DATA BUILDER
+  // ── Ring data builder ───────────────────────────────────────────────────────
   List<PrayerRingEntry> buildRing(PrayerTimesModel t) {
     return [
-      PrayerRingEntry(name: 'Fajr', start: t.fajrStart, end: t.sunRiseStart),
+      PrayerRingEntry(name: 'Fajr',    start: t.fajrStart,    end: t.sunRiseStart),
       PrayerRingEntry(name: 'SunRise', start: t.sunRiseStart, end: t.sunRiseEnd),
-      PrayerRingEntry(name: 'Ishraq', start: t.sunRiseEnd, end: t.noonStart),
-      PrayerRingEntry(name: 'Noon', start: t.noonStart, end: t.noonEnd),
-      PrayerRingEntry(name: 'Dhuhr', start: t.dhuhrStart, end: t.asrStart),
-      PrayerRingEntry(name: 'Asr', start: t.asrStart, end: t.maghribStart),
-      PrayerRingEntry(name: 'SunSet', start: t.sunSetStart, end: t.sunSetEnd),
+      PrayerRingEntry(name: 'Ishraq',  start: t.sunRiseEnd,   end: t.noonStart),
+      PrayerRingEntry(name: 'Noon',    start: t.noonStart,    end: t.noonEnd),
+      PrayerRingEntry(name: 'Dhuhr',   start: t.dhuhrStart,   end: t.asrStart),
+      PrayerRingEntry(name: 'Asr',     start: t.asrStart,     end: t.maghribStart),
+      PrayerRingEntry(name: 'SunSet',  start: t.sunSetStart,  end: t.sunSetEnd),
       PrayerRingEntry(name: 'Maghrib', start: t.maghribStart, end: t.maghribEnd),
-      PrayerRingEntry(name: 'Isha', start: t.ishaStart, end: t.ishaEnd),
+      PrayerRingEntry(name: 'Isha',    start: t.ishaStart,    end: t.ishaEnd),
     ];
   }
 
-
-
   @override
   Widget build(BuildContext context) {
-
-    // SCREEN DIMENSIONS
-    final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
-    final padding = screenWidth * 0.04; // 4% of screen width
+    final sw = MediaQuery.of(context).size.width;
+    final sh = MediaQuery.of(context).size.height;
+    final px = sw * 0.04;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF013220),
+      backgroundColor: _bgBase,
       body: SingleChildScrollView(
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: padding, vertical: padding * 2),
-          child: Column(
-            children: [
-              // LOCATION + NOTIFICATION
+        physics: const BouncingScrollPhysics(),
+        child: Column(
+          children: [
 
-                        Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            BlocBuilder<LocationCubit, LocationState>(
-                              builder: (context, state) {
-                                String text = "Location";
+            // ── Header ──────────────────────────────────────────────────────
+            _buildHeader(sw, sh, px),
 
-                                if (state is LocationLoaded) {
-                                  text = "${state.location.city}, ${state.location.country}";
-                                } else if (state is LocationLoading) {
-                                  text = "Location Loading...";
-                                } else if (state is LocationPermissionDenied) {
-                                  text = "Location Permission denied";
-                                }
-
-                                return GestureDetector(
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(builder: (_) => const LocationPage()),
-                                    );
-                                  },
-                                  child: Row(
-                                    children: [
-                                      const Icon(Icons.location_on, color: Color(0xFF4CAF50)),
-                                      SizedBox(width: screenWidth * 0.02),
-                                      SizedBox(
-                                        width: screenWidth * 0.4, // space allocated for marquee
-                                        height: screenHeight * 0.035,
-                                        child: Marquee(
-                                          text: text,
-                                          style: TextStyle(
-                                            color: Colors.grey[100],
-                                            fontWeight: FontWeight.w600,
-                                            fontSize: screenWidth * 0.04,
-                                          ),
-                                          velocity: 30.0,        // speed of scrolling
-                                          pauseAfterRound: const Duration(seconds: 1),
-                                          blankSpace: 20.0,      // gap between repeats
-                                          startPadding: 0,
-                                          accelerationDuration: const Duration(seconds: 1),
-                                          accelerationCurve: Curves.linear,
-                                          decelerationDuration: const Duration(seconds: 1),
-                                          decelerationCurve: Curves.easeOut,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              },
-                            ),
-
-                            // Notification icon remains the same
-                            GestureDetector(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (_) => const NotificationPage()),
-                                );
-                              },
-                              child: Stack(
-                                clipBehavior: Clip.none,
-                                children: [
-                                  Icon(Icons.notifications, color: Color(0xFFFF5252), size: screenWidth * 0.07),
-                                  Positioned(
-                                    right: -screenWidth * 0.015,
-                                    top: -screenWidth * 0.015,
-                                    child: Container(
-                                      padding: EdgeInsets.all(screenWidth * 0.012),
-                                      decoration: const BoxDecoration(
-                                        color: Colors.red,
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: Text(
-                                        '2',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: screenWidth * 0.028,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-
-              SizedBox(height: screenHeight * 0.02),
-
-              // DATES
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: px),
+              child: Column(
                 children: [
-                  Text(
-                    getEnglishDate(),
-                    style: TextStyle(
-                      fontSize: screenWidth * 0.032,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.red,
-                    ),
-                  ),
-                  Text(
-                    getHijriDate(),
-                    style: TextStyle(
-                      fontSize: screenWidth * 0.032,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.grey,
-                    ),
+
+                  // ── Date row ───────────────────────────────────────────────
+                  _buildDateRow(sw),
+                  SizedBox(height: sh * 0.025),
+
+                  // ── Prayer content ─────────────────────────────────────────
+                  BlocBuilder<PrayerTimesCubit, PrayerTimesState>(
+                    builder: (context, state) {
+                      if (state is PrayerTimesLoading) {
+                        return SizedBox(
+                          height: sh * 0.4,
+                          child: const Center(
+                            child: CircularProgressIndicator(color: _accent),
+                          ),
+                        );
+                      }
+                      if (state is PrayerTimesError) {
+                        return Center(
+                          child: Padding(
+                            padding: EdgeInsets.all(px),
+                            child: Text(state.message,
+                                style: TextStyle(
+                                    color: Colors.red[300], fontSize: sw * 0.04)),
+                          ),
+                        );
+                      }
+                      if (state is PrayerTimesLoaded) {
+                        final times = state.prayerTimes;
+                        final current = getCurrentPrayer(times);
+                        final ring = buildRing(times);
+
+                        return Column(
+                          children: [
+                            // Mosque + Ring hero
+                            _buildMosqueHero(sw, sh, ring),
+                            SizedBox(height: sh * 0.025),
+
+                            // ── Prayer cards ─────────────────────────────────
+                            _buildSectionLabel(sw, 'Salat Prayers'),
+                            SizedBox(height: sh * 0.010),
+                            _buildSalatCard(sw, times, current),
+                            SizedBox(height: sh * 0.018),
+
+                            _buildSectionLabel(sw, 'Prohibited Times'),
+                            SizedBox(height: sh * 0.010),
+                            _buildProhibitedCard(sw, times, current),
+                            SizedBox(height: sh * 0.018),
+
+                            _buildSectionLabel(sw, 'Sawm Times'),
+                            SizedBox(height: sh * 0.010),
+                            _buildSawmCard(sw, times),
+                            SizedBox(height: sh * 0.018),
+
+                            _buildSectionLabel(sw, 'Nafal Prayers'),
+                            SizedBox(height: sh * 0.010),
+                            _buildNafalCard(sw, times),
+                            SizedBox(height: sh * 0.030),
+                          ],
+                        );
+                      }
+                      return const SizedBox();
+                    },
                   ),
                 ],
               ),
-
-              SizedBox(height: screenHeight * 0.03),
-
-              // PRAYER CARDS
-              BlocBuilder<PrayerTimesCubit, PrayerTimesState>(
-                builder: (context, state) {
-                  if (state is PrayerTimesLoading) {
-                    return Center(child: CircularProgressIndicator());
-                  } else if (state is PrayerTimesLoaded) {
-                    final times = state.prayerTimes;
-                    final current = getCurrentPrayer(times);
-                    final ring = buildRing(times);
-
-
-                    return Column(
-                      children: [
-
-
-                        // 🔥 MOSQUE + RING
-                        Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            MosqueIllustration(height: screenHeight * 0.28),
-                            Positioned(
-                              bottom: 10,
-                              child: PrayerProgressRing(
-                                entries: ring,
-                                size: screenWidth * 0.55,
-                              ),
-                            ),
-                          ],
-                        ),
-
-                        SizedBox(height: screenHeight * 0.0),
-
-                        /// Now the Prayer times Card
-                        buildPrayerCard(
-                          screenWidth,
-                          "Salat Prayers",
-                          [
-                            prayerRow(screenWidth, Icons.wb_twilight, "Fajr",
-                                "${_formatTime(times.fajrStart)} - ${_formatTime(times.fajrEnd)}"),
-                            prayerRow(screenWidth, Icons.wb_sunny, "Dhuhr",
-                                "${_formatTime(times.dhuhrStart)} - ${_formatTime(times.dhuhrEnd)}"),
-                            prayerRow(screenWidth, Icons.cloud, "Asr",
-                                "${_formatTime(times.asrStart)} - ${_formatTime(times.asrEnd)}"),
-                            prayerRow(screenWidth, Icons.nightlight_round, "Maghrib",
-                                "${_formatTime(times.maghribStart)} - ${_formatTime(times.maghribEnd)}"),
-                            prayerRow(screenWidth, Icons.dark_mode, "Isha",
-                                "${_formatTime(times.ishaStart)} - ${_formatTime(times.ishaEnd)}"),
-                          ],
-                        ),
-
-                        buildPrayerCard(
-                          screenWidth,
-                          "Prohibited Times",
-                          [
-                            prayerRow(screenWidth, Icons.wb_twilight, "SunRise",
-                                "${_formatTime(times.sunRiseStart)} - ${_formatTime(times.sunRiseEnd)}"),
-                            prayerRow(screenWidth, Icons.wb_sunny, "Noon",
-                                "${_formatTime(times.noonStart)} - ${_formatTime(times.noonEnd)}"),
-                            prayerRow(screenWidth, Icons.cloud, "SunSet",
-                                "${_formatTime(times.sunSetStart)} - ${_formatTime(times.sunSetEnd)}"),
-                          ],
-                        ),
-
-                        buildPrayerCard(
-                          screenWidth,
-                          "Sawm Times",
-                          [
-                            prayerRow(screenWidth, Icons.wb_twilight, "Iftar Start",
-                                "${_formatTime(times.iftarTime)}"),
-                            prayerRow(screenWidth, Icons.wb_sunny, "Sahri End",
-                                "${_formatTime(times.sahriEnd)}"),
-                          ],
-                        ),
-
-                        buildPrayerCard(
-                          screenWidth,
-                          "Nafal Prayers",
-                          [
-                            prayerRow(screenWidth, Icons.cloud, "Tahajjud",
-                                "${_formatTime(times.tahajjudStart)} - ${_formatTime(times.tahajjudEnd)}"),
-                            prayerRow(screenWidth, Icons.wb_twilight, "Ishraq",
-                                "${_formatTime(times.ishraqStart)} - ${_formatTime(times.ishraqEnd)}"),
-                            prayerRow(screenWidth, Icons.wb_sunny, "Chasht",
-                                "${_formatTime(times.chashtStart)} - ${_formatTime(times.chashtEnd)}"),
-                            prayerRow(screenWidth, Icons.dark_mode, "Zawal",
-                                "${_formatTime(times.zawalStart)}"),
-                            prayerRow(screenWidth, Icons.nightlight_round, "Awabin",
-                                "${_formatTime(times.awabinStart)} - ${_formatTime(times.awabinEnd)}"),
-                          ],
-                        ),
-                      ],
-                    );
-                  } else if (state is PrayerTimesError) {
-                    return Center(child: Text(state.message));
-                  } else {
-                    return const SizedBox();
-                  }
-                },
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
-
       bottomNavigationBar: _buildNav(),
-
     );
   }
 
-  // RESPONSIVE PRAYER ROW
-  Widget prayerRow(double screenWidth, IconData icon, String name, String time) {
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: screenWidth * 0.015),
+  // ── Header ──────────────────────────────────────────────────────────────────
+  Widget _buildHeader(double sw, double sh, double px) {
+    return Container(
+      padding: EdgeInsets.only(
+        top: MediaQuery.of(context).padding.top + sw * 0.03,
+        left: px, right: px, bottom: sw * 0.03,
+      ),
+      decoration: BoxDecoration(
+        color: _bgDeep,
+        border: Border(
+          bottom: BorderSide(color: _accentSoft.withOpacity(0.20), width: 1),
+        ),
+      ),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // Icon
-          Icon(icon, size: screenWidth * 0.07, color: Colors.white),
-          SizedBox(width: screenWidth * 0.03),
-
-          // Prayer Name
+          // Location
           Expanded(
-            child: Text(
-              name,
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: screenWidth * 0.04,
-                fontWeight: FontWeight.w500,
-              ),
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-
-          SizedBox(width: screenWidth * 0.03),
-
-          // Prayer Time
-          Expanded(
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                return Align(
-                  alignment: Alignment.centerRight, // always right edge
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown, // shrink only if too long
-                    alignment: Alignment.centerRight,
-                    child: Text(
-                      time,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: screenWidth * 0.04,
-                        fontWeight: FontWeight.bold,
+            child: BlocBuilder<LocationCubit, LocationState>(
+              builder: (context, state) {
+                String text = "Locating...";
+                if (state is LocationLoaded) {
+                  text = "${state.location.city}, ${state.location.country}";
+                } else if (state is LocationPermissionDenied) {
+                  text = "Permission denied";
+                }
+                return GestureDetector(
+                  onTap: () => Navigator.push(
+                      context, MaterialPageRoute(builder: (_) => const LocationPage())),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: _accent.withOpacity(0.15),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.location_on,
+                            color: _accent, size: 16),
                       ),
-                    ),
+                      SizedBox(width: sw * 0.020),
+                      Expanded(
+                        child: SizedBox(
+                          height: sh * 0.030,
+                          child: Marquee(
+                            text: text,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                              fontSize: sw * 0.038,
+                            ),
+                            velocity: 28.0,
+                            pauseAfterRound: const Duration(seconds: 2),
+                            blankSpace: 24.0,
+                            startPadding: 0,
+                            accelerationDuration: const Duration(milliseconds: 800),
+                            accelerationCurve: Curves.easeIn,
+                            decelerationDuration: const Duration(milliseconds: 800),
+                            decelerationCurve: Curves.easeOut,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 );
               },
+            ),
+          ),
+          SizedBox(width: sw * 0.03),
+
+          // Notification bell
+          GestureDetector(
+            onTap: () => Navigator.push(
+                context, MaterialPageRoute(builder: (_) => const NotificationPage())),
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.red.withOpacity(0.10),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.red.withOpacity(0.30), width: 1),
+                  ),
+                  child: Icon(Icons.notifications_rounded,
+                      color: Colors.red[300], size: sw * 0.055),
+                ),
+                Positioned(
+                  right: 0, top: 0,
+                  child: Container(
+                    width: sw * 0.040,
+                    height: sw * 0.040,
+                    decoration: const BoxDecoration(
+                        color: Colors.red, shape: BoxShape.circle),
+                    alignment: Alignment.center,
+                    child: Text('2',
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: sw * 0.022,
+                            fontWeight: FontWeight.bold)),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -388,61 +291,385 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
     );
   }
 
-  // RESPONSIVE PRAYER CARD
-  Widget buildPrayerCard(double screenWidth, String title, List<Widget> children) {
-    return Card(
-      color: const Color(0xFF74C365),
-      elevation: 5,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(screenWidth * 0.04),
+  // ── Date row ──────────────────────────────────────────────────────────────
+  Widget _buildDateRow(double sw) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        _datePill(getEnglishDate(), const Color(0xFF66BB6A), sw),
+        _datePill(getHijriDate(), const Color(0xFFFFB74D), sw),
+      ],
+    );
+  }
+
+  Widget _datePill(String text, Color color, double sw) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: sw * 0.03, vertical: sw * 0.015),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.10),
+        borderRadius: BorderRadius.circular(sw * 0.05),
+        border: Border.all(color: color.withOpacity(0.35), width: 0.8),
       ),
-      margin: EdgeInsets.symmetric(
-        horizontal: screenWidth * 0.00001,
-        vertical: screenWidth * 0.02,
+      child: Text(
+        text,
+        style: TextStyle(
+          fontSize: sw * 0.028,
+          fontWeight: FontWeight.w600,
+          color: color,
+        ),
       ),
-      child: Padding(
-        padding: EdgeInsets.all(screenWidth * 0.04),
+    );
+  }
+
+  // ── Mosque + Ring hero ───────────────────────────────────────────────────
+  Widget _buildMosqueHero(double sw, double sh, List<PrayerRingEntry> ring) {
+    final ringSize = sw * 0.60;
+    final mosqueH = sh * 0.22;
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(vertical: sw * 0.03),
+      decoration: BoxDecoration(
+        color: const Color(0xFF011A0D),
+        borderRadius: BorderRadius.circular(sw * 0.05),
+        border: Border.all(color: _accentSoft.withOpacity(0.25), width: 1),
+      ),
+      child: Column(
+        children: [
+          // Mosque illustration (full width, sits behind/above ring)
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: sw * 0.02),
+            child: MosqueIllustration(
+              accentColor: _accent,
+              height: mosqueH,
+            ),
+          ),
+          SizedBox(height: sw * 0.02),
+
+          // Ring
+          PrayerProgressRing(
+            entries: ring,
+            size: ringSize,
+          ),
+          SizedBox(height: sw * 0.01),
+        ],
+      ),
+    );
+  }
+
+  // ── Section label ────────────────────────────────────────────────────────
+  Widget _buildSectionLabel(double sw, String label) {
+    return Row(
+      children: [
+        Container(
+          width: 4, height: sw * 0.045,
+          decoration: BoxDecoration(
+            color: _accent,
+            borderRadius: BorderRadius.circular(2),
+          ),
+        ),
+        SizedBox(width: sw * 0.025),
+        Text(
+          label,
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: sw * 0.045,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 0.5,
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ── Salat card ─────────────────────────────────────────────────────────────
+  Widget _buildSalatCard(double sw, PrayerTimesModel t, String current) {
+    const prayers = [
+      {'name': 'Fajr',    'icon': Icons.wb_twilight},
+      {'name': 'Dhuhr',   'icon': Icons.wb_sunny},
+      {'name': 'Asr',     'icon': Icons.cloud},
+      {'name': 'Maghrib', 'icon': Icons.nightlight_round},
+      {'name': 'Isha',    'icon': Icons.dark_mode},
+    ];
+
+    final Map<String, List<DateTime>> times = {
+      'Fajr':    [t.fajrStart, t.fajrEnd],
+      'Dhuhr':   [t.dhuhrStart, t.dhuhrEnd],
+      'Asr':     [t.asrStart, t.asrEnd],
+      'Maghrib': [t.maghribStart, t.maghribEnd],
+      'Isha':    [t.ishaStart, t.ishaEnd],
+    };
+
+    final Map<String, Color> prayerColors = {
+      'Fajr':    const Color(0xFF5B8DEF),
+      'Dhuhr':   const Color(0xFFFFD54F),
+      'Asr':     const Color(0xFFFFB74D),
+      'Maghrib': const Color(0xFFEF9A9A),
+      'Isha':    const Color(0xFFB39DDB),
+    };
+
+    return _glassCard(
+      sw,
+      _cardSalat,
+      const Color(0xFF66BB6A),
+      children: prayers.map((p) {
+        final name = p['name'] as String;
+        final icon = p['icon'] as IconData;
+        final isActive = name == current;
+        final color = prayerColors[name] ?? _accent;
+        final startEnd = times[name]!;
+        return _prayerRow(
+          sw, icon, name,
+          '${_fmt(startEnd[0])} – ${_fmt(startEnd[1])}',
+          isActive: isActive,
+          activeColor: color,
+        );
+      }).toList(),
+    );
+  }
+
+  // ── Prohibited card ────────────────────────────────────────────────────────
+  Widget _buildProhibitedCard(double sw, PrayerTimesModel t, String current) {
+    final items = [
+      ['SunRise', Icons.wb_twilight,      t.sunRiseStart, t.sunRiseEnd],
+      ['Noon',    Icons.wb_sunny,          t.noonStart,    t.noonEnd],
+      ['SunSet',  Icons.cloud,             t.sunSetStart,  t.sunSetEnd],
+    ];
+
+    return _glassCard(
+      sw,
+      _cardProhib,
+      Colors.red,
+      children: items.map((item) {
+        final name = item[0] as String;
+        final icon = item[1] as IconData;
+        final s    = item[2] as DateTime;
+        final e    = item[3] as DateTime;
+        final isActive = name == current;
+        return _prayerRow(
+          sw, icon, name, '${_fmt(s)} – ${_fmt(e)}',
+          isActive: isActive,
+          activeColor: Colors.red[300]!,
+          isProhibited: true,
+        );
+      }).toList(),
+    );
+  }
+
+  // ── Sawm card ──────────────────────────────────────────────────────────────
+  Widget _buildSawmCard(double sw, PrayerTimesModel t) {
+    return _glassCard(
+      sw,
+      _cardSawm,
+      const Color(0xFF4FC3F7),
+      children: [
+        _prayerRow(sw, Icons.wb_twilight, 'Iftar',       _fmt(t.iftarTime)),
+        _prayerRow(sw, Icons.wb_sunny,    'Sahri End',   _fmt(t.sahriEnd)),
+      ],
+    );
+  }
+
+  // ── Nafal card ─────────────────────────────────────────────────────────────
+  Widget _buildNafalCard(double sw, PrayerTimesModel t) {
+    return _glassCard(
+      sw,
+      _cardNafal,
+      const Color(0xFFCE93D8),
+      children: [
+        _prayerRow(sw, Icons.cloud,              'Tahajjud', '${_fmt(t.tahajjudStart)} – ${_fmt(t.tahajjudEnd)}'),
+        _prayerRow(sw, Icons.wb_twilight,        'Ishraq',   '${_fmt(t.ishraqStart)} – ${_fmt(t.ishraqEnd)}'),
+        _prayerRow(sw, Icons.wb_sunny,           'Chasht',   '${_fmt(t.chashtStart)} – ${_fmt(t.chashtEnd)}'),
+        _prayerRow(sw, Icons.dark_mode,          'Zawal',    _fmt(t.zawalStart)),
+        _prayerRow(sw, Icons.nightlight_round,   'Awabin',   '${_fmt(t.awabinStart)} – ${_fmt(t.awabinEnd)}'),
+      ],
+    );
+  }
+
+  // ── Glass card container ──────────────────────────────────────────────────
+  Widget _glassCard(double sw, Color bg, Color accentColor,
+      {required List<Widget> children}) {
+    return Container(
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(sw * 0.048),
+        border: Border.all(color: accentColor.withOpacity(0.25), width: 0.8),
+        boxShadow: [
+          BoxShadow(
+            color: accentColor.withOpacity(0.06),
+            blurRadius: sw * 0.06,
+            offset: Offset(0, sw * 0.010),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(sw * 0.048),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              title,
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: screenWidth * 0.05,
-                fontWeight: FontWeight.bold,
+            // Accent top stripe
+            Container(
+              height: 2.5,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [accentColor.withOpacity(0.0),
+                    accentColor.withOpacity(0.70),
+                    accentColor.withOpacity(0.0)],
+                ),
               ),
             ),
-            SizedBox(height: screenWidth * 0.03),
-            ...children,
+            Padding(
+              padding: EdgeInsets.all(sw * 0.042),
+              child: Column(
+                children: List.generate(children.length * 2 - 1, (i) {
+                  if (i.isEven) return children[i ~/ 2];
+                  return Divider(
+                    color: accentColor.withOpacity(0.12),
+                    height: sw * 0.030,
+                    thickness: 0.6,
+                  );
+                }),
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 
-  String _formatTime(DateTime dt) {
-    final hour = dt.hour > 12 ? dt.hour - 12 : dt.hour;
-    final minute = dt.minute.toString().padLeft(2, '0');
-    final ampm = dt.hour >= 12 ? 'PM' : 'AM';
-    return "$hour:$minute $ampm";
+  // ── Prayer row ─────────────────────────────────────────────────────────────
+  Widget _prayerRow(
+      double sw,
+      IconData icon,
+      String name,
+      String time, {
+        bool isActive = false,
+        Color activeColor = _accent,
+        bool isProhibited = false,
+      }) {
+    return Container(
+      padding: isActive
+          ? EdgeInsets.symmetric(
+          horizontal: sw * 0.028, vertical: sw * 0.018)
+          : EdgeInsets.symmetric(vertical: sw * 0.016),
+      decoration: isActive
+          ? BoxDecoration(
+        color: activeColor.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(sw * 0.030),
+        border: Border.all(
+            color: activeColor.withOpacity(0.40), width: 0.8),
+      )
+          : null,
+      child: Row(
+        children: [
+          // Icon circle
+          Container(
+            width: sw * 0.092,
+            height: sw * 0.092,
+            decoration: BoxDecoration(
+              color: isActive
+                  ? activeColor.withOpacity(0.20)
+                  : Colors.white.withOpacity(0.06),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              icon,
+              size: sw * 0.048,
+              color: isActive ? activeColor : Colors.white54,
+            ),
+          ),
+          SizedBox(width: sw * 0.028),
+
+          // Name
+          Expanded(
+            flex: 5,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  name,
+                  style: TextStyle(
+                    color: isActive ? activeColor : Colors.white,
+                    fontSize: sw * 0.038,
+                    fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
+                  ),
+                ),
+                if (isProhibited && !isActive)
+                  Text(
+                    'Prohibited',
+                    style: TextStyle(
+                      color: Colors.red[300],
+                      fontSize: sw * 0.028,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+
+          // Active badge
+          if (isActive) ...[
+            Container(
+              padding: EdgeInsets.symmetric(
+                  horizontal: sw * 0.022, vertical: sw * 0.008),
+              decoration: BoxDecoration(
+                color: isProhibited
+                    ? Colors.red.withOpacity(0.20)
+                    : _accent.withOpacity(0.20),
+                borderRadius: BorderRadius.circular(sw * 0.03),
+              ),
+              child: Text(
+                isProhibited ? 'Now' : 'Active',
+                style: TextStyle(
+                  color: isProhibited ? Colors.red[300] : _accent,
+                  fontSize: sw * 0.026,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            SizedBox(width: sw * 0.016),
+          ],
+
+          // Time
+          Flexible(
+            flex: 6,
+            child: Text(
+              time,
+              textAlign: TextAlign.right,
+              style: TextStyle(
+                color: isActive ? activeColor : Colors.white70,
+                fontSize: sw * 0.034,
+                fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
+                letterSpacing: 0.2,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
-  // ── Bottom Nav ──────────────────────────────────────────────────────────
+  // ── Time formatter ─────────────────────────────────────────────────────────
+  String _fmt(DateTime dt) {
+    final h = dt.hour == 0 ? 12 : (dt.hour > 12 ? dt.hour - 12 : dt.hour);
+    final m = dt.minute.toString().padLeft(2, '0');
+    final ap = dt.hour >= 12 ? 'PM' : 'AM';
+    return '$h:$m $ap';
+  }
+
+  // ── Bottom nav ─────────────────────────────────────────────────────────────
   Widget _buildNav() {
     final items = [
-      ('Today',  'assets/icons/today.png'),
-      ('Tools',  'assets/icons/tools.png'),
-      ('Quran',  'assets/icons/quran.png'),
-      ('Duas',   'assets/icons/duas.png'),
-      ('Menu',   'assets/icons/menu.png'),
+      ('Today', 'assets/icons/today.png'),
+      ('Tools', 'assets/icons/tools.png'),
+      ('Quran', 'assets/icons/quran.png'),
+      ('Duas',  'assets/icons/duas.png'),
+      ('Menu',  'assets/icons/menu.png'),
     ];
 
     return Container(
       decoration: BoxDecoration(
         color: _surface,
-        border: Border(top: BorderSide(color: _accentSoft.withOpacity(0.25), width: 1)),
-        boxShadow: [BoxShadow(color: Colors.black54, blurRadius: 20)],
+        border: Border(
+            top: BorderSide(color: _accentSoft.withOpacity(0.22), width: 0.8)),
+        boxShadow: const [BoxShadow(color: Colors.black54, blurRadius: 20)],
       ),
       child: SafeArea(
         top: false,
@@ -451,9 +678,9 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: items.asMap().entries.map((e) {
-              final i = e.key;
-              final label = e.value.$1;
-              final asset = e.value.$2;
+              final i      = e.key;
+              final label  = e.value.$1;
+              final asset  = e.value.$2;
               final active = i == 0;
 
               return GestureDetector(
@@ -464,30 +691,32 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                   }
                 },
                 child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 250),
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 14, vertical: 6),
+                  duration: const Duration(milliseconds: 220),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
                   decoration: BoxDecoration(
                     color: active
                         ? _accentSoft.withOpacity(0.22)
                         : Colors.transparent,
                     borderRadius: BorderRadius.circular(16),
+                    border: active
+                        ? Border.all(
+                        color: _accentSoft.withOpacity(0.40), width: 0.8)
+                        : null,
                   ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Image.asset(asset,
-                          width: 24, height: 24,
-                          ),
+                      Image.asset(asset, width: 24, height: 24),
                       const SizedBox(height: 4),
-                      Text(label,
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: active
-                                ? FontWeight.w700
-                                : FontWeight.w400,
-                            color: active ? _accent : _textLo,
-                          )),
+                      Text(
+                        label,
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: active ? FontWeight.w700 : FontWeight.w400,
+                          color: active ? _accent : _textLo,
+                          letterSpacing: 0.3,
+                        ),
+                      ),
                     ],
                   ),
                 ),

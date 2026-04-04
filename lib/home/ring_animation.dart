@@ -1,8 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
-// ─────────────────────────────────────────────────────────────────────────────
-// 2. PRAYER PROGRESS RING
 
+// ─── Prayer Ring Entry ────────────────────────────────────────────────────────
 class PrayerRingEntry {
   final String name;
   final DateTime start;
@@ -10,14 +9,15 @@ class PrayerRingEntry {
   const PrayerRingEntry({required this.name, required this.start, required this.end});
 }
 
+// ─── Prayer Progress Ring ─────────────────────────────────────────────────────
 class PrayerProgressRing extends StatefulWidget {
   final List<PrayerRingEntry> entries;
-  final double size; // diameter
+  final double size;
 
   const PrayerProgressRing({
     super.key,
     required this.entries,
-    this.size = 220,
+    this.size = 260,
   });
 
   @override
@@ -25,32 +25,46 @@ class PrayerProgressRing extends StatefulWidget {
 }
 
 class _PrayerProgressRingState extends State<PrayerProgressRing>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late final AnimationController _pulse;
+  late final AnimationController _clock;
 
   @override
   void initState() {
     super.initState();
     _pulse = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 1400))
+        vsync: this, duration: const Duration(milliseconds: 2000))
       ..repeat(reverse: true);
+    // Rebuild every second for live clock
+    _clock = AnimationController(
+        vsync: this, duration: const Duration(seconds: 1))
+      ..repeat();
   }
 
   @override
-  void dispose() { _pulse.dispose(); super.dispose(); }
+  void dispose() {
+    _pulse.dispose();
+    _clock.dispose();
+    super.dispose();
+  }
 
-  // Prayer-specific colors
-  static const _prayerColors = [
-    Color(0xFF5B8DEF), // Fajr    – dawn blue
-    Colors.red, // SunRise    – dawn blue
-    Color(0xFF5B8DEF), // Ishraq    – dawn blue
-    Colors.red, // Noon    – dawn blue
-    Color(0xFFD4A843), // Dhuhr   – noon gold
-    Color(0xFFE07B39), // Asr     – amber
-    Colors.red, // SunSet    – dawn blue
-    Color(0xFFCF4B3B), // Maghrib – dusk red
-    Color(0xFF7B6DC2), // Isha    – indigo
-  ];
+  // ── Prayer colors ────────────────────────────────────────────────────────
+  static const _prayerColors = <String, Color>{
+    'Fajr':    Color(0xFF5B8DEF),
+    'SunRise': Color(0xFFE57373),
+    'Ishraq':  Color(0xFF64B5F6),
+    'Noon':    Color(0xFFE57373),
+    'Dhuhr':   Color(0xFFFFD54F),
+    'Asr':     Color(0xFFFFB74D),
+    'SunSet':  Color(0xFFE57373),
+    'Maghrib': Color(0xFFEF9A9A),
+    'Isha':    Color(0xFFB39DDB),
+  };
+
+  static const _prohibitedNames = {'SunRise', 'Noon', 'SunSet'};
+
+  Color _colorFor(String name) =>
+      _prayerColors[name] ?? const Color(0xFF4CAF82);
 
   int _activeIndex(DateTime now) {
     for (int i = 0; i < widget.entries.length; i++) {
@@ -60,99 +74,186 @@ class _PrayerProgressRingState extends State<PrayerProgressRing>
     return -1;
   }
 
-  double _segmentProgress(int index, DateTime now) {
-    final e = widget.entries[index];
-    final total = e.end.difference(e.start).inSeconds.toDouble();
-    final elapsed = now.difference(e.start).inSeconds.toDouble();
-    return (elapsed / total).clamp(0.0, 1.0);
+  String _formatTime(DateTime dt) {
+    final h = dt.hour == 0 ? 12 : (dt.hour > 12 ? dt.hour - 12 : dt.hour);
+    final m = dt.minute.toString().padLeft(2, '0');
+    final ap = dt.hour >= 12 ? 'PM' : 'AM';
+    return '$h:$m $ap';
   }
 
-  // map DateTime to angle (0 = top = midnight)
-  double _toAngle(DateTime dt) {
-    final mins = dt.hour * 60.0 + dt.minute;
-    return (mins / 1440) * 2 * math.pi - math.pi / 2;
+  String _Clock(DateTime dt) {
+    final h = dt.hour == 0 ? 12 : (dt.hour > 12 ? dt.hour - 12 : dt.hour);
+    final m = dt.minute.toString().padLeft(2, '0');
+    final s = dt.second.toString().padLeft(2, '0');
+    final ap = dt.hour >= 12 ? 'PM' : 'AM';
+    return '$h:$m:$s $ap';
   }
 
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
-      animation: _pulse,
+      animation: Listenable.merge([_pulse, _clock]),
       builder: (_, __) {
         final now = DateTime.now();
         final active = _activeIndex(now);
+        final activeEntry = active >= 0 ? widget.entries[active] : null;
         final activeColor = active >= 0
-            ? _prayerColors[active % _prayerColors.length]
-            : const Color(0xFFD4A843);
+            ? _colorFor(widget.entries[active].name)
+            : const Color(0xFF4CAF82);
+        final isProhibited = active >= 0
+            ? _prohibitedNames.contains(widget.entries[active].name)
+            : false;
+
+        // Remaining time
+        String remaining = '';
+        if (activeEntry != null) {
+          final diff = activeEntry.end.difference(now);
+          final hh = diff.inHours;
+          final mm = diff.inMinutes.remainder(60);
+          final ss = diff.inSeconds.remainder(60);
+          if (hh > 0) {
+            remaining = '${hh}h ${mm}m left';
+          } else if (mm > 0) {
+            remaining = '${mm}m ${ss}s left';
+          } else {
+            remaining = '${ss}s left';
+          }
+        }
+
+        final size = widget.size;
 
         return SizedBox(
-          width: widget.size,
-          height: widget.size,
+          width: size,
+          height: size,
           child: Stack(
             alignment: Alignment.center,
             children: [
-              // Ring painter
+              // ── Ring painter ──────────────────────────────────────────────
               CustomPaint(
-                size: Size(widget.size, widget.size),
+                size: Size(size, size),
                 painter: _RingPainter(
                   entries: widget.entries,
-                  colors: _prayerColors,
+                  colorMap: _prayerColors,
                   activeIndex: active,
                   now: now,
                   pulse: _pulse.value,
                 ),
               ),
-              // Centre info
-              Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Clock
-                  Text(
-                    _clock(now),
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: widget.size * 0.115,
-                      fontWeight: FontWeight.w300,
-                      letterSpacing: 1,
-                      height: 1,
-                    ),
-                  ),
-                  SizedBox(height: widget.size * 0.020),
-                  // Active prayer name
-                  if (active >= 0) ...[
-                    Container(
-                      padding: EdgeInsets.symmetric(
-                          horizontal: widget.size * 0.06,
-                          vertical: widget.size * 0.018),
-                      decoration: BoxDecoration(
-                        color: activeColor.withOpacity(0.18),
-                        borderRadius: BorderRadius.circular(widget.size),
-                        border: Border.all(
-                            color: activeColor.withOpacity(0.50), width: 1),
+
+              // ── Centre content ────────────────────────────────────────────
+              SizedBox(
+                width: size * 0.62,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Live clock
+                    Text(
+                      _Clock(now),
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: size * 0.085,
+                        fontWeight: FontWeight.w300,
+                        letterSpacing: 0.5,
+                        height: 1.1,
+                        fontFeatures: const [FontFeature.tabularFigures()],
                       ),
-                      child: Text(
-                        widget.entries[active].name,
-                        style: TextStyle(
-                          color: activeColor,
-                          fontSize: widget.size * 0.072,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: 1.2,
+                    ),
+                    SizedBox(height: size * 0.018),
+
+                    if (active >= 0) ...[
+                      // Prayer name pill
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: size * 0.05, vertical: size * 0.016),
+                        decoration: BoxDecoration(
+                          color: activeColor.withOpacity(0.18),
+                          borderRadius: BorderRadius.circular(size),
+                          border: Border.all(
+                              color: activeColor.withOpacity(0.55), width: 1.2),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: size * 0.025,
+                              height: size * 0.025,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: isProhibited
+                                    ? const Color(0xFFE57373)
+                                    : const Color(0xFF66BB6A),
+                              ),
+                            ),
+                            SizedBox(width: size * 0.018),
+                            Text(
+                              widget.entries[active].name,
+                              style: TextStyle(
+                                color: activeColor,
+                                fontSize: size * 0.07,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: 1.0,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                    ),
-                    SizedBox(height: widget.size * 0.018),
-                    Text(
-                      'ends ${_formatTime(widget.entries[active].end)}',
-                      style: TextStyle(
-                        color: Colors.white38,
-                        fontSize: widget.size * 0.052,
-                      ),
-                    ),
-                  ] else
-                    Text('No active prayer',
+                      SizedBox(height: size * 0.016),
+
+                      // Start – End time  (same format as prayer cards)
+                      Text(
+                        '${_formatTime(widget.entries[active].start)} – ${_formatTime(widget.entries[active].end)}',
+                        textAlign: TextAlign.center,
                         style: TextStyle(
-                            color: Colors.white38,
-                            fontSize: widget.size * 0.055)),
-                ],
+                          color: Colors.white70,
+                          fontSize: size * 0.052,
+                          fontWeight: FontWeight.w500,
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                      SizedBox(height: size * 0.010),
+
+                      // Remaining time
+                      Text(
+                        remaining,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: activeColor.withOpacity(0.75),
+                          fontSize: size * 0.046,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+
+                      // Prohibited label
+                      if (isProhibited) ...[
+                        SizedBox(height: size * 0.010),
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: size * 0.04, vertical: size * 0.010),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFE57373).withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(size),
+                          ),
+                          child: Text(
+                            'Prohibited time',
+                            style: TextStyle(
+                              color: const Color(0xFFE57373),
+                              fontSize: size * 0.042,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ] else ...[
+                      Text(
+                        'No active period',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                            color: Colors.white38, fontSize: size * 0.052),
+                      ),
+                    ],
+                  ],
+                ),
               ),
             ],
           ),
@@ -160,39 +261,32 @@ class _PrayerProgressRingState extends State<PrayerProgressRing>
       },
     );
   }
-
-  String _clock(DateTime dt) {
-    final hour = dt.hour > 12 ? dt.hour - 12 : dt.hour;
-    final minute = dt.minute.toString().padLeft(2, '0');
-    final ampm = dt.hour >= 12 ? 'PM' : 'AM';
-    return "$hour:$minute $ampm";
-  }
-
-  String _formatTime(DateTime dt) {
-    final hour = dt.hour > 12 ? dt.hour - 12 : dt.hour;
-    final minute = dt.minute.toString().padLeft(2, '0');
-    final ampm = dt.hour >= 12 ? 'PM' : 'AM';
-    return "$hour:$minute $ampm";
-  }
 }
 
+// ─── Ring Painter ─────────────────────────────────────────────────────────────
 class _RingPainter extends CustomPainter {
   final List<PrayerRingEntry> entries;
-  final List<Color> colors;
+  final Map<String, Color> colorMap;
   final int activeIndex;
   final DateTime now;
   final double pulse;
 
+  static const _prohibitedNames = {'SunRise', 'Noon', 'SunSet'};
+
   _RingPainter({
     required this.entries,
-    required this.colors,
+    required this.colorMap,
     required this.activeIndex,
     required this.now,
     required this.pulse,
   });
 
+  Color _colorFor(String name) =>
+      colorMap[name] ?? const Color(0xFF4CAF82);
+
+  // Map DateTime → angle (top = midnight = -π/2)
   double _toAngle(DateTime dt) {
-    final mins = dt.hour * 60.0 + dt.minute;
+    final mins = dt.hour * 60.0 + dt.minute + dt.second / 60.0;
     return (mins / 1440) * 2 * math.pi - math.pi / 2;
   }
 
@@ -201,167 +295,238 @@ class _RingPainter extends CustomPainter {
     final cx = size.width / 2;
     final cy = size.height / 2;
     final center = Offset(cx, cy);
-    final outerR = cx * 0.90;
-    final innerR = cx * 0.68;
+    final outerR = cx * 0.92;
+    final innerR = cx * 0.67;
     final trackR = (outerR + innerR) / 2;
     final trackW = outerR - innerR;
 
-    // ── Background track ──────────────────────────────────────────────────────
-    canvas.drawCircle(center, outerR,
+    // ── Dark glass background ────────────────────────────────────────────────
+    canvas.drawCircle(center, outerR + 2,
         Paint()
-          ..color = Colors.white.withOpacity(0.04)
-          ..style = PaintingStyle.fill);
-    canvas.drawCircle(center, outerR,
-        Paint()
-          ..color = Colors.white.withOpacity(0.07)
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 1);
-    canvas.drawCircle(center, innerR,
-        Paint()
-          ..color = const Color(0xFF013220)
+          ..color = const Color(0xFF0A1F13).withOpacity(0.6)
           ..style = PaintingStyle.fill);
 
-    // ── Segments (one per prayer window) ─────────────────────────────────────
+    // ── Track ring ───────────────────────────────────────────────────────────
+    canvas.drawCircle(center, trackR,
+        Paint()
+          ..color = Colors.white.withOpacity(0.05)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = trackW + 2);
+
+    // ── Inner circle fill (dark) ─────────────────────────────────────────────
+    canvas.drawCircle(center, innerR - 2,
+        Paint()
+          ..color = const Color(0xFF012618)
+          ..style = PaintingStyle.fill);
+
+    // ── Outer subtle border ───────────────────────────────────────────────────
+    canvas.drawCircle(center, outerR + 1,
+        Paint()
+          ..color = const Color(0xFF4CAF82).withOpacity(0.15)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.0);
+
+    // ── Segments ─────────────────────────────────────────────────────────────
     for (int i = 0; i < entries.length; i++) {
       final e = entries[i];
-      final color = colors[i % colors.length];
+      final color = _colorFor(e.name);
+      final isProhibited = _prohibitedNames.contains(e.name);
       final sAngle = _toAngle(e.start);
       final eAngle = _toAngle(e.end);
       var sweep = eAngle - sAngle;
-      if (sweep < 0) sweep += 2 * math.pi;
+      if (sweep <= 0) sweep += 2 * math.pi;
 
       final isActive = i == activeIndex;
+      final gap = 0.018;
 
-      // Filled segment (dimmed if not active)
-      final segPaint = Paint()
+      // Dim base segment
+      final basePaint = Paint()
         ..style = PaintingStyle.stroke
-        ..strokeWidth = trackW * (isActive ? 1.0 : 0.72)
-        ..color = isActive
-            ? color.withOpacity(0.85)
-            : color.withOpacity(0.22)
+        ..strokeWidth = trackW * (isActive ? 1.0 : 0.68)
+        ..color = isProhibited
+            ? color.withOpacity(isActive ? 0.80 : 0.18)
+            : color.withOpacity(isActive ? 0.82 : 0.22)
         ..strokeCap = StrokeCap.butt;
 
       canvas.drawArc(
         Rect.fromCircle(center: center, radius: trackR),
-        sAngle + 0.025, sweep - 0.05, false, segPaint,
+        sAngle + gap, sweep - gap * 2, false, basePaint,
       );
 
-      // Progress fill for active segment
       if (isActive) {
-        final total = e.end
-            .difference(e.start)
-            .inSeconds
-            .toDouble();
-        final elapsed = now
-            .difference(e.start)
-            .inSeconds
-            .toDouble();
+        // ── Active: progress fill ─────────────────────────────────────────
+        final total = e.end.difference(e.start).inSeconds.toDouble();
+        final elapsed = now.difference(e.start).inSeconds.toDouble();
         final progress = (elapsed / total).clamp(0.0, 1.0);
+        final progressSweep = (sweep - gap * 2) * progress;
 
-        // Glow layer
+        // Glow halo
         canvas.drawArc(
           Rect.fromCircle(center: center, radius: trackR),
-          sAngle + 0.025, (sweep - 0.05) * progress, false,
+          sAngle + gap, progressSweep, false,
           Paint()
             ..style = PaintingStyle.stroke
-            ..strokeWidth = trackW * 1.35
-            ..color = color.withOpacity(0.15 + pulse * 0.08)
+            ..strokeWidth = trackW * 1.6
+            ..color = color.withOpacity(0.10 + pulse * 0.07)
             ..strokeCap = StrokeCap.round
-            ..maskFilter = MaskFilter.blur(BlurStyle.normal, trackW * 0.55),
+            ..maskFilter = MaskFilter.blur(BlurStyle.normal, trackW * 0.6),
         );
 
-        // Progress arc
+        // Progress arc with sweep gradient
         canvas.drawArc(
           Rect.fromCircle(center: center, radius: trackR),
-          sAngle + 0.025, (sweep - 0.05) * progress, false,
+          sAngle + gap, progressSweep, false,
           Paint()
             ..style = PaintingStyle.stroke
             ..strokeWidth = trackW
             ..strokeCap = StrokeCap.round
             ..shader = SweepGradient(
               center: Alignment.center,
-              startAngle: sAngle + 0.025,
-              endAngle: sAngle + 0.025 + (sweep - 0.05) * progress,
-              colors: [color.withOpacity(0.6), color],
+              startAngle: sAngle + gap,
+              endAngle: sAngle + gap + progressSweep,
+              colors: [color.withOpacity(0.55), color, color.withOpacity(0.9)],
+              stops: const [0.0, 0.6, 1.0],
             ).createShader(Rect.fromCircle(center: center, radius: trackR)),
         );
 
         // Leading dot
-        final dotAngle = sAngle + 0.025 + (sweep - 0.05) * progress;
-        final dotPos = Offset(
-          center.dx + trackR * math.cos(dotAngle),
-          center.dy + trackR * math.sin(dotAngle),
-        );
-        canvas.drawCircle(dotPos, trackW * 0.52,
-            Paint()
-              ..color = color
-              ..maskFilter = MaskFilter.blur(BlurStyle.normal, trackW * 0.3));
-        canvas.drawCircle(dotPos, trackW * 0.38, Paint()
-          ..color = color);
-        canvas.drawCircle(dotPos, trackW * 0.38,
-            Paint()
-              ..color = Colors.white.withOpacity(0.8)
-              ..style = PaintingStyle.stroke
-              ..strokeWidth = 1.5);
+        if (progressSweep > 0.01) {
+          final dotAngle = sAngle + gap + progressSweep;
+          final dotPos = Offset(
+            center.dx + trackR * math.cos(dotAngle),
+            center.dy + trackR * math.sin(dotAngle),
+          );
+          // Outer glow
+          canvas.drawCircle(dotPos, trackW * 0.56,
+              Paint()
+                ..color = color.withOpacity(0.3 + pulse * 0.2)
+                ..maskFilter = MaskFilter.blur(BlurStyle.normal, trackW * 0.4));
+          // Dot fill
+          canvas.drawCircle(dotPos, trackW * 0.40, Paint()..color = color);
+          // White ring
+          canvas.drawCircle(
+              dotPos, trackW * 0.40,
+              Paint()
+                ..color = Colors.white.withOpacity(0.85)
+                ..style = PaintingStyle.stroke
+                ..strokeWidth = 1.8);
+          // Inner dot
+          canvas.drawCircle(dotPos, trackW * 0.16,
+              Paint()..color = Colors.white.withOpacity(0.95));
+        }
       }
 
-      // Prayer name & time label on ring
-      final midAngle = sAngle + sweep / 2;
-      final labelR = outerR + cx * 0.095;
-      final labelPos = Offset(
-        center.dx + labelR * math.cos(midAngle),
-        center.dy + labelR * math.sin(midAngle),
-      );
-
-      // Dot marker at segment start
+      // ── Segment divider dot at start ──────────────────────────────────────
       final dotMarkPos = Offset(
-        center.dx + trackR * math.cos(sAngle + 0.015),
-        center.dy + trackR * math.sin(sAngle + 0.015),
+        center.dx + trackR * math.cos(sAngle + 0.005),
+        center.dy + trackR * math.sin(sAngle + 0.005),
       );
-      canvas.drawCircle(dotMarkPos, isActive ? 4.5 : 3.0,
-          Paint()
-            ..color = isActive ? color : color.withOpacity(0.45));
+      canvas.drawCircle(
+          dotMarkPos,
+          isActive ? 3.5 : 2.5,
+          Paint()..color = isActive ? color : color.withOpacity(0.5));
+
+      // ── Label outside ring ────────────────────────────────────────────────
+      final midAngle = sAngle + sweep / 2;
+      final labelR = outerR + cx * 0.11;
+      final lx = center.dx + labelR * math.cos(midAngle);
+      final ly = center.dy + labelR * math.sin(midAngle);
+      final fontSize = cx * 0.085;
+
+      final tp = TextPainter(
+        text: TextSpan(
+          text: _shortName(e.name),
+          style: TextStyle(
+            color: isActive ? color : color.withOpacity(0.55),
+            fontSize: fontSize,
+            fontWeight: isActive ? FontWeight.w700 : FontWeight.w400,
+            letterSpacing: 0.2,
+          ),
+        ),
+        textAlign: TextAlign.center,
+        textDirection: TextDirection.ltr,
+      )..layout();
+      tp.paint(canvas, Offset(lx - tp.width / 2, ly - tp.height / 2));
     }
 
     // ── Hour tick marks ───────────────────────────────────────────────────────
     for (int h = 0; h < 24; h++) {
       final angle = (h / 24) * 2 * math.pi - math.pi / 2;
       final isMajor = h % 6 == 0;
-      final r1 = outerR + (isMajor ? cx * 0.04 : cx * 0.02);
-      final r2 = outerR + cx * 0.005;
+      final isMinor = h % 3 == 0;
+      final r2 = outerR - 1;
+      final r1 = r2 + (isMajor ? cx * 0.05 : isMinor ? cx * 0.03 : cx * 0.018);
       canvas.drawLine(
-        Offset(
-            center.dx + r2 * math.cos(angle), center.dy + r2 * math.sin(angle)),
-        Offset(
-            center.dx + r1 * math.cos(angle), center.dy + r1 * math.sin(angle)),
+        Offset(center.dx + r2 * math.cos(angle), center.dy + r2 * math.sin(angle)),
+        Offset(center.dx + r1 * math.cos(angle), center.dy + r1 * math.sin(angle)),
         Paint()
-          ..color = Colors.white.withOpacity(isMajor ? 0.35 : 0.12)
-          ..strokeWidth = isMajor ? 1.8 : 0.9,
+          ..color = Colors.white.withOpacity(isMajor ? 0.40 : isMinor ? 0.20 : 0.09)
+          ..strokeWidth = isMajor ? 1.8 : 1.0,
       );
+      // Hour number for major ticks
+      if (isMajor) {
+        final labelR2 = outerR + cx * 0.062;
+        final tx = center.dx + labelR2 * math.cos(angle);
+        final ty = center.dy + labelR2 * math.sin(angle);
+        final hr = h == 0 ? 12 : (h > 12 ? h - 12 : h);
+        final suffix = h < 12 ? 'a' : 'p';
+        final tp = TextPainter(
+          text: TextSpan(
+            text: '$hr$suffix',
+            style: TextStyle(
+                color: Colors.white.withOpacity(0.28),
+                fontSize: cx * 0.068,
+                fontWeight: FontWeight.w400),
+          ),
+          textDirection: TextDirection.ltr,
+        )..layout();
+        tp.paint(canvas, Offset(tx - tp.width / 2, ty - tp.height / 2));
+      }
     }
 
-    // ── Now hand (thin needle) ────────────────────────────────────────────────
+    // ── Now hand ─────────────────────────────────────────────────────────────
     final nowAngle = _toAngle(now);
-    final handEnd = Offset(
-      center.dx + (outerR + cx * 0.045) * math.cos(nowAngle),
-      center.dy + (outerR + cx * 0.045) * math.sin(nowAngle),
+    final handOuter = Offset(
+      center.dx + (outerR + cx * 0.055) * math.cos(nowAngle),
+      center.dy + (outerR + cx * 0.055) * math.sin(nowAngle),
     );
-    final handStart = Offset(
-      center.dx + innerR * 0.55 * math.cos(nowAngle + math.pi),
-      center.dy + innerR * 0.55 * math.sin(nowAngle + math.pi),
+    final handInner = Offset(
+      center.dx + innerR * 0.45 * math.cos(nowAngle + math.pi),
+      center.dy + innerR * 0.45 * math.sin(nowAngle + math.pi),
     );
-    canvas.drawLine(handStart, handEnd,
+    // Glow on hand
+    canvas.drawLine(handInner, handOuter,
         Paint()
-          ..color = Colors.white.withOpacity(0.75)
-          ..strokeWidth = 1.5
+          ..color = Colors.white.withOpacity(0.3)
+          ..strokeWidth = 5
+          ..strokeCap = StrokeCap.round
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4));
+    // Hand line
+    canvas.drawLine(handInner, handOuter,
+        Paint()
+          ..color = Colors.white.withOpacity(0.85)
+          ..strokeWidth = 1.8
           ..strokeCap = StrokeCap.round);
-    canvas.drawCircle(center, cx * 0.028, Paint()
-      ..color = Colors.white.withOpacity(0.9));
-    canvas.drawCircle(center, cx * 0.018, Paint()
-      ..color = const Color(0xFF013220));
+    // Center pivot
+    canvas.drawCircle(center, cx * 0.030, Paint()..color = Colors.white.withOpacity(0.9));
+    canvas.drawCircle(center, cx * 0.018,
+        Paint()..color = const Color(0xFF012618));
+    canvas.drawCircle(center, cx * 0.010,
+        Paint()..color = Colors.white.withOpacity(0.9));
+  }
+
+  String _shortName(String name) {
+    const abbr = {
+      'SunRise': 'Rise',
+      'SunSet': 'Set',
+      'Ishraq': 'Ishr',
+    };
+    return abbr[name] ?? name;
   }
 
   @override
   bool shouldRepaint(_RingPainter old) =>
-      old.now != now || old.pulse != pulse || old.activeIndex != activeIndex;
+      old.now.second != now.second ||
+          old.pulse != pulse ||
+          old.activeIndex != activeIndex;
 }
