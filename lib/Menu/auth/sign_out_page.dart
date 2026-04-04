@@ -118,7 +118,7 @@ class SignOutPage extends StatelessWidget {
                         ),
                         SizedBox(height: 8),
                         Text(
-                          'Your bookmarks, progress and settings\nwill be saved to your account.',
+                          'Your bookmarks, progress and cubit\nwill be saved to your account.',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                               color: _textLo,

@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 
 // Pages
 import 'profile/profile_page.dart';
-import 'package:islamic_app/settings/settings_page.dart';
+import 'package:islamic_app/settings/pages/settings_page.dart';
 import 'contact/contact_page.dart';
 import 'share/share_page.dart';
 import 'rate/rate_page.dart';

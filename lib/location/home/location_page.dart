@@ -548,7 +548,7 @@ class _LocationPageState extends State<LocationPage>
           ),
           SizedBox(height: sw * 0.015),
           Text(
-            "Please enable GPS permission in your device settings.",
+            "Please enable GPS permission in your device cubit.",
             style: TextStyle(
               color: Colors.white.withOpacity(0.5),
               fontSize: sw * 0.037,

@@ -533,7 +533,7 @@ class _QiblaPageState extends State<QiblaPage>
                   color: const Color(0xFF74C365),
                   borderRadius: BorderRadius.circular(sw * 0.03),
                 ),
-                child: Text('Open settings',
+                child: Text('Open cubit',
                     style: TextStyle(
                         color: Colors.white,
                         fontSize: sw * 0.04,

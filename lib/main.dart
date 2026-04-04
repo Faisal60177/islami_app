@@ -19,57 +19,65 @@ import 'firebase_options.dart';
 import 'package:islamic_app/notification/cubit/notification_cubit.dart';
 import 'package:islamic_app/notification/repository/notification_repository.dart';
 
+// ── Settings imports ──────────────────────────────────────────────────────────
+import 'package:islamic_app/settings/cubit/settings_cubit.dart';
+import 'package:islamic_app/settings/cubit/settings_state.dart';
+import 'package:islamic_app/settings/theme/app_themes.dart';
+
+// ── Prayer Times Page ─────────────────────────────────────────────────────────
+import 'package:islamic_app/home/home_page.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
 
   // Lock orientation to portrait only
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
-    DeviceOrientation.portraitDown, // optional, allows upside-down portrait
+    DeviceOrientation.portraitDown,
   ]);
 
   // Initialize timezone package
   tz.initializeTimeZones();
 
-  // ✅ FIX 1: Always pass DefaultFirebaseOptions — prevents silent auth failures
+  // ✅ Always pass DefaultFirebaseOptions — prevents silent auth failures
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  // ✅ FIX 2: Register AuthController AFTER Firebase is ready
+  // ✅ Register AuthController AFTER Firebase is ready
   Get.put(AuthController());
+
   // Initialize storage classes
-  final locationStorage = LocationStorage();
+  final locationStorage    = LocationStorage();
   final prayerTimesStorage = PrayerTimesStorage();
-  final permissionService = PermissionService();
+  final permissionService  = PermissionService();
   final locationRepository = LocationRepository();
 
-  // 🔹 NEW: Duas Repository
+  // Duas Repository
   final duasRepository = DuasRepository();
 
-
-  // 🔥 VERY IMPORTANT: Sync JSON → SQLite
-  // First sync categories
+  // Sync JSON → SQLite
   await duasRepository.syncCategoriesFromJson('assets/json/categories.json');
   await duasRepository.syncDuasFromJson('assets/json/duas.json');
 
-  // FireStore to SQFlite
-
+  // Firestore → SQLite
   await duasRepository.syncCategoriesFromFirestore();
   await duasRepository.syncDuasFromFirestore();
 
-
-  // Run app
   runApp(
     MultiBlocProvider(
       providers: [
+        // ── Settings (must be first — theme/language wraps the whole app) ──
+        BlocProvider<SettingsCubit>(
+          create: (_) => SettingsCubit(),
+        ),
+
         BlocProvider(
           create: (_) => LocationCubit(
             locationRepository,
             locationStorage,
             permissionService,
-          )..loadSavedLocation(), // load last saved location on app start
+          )..loadSavedLocation(),
         ),
         BlocProvider(
           create: (context) => PrayerTimesCubit(
@@ -77,34 +85,49 @@ void main() async {
             storage: prayerTimesStorage,
           ),
         ),
-
         BlocProvider(
           create: (_) => NotificationCubit(NotificationRepository()),
         ),
-
-        // 🔹 NEW: Duas Cubit
         BlocProvider(
           create: (_) => DuasCubit(duasRepository)..loadAllDuas(),
         ),
-
       ],
-      child: const MyApp(),
+      child:  MyApp(),
     ),
   );
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+   MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return GetMaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Prayer Times App',
-      theme: ThemeData(
-        primarySwatch: Colors.teal,
-      ),
-      home: const PrayerTimesPage(),
+    // ── React to settings changes so theme + RTL apply globally ─────────────
+    return BlocBuilder<SettingsCubit, SettingsState>(
+      builder: (context, settingsState) {
+        final appTheme = getThemeById(settingsState.themeMode);
+
+        // Arabic & Urdu are RTL
+        final isRtl = settingsState.languageCode == 'ar' ||
+            settingsState.languageCode == 'ur';
+
+        return GetMaterialApp(
+          debugShowCheckedModeBanner: false,
+          title: 'Prayer Times App',
+          theme: buildThemeData(appTheme),
+
+          // ── RTL / LTR support ─────────────────────────────────────────
+          builder: (context, child) {
+            return Directionality(
+              textDirection:
+              isRtl ? TextDirection.rtl : TextDirection.ltr,
+              child: child!,
+            );
+          },
+
+          home: PrayerTimesPage(),
+        );
+      },
     );
   }
 }

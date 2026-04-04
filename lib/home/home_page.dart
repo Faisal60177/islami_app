@@ -20,6 +20,14 @@ import 'ring_animation.dart';
 import 'package:islamic_app/notification/cubit/notification_cubit.dart';
 import 'package:islamic_app/notification/cubit/notification_state.dart';
 import 'package:islamic_app/notification/page/notification_page.dart';
+// ── Settings imports ──────────────────────────────────────────────────────────
+import 'package:islamic_app/settings/cubit/settings_cubit.dart';
+import 'package:islamic_app/settings/cubit/settings_state.dart';
+import 'package:islamic_app/settings/l10n/app_localizations.dart';
+import 'package:islamic_app/settings/theme/app_themes.dart';
+import '../settings/l10n/app_localizations.dart';
+import 'package:islamic_app/settings/pages/sections/hijri_settings_section.dart';
+
 
 // ─── Palette ─────────────────────────────────────────────────────────────────
 const _bgDeep    = Color(0xFF011A0D);
@@ -44,9 +52,10 @@ class PrayerTimesPage extends StatefulWidget {
 
 class _PrayerTimesPageState extends State<PrayerTimesPage> {
 
-  // ── Date helpers ────────────────────────────────────────────────────────────
-  String getHijriDate() {
-    final hijri = HijriCalendar.now();
+  /// Returns the Hijri date string, adjusted by [offset] days.
+  String getHijriDate(int offset) {
+    final adjusted = DateTime.now().add(Duration(days: offset));
+    final hijri    = HijriCalendar.fromDate(adjusted);
     return "${hijri.hDay} ${hijri.longMonthName} ${hijri.hYear} AH";
   }
 
@@ -92,29 +101,77 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
     ];
   }
 
+  // ── Time formatter — respects 24h setting ────────────────────────────────
+  String _fmt(DateTime dt, {required bool use24Hour}) {
+    if (use24Hour) {
+      final h = dt.hour.toString().padLeft(2, '0');
+      final m = dt.minute.toString().padLeft(2, '0');
+      return '$h:$m';
+    }
+    final h  = dt.hour == 0 ? 12 : (dt.hour > 12 ? dt.hour - 12 : dt.hour);
+    final m  = dt.minute.toString().padLeft(2, '0');
+    final ap = dt.hour >= 12 ? 'PM' : 'AM';
+    return '$h:$m $ap';
+  }
+
   @override
   Widget build(BuildContext context) {
     final sw = MediaQuery.of(context).size.width;
     final sh = MediaQuery.of(context).size.height;
     final px = sw * 0.04;
 
-    return Scaffold(
+    // ── Read settings once at the top of build ──────────────────────────────
+    return BlocBuilder<SettingsCubit, SettingsState>(
+        builder: (context, settingsState) {
+          final appTheme   = getThemeById(settingsState.themeMode);
+          final l10n       = AppLocalizations(settingsState.languageCode);
+          final hijriOffset= settingsState.hijriOffset;
+          final use24Hour  = settingsState.use24Hour;
+
+
+          // ── Derive palette from chosen theme ──────────────────────────────
+          final bgDeep     = appTheme.background.withBlue(
+              (appTheme.background.blue * 0.6).toInt()); // slightly deeper bg
+          final bgBase     = appTheme.background;
+          final surface    = appTheme.surface;
+          final accent     = appTheme.accent;
+          final accentSoft = appTheme.primary.withOpacity(0.6);
+          final textLo     = appTheme.textLow;
+
+          // Card colours stay category-specific but tinted with theme
+          final cardSalat  = appTheme.cardColor;
+          final cardProhib = appTheme.isDark
+              ? const Color(0xFF3B0E0E)
+              : const Color(0xFFFFEBEE);
+          final cardSawm   = appTheme.isDark
+              ? const Color(0xFF0E2A3B)
+              : const Color(0xFFE3F2FD);
+          final cardNafal  = appTheme.isDark
+              ? const Color(0xFF1A1A3B)
+              : const Color(0xFFF3E5F5);
+
+          return Scaffold(
       backgroundColor: _bgBase,
       body: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
         child: Column(
           children: [
 
-            // ── Header ──────────────────────────────────────────────────────
-            _buildHeader(sw, sh, px),
+            // ── Header ─────────────────────────────────────────────────
+            _buildHeader(sw, sh, px,
+              bgDeep: bgDeep,
+              accent: accent,
+              accentSoft: accentSoft,
+              l10n: l10n,
+            ),
 
             Padding(
               padding: EdgeInsets.symmetric(horizontal: px),
               child: Column(
                 children: [
 
-                  // ── Date row ───────────────────────────────────────────────
-                  _buildDateRow(sw),
+                  // ── Date row ──────────────────────────────────────────
+                  _buildDateRow(sw, hijriOffset),
                   SizedBox(height: sh * 0.025),
 
                   // ── Prayer content ─────────────────────────────────────────
@@ -181,7 +238,15 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
           ],
         ),
       ),
-      bottomNavigationBar: _buildNav(),
+            bottomNavigationBar: _buildNav(
+              surface: surface,
+              accentSoft: accentSoft,
+              accent: accent,
+              textLo: textLo,
+              l10n: l10n,
+            ),
+          );
+        },
     );
   }
 
@@ -315,8 +380,16 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
+        // English date
         _datePill(getEnglishDate(), const Color(0xFF66BB6A), sw),
-        _datePill(getHijriDate(), const Color(0xFFFFB74D), sw),
+
+        // Hijri date with dynamic offset from SettingsCubit
+        BlocBuilder<SettingsCubit, SettingsState>(
+          builder: (context, state) {
+            final offset = state.hijriOffset; // get saved offset
+            return _datePill(_hijriDateWithOffset(offset), const Color(0xFFFFB74D), sw);
+          },
+        ),
       ],
     );
   }
