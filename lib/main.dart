@@ -16,6 +16,8 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:islamic_app/Menu/auth/auth_controller.dart';
 import 'firebase_options.dart';
+import 'package:islamic_app/notification/cubit/notification_cubit.dart';
+import 'package:islamic_app/notification/repository/notification_repository.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -74,6 +76,10 @@ void main() async {
             locationCubit: context.read<LocationCubit>(),
             storage: prayerTimesStorage,
           ),
+        ),
+
+        BlocProvider(
+          create: (_) => NotificationCubit(NotificationRepository()),
         ),
 
         // 🔹 NEW: Duas Cubit

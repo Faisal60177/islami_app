@@ -17,6 +17,9 @@ import 'package:hijri/hijri_calendar.dart';
 import 'package:marquee/marquee.dart';
 import 'mosque.dart';
 import 'ring_animation.dart';
+import 'package:islamic_app/notification/cubit/notification_cubit.dart';
+import 'package:islamic_app/notification/cubit/notification_state.dart';
+import 'package:islamic_app/notification/page/notification_page.dart';
 
 // ─── Palette ─────────────────────────────────────────────────────────────────
 const _bgDeep    = Color(0xFF011A0D);
@@ -252,40 +255,56 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
           SizedBox(width: sw * 0.03),
 
           // Notification bell
-          GestureDetector(
-            onTap: () => Navigator.push(
-                context, MaterialPageRoute(builder: (_) => const NotificationPage())),
-            child: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.red.withOpacity(0.10),
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.red.withOpacity(0.30), width: 1),
-                  ),
-                  child: Icon(Icons.notifications_rounded,
-                      color: Colors.red[300], size: sw * 0.055),
+          BlocBuilder<NotificationCubit, NotificationState>(
+            builder: (context, state) {
+              final count = state is NotificationLoaded
+                  ? state.unreadCount
+                  : 0;
+              return GestureDetector(
+                onTap: () => Navigator.push(context,
+                    MaterialPageRoute(
+                        builder: (_) => const NotificationPage())),
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.red.withOpacity(0.10),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                            color: Colors.red.withOpacity(0.30), width: 1),
+                      ),
+                      child: Icon(Icons.notifications_rounded,
+                          color: Colors.red[300], size: sw * 0.055),
+                    ),
+                    // Only show badge when unread count > 0
+                    if (count > 0)
+                      Positioned(
+                        right: 0,
+                        top: 0,
+                        child: Container(
+                          width: sw * 0.042,
+                          height: sw * 0.042,
+                          decoration: const BoxDecoration(
+                              color: Colors.red, shape: BoxShape.circle),
+                          alignment: Alignment.center,
+                          child: Text(
+                            count > 99 ? '99+' : '$count',
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: sw * 0.021,
+                                fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
-                Positioned(
-                  right: 0, top: 0,
-                  child: Container(
-                    width: sw * 0.040,
-                    height: sw * 0.040,
-                    decoration: const BoxDecoration(
-                        color: Colors.red, shape: BoxShape.circle),
-                    alignment: Alignment.center,
-                    child: Text('2',
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: sw * 0.022,
-                            fontWeight: FontWeight.bold)),
-                  ),
-                ),
-              ],
-            ),
+              );
+            },
           ),
+
+
         ],
       ),
     );
