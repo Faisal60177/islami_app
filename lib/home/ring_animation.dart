@@ -66,10 +66,18 @@ class _PrayerProgressRingState extends State<PrayerProgressRing>
   Color _colorFor(String name) =>
       _prayerColors[name] ?? const Color(0xFF4CAF82);
 
+
   int _activeIndex(DateTime now) {
     for (int i = 0; i < widget.entries.length; i++) {
       final e = widget.entries[i];
-      if (now.isAfter(e.start) && now.isBefore(e.end)) return i;
+
+      if (e.end.isAfter(e.start)) {
+        // Normal range — same day
+        if (now.isAfter(e.start) && now.isBefore(e.end)) return i;
+      } else {
+        // Crosses midnight — active if after start OR before end
+        if (now.isAfter(e.start) || now.isBefore(e.end)) return i;
+      }
     }
     return -1;
   }

@@ -26,7 +26,6 @@ import 'package:islamic_app/settings/cubit/settings_state.dart';
 import 'package:islamic_app/settings/l10n/app_localizations.dart';
 import 'package:islamic_app/settings/theme/app_themes.dart';
 import '../settings/l10n/app_localizations.dart';
-import 'package:islamic_app/settings/pages/sections/hijri_settings_section.dart';
 
 
 // ─── Palette ─────────────────────────────────────────────────────────────────
@@ -52,10 +51,9 @@ class PrayerTimesPage extends StatefulWidget {
 
 class _PrayerTimesPageState extends State<PrayerTimesPage> {
 
-  /// Returns the Hijri date string, adjusted by [offset] days.
-  String getHijriDate(int offset) {
-    final adjusted = DateTime.now().add(Duration(days: offset));
-    final hijri    = HijriCalendar.fromDate(adjusted);
+  // ── Date helpers ────────────────────────────────────────────────────────────
+  String getHijriDate() {
+    final hijri = HijriCalendar.now();
     return "${hijri.hDay} ${hijri.longMonthName} ${hijri.hYear} AH";
   }
 
@@ -74,20 +72,39 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
   // ── Current prayer ──────────────────────────────────────────────────────────
   String getCurrentPrayer(PrayerTimesModel t) {
     final now = DateTime.now();
-    if (now.isAfter(t.fajrStart) && now.isBefore(t.fajrEnd))       return "Fajr";
-    if (now.isAfter(t.sunRiseStart) && now.isBefore(t.sunRiseEnd)) return "SunRise";
-    if (now.isAfter(t.sunRiseEnd) && now.isBefore(t.noonStart))    return "Ishraq";
-    if (now.isAfter(t.noonStart) && now.isBefore(t.noonEnd))       return "Noon";
-    if (now.isAfter(t.dhuhrStart) && now.isBefore(t.dhuhrEnd))     return "Dhuhr";
-    if (now.isAfter(t.asrStart) && now.isBefore(t.asrEnd))         return "Asr";
-    if (now.isAfter(t.sunSetStart) && now.isBefore(t.sunSetEnd))   return "SunSet";
-    if (now.isAfter(t.maghribStart) && now.isBefore(t.maghribEnd)) return "Maghrib";
-    if (now.isAfter(t.ishaStart) && now.isBefore(t.ishaEnd))       return "Isha";
+
+    // Helper: check if now is within a time range, handling midnight crossover
+    bool inRange(DateTime start, DateTime end) {
+      if (end.isAfter(start)) {
+        // Normal range (same day)
+        return now.isAfter(start) && now.isBefore(end);
+      } else {
+        // Crosses midnight — active if after start OR before end
+        return now.isAfter(start) || now.isBefore(end);
+      }
+    }
+
+    if (inRange(t.fajrStart,    t.fajrEnd))       return "Fajr";
+    if (inRange(t.sunRiseStart, t.sunRiseEnd))    return "SunRise";
+    if (now.isAfter(t.sunRiseEnd) && now.isBefore(t.noonStart)) return "Ishraq";
+    if (inRange(t.noonStart,    t.noonEnd))       return "Noon";
+    if (inRange(t.dhuhrStart,   t.dhuhrEnd))      return "Dhuhr";
+    if (inRange(t.asrStart,     t.asrEnd))        return "Asr";
+    if (inRange(t.sunSetStart,  t.sunSetEnd))     return "SunSet";
+    if (inRange(t.maghribStart, t.maghribEnd))    return "Maghrib";
+    if (inRange(t.ishaStart,    t.ishaEnd))       return "Isha";
     return "";
   }
 
   // ── Ring data builder ───────────────────────────────────────────────────────
   List<PrayerRingEntry> buildRing(PrayerTimesModel t) {
+    // Fix Isha end: if ishaEnd is before ishaStart it has crossed midnight.
+    // Normalize it to the same day by adding 1 day so the sweep angle is correct.
+    DateTime ishaEnd = t.ishaEnd;
+    if (ishaEnd.isBefore(t.ishaStart) || ishaEnd.isAtSameMomentAs(t.ishaStart)) {
+      ishaEnd = ishaEnd.add(const Duration(days: 1));
+    }
+
     return [
       PrayerRingEntry(name: 'Fajr',    start: t.fajrStart,    end: t.sunRiseStart),
       PrayerRingEntry(name: 'SunRise', start: t.sunRiseStart, end: t.sunRiseEnd),
@@ -97,21 +114,9 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
       PrayerRingEntry(name: 'Asr',     start: t.asrStart,     end: t.maghribStart),
       PrayerRingEntry(name: 'SunSet',  start: t.sunSetStart,  end: t.sunSetEnd),
       PrayerRingEntry(name: 'Maghrib', start: t.maghribStart, end: t.maghribEnd),
-      PrayerRingEntry(name: 'Isha',    start: t.ishaStart,    end: t.ishaEnd),
+      // ✅ Use normalized ishaEnd so the arc sweep is always positive
+      PrayerRingEntry(name: 'Isha',    start: t.ishaStart,    end: ishaEnd),
     ];
-  }
-
-  // ── Time formatter — respects 24h setting ────────────────────────────────
-  String _fmt(DateTime dt, {required bool use24Hour}) {
-    if (use24Hour) {
-      final h = dt.hour.toString().padLeft(2, '0');
-      final m = dt.minute.toString().padLeft(2, '0');
-      return '$h:$m';
-    }
-    final h  = dt.hour == 0 ? 12 : (dt.hour > 12 ? dt.hour - 12 : dt.hour);
-    final m  = dt.minute.toString().padLeft(2, '0');
-    final ap = dt.hour >= 12 ? 'PM' : 'AM';
-    return '$h:$m $ap';
   }
 
   @override
@@ -120,58 +125,23 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
     final sh = MediaQuery.of(context).size.height;
     final px = sw * 0.04;
 
-    // ── Read settings once at the top of build ──────────────────────────────
-    return BlocBuilder<SettingsCubit, SettingsState>(
-        builder: (context, settingsState) {
-          final appTheme   = getThemeById(settingsState.themeMode);
-          final l10n       = AppLocalizations(settingsState.languageCode);
-          final hijriOffset= settingsState.hijriOffset;
-          final use24Hour  = settingsState.use24Hour;
-
-
-          // ── Derive palette from chosen theme ──────────────────────────────
-          final bgDeep     = appTheme.background.withBlue(
-              (appTheme.background.blue * 0.6).toInt()); // slightly deeper bg
-          final bgBase     = appTheme.background;
-          final surface    = appTheme.surface;
-          final accent     = appTheme.accent;
-          final accentSoft = appTheme.primary.withOpacity(0.6);
-          final textLo     = appTheme.textLow;
-
-          // Card colours stay category-specific but tinted with theme
-          final cardSalat  = appTheme.cardColor;
-          final cardProhib = appTheme.isDark
-              ? const Color(0xFF3B0E0E)
-              : const Color(0xFFFFEBEE);
-          final cardSawm   = appTheme.isDark
-              ? const Color(0xFF0E2A3B)
-              : const Color(0xFFE3F2FD);
-          final cardNafal  = appTheme.isDark
-              ? const Color(0xFF1A1A3B)
-              : const Color(0xFFF3E5F5);
-
-          return Scaffold(
+    return Scaffold(
       backgroundColor: _bgBase,
       body: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
         child: Column(
           children: [
 
-            // ── Header ─────────────────────────────────────────────────
-            _buildHeader(sw, sh, px,
-              bgDeep: bgDeep,
-              accent: accent,
-              accentSoft: accentSoft,
-              l10n: l10n,
-            ),
+            // ── Header ──────────────────────────────────────────────────────
+            _buildHeader(sw, sh, px),
 
             Padding(
               padding: EdgeInsets.symmetric(horizontal: px),
               child: Column(
                 children: [
 
-                  // ── Date row ──────────────────────────────────────────
-                  _buildDateRow(sw, hijriOffset),
+                  // ── Date row ───────────────────────────────────────────────
+                  _buildDateRow(sw),
                   SizedBox(height: sh * 0.025),
 
                   // ── Prayer content ─────────────────────────────────────────
@@ -238,15 +208,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
           ],
         ),
       ),
-            bottomNavigationBar: _buildNav(
-              surface: surface,
-              accentSoft: accentSoft,
-              accent: accent,
-              textLo: textLo,
-              l10n: l10n,
-            ),
-          );
-        },
+      bottomNavigationBar: _buildNav(),
     );
   }
 
@@ -380,16 +342,8 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        // English date
         _datePill(getEnglishDate(), const Color(0xFF66BB6A), sw),
-
-        // Hijri date with dynamic offset from SettingsCubit
-        BlocBuilder<SettingsCubit, SettingsState>(
-          builder: (context, state) {
-            final offset = state.hijriOffset; // get saved offset
-            return _datePill(_hijriDateWithOffset(offset), const Color(0xFFFFB74D), sw);
-          },
-        ),
+        _datePill(getHijriDate(), const Color(0xFFFFB74D), sw),
       ],
     );
   }

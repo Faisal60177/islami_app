@@ -8,6 +8,7 @@ import 'package:islamic_app/inspiration/inspiration_page.dart';
 import 'package:islamic_app/notification/page/notification_page.dart';
 import 'package:islamic_app/calendar/pages/calendar_page.dart';
 import 'package:islamic_app/qibla/pages/qibla_page.dart';
+import 'package:islamic_app/Menu/menu_page.dart';
 
 // ─── Palette ────────────────────────────────────────────────────────────────
 const _bg        = Color(0xFF021A10);   // near-black deep forest

@@ -10,6 +10,10 @@ import 'rate/rate_page.dart';
 import 'about/about_page.dart';
 import 'auth/sign_out_page.dart';
 import 'auth/auth_controller.dart';
+import 'package:islamic_app/home/home_page.dart';
+import 'package:islamic_app/tools/tools_page.dart';
+import 'package:islamic_app/Quran/quran_page.dart';
+import 'package:islamic_app/Duas/pages/duas_page.dart';
 
 // ─── Palette ────────────────────────────────────────────────────────────────
 const _bg        = Color(0xFF011A0E);
@@ -24,11 +28,12 @@ const _textLo    = Color(0xFF7BAF92);
 class MenuPage extends StatelessWidget {
   const MenuPage({super.key});
 
+  // ✅ Updated to use real pages with asset icon nav
   static final List<Widget> _pages = [
-    const _PlaceholderPage('Today'),
-    const _PlaceholderPage('Tools'),
-    const _PlaceholderPage('Quran'),
-    const _PlaceholderPage('Duas'),
+    const PrayerTimesPage(),
+    const ToolsPage(),
+    const QuranPage(),
+    const DuasPage(),
     const MenuPage(),
   ];
 
@@ -247,23 +252,24 @@ class MenuPage extends StatelessWidget {
     );
   }
 
-  // ── Bottom Nav ────────────────────────────────────────────────────────────
+  // ── Bottom Nav — asset-icon version, active = index 4 (Menu) ─────────────
   Widget _buildNav(BuildContext context) {
+    // ✅ Replaced emoji list with asset icon list from your new nav
     final items = [
-      ('Today', '🕐'),
-      ('Tools', '🔧'),
-      ('Quran', '📖'),
-      ('Duas',  '🤲'),
-      ('Menu',  '☰'),
+      ('Today', 'assets/icons/today.png'),
+      ('Tools', 'assets/icons/tools.png'),
+      ('Quran', 'assets/icons/quran.png'),
+      ('Duas',  'assets/icons/duas.png'),
+      ('Menu',  'assets/icons/menu.png'),
     ];
 
     return Container(
       decoration: BoxDecoration(
         color: _surface,
         border: Border(
-            top: BorderSide(color: _accentSoft.withOpacity(0.2), width: 1)),
+            top: BorderSide(color: _accentSoft.withOpacity(0.25), width: 1)),
         boxShadow: const [
-          BoxShadow(color: Colors.black54, blurRadius: 20)
+          BoxShadow(color: Colors.black54, blurRadius: 20),
         ],
       ),
       child: SafeArea(
@@ -273,16 +279,20 @@ class MenuPage extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: items.asMap().entries.map((e) {
-              final i      = e.key;
-              final label  = e.value.$1;
-              final emoji  = e.value.$2;
+              final i     = e.key;
+              final label = e.value.$1;
+              final asset = e.value.$2;
+              // ✅ Menu tab is index 4 — always active on this page
               final active = i == 4;
 
               return GestureDetector(
                 onTap: () {
                   if (!active) {
-                    Navigator.push(context,
-                        MaterialPageRoute(builder: (_) => _pages[i]));
+                    // ✅ Use Get.off so back-stack doesn't pile up
+                    Get.off(
+                          () => _pages[i],
+                      transition: Transition.noTransition,
+                    );
                   }
                 },
                 child: AnimatedContainer(
@@ -298,17 +308,23 @@ class MenuPage extends StatelessWidget {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(emoji,
-                          style: TextStyle(fontSize: active ? 22 : 20)),
-                      const SizedBox(height: 3),
-                      Text(label,
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: active
-                                ? FontWeight.w700
-                                : FontWeight.w400,
-                            color: active ? _accent : _textLo,
-                          )),
+                      // ✅ Asset image icon with color tint for active state
+                      Image.asset(
+                        asset,
+                        width: 24,
+                        height: 24,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        label,
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: active
+                              ? FontWeight.w700
+                              : FontWeight.w400,
+                          color: active ? _accent : _textLo,
+                        ),
+                      ),
                     ],
                   ),
                 ),
