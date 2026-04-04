@@ -15,6 +15,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:islamic_app/Menu/auth/auth_controller.dart';
+import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,6 +30,13 @@ void main() async {
   // Initialize timezone package
   tz.initializeTimeZones();
 
+  // ✅ FIX 1: Always pass DefaultFirebaseOptions — prevents silent auth failures
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
+  // ✅ FIX 2: Register AuthController AFTER Firebase is ready
+  Get.put(AuthController());
   // Initialize storage classes
   final locationStorage = LocationStorage();
   final prayerTimesStorage = PrayerTimesStorage();
@@ -37,8 +45,7 @@ void main() async {
 
   // 🔹 NEW: Duas Repository
   final duasRepository = DuasRepository();
-  await Firebase.initializeApp();
-  Get.put(AuthController());
+
 
   // 🔥 VERY IMPORTANT: Sync JSON → SQLite
   // First sync categories

@@ -2,15 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'auth_controller.dart';
 
-// ─── Palette ────────────────────────────────────────────────────────────
-const _bg       = Color(0xFF011A0E);
-const _surface  = Color(0xFF0D2E1C);
-const _card     = Color(0xFF122E1E);
-const _accent   = Color(0xFF4CAF82);
+const _bg        = Color(0xFF011A0E);
+const _surface   = Color(0xFF0D2E1C);
+const _card      = Color(0xFF122E1E);
+const _accent    = Color(0xFF4CAF82);
 const _accentSoft= Color(0xFF2E7D5A);
-const _gold     = Color(0xFFD4AF37);
-const _textHi   = Color(0xFFE8F5EC);
-const _textLo   = Color(0xFF7BAF92);
+const _gold      = Color(0xFFD4AF37);
+const _textHi    = Color(0xFFE8F5EC);
+const _textLo    = Color(0xFF7BAF92);
 
 class AuthPage extends StatefulWidget {
   const AuthPage({super.key});
@@ -24,16 +23,15 @@ class _AuthPageState extends State<AuthPage>
   final AuthController _auth = Get.find<AuthController>();
 
   late TabController _tab;
-  final _signInForm  = GlobalKey<FormState>();
-  final _signUpForm  = GlobalKey<FormState>();
+  final _signInForm = GlobalKey<FormState>();
+  final _signUpForm = GlobalKey<FormState>();
 
-  // Controllers
-  final _nameCtrl     = TextEditingController();
-  final _emailInCtrl  = TextEditingController();
-  final _passInCtrl   = TextEditingController();
-  final _emailUpCtrl  = TextEditingController();
-  final _passUpCtrl   = TextEditingController();
-  final _confirmCtrl  = TextEditingController();
+  final _nameCtrl    = TextEditingController();
+  final _emailInCtrl = TextEditingController();
+  final _passInCtrl  = TextEditingController();
+  final _emailUpCtrl = TextEditingController();
+  final _passUpCtrl  = TextEditingController();
+  final _confirmCtrl = TextEditingController();
 
   bool _showPassIn  = false;
   bool _showPassUp  = false;
@@ -57,7 +55,6 @@ class _AuthPageState extends State<AuthPage>
     super.dispose();
   }
 
-  // ── Sign In ─────────────────────────────────────────────────────────────
   Future<void> _doSignIn() async {
     if (!_signInForm.currentState!.validate()) return;
     final ok = await _auth.signInWithEmail(
@@ -72,7 +69,6 @@ class _AuthPageState extends State<AuthPage>
     }
   }
 
-  // ── Sign Up ─────────────────────────────────────────────────────────────
   Future<void> _doSignUp() async {
     if (!_signUpForm.currentState!.validate()) return;
     final ok = await _auth.signUpWithEmail(
@@ -88,7 +84,6 @@ class _AuthPageState extends State<AuthPage>
     }
   }
 
-  // ── Google ──────────────────────────────────────────────────────────────
   Future<void> _doGoogle() async {
     final ok = await _auth.signInWithGoogle();
     if (ok && mounted) {
@@ -121,15 +116,9 @@ class _AuthPageState extends State<AuthPage>
           icon: const Icon(Icons.arrow_back_ios_new, color: _accent),
           onPressed: () => Get.back(),
         ),
-        title: const Text(
-          'My Account',
-          style: TextStyle(
-            color: _textHi,
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 0.5,
-          ),
-        ),
+        title: const Text('My Account',
+            style: TextStyle(
+                color: _textHi, fontSize: 18, fontWeight: FontWeight.w600)),
         centerTitle: true,
         elevation: 0,
         bottom: PreferredSize(
@@ -151,203 +140,226 @@ class _AuthPageState extends State<AuthPage>
               labelStyle: const TextStyle(
                   fontWeight: FontWeight.w700, fontSize: 14),
               unselectedLabelStyle: const TextStyle(fontSize: 14),
-              tabs: const [
-                Tab(text: 'Sign In'),
-                Tab(text: 'Sign Up'),
-              ],
+              tabs: const [Tab(text: 'Sign In'), Tab(text: 'Sign Up')],
             ),
           ),
         ),
       ),
       body: TabBarView(
         controller: _tab,
-        children: [
-          _signInView(),
-          _signUpView(),
-        ],
+        children: [_signInView(), _signUpView()],
       ),
     );
   }
 
-  // ── Sign In View ────────────────────────────────────────────────────────
   Widget _signInView() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        children: [
-          const SizedBox(height: 16),
-          _arabicDecor(),
-          const SizedBox(height: 32),
-          Form(
-            key: _signInForm,
+    // ✅ Responsive: constrain width on tablets
+    return LayoutBuilder(builder: (context, constraints) {
+      final maxW = constraints.maxWidth > 600 ? 500.0 : double.infinity;
+      return SingleChildScrollView(
+        padding: EdgeInsets.symmetric(
+          horizontal: constraints.maxWidth > 600 ? 48 : 24,
+          vertical: 24,
+        ),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: maxW),
             child: Column(
               children: [
-                _field(
-                  controller: _emailInCtrl,
-                  label: 'Email Address',
-                  icon: Icons.email_outlined,
-                  keyboardType: TextInputType.emailAddress,
-                  validator: _validateEmail,
-                ),
                 const SizedBox(height: 16),
-                _field(
-                  controller: _passInCtrl,
-                  label: 'Password',
-                  icon: Icons.lock_outline,
-                  obscure: !_showPassIn,
-                  suffix: IconButton(
-                    icon: Icon(
-                      _showPassIn ? Icons.visibility_off : Icons.visibility,
-                      color: _textLo, size: 20,
-                    ),
-                    onPressed: () =>
-                        setState(() => _showPassIn = !_showPassIn),
+                _arabicDecor(),
+                const SizedBox(height: 32),
+                Form(
+                  key: _signInForm,
+                  child: Column(
+                    children: [
+                      _field(
+                        controller: _emailInCtrl,
+                        label: 'Email Address',
+                        icon: Icons.email_outlined,
+                        keyboardType: TextInputType.emailAddress,
+                        validator: _validateEmail,
+                      ),
+                      const SizedBox(height: 16),
+                      _field(
+                        controller: _passInCtrl,
+                        label: 'Password',
+                        icon: Icons.lock_outline,
+                        obscure: !_showPassIn,
+                        suffix: IconButton(
+                          icon: Icon(
+                            _showPassIn
+                                ? Icons.visibility_off
+                                : Icons.visibility,
+                            color: _textLo, size: 20,
+                          ),
+                          onPressed: () =>
+                              setState(() => _showPassIn = !_showPassIn),
+                        ),
+                        validator: (v) => (v == null || v.length < 6)
+                            ? 'Min 6 characters'
+                            : null,
+                      ),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: TextButton(
+                          onPressed: _showForgot,
+                          child: const Text('Forgot password?',
+                              style: TextStyle(color: _gold, fontSize: 13)),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Obx(() => _primaryBtn(
+                        label: 'Sign In',
+                        loading: _auth.isLoading.value,
+                        onTap: _doSignIn,
+                      )),
+                    ],
                   ),
-                  validator: (v) =>
-                  (v == null || v.length < 6) ? 'Min 6 characters' : null,
-                ),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton(
-                    onPressed: _showForgot,
-                    child: const Text('Forgot password?',
-                        style: TextStyle(color: _gold, fontSize: 13)),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Obx(() => _primaryBtn(
-                  label: 'Sign In',
-                  loading: _auth.isLoading.value,
-                  onTap: _doSignIn,
-                )),
-              ],
-            ),
-          ),
-          const SizedBox(height: 24),
-          _divider(),
-          const SizedBox(height: 24),
-          _googleBtn(),
-          const SizedBox(height: 16),
-          TextButton(
-            onPressed: () => _tab.animateTo(1),
-            child: RichText(
-              text: const TextSpan(
-                text: "Don't have an account? ",
-                style: TextStyle(color: _textLo),
-                children: [
-                  TextSpan(
-                    text: 'Sign Up',
-                    style: TextStyle(
-                        color: _accent, fontWeight: FontWeight.w700),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ── Sign Up View ────────────────────────────────────────────────────────
-  Widget _signUpView() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        children: [
-          const SizedBox(height: 16),
-          _arabicDecor(),
-          const SizedBox(height: 32),
-          Form(
-            key: _signUpForm,
-            child: Column(
-              children: [
-                _field(
-                  controller: _nameCtrl,
-                  label: 'Full Name',
-                  icon: Icons.person_outline,
-                  validator: (v) =>
-                  (v == null || v.trim().isEmpty) ? 'Name required' : null,
-                ),
-                const SizedBox(height: 16),
-                _field(
-                  controller: _emailUpCtrl,
-                  label: 'Email Address',
-                  icon: Icons.email_outlined,
-                  keyboardType: TextInputType.emailAddress,
-                  validator: _validateEmail,
-                ),
-                const SizedBox(height: 16),
-                _field(
-                  controller: _passUpCtrl,
-                  label: 'Password',
-                  icon: Icons.lock_outline,
-                  obscure: !_showPassUp,
-                  suffix: IconButton(
-                    icon: Icon(
-                      _showPassUp ? Icons.visibility_off : Icons.visibility,
-                      color: _textLo, size: 20,
-                    ),
-                    onPressed: () =>
-                        setState(() => _showPassUp = !_showPassUp),
-                  ),
-                  validator: (v) =>
-                  (v == null || v.length < 6) ? 'Min 6 characters' : null,
-                ),
-                const SizedBox(height: 16),
-                _field(
-                  controller: _confirmCtrl,
-                  label: 'Confirm Password',
-                  icon: Icons.lock_outline,
-                  obscure: !_showConfirm,
-                  suffix: IconButton(
-                    icon: Icon(
-                      _showConfirm ? Icons.visibility_off : Icons.visibility,
-                      color: _textLo, size: 20,
-                    ),
-                    onPressed: () =>
-                        setState(() => _showConfirm = !_showConfirm),
-                  ),
-                  validator: (v) => v != _passUpCtrl.text
-                      ? 'Passwords do not match'
-                      : null,
                 ),
                 const SizedBox(height: 24),
-                Obx(() => _primaryBtn(
-                  label: 'Create Account',
-                  loading: _auth.isLoading.value,
-                  onTap: _doSignUp,
-                )),
+                _divider(),
+                const SizedBox(height: 24),
+                _googleBtn(),
+                const SizedBox(height: 16),
+                TextButton(
+                  onPressed: () => _tab.animateTo(1),
+                  child: RichText(
+                    text: const TextSpan(
+                      text: "Don't have an account? ",
+                      style: TextStyle(color: _textLo),
+                      children: [
+                        TextSpan(
+                          text: 'Sign Up',
+                          style: TextStyle(
+                              color: _accent, fontWeight: FontWeight.w700),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
-          const SizedBox(height: 24),
-          _divider(),
-          const SizedBox(height: 24),
-          _googleBtn(),
-          const SizedBox(height: 16),
-          TextButton(
-            onPressed: () => _tab.animateTo(0),
-            child: RichText(
-              text: const TextSpan(
-                text: 'Already have an account? ',
-                style: TextStyle(color: _textLo),
-                children: [
-                  TextSpan(
-                    text: 'Sign In',
-                    style: TextStyle(
-                        color: _accent, fontWeight: FontWeight.w700),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+        ),
+      );
+    });
   }
 
-  // ── Forgot Password Dialog ──────────────────────────────────────────────
+  Widget _signUpView() {
+    return LayoutBuilder(builder: (context, constraints) {
+      final maxW = constraints.maxWidth > 600 ? 500.0 : double.infinity;
+      return SingleChildScrollView(
+        padding: EdgeInsets.symmetric(
+          horizontal: constraints.maxWidth > 600 ? 48 : 24,
+          vertical: 24,
+        ),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: maxW),
+            child: Column(
+              children: [
+                const SizedBox(height: 16),
+                _arabicDecor(),
+                const SizedBox(height: 32),
+                Form(
+                  key: _signUpForm,
+                  child: Column(
+                    children: [
+                      _field(
+                        controller: _nameCtrl,
+                        label: 'Full Name',
+                        icon: Icons.person_outline,
+                        validator: (v) => (v == null || v.trim().isEmpty)
+                            ? 'Name required'
+                            : null,
+                      ),
+                      const SizedBox(height: 16),
+                      _field(
+                        controller: _emailUpCtrl,
+                        label: 'Email Address',
+                        icon: Icons.email_outlined,
+                        keyboardType: TextInputType.emailAddress,
+                        validator: _validateEmail,
+                      ),
+                      const SizedBox(height: 16),
+                      _field(
+                        controller: _passUpCtrl,
+                        label: 'Password',
+                        icon: Icons.lock_outline,
+                        obscure: !_showPassUp,
+                        suffix: IconButton(
+                          icon: Icon(
+                            _showPassUp
+                                ? Icons.visibility_off
+                                : Icons.visibility,
+                            color: _textLo, size: 20,
+                          ),
+                          onPressed: () =>
+                              setState(() => _showPassUp = !_showPassUp),
+                        ),
+                        validator: (v) => (v == null || v.length < 6)
+                            ? 'Min 6 characters'
+                            : null,
+                      ),
+                      const SizedBox(height: 16),
+                      _field(
+                        controller: _confirmCtrl,
+                        label: 'Confirm Password',
+                        icon: Icons.lock_outline,
+                        obscure: !_showConfirm,
+                        suffix: IconButton(
+                          icon: Icon(
+                            _showConfirm
+                                ? Icons.visibility_off
+                                : Icons.visibility,
+                            color: _textLo, size: 20,
+                          ),
+                          onPressed: () =>
+                              setState(() => _showConfirm = !_showConfirm),
+                        ),
+                        validator: (v) => v != _passUpCtrl.text
+                            ? 'Passwords do not match'
+                            : null,
+                      ),
+                      const SizedBox(height: 24),
+                      Obx(() => _primaryBtn(
+                        label: 'Create Account',
+                        loading: _auth.isLoading.value,
+                        onTap: _doSignUp,
+                      )),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+                _divider(),
+                const SizedBox(height: 24),
+                _googleBtn(),
+                const SizedBox(height: 16),
+                TextButton(
+                  onPressed: () => _tab.animateTo(0),
+                  child: RichText(
+                    text: const TextSpan(
+                      text: 'Already have an account? ',
+                      style: TextStyle(color: _textLo),
+                      children: [
+                        TextSpan(
+                          text: 'Sign In',
+                          style: TextStyle(
+                              color: _accent, fontWeight: FontWeight.w700),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    });
+  }
+
   void _showForgot() {
     final ctrl = TextEditingController();
     Get.dialog(
@@ -357,56 +369,54 @@ class _AuthPageState extends State<AuthPage>
         title: const Text('Reset Password',
             style: TextStyle(color: _textHi, fontWeight: FontWeight.w700)),
         content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-        const Text(
-        'Enter your email and we will send a reset link.',
-        style: TextStyle(color: _textLo, fontSize: 13),
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'Enter your email and we will send a reset link.',
+              style: TextStyle(color: _textLo, fontSize: 13),
+            ),
+            const SizedBox(height: 16),
+            _field(
+              controller: ctrl,
+              label: 'Email Address',
+              icon: Icons.email_outlined,
+              keyboardType: TextInputType.emailAddress,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: const Text('Cancel', style: TextStyle(color: _textLo)),
+          ),
+          Obx(() => ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: _accentSoft),
+            onPressed: _auth.isLoading.value
+                ? null
+                : () async {
+              final ok =
+              await _auth.sendPasswordReset(ctrl.text);
+              Get.back();
+              _snack(
+                ok
+                    ? 'Reset email sent! Check your inbox.'
+                    : _auth.errorMessage.value,
+                success: ok,
+              );
+            },
+            child: _auth.isLoading.value
+                ? const SizedBox(
+                width: 16, height: 16,
+                child: CircularProgressIndicator(
+                    strokeWidth: 2, color: Colors.white))
+                : const Text('Send Link',
+                style: TextStyle(color: Colors.white)),
+          )),
+        ],
       ),
-      const SizedBox(height: 16),
-      _field(
-        controller: ctrl,
-        label: 'Email Address',
-        icon: Icons.email_outlined,
-        keyboardType: TextInputType.emailAddress,
-      ),
-      ],
-    ),
-    actions: [
-    TextButton(
-    onPressed: () => Get.back(),
-    child: const Text('Cancel', style: TextStyle(color: _textLo)),
-    ),
-    Obx(() => ElevatedButton(
-    style: ElevatedButton.styleFrom(backgroundColor: _accentSoft),
-    onPressed: _auth.isLoading.value
-    ? null
-        : () async {
-    final ok =
-    await _auth.sendPasswordReset(ctrl.text);
-    Get.back();
-    _snack(
-    ok
-    ? 'Reset email sent! Check your inbox.'
-        : _auth.errorMessage.value,
-    success: ok,
-    );
-    },
-    child: _auth.isLoading.value
-    ? const SizedBox(
-    width: 16, height: 16,
-    child: CircularProgressIndicator(
-    strokeWidth: 2, color: Colors.white),
-    )
-        : const Text('Send Link',
-    style: TextStyle(color: Colors.white)),
-    )),
-    ],
-    ),
     );
   }
 
-  // ── Widgets ─────────────────────────────────────────────────────────────
   Widget _arabicDecor() {
     return Column(
       children: [
@@ -419,11 +429,7 @@ class _AuthPageState extends State<AuthPage>
           ),
           child: const Text(
             'بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ',
-            style: TextStyle(
-              color: _gold,
-              fontSize: 20,
-              fontFamily: 'Amiri',
-            ),
+            style: TextStyle(color: _gold, fontSize: 20, fontFamily: 'Amiri'),
             textAlign: TextAlign.center,
           ),
         ),
@@ -492,22 +498,19 @@ class _AuthPageState extends State<AuthPage>
         onPressed: loading ? null : onTap,
         style: ElevatedButton.styleFrom(
           backgroundColor: _accentSoft,
-          shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           elevation: 4,
         ),
         child: loading
             ? const SizedBox(
-          width: 22, height: 22,
-          child: CircularProgressIndicator(
-              strokeWidth: 2.5, color: Colors.white),
-        )
+            width: 22, height: 22,
+            child: CircularProgressIndicator(
+                strokeWidth: 2.5, color: Colors.white))
             : Text(label,
             style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w700,
-              fontSize: 16,
-            )),
+                color: Colors.white,
+                fontWeight: FontWeight.w700,
+                fontSize: 16)),
       ),
     );
   }
@@ -519,7 +522,8 @@ class _AuthPageState extends State<AuthPage>
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12),
           child: Text('or continue with',
-              style: TextStyle(color: _textLo.withOpacity(0.7), fontSize: 12)),
+              style: TextStyle(
+                  color: _textLo.withOpacity(0.7), fontSize: 12)),
         ),
         Expanded(child: Divider(color: _textLo.withOpacity(0.3))),
       ],
@@ -544,10 +548,9 @@ class _AuthPageState extends State<AuthPage>
           errorBuilder: (_, __, ___) =>
           const Icon(Icons.g_mobiledata, color: Colors.white, size: 24),
         ),
-        label: const Text(
-          'Continue with Google',
-          style: TextStyle(color: _textHi, fontWeight: FontWeight.w600),
-        ),
+        label: const Text('Continue with Google',
+            style: TextStyle(
+                color: _textHi, fontWeight: FontWeight.w600)),
       ),
     ));
   }
