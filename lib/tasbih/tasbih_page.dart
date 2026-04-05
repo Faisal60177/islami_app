@@ -46,7 +46,7 @@ class TasbihPage extends StatefulWidget {
 }
 
 class _TasbihPageState extends State<TasbihPage>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
 
   // ── dhikr options ──────────────────────────────────────────────────────────
   final List<String> _dhikrOptions = [
@@ -60,9 +60,9 @@ class _TasbihPageState extends State<TasbihPage>
   int _dhikrIndex = 0;
 
   // ── counter state ──────────────────────────────────────────────────────────
-  int _current   = 0;   // current count in this round
-  int _rounds    = 0;   // completed rounds this session
-  int _totalEver = 0;   // grand total (persisted)
+  int _current   = 0;
+  int _rounds    = 0;
+  int _totalEver = 0;
   int _target    = 33;
 
   // ── preset targets ─────────────────────────────────────────────────────────
@@ -81,18 +81,20 @@ class _TasbihPageState extends State<TasbihPage>
   bool _justCompleted = false;
 
   // ── colors ─────────────────────────────────────────────────────────────────
-  static const Color _bg       = Color(0xFF013220);
-  static const Color _bgDark   = Color(0xFF012818);
-  static const Color _green    = Color(0xFF74C365);
-  static const Color _teal     = Color(0xFF9FE1CB);
-  static const Color _darkGreen= Color(0xFF1a5c35);
-  static const Color _red      = Color(0xFFE24B4A);
-  static const Color _gold     = Color(0xFFFFD700);
+  static const Color _bg        = Color(0xFF013220);
+  static const Color _bgDark    = Color(0xFF012818);
+  static const Color _green     = Color(0xFF74C365);
+  static const Color _teal      = Color(0xFF9FE1CB);
+  static const Color _darkGreen = Color(0xFF1a5c35);
+  static const Color _red       = Color(0xFFE24B4A);
+  static const Color _gold      = Color(0xFFFFD700);
 
   // ── init ───────────────────────────────────────────────────────────────────
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this); // ← observe lifecycle
+
     _ctrl = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 600),
@@ -104,11 +106,30 @@ class _TasbihPageState extends State<TasbihPage>
     _loadPersisted();
   }
 
+  // ── lifecycle: save on pause (app goes to background / closed) ────────────
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.detached) {
+      _persistCurrentSession();
+    }
+  }
+
+  // ── persist helpers ────────────────────────────────────────────────────────
+
   Future<void> _loadPersisted() async {
     final prefs = await SharedPreferences.getInstance();
     final histJson = prefs.getStringList('tasbih_history') ?? [];
+
     setState(() {
-      _totalEver = prefs.getInt('tasbih_total') ?? 0;
+      _totalEver  = prefs.getInt('tasbih_total')       ?? 0;
+      _dhikrIndex = prefs.getInt('tasbih_dhikr_index') ?? 0;
+      _target     = prefs.getInt('tasbih_target')      ?? 33;
+      _rounds     = prefs.getInt('tasbih_rounds')      ?? 0;
+      _current    = prefs.getInt('tasbih_current')     ?? 0;
+      _mode       = ClickMode.values[prefs.getInt('tasbih_mode') ?? 0];
+
       _history = histJson
           .map((s) => _HistoryEntry.fromJson(jsonDecode(s)))
           .toList()
@@ -116,9 +137,32 @@ class _TasbihPageState extends State<TasbihPage>
           .take(10)
           .toList();
     });
+
+    // Restore ring progress after state is set
+    if (_current > 0 || _rounds > 0) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _animateTo(_target > 0 ? _current / _target : 0);
+      });
+    }
   }
 
-  Future<void> _persist() async {
+  /// Saves everything including current in-progress round
+  Future<void> _persistCurrentSession() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('tasbih_total',       _totalEver);
+    await prefs.setInt('tasbih_dhikr_index', _dhikrIndex);
+    await prefs.setInt('tasbih_target',      _target);
+    await prefs.setInt('tasbih_rounds',      _rounds);
+    await prefs.setInt('tasbih_current',     _current);  // ← NEW: save current
+    await prefs.setInt('tasbih_mode',        _mode.index);
+    await prefs.setStringList(
+      'tasbih_history',
+      _history.map((e) => jsonEncode(e.toJson())).toList(),
+    );
+  }
+
+  /// Saves completed history entries only (called after finish)
+  Future<void> _persistHistory() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt('tasbih_total', _totalEver);
     await prefs.setStringList(
@@ -129,6 +173,8 @@ class _TasbihPageState extends State<TasbihPage>
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _persistCurrentSession(); // save on widget dispose too
     _ctrl.dispose();
     _audio.dispose();
     super.dispose();
@@ -159,17 +205,14 @@ class _TasbihPageState extends State<TasbihPage>
       _justCompleted = true;
     });
 
-    // Long vibration on completion
     if (_mode == ClickMode.vibrate) {
       Vibration.hasVibrator().then((has) {
         if (has ?? false) Vibration.vibrate(duration: 600);
       });
     } else if (_mode == ClickMode.sound) {
-      // Play completion sound twice
       Future.delayed(const Duration(milliseconds: 300), () => _audio.resume());
     }
 
-    // Show completion dialog
     _showCompletionFlash();
   }
 
@@ -187,7 +230,7 @@ class _TasbihPageState extends State<TasbihPage>
             children: [
               const Text('🎉', style: TextStyle(fontSize: 48)),
               const SizedBox(height: 12),
-              Text(
+              const Text(
                 'Round Complete!',
                 style: TextStyle(
                     color: Colors.white,
@@ -198,7 +241,7 @@ class _TasbihPageState extends State<TasbihPage>
               Text(
                 '$_target × $_rounds = ${_target * _rounds} ${_dhikrOptions[_dhikrIndex]}',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: _teal, fontSize: 14),
+                style: const TextStyle(color: _teal, fontSize: 14),
               ),
               const SizedBox(height: 20),
               Row(
@@ -207,7 +250,7 @@ class _TasbihPageState extends State<TasbihPage>
                     child: GestureDetector(
                       onTap: () {
                         Navigator.pop(context);
-                        _resetCurrent(); // reset current round, keep total
+                        _resetCurrent();
                       },
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 12),
@@ -258,6 +301,7 @@ class _TasbihPageState extends State<TasbihPage>
       _justCompleted = false;
     });
     _animateTo(0);
+    _persistCurrentSession();
   }
 
   void _resetFull() {
@@ -267,6 +311,7 @@ class _TasbihPageState extends State<TasbihPage>
       _justCompleted = false;
     });
     _animateTo(0);
+    _persistCurrentSession();
   }
 
   void _saveToHistory() {
@@ -281,7 +326,7 @@ class _TasbihPageState extends State<TasbihPage>
       _history.insert(0, entry);
       if (_history.length > 20) _history.removeLast();
     });
-    _persist();
+    _persistHistory();
   }
 
   // ── animation helper ───────────────────────────────────────────────────────
@@ -304,14 +349,148 @@ class _TasbihPageState extends State<TasbihPage>
         break;
       case ClickMode.vibrate:
         Vibration.hasVibrator().then((has) {
-          if (has ?? false) {
-            Vibration.vibrate(duration: long ? 500 : 40);
-          }
+          if (has ?? false) Vibration.vibrate(duration: long ? 500 : 40);
         });
         break;
       case ClickMode.mute:
         break;
     }
+  }
+
+  // ── mode icon helper ───────────────────────────────────────────────────────
+
+  IconData get _modeIcon {
+    switch (_mode) {
+      case ClickMode.sound:   return Icons.volume_up_rounded;
+      case ClickMode.vibrate: return Icons.vibration_rounded;
+      case ClickMode.mute:    return Icons.volume_off_rounded;
+    }
+  }
+
+  String get _modeLabel {
+    switch (_mode) {
+      case ClickMode.sound:   return 'Sound';
+      case ClickMode.vibrate: return 'Vibrate';
+      case ClickMode.mute:    return 'Muted';
+    }
+  }
+
+  Color get _modeColor {
+    switch (_mode) {
+      case ClickMode.sound:   return _green;
+      case ClickMode.vibrate: return _gold;
+      case ClickMode.mute:    return _red;
+    }
+  }
+
+  // ── show mode bottom sheet ─────────────────────────────────────────────────
+
+  void _showModeSheet() {
+    final modes = [
+      (ClickMode.sound,   Icons.volume_up_rounded,  'Sound',   'Play a click sound'),
+      (ClickMode.vibrate, Icons.vibration_rounded,  'Vibrate', 'Haptic feedback'),
+      (ClickMode.mute,    Icons.volume_off_rounded, 'Muted',   'No feedback'),
+    ];
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: _bgDark,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => Padding(
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Handle bar
+            Center(
+              child: Container(
+                width: 36, height: 4,
+                decoration: BoxDecoration(
+                  color: _darkGreen,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Feedback Mode',
+              style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 4),
+            const Text(
+              'Choose how the counter responds when you tap',
+              style: TextStyle(color: _teal, fontSize: 12),
+            ),
+            const SizedBox(height: 16),
+            ...modes.map((m) {
+              final active = _mode == m.$1;
+              return GestureDetector(
+                onTap: () {
+                  setState(() => _mode = m.$1);
+                  _persistCurrentSession();
+                  Navigator.pop(context);
+                },
+                child: Container(
+                  margin: const EdgeInsets.only(bottom: 10),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16, vertical: 14),
+                  decoration: BoxDecoration(
+                    color: active ? _darkGreen : _bg,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: active ? _green : _darkGreen,
+                      width: active ? 1.5 : 1,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: active
+                              ? _green.withOpacity(0.2)
+                              : _darkGreen,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(m.$2,
+                            color: active ? _green : _teal, size: 20),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(m.$3,
+                                style: TextStyle(
+                                    color: active ? Colors.white : _teal,
+                                    fontWeight: active
+                                        ? FontWeight.w700
+                                        : FontWeight.normal,
+                                    fontSize: 14)),
+                            Text(m.$4,
+                                style: const TextStyle(
+                                    color: _teal, fontSize: 11)),
+                          ],
+                        ),
+                      ),
+                      if (active)
+                        Icon(Icons.check_circle_rounded,
+                            color: _green, size: 20),
+                    ],
+                  ),
+                ),
+              );
+            }),
+          ],
+        ),
+      ),
+    );
   }
 
   // ── build ──────────────────────────────────────────────────────────────────
@@ -328,27 +507,59 @@ class _TasbihPageState extends State<TasbihPage>
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () {
+            _persistCurrentSession();
+            Navigator.pop(context);
+          },
         ),
         title: const Text(
           'Tasbih Counter',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
         ),
         actions: [
-          // Grand total chip
-          Center(
+          // ── Feedback mode pill (tappable) ────────────────────────────────
+          GestureDetector(
+            onTap: _showModeSheet,
             child: Container(
-              margin: const EdgeInsets.only(right: 14),
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              margin: const EdgeInsets.only(right: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               decoration: BoxDecoration(
-                color: _darkGreen,
+                color: _modeColor.withOpacity(0.12),
                 borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: _modeColor.withOpacity(0.4)),
               ),
-              child: Text(
-                'Total: $_totalEver',
-                style: TextStyle(
-                    color: _teal, fontSize: sw * 0.032, fontWeight: FontWeight.w600),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(_modeIcon, color: _modeColor, size: 15),
+                  const SizedBox(width: 5),
+                  Text(
+                    _modeLabel,
+                    style: TextStyle(
+                      color: _modeColor,
+                      fontSize: sw * 0.028,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
               ),
+            ),
+          ),
+
+          // ── Grand total chip ─────────────────────────────────────────────
+          Container(
+            margin: const EdgeInsets.only(right: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: _darkGreen,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Text(
+              'Total: $_totalEver',
+              style: TextStyle(
+                  color: _teal,
+                  fontSize: sw * 0.028,
+                  fontWeight: FontWeight.w600),
             ),
           ),
         ],
@@ -358,31 +569,27 @@ class _TasbihPageState extends State<TasbihPage>
             horizontal: sw * 0.05, vertical: sw * 0.03),
         child: Column(
           children: [
-            // ── Dhikr selector ──────────────────────────────────────────────
+            // ── Dhikr selector ─────────────────────────────────────────────
             _buildDhikrSelector(sw),
             SizedBox(height: sh * 0.025),
 
-            // ── Progress ring ────────────────────────────────────────────────
+            // ── Progress ring ───────────────────────────────────────────────
             _buildProgressRing(sw),
             SizedBox(height: sh * 0.02),
 
-            // ── Stats row ────────────────────────────────────────────────────
+            // ── Stats row ───────────────────────────────────────────────────
             _buildStatsRow(sw),
             SizedBox(height: sh * 0.018),
 
-            // ── Mode selector ────────────────────────────────────────────────
-            _buildModeSelector(sw),
-            SizedBox(height: sh * 0.018),
-
-            // ── Target presets ────────────────────────────────────────────────
+            // ── Target presets ──────────────────────────────────────────────
             _buildTargetRow(sw),
             SizedBox(height: sh * 0.018),
 
-            // ── Buttons ───────────────────────────────────────────────────────
+            // ── Buttons ─────────────────────────────────────────────────────
             _buildButtons(sw),
             SizedBox(height: sh * 0.022),
 
-            // ── History ───────────────────────────────────────────────────────
+            // ── History ─────────────────────────────────────────────────────
             if (_history.isNotEmpty) _buildHistory(sw),
 
             SizedBox(height: sh * 0.02),
@@ -411,6 +618,7 @@ class _TasbihPageState extends State<TasbihPage>
                 _rounds  = 0;
               });
               _animateTo(0);
+              _persistCurrentSession();
             },
             child: Container(
               margin: EdgeInsets.only(right: sw * 0.025),
@@ -427,8 +635,7 @@ class _TasbihPageState extends State<TasbihPage>
                 style: TextStyle(
                   color: active ? _bg : _teal,
                   fontSize: sw * 0.032,
-                  fontWeight:
-                  active ? FontWeight.w700 : FontWeight.normal,
+                  fontWeight: active ? FontWeight.w700 : FontWeight.normal,
                 ),
               ),
             ),
@@ -441,11 +648,9 @@ class _TasbihPageState extends State<TasbihPage>
   // ── Progress ring ──────────────────────────────────────────────────────────
 
   Widget _buildProgressRing(double sw) {
-    final size = sw * 0.65;
+    final size   = sw * 0.65;
     final stroke = size * 0.065;
     final radius = (size - stroke) / 2;
-    final circumference = 2 * 3.14159 * radius;
-    final offset = circumference * (1 - _anim.value);
 
     return GestureDetector(
       onTap: _increment,
@@ -462,7 +667,7 @@ class _TasbihPageState extends State<TasbihPage>
             ),
           ),
 
-          // SVG-style progress ring via CustomPaint
+          // Progress ring
           SizedBox(
             width: size,
             height: size,
@@ -522,12 +727,11 @@ class _TasbihPageState extends State<TasbihPage>
             ],
           ),
 
-          // Tap hint at bottom of ring
+          // Tap hint
           Positioned(
             bottom: 0,
             child: Container(
-              padding:
-              const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
               decoration: BoxDecoration(
                 color: _bgDark,
                 borderRadius: BorderRadius.circular(20),
@@ -588,56 +792,6 @@ class _TasbihPageState extends State<TasbihPage>
     );
   }
 
-  // ── Mode selector ──────────────────────────────────────────────────────────
-
-  Widget _buildModeSelector(double sw) {
-    final modes = [
-      (ClickMode.sound,   Icons.volume_up_rounded,   'Sound'),
-      (ClickMode.vibrate, Icons.vibration_rounded,   'Vibrate'),
-      (ClickMode.mute,    Icons.volume_off_rounded,  'Mute'),
-    ];
-    return Row(
-      children: modes
-          .map((m) {
-        final active = _mode == m.$1;
-        return Expanded(
-          child: GestureDetector(
-            onTap: () => setState(() => _mode = m.$1),
-            child: Container(
-              margin: EdgeInsets.symmetric(horizontal: sw * 0.012),
-              padding: EdgeInsets.symmetric(vertical: sw * 0.025),
-              decoration: BoxDecoration(
-                color: active ? _green : _bgDark,
-                border: Border.all(
-                    color: active ? _green : _darkGreen, width: 1.5),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Column(
-                children: [
-                  Icon(m.$2,
-                      color: active ? _bg : _teal,
-                      size: sw * 0.055),
-                  SizedBox(height: 3),
-                  Text(
-                    m.$3,
-                    style: TextStyle(
-                      color: active ? _bg : _teal,
-                      fontSize: sw * 0.028,
-                      fontWeight: active
-                          ? FontWeight.w700
-                          : FontWeight.normal,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      })
-          .toList(),
-    );
-  }
-
   // ── Target presets ─────────────────────────────────────────────────────────
 
   Widget _buildTargetRow(double sw) {
@@ -663,6 +817,7 @@ class _TasbihPageState extends State<TasbihPage>
                   _rounds  = 0;
                 });
                 _animateTo(0);
+                _persistCurrentSession();
               },
               child: Container(
                 margin: EdgeInsets.only(left: sw * 0.02),
@@ -677,7 +832,8 @@ class _TasbihPageState extends State<TasbihPage>
                   style: TextStyle(
                     color: active ? _bg : _teal,
                     fontSize: sw * 0.032,
-                    fontWeight: active ? FontWeight.w700 : FontWeight.normal,
+                    fontWeight:
+                    active ? FontWeight.w700 : FontWeight.normal,
                   ),
                 ),
               ),
@@ -719,13 +875,13 @@ class _TasbihPageState extends State<TasbihPage>
           style: const TextStyle(color: Colors.white),
           decoration: InputDecoration(
             labelText: 'Count',
-            labelStyle: TextStyle(color: _teal),
+            labelStyle: const TextStyle(color: _teal),
             enabledBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: _darkGreen),
+              borderSide: const BorderSide(color: _darkGreen),
               borderRadius: BorderRadius.circular(8),
             ),
             focusedBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: _green),
+              borderSide: const BorderSide(color: _green),
               borderRadius: BorderRadius.circular(8),
             ),
           ),
@@ -733,7 +889,7 @@ class _TasbihPageState extends State<TasbihPage>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Cancel', style: TextStyle(color: _teal)),
+            child: const Text('Cancel', style: TextStyle(color: _teal)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: _green),
@@ -746,6 +902,7 @@ class _TasbihPageState extends State<TasbihPage>
                   _rounds  = 0;
                 });
                 _animateTo(0);
+                _persistCurrentSession();
               }
               Navigator.pop(context);
             },
@@ -779,7 +936,7 @@ class _TasbihPageState extends State<TasbihPage>
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(Icons.refresh_rounded, color: _red, size: sw * 0.05),
-                  SizedBox(width: 6),
+                  const SizedBox(width: 6),
                   Text('Reset',
                       style: TextStyle(
                           color: _red,
@@ -807,7 +964,7 @@ class _TasbihPageState extends State<TasbihPage>
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(Icons.add_rounded, color: _bg, size: sw * 0.06),
-                  SizedBox(width: 6),
+                  const SizedBox(width: 6),
                   Text('Count',
                       style: TextStyle(
                           color: _bg,
@@ -909,7 +1066,7 @@ class _RingPainter extends CustomPainter {
     final cx = size.width / 2;
     final cy = size.height / 2;
     final r  = (size.width - strokeWidth) / 2;
-    const start = -1.5707963; // -90° in radians (12 o'clock)
+    const start = -1.5707963; // -90° = 12 o'clock
 
     final trackPaint = Paint()
       ..color = trackColor
@@ -923,10 +1080,8 @@ class _RingPainter extends CustomPainter {
       ..strokeWidth = strokeWidth
       ..strokeCap = StrokeCap.round;
 
-    // Track
     canvas.drawCircle(Offset(cx, cy), r, trackPaint);
 
-    // Progress arc
     if (progress > 0) {
       canvas.drawArc(
         Rect.fromCircle(center: Offset(cx, cy), radius: r),
@@ -940,6 +1095,5 @@ class _RingPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_RingPainter old) =>
-      old.progress != progress ||
-          old.progressColor != progressColor;
+      old.progress != progress || old.progressColor != progressColor;
 }
