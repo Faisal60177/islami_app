@@ -35,40 +35,52 @@ class SharePage extends StatelessWidget {
         ),
         title: const Text('Share App',
             style: TextStyle(
-                color: _textHi,
-                fontWeight: FontWeight.w600,
-                fontSize: 18)),
+                color: _textHi, fontWeight: FontWeight.w600, fontSize: 18)),
         centerTitle: true,
         elevation: 0,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            const SizedBox(height: 8),
-            _heroBanner(),
-            const SizedBox(height: 28),
-            const _SectionLabel('Share via Platform'),
-            const SizedBox(height: 14),
-            _platformGrid(context),
-            const SizedBox(height: 28),
-            const _SectionLabel('Copy App Link'),
-            const SizedBox(height: 14),
-            _linkCard(),
-            const SizedBox(height: 28),
-            _generalShareBtn(),
-            const SizedBox(height: 28),
-            _statsRow(),
-            const SizedBox(height: 32),
-          ],
-        ),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final isWide   = constraints.maxWidth > 600;
+          final isTablet = constraints.maxWidth > 800;
+          final hPad = isTablet ? 48.0 : isWide ? 32.0 : 20.0;
+          final maxW = isTablet ? 720.0 : double.infinity;
+
+          return Center(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: maxW),
+              child: SingleChildScrollView(
+                padding: EdgeInsets.symmetric(horizontal: hPad, vertical: 20),
+                child: Column(
+                  children: [
+                    const SizedBox(height: 8),
+                    _heroBanner(isWide),
+                    const SizedBox(height: 28),
+                    const _SectionLabel('Share via Platform'),
+                    const SizedBox(height: 14),
+                    _platformGrid(context, constraints.maxWidth),
+                    const SizedBox(height: 28),
+                    const _SectionLabel('Copy App Link'),
+                    const SizedBox(height: 14),
+                    _linkCard(),
+                    const SizedBox(height: 28),
+                    _generalShareBtn(),
+                    const SizedBox(height: 28),
+                    _statsRow(isWide),
+                    const SizedBox(height: 32),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }
 
-  Widget _heroBanner() {
+  Widget _heroBanner(bool isWide) {
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(isWide ? 32 : 24),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [Color(0xFF0D2E1C), Color(0xFF122E1E)],
@@ -78,91 +90,75 @@ class SharePage extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: _gold.withOpacity(0.25)),
       ),
-      child: Column(
+      child: isWide
+          ? Row(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const Text('🌙', style: TextStyle(fontSize: 52)),
-          const SizedBox(height: 12),
-          const Text(
-            'Spread the Good',
-            style: TextStyle(
-              color: _textHi,
-              fontSize: 22,
-              fontWeight: FontWeight.w800,
-            ),
+          const SizedBox(width: 24),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: const [
+              Text('Spread the Good',
+                  style: TextStyle(
+                      color: _textHi, fontSize: 22, fontWeight: FontWeight.w800)),
+              SizedBox(height: 6),
+              Text(
+                '"Whoever guides someone to goodness\nwill have a reward like the one who did it."',
+                style: TextStyle(
+                    color: _gold, fontSize: 13, fontStyle: FontStyle.italic, height: 1.5),
+              ),
+              SizedBox(height: 4),
+              Text('— Prophet Muhammad ﷺ (Muslim)',
+                  style: TextStyle(color: _textLo, fontSize: 11)),
+            ],
           ),
-          const SizedBox(height: 8),
-          const Text(
+        ],
+      )
+          : Column(
+        children: const [
+          Text('🌙', style: TextStyle(fontSize: 52)),
+          SizedBox(height: 12),
+          Text('Spread the Good',
+              style: TextStyle(
+                  color: _textHi, fontSize: 22, fontWeight: FontWeight.w800)),
+          SizedBox(height: 8),
+          Text(
             '"Whoever guides someone to goodness\nwill have a reward like the one who did it."',
             textAlign: TextAlign.center,
             style: TextStyle(
-                color: _gold, fontSize: 13, fontStyle: FontStyle.italic,
-                height: 1.5),
+                color: _gold, fontSize: 13, fontStyle: FontStyle.italic, height: 1.5),
           ),
-          const SizedBox(height: 4),
-          const Text('— Prophet Muhammad ﷺ (Muslim)',
+          SizedBox(height: 4),
+          Text('— Prophet Muhammad ﷺ (Muslim)',
               style: TextStyle(color: _textLo, fontSize: 11)),
         ],
       ),
     );
   }
 
-  Widget _platformGrid(BuildContext context) {
+  Widget _platformGrid(BuildContext context, double width) {
     final platforms = [
-      _PlatformItem(
-        icon: '💬',
-        label: 'WhatsApp',
-        color: const Color(0xFF25D366),
-        onTap: () => _shareToWhatsApp(),
-      ),
-      _PlatformItem(
-        icon: '✈️',
-        label: 'Telegram',
-        color: const Color(0xFF0088CC),
-        onTap: () => _shareToTelegram(),
-      ),
-      _PlatformItem(
-        icon: '📘',
-        label: 'Facebook',
-        color: const Color(0xFF1877F2),
-        onTap: () => _shareToFacebook(),
-      ),
-      _PlatformItem(
-        icon: '🐦',
-        label: 'Twitter / X',
-        color: const Color(0xFF1DA1F2),
-        onTap: () => _shareToTwitter(),
-      ),
-      _PlatformItem(
-        icon: '📸',
-        label: 'Instagram',
-        color: const Color(0xFFE1306C),
-        onTap: () => _shareGeneral(),
-      ),
-      _PlatformItem(
-        icon: '💼',
-        label: 'LinkedIn',
-        color: const Color(0xFF0077B5),
-        onTap: () => _shareGeneral(),
-      ),
-      _PlatformItem(
-        icon: '📧',
-        label: 'Email',
-        color: const Color(0xFF4285F4),
-        onTap: () => _shareViaEmail(),
-      ),
-      _PlatformItem(
-        icon: '📲',
-        label: 'More…',
-        color: _accentSoft,
-        onTap: () => _shareGeneral(),
-      ),
+      _PlatformItem(icon: '💬', label: 'WhatsApp',   color: const Color(0xFF25D366), onTap: () => _shareToWhatsApp()),
+      _PlatformItem(icon: '✈️', label: 'Telegram',   color: const Color(0xFF0088CC), onTap: () => _shareToTelegram()),
+      _PlatformItem(icon: '📘', label: 'Facebook',   color: const Color(0xFF1877F2), onTap: () => _shareToFacebook()),
+      _PlatformItem(icon: '🐦', label: 'Twitter / X', color: const Color(0xFF1DA1F2), onTap: () => _shareToTwitter()),
+      _PlatformItem(icon: '📸', label: 'Instagram',  color: const Color(0xFFE1306C), onTap: () => _shareGeneral()),
+      _PlatformItem(icon: '💼', label: 'LinkedIn',   color: const Color(0xFF0077B5), onTap: () => _shareGeneral()),
+      _PlatformItem(icon: '📧', label: 'Email',      color: const Color(0xFF4285F4), onTap: () => _shareViaEmail()),
+      _PlatformItem(icon: '📲', label: 'More…',      color: _accentSoft,             onTap: () => _shareGeneral()),
     ];
+
+    // Responsive cross-axis count
+    int crossCount = 4;
+    if (width > 800) crossCount = 8;
+    else if (width > 600) crossCount = 6;
 
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 4,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: crossCount,
         mainAxisSpacing: 14,
         crossAxisSpacing: 14,
         childAspectRatio: 0.9,
@@ -170,26 +166,30 @@ class SharePage extends StatelessWidget {
       itemCount: platforms.length,
       itemBuilder: (_, i) {
         final p = platforms[i];
+        final iconSize = width > 600 ? 60.0 : 52.0;
         return GestureDetector(
           onTap: p.onTap,
           child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                width: 58, height: 58,
+                width: iconSize, height: iconSize,
                 decoration: BoxDecoration(
                   color: p.color.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(14),
                   border: Border.all(color: p.color.withOpacity(0.3)),
                 ),
-                child: Center(
-                  child: Text(p.icon, style: const TextStyle(fontSize: 26)),
-                ),
+                child: Center(child: Text(p.icon, style: const TextStyle(fontSize: 22))),
               ),
-              const SizedBox(height: 6),
-              Text(p.label,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                      color: _textLo, fontSize: 10.5)),
+              const SizedBox(height: 5),
+              Text(
+                p.label,
+                textAlign: TextAlign.center,
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
+                style: const TextStyle(color: _textLo, fontSize: 10),
+              ),
             ],
           ),
         );
@@ -212,8 +212,7 @@ class SharePage extends StatelessWidget {
           Expanded(
             child: Text(
               _appLink,
-              style: const TextStyle(
-                  color: _textLo, fontSize: 12, overflow: TextOverflow.ellipsis),
+              style: const TextStyle(color: _textLo, fontSize: 12, overflow: TextOverflow.ellipsis),
             ),
           ),
           const SizedBox(width: 8),
@@ -221,15 +220,9 @@ class SharePage extends StatelessWidget {
             onTap: _copyLink,
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: _accentSoft,
-                borderRadius: BorderRadius.circular(8),
-              ),
+              decoration: BoxDecoration(color: _accentSoft, borderRadius: BorderRadius.circular(8)),
               child: const Text('Copy',
-                  style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700)),
+                  style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w700)),
             ),
           ),
         ],
@@ -245,21 +238,17 @@ class SharePage extends StatelessWidget {
         onPressed: _shareGeneral,
         style: ElevatedButton.styleFrom(
           backgroundColor: _accentSoft,
-          shape:
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           elevation: 4,
         ),
         icon: const Icon(Icons.share, color: Colors.white, size: 20),
         label: const Text('Share Now',
-            style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w700,
-                fontSize: 16)),
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16)),
       ),
     );
   }
 
-  Widget _statsRow() {
+  Widget _statsRow(bool isWide) {
     return Row(
       children: [
         _statChip('50K+', 'Downloads'),
@@ -283,56 +272,45 @@ class SharePage extends StatelessWidget {
         child: Column(
           children: [
             Text(value,
-                style: const TextStyle(
-                    color: _gold,
-                    fontWeight: FontWeight.w800,
-                    fontSize: 18)),
+                style: const TextStyle(color: _gold, fontWeight: FontWeight.w800, fontSize: 18)),
             const SizedBox(height: 2),
-            Text(label,
-                style: const TextStyle(color: _textLo, fontSize: 11)),
+            Text(label, style: const TextStyle(color: _textLo, fontSize: 11)),
           ],
         ),
       ),
     );
   }
 
-  // ── Share Handlers ───────────────────────────────────────────────────────
-  Future<void> _shareGeneral() async {
-    await Share.share(_shareMessage, subject: 'Islamic App');
-  }
+  // ── Share Handlers ─────────────────────────────────────────────────────────
+  Future<void> _shareGeneral() async =>
+      await Share.share(_shareMessage, subject: 'Islamic App');
 
   Future<void> _shareToWhatsApp() async {
-    final encoded = Uri.encodeComponent(_shareMessage);
-    final url = 'whatsapp://send?text=$encoded';
+    final url = 'whatsapp://send?text=${Uri.encodeComponent(_shareMessage)}';
     await _tryLaunch(url, fallback: _shareGeneral);
   }
 
   Future<void> _shareToTelegram() async {
-    final encoded = Uri.encodeComponent(_shareMessage);
-    final url = 'tg://msg?text=$encoded';
+    final url = 'tg://msg?text=${Uri.encodeComponent(_shareMessage)}';
     await _tryLaunch(url, fallback: _shareGeneral);
   }
 
   Future<void> _shareToFacebook() async {
-    final url =
-        'https://www.facebook.com/sharer/sharer.php?u=${Uri.encodeComponent(_appLink)}';
+    final url = 'https://www.facebook.com/sharer/sharer.php?u=${Uri.encodeComponent(_appLink)}';
     await _tryLaunch(url, fallback: _shareGeneral);
   }
 
   Future<void> _shareToTwitter() async {
-    final encoded = Uri.encodeComponent(_shareMessage);
-    final url = 'https://twitter.com/intent/tweet?text=$encoded';
+    final url = 'https://twitter.com/intent/tweet?text=${Uri.encodeComponent(_shareMessage)}';
     await _tryLaunch(url, fallback: _shareGeneral);
   }
 
   Future<void> _shareViaEmail() async {
-    final url =
-        'mailto:?subject=Check out Islamic App&body=${Uri.encodeComponent(_shareMessage)}';
+    final url = 'mailto:?subject=Check out Islamic App&body=${Uri.encodeComponent(_shareMessage)}';
     await _tryLaunch(url, fallback: _shareGeneral);
   }
 
   Future<void> _copyLink() async {
-    // Use ClipboardData
     await Share.share(_appLink);
     Get.snackbar('Copied!', 'App link copied to clipboard',
         backgroundColor: _accentSoft,
@@ -341,10 +319,8 @@ class SharePage extends StatelessWidget {
         margin: const EdgeInsets.all(16));
   }
 
-  Future<void> _tryLaunch(String url,
-      {required Future<void> Function() fallback}) async {
+  Future<void> _tryLaunch(String url, {required Future<void> Function() fallback}) async {
     try {
-      // url_launcher would be used here
       await fallback();
     } catch (_) {
       await fallback();
@@ -356,11 +332,7 @@ class _PlatformItem {
   final String icon, label;
   final Color color;
   final VoidCallback onTap;
-  const _PlatformItem(
-      {required this.icon,
-        required this.label,
-        required this.color,
-        required this.onTap});
+  const _PlatformItem({required this.icon, required this.label, required this.color, required this.onTap});
 }
 
 class _SectionLabel extends StatelessWidget {
@@ -373,15 +345,10 @@ class _SectionLabel extends StatelessWidget {
       children: [
         Container(
           width: 4, height: 16,
-          decoration: BoxDecoration(
-              color: _gold, borderRadius: BorderRadius.circular(4)),
+          decoration: BoxDecoration(color: _gold, borderRadius: BorderRadius.circular(4)),
         ),
         const SizedBox(width: 10),
-        Text(text,
-            style: const TextStyle(
-                color: _textHi,
-                fontWeight: FontWeight.w700,
-                fontSize: 15)),
+        Text(text, style: const TextStyle(color: _textHi, fontWeight: FontWeight.w700, fontSize: 15)),
       ],
     );
   }

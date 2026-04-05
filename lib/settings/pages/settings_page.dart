@@ -1,11 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
-import 'package:hijri/hijri_calendar.dart';
-import 'package:intl/intl.dart';
-
-// Export shared widgets
-export 'settings_page.dart' show _SettingsCard, _SettingsTile;
 
 import '../cubit/settings_cubit.dart';
 import '../cubit/settings_state.dart';
@@ -19,42 +14,33 @@ import 'sections/notification_settings_section.dart';
 import 'sections/display_settings_section.dart';
 import 'sections/session_settings_section.dart';
 
-class SettingsPage extends StatelessWidget {
+// No local BlocProvider — reads global SettingsCubit from main.dart
+class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => SettingsCubit(),
-      child: const _SettingsView(),
-    );
-  }
+  State<SettingsPage> createState() => _SettingsPageState();
 }
 
-class _SettingsView extends StatefulWidget {
-  const _SettingsView();
-
-  @override
-  State<_SettingsView> createState() => _SettingsViewState();
-}
-
-class _SettingsViewState extends State<_SettingsView>
+class _SettingsPageState extends State<SettingsPage>
     with SingleTickerProviderStateMixin {
 
   late final AnimationController _animCtrl;
-  late final Animation<double>    _fadeAnim;
-  late final Animation<Offset>    _slideAnim;
+  late final Animation<double>   _fadeAnim;
+  late final Animation<Offset>   _slideAnim;
 
   @override
   void initState() {
     super.initState();
     _animCtrl = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 600),
+      duration: const Duration(milliseconds: 550),
     );
-    _fadeAnim = CurvedAnimation(parent: _animCtrl, curve: Curves.easeOut);
-    _slideAnim = Tween<Offset>(begin: const Offset(0, 0.04), end: Offset.zero)
-        .animate(CurvedAnimation(parent: _animCtrl, curve: Curves.easeOut));
+    _fadeAnim  = CurvedAnimation(parent: _animCtrl, curve: Curves.easeOut);
+    _slideAnim = Tween<Offset>(
+      begin: const Offset(0, 0.03),
+      end:   Offset.zero,
+    ).animate(CurvedAnimation(parent: _animCtrl, curve: Curves.easeOut));
     _animCtrl.forward();
   }
 
@@ -66,10 +52,16 @@ class _SettingsViewState extends State<_SettingsView>
 
   @override
   Widget build(BuildContext context) {
+    final sw  = MediaQuery.of(context).size.width;
+    // Clamp so tablets render like a wide phone, not a stretched layout
+    final rsw = sw.clamp(320.0, 500.0);
+    // Horizontal padding: fixed on phones, generous on tablets
+    final hPad = sw > 500 ? (sw - 500) / 2 : 0.0;
+
     return BlocBuilder<SettingsCubit, SettingsState>(
       builder: (context, state) {
-        final theme  = getThemeById(state.themeMode);
-        final l10n   = AppLocalizations(state.languageCode);
+        final theme = getThemeById(state.themeMode);
+        final l10n  = AppLocalizations(state.languageCode);
 
         return Scaffold(
           backgroundColor: theme.background,
@@ -80,59 +72,53 @@ class _SettingsViewState extends State<_SettingsView>
               child: CustomScrollView(
                 physics: const BouncingScrollPhysics(),
                 slivers: [
-                  // ── Collapsing App Bar ──────────────────────────────────
-                  _buildSliverAppBar(context, theme, l10n),
 
-                  // ── Settings Sections ───────────────────────────────────
+                  // ── Collapsing AppBar ─────────────────────────────────
+                  _buildSliverAppBar(context, theme, l10n, rsw),
+
+                  // ── Sections ──────────────────────────────────────────
                   SliverPadding(
-                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+                    padding: EdgeInsets.fromLTRB(
+                        16 + hPad, 8, 16 + hPad, 40),
                     sliver: SliverList(
                       delegate: SliverChildListDelegate([
 
-                        // Location
-                        _buildSectionHeader(theme, '📍', 'Location', l10n),
-                        const SizedBox(height: 8),
+                        _sectionHeader(theme, '📍', 'LOCATION', rsw),
+                        SizedBox(height: rsw * 0.020),
                         _LocationTile(theme: theme, l10n: l10n),
-                        const SizedBox(height: 24),
+                        SizedBox(height: rsw * 0.060),
 
-                        // Hijri Calendar
-                        _buildSectionHeader(theme, '🗓️', 'Hijri Calendar', l10n),
-                        const SizedBox(height: 8),
+                        _sectionHeader(theme, '🗓️', 'HIJRI CALENDAR', rsw),
+                        SizedBox(height: rsw * 0.020),
                         HijriSettingsSection(theme: theme, l10n: l10n),
-                        const SizedBox(height: 24),
+                        SizedBox(height: rsw * 0.060),
 
-                        // Language
-                        _buildSectionHeader(theme, '🌐', 'Language', l10n),
-                        const SizedBox(height: 8),
+                        _sectionHeader(theme, '🌐', 'LANGUAGE', rsw),
+                        SizedBox(height: rsw * 0.020),
                         LanguageSettingsSection(theme: theme, l10n: l10n),
-                        const SizedBox(height: 24),
+                        SizedBox(height: rsw * 0.060),
 
-                        // Appearance / Theme
-                        _buildSectionHeader(theme, '🎨', 'Appearance', l10n),
-                        const SizedBox(height: 8),
+                        _sectionHeader(theme, '🎨', 'APPEARANCE', rsw),
+                        SizedBox(height: rsw * 0.020),
                         ThemeSettingsSection(theme: theme, l10n: l10n),
-                        const SizedBox(height: 24),
+                        SizedBox(height: rsw * 0.060),
 
-                        // Notifications
-                        _buildSectionHeader(theme, '🔔', 'Notifications', l10n),
-                        const SizedBox(height: 8),
+                        _sectionHeader(theme, '🔔', 'NOTIFICATIONS', rsw),
+                        SizedBox(height: rsw * 0.020),
                         NotificationSettingsSection(theme: theme, l10n: l10n),
-                        const SizedBox(height: 24),
+                        SizedBox(height: rsw * 0.060),
 
-                        // Display
-                        _buildSectionHeader(theme, '🖥️', 'Display', l10n),
-                        const SizedBox(height: 8),
+                        _sectionHeader(theme, '🖥️', 'DISPLAY', rsw),
+                        SizedBox(height: rsw * 0.020),
                         DisplaySettingsSection(theme: theme, l10n: l10n),
-                        const SizedBox(height: 24),
+                        SizedBox(height: rsw * 0.060),
 
-                        // Session
-                        _buildSectionHeader(theme, '🔐', 'Session', l10n),
-                        const SizedBox(height: 8),
+                        _sectionHeader(theme, '🔐', 'SESSION', rsw),
+                        SizedBox(height: rsw * 0.020),
                         SessionSettingsSection(theme: theme, l10n: l10n),
-                        const SizedBox(height: 16),
+                        SizedBox(height: rsw * 0.050),
 
-                        // App Info footer
-                        _buildAppInfo(theme),
+                        _buildAppInfo(theme, rsw),
                       ]),
                     ),
                   ),
@@ -145,37 +131,41 @@ class _SettingsViewState extends State<_SettingsView>
     );
   }
 
-  // ── Sliver App Bar ─────────────────────────────────────────────────────────
-  Widget _buildSliverAppBar(
-      BuildContext context, AppThemeOption theme, AppLocalizations l10n) {
+  // ── Sliver AppBar ──────────────────────────────────────────────────────────
+  Widget _buildSliverAppBar(BuildContext context,
+      AppThemeOption theme, AppLocalizations l10n, double rsw) {
+
+    // Expanded height: scales between 120 (small) and 160 (large)
+    final expandedH = (rsw * 0.38).clamp(120.0, 160.0);
+
     return SliverAppBar(
-      expandedHeight: 140,
-      floating: false,
-      pinned: true,
+      expandedHeight: expandedH,
+      floating:       false,
+      pinned:         true,
       backgroundColor: theme.surface,
       leading: IconButton(
         onPressed: () => Navigator.pop(context),
-        icon: Icon(Icons.arrow_back_ios_rounded, color: theme.accent, size: 20),
+        icon: Icon(Icons.arrow_back_ios_rounded,
+            color: theme.accent, size: rsw * 0.050),
       ),
       flexibleSpace: FlexibleSpaceBar(
-        titlePadding: const EdgeInsets.only(left: 56, bottom: 16),
+        titlePadding: EdgeInsets.only(left: rsw * 0.140, bottom: rsw * 0.040),
         title: Text(
           l10n.settings,
           style: TextStyle(
-            color: theme.textHigh,
-            fontSize: 18,
+            color:      theme.textHigh,
+            fontSize:   (rsw * 0.046).clamp(16.0, 20.0),
             fontWeight: FontWeight.w800,
           ),
         ),
         background: Stack(
           fit: StackFit.expand,
           children: [
-            // Gradient background
             Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
+                  end:   Alignment.bottomRight,
                   colors: [
                     theme.surface,
                     theme.accent.withOpacity(0.08),
@@ -184,13 +174,11 @@ class _SettingsViewState extends State<_SettingsView>
                 ),
               ),
             ),
-            // Decorative pattern
             Positioned(
-              right: -20,
-              top: -20,
+              right: -(rsw * 0.05), top: -(rsw * 0.05),
               child: Container(
-                width: 120,
-                height: 120,
+                width:  rsw * 0.30,
+                height: rsw * 0.30,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: theme.accent.withOpacity(0.06),
@@ -198,35 +186,26 @@ class _SettingsViewState extends State<_SettingsView>
               ),
             ),
             Positioned(
-              right: 40,
-              top: 20,
+              right: rsw * 0.10, top: rsw * 0.05,
               child: Container(
-                width: 60,
-                height: 60,
+                width:  rsw * 0.15,
+                height: rsw * 0.15,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: theme.accent.withOpacity(0.08),
                 ),
               ),
             ),
-            // Settings icon
             Positioned(
-              right: 20,
-              bottom: 16,
-              child: Icon(
-                Icons.settings_rounded,
-                size: 48,
-                color: theme.accent.withOpacity(0.15),
-              ),
+              right: rsw * 0.050, bottom: rsw * 0.040,
+              child: Icon(Icons.settings_rounded,
+                  size:  rsw * 0.12,
+                  color: theme.accent.withOpacity(0.15)),
             ),
-            // Bottom border
             Positioned(
-              bottom: 0,
-              left: 0, right: 0,
+              bottom: 0, left: 0, right: 0,
               child: Container(
-                height: 1,
-                color: theme.accent.withOpacity(0.15),
-              ),
+                  height: 1, color: theme.accent.withOpacity(0.15)),
             ),
           ],
         ),
@@ -234,28 +213,29 @@ class _SettingsViewState extends State<_SettingsView>
     );
   }
 
-  Widget _buildSectionHeader(
-      AppThemeOption theme, String emoji, String title, AppLocalizations l10n) {
+  // ── Section header ─────────────────────────────────────────────────────────
+  Widget _sectionHeader(
+      AppThemeOption theme, String emoji, String title, double rsw) {
     return Row(
       children: [
-        Text(emoji, style: const TextStyle(fontSize: 16)),
-        const SizedBox(width: 8),
+        Text(emoji, style: TextStyle(fontSize: rsw * 0.038)),
+        SizedBox(width: rsw * 0.020),
         Text(
-          title.toUpperCase(),
+          title,
           style: TextStyle(
-            color: theme.accent,
-            fontSize: 11,
-            fontWeight: FontWeight.w800,
-            letterSpacing: 1.8,
+            color:         theme.accent,
+            fontSize:      (rsw * 0.028).clamp(10.0, 13.0),
+            fontWeight:    FontWeight.w800,
+            letterSpacing: 1.6,
           ),
         ),
-        const SizedBox(width: 10),
+        SizedBox(width: rsw * 0.025),
         Expanded(
           child: Container(
             height: 1,
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [theme.accent.withOpacity(0.4), Colors.transparent],
+                colors: [theme.accent.withOpacity(0.35), Colors.transparent],
               ),
             ),
           ),
@@ -264,10 +244,11 @@ class _SettingsViewState extends State<_SettingsView>
     );
   }
 
-  Widget _buildAppInfo(AppThemeOption theme) {
+  // ── App info footer ────────────────────────────────────────────────────────
+  Widget _buildAppInfo(AppThemeOption theme, double rsw) {
     return Container(
-      margin: const EdgeInsets.only(top: 8),
-      padding: const EdgeInsets.all(20),
+      margin:  EdgeInsets.only(top: rsw * 0.020),
+      padding: EdgeInsets.all(rsw * 0.050),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
@@ -275,47 +256,48 @@ class _SettingsViewState extends State<_SettingsView>
             theme.surface.withOpacity(0.4),
           ],
         ),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(rsw * 0.050),
         border: Border.all(color: theme.accent.withOpacity(0.15)),
       ),
       child: Column(
         children: [
-          Text('🕌', style: const TextStyle(fontSize: 28)),
-          const SizedBox(height: 8),
-          Text(
-            'Islamic App',
-            style: TextStyle(
-              color: theme.textHigh,
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Version 2.5.0',
-            style: TextStyle(color: theme.textLow, fontSize: 12),
-          ),
-          const SizedBox(height: 12),
+          Text('🕌',
+              style: TextStyle(fontSize: (rsw * 0.070).clamp(24.0, 34.0))),
+          SizedBox(height: rsw * 0.020),
+          Text('Islamic App',
+              style: TextStyle(
+                  color:      theme.textHigh,
+                  fontSize:   (rsw * 0.040).clamp(14.0, 18.0),
+                  fontWeight: FontWeight.w700)),
+          SizedBox(height: rsw * 0.010),
+          Text('Version 2.5.0',
+              style: TextStyle(
+                  color:    theme.textLow,
+                  fontSize: (rsw * 0.030).clamp(10.0, 13.0))),
+          SizedBox(height: rsw * 0.030),
           Text(
             '"And seek help through patience and prayer."',
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: theme.accent.withOpacity(0.7),
-              fontSize: 11,
-              fontStyle: FontStyle.italic,
+              color:      theme.accent.withOpacity(0.7),
+              fontSize:   (rsw * 0.028).clamp(10.0, 13.0),
+              fontStyle:  FontStyle.italic,
             ),
           ),
-          Text(
-            '— Quran 2:45',
-            style: TextStyle(color: theme.textLow, fontSize: 10),
-          ),
+          SizedBox(height: rsw * 0.008),
+          Text('— Quran 2:45',
+              style: TextStyle(
+                  color:    theme.textLow,
+                  fontSize: (rsw * 0.025).clamp(9.0, 12.0))),
         ],
       ),
     );
   }
 }
 
-// ── Location Tile ─────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// Location tile
+// ─────────────────────────────────────────────────────────────────────────────
 class _LocationTile extends StatelessWidget {
   final AppThemeOption theme;
   final AppLocalizations l10n;
@@ -323,9 +305,9 @@ class _LocationTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _SettingsCard(
+    return SettingsCard(
       theme: theme,
-      child: _SettingsTile(
+      child: SettingsTile(
         theme:    theme,
         icon:     Icons.my_location_rounded,
         iconBg:   const Color(0xFF4CAF82),
@@ -334,34 +316,31 @@ class _LocationTile extends StatelessWidget {
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              'Change',
-              style: TextStyle(color: theme.accent, fontSize: 13,
-                  fontWeight: FontWeight.w600),
-            ),
+            Text('Change',
+                style: TextStyle(
+                    color:      theme.accent,
+                    fontSize:   13,
+                    fontWeight: FontWeight.w600)),
             const SizedBox(width: 4),
             Icon(Icons.arrow_forward_ios_rounded,
                 color: theme.textLow, size: 13),
           ],
         ),
-        onTap: () => Navigator.push(
-            context, MaterialPageRoute(builder: (_) => const LocationPage())),
+        onTap: () => Navigator.push(context,
+            MaterialPageRoute(builder: (_) => const LocationPage())),
       ),
     );
   }
 }
 
-// ── Reusable Card ─────────────────────────────────────────────────────────────
-class _SettingsCard extends StatelessWidget {
+// ─────────────────────────────────────────────────────────────────────────────
+// PUBLIC shared widgets used by section files
+// ─────────────────────────────────────────────────────────────────────────────
+class SettingsCard extends StatelessWidget {
   final AppThemeOption theme;
   final Widget child;
-  final EdgeInsets? padding;
 
-  const _SettingsCard({
-    required this.theme,
-    required this.child,
-    this.padding,
-  });
+  const SettingsCard({super.key, required this.theme, required this.child});
 
   @override
   Widget build(BuildContext context) {
@@ -372,9 +351,9 @@ class _SettingsCard extends StatelessWidget {
         border: Border.all(color: theme.accent.withOpacity(0.15)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(theme.isDark ? 0.3 : 0.06),
+            color:      Colors.black.withOpacity(theme.isDark ? 0.28 : 0.06),
             blurRadius: 12,
-            offset: const Offset(0, 4),
+            offset:     const Offset(0, 4),
           ),
         ],
       ),
@@ -386,18 +365,17 @@ class _SettingsCard extends StatelessWidget {
   }
 }
 
-// ── Reusable Tile ─────────────────────────────────────────────────────────────
-class _SettingsTile extends StatelessWidget {
+class SettingsTile extends StatelessWidget {
   final AppThemeOption theme;
-  final IconData icon;
-  final Color iconBg;
-  final String title;
-  final String? subtitle;
-  final Widget? trailing;
+  final IconData  icon;
+  final Color     iconBg;
+  final String    title;
+  final String?   subtitle;
+  final Widget?   trailing;
   final VoidCallback? onTap;
-  final bool showDivider;
 
-  const _SettingsTile({
+  const SettingsTile({
+    super.key,
     required this.theme,
     required this.icon,
     required this.iconBg,
@@ -405,53 +383,67 @@ class _SettingsTile extends StatelessWidget {
     this.subtitle,
     this.trailing,
     this.onTap,
-    this.showDivider = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    final sw  = MediaQuery.of(context).size.width;
+    final rsw = sw.clamp(320.0, 500.0);
+
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: onTap,
-        splashColor: theme.accent.withOpacity(0.08),
+        onTap:        onTap,
+        splashColor:  theme.accent.withOpacity(0.08),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          padding: EdgeInsets.symmetric(
+              horizontal: rsw * 0.040, vertical: rsw * 0.035),
           child: Row(
             children: [
+              // Icon box — scales with screen
               Container(
-                width: 40,
-                height: 40,
+                width:  rsw * 0.100,
+                height: rsw * 0.100,
                 decoration: BoxDecoration(
-                  color: iconBg.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(12),
+                  color:        iconBg.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(rsw * 0.030),
                 ),
-                child: Icon(icon, color: iconBg, size: 20),
+                child: Icon(icon,
+                    color: iconBg, size: rsw * 0.050),
               ),
-              const SizedBox(width: 14),
+              SizedBox(width: rsw * 0.035),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        color: theme.textHigh,
-                        fontSize: 15,
+                        color:      theme.textHigh,
+                        fontSize:   (rsw * 0.038).clamp(13.0, 16.0),
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                     if (subtitle != null) ...[
-                      const SizedBox(height: 2),
+                      SizedBox(height: rsw * 0.008),
                       Text(
                         subtitle!,
-                        style: TextStyle(color: theme.textLow, fontSize: 12),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                            color:    theme.textLow,
+                            fontSize: (rsw * 0.030).clamp(10.0, 13.0)),
                       ),
                     ],
                   ],
                 ),
               ),
-              if (trailing != null) trailing!,
+              if (trailing != null) ...[
+                SizedBox(width: rsw * 0.020),
+                trailing!,
+              ],
             ],
           ),
         ),
@@ -459,4 +451,3 @@ class _SettingsTile extends StatelessWidget {
     );
   }
 }
-

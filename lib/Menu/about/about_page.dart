@@ -25,52 +25,66 @@ class AboutPage extends StatelessWidget {
           onPressed: () => Get.back(),
         ),
         title: const Text('About App',
-            style: TextStyle(
-                color: _textHi,
-                fontWeight: FontWeight.w600,
-                fontSize: 18)),
+            style: TextStyle(color: _textHi, fontWeight: FontWeight.w600, fontSize: 18)),
         centerTitle: true,
         elevation: 0,
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            _appHeader(),
-            Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _featureGrid(),
-                  const SizedBox(height: 28),
-                  _sectionLabel('About This App'),
-                  const SizedBox(height: 12),
-                  _aboutText(),
-                  const SizedBox(height: 28),
-                  _sectionLabel('Whatis New — v2.5.0'),
-                  const SizedBox(height: 12),
-                  _changelogCard(),
-                  const SizedBox(height: 28),
-                  _sectionLabel('App Information'),
-                  const SizedBox(height: 12),
-                  _infoCard(),
-                  const SizedBox(height: 28),
-                  _sectionLabel('Legal'),
-                  const SizedBox(height: 12),
-                  _legalCard(),
-                  const SizedBox(height: 28),
-                  _missionCard(),
-                  const SizedBox(height: 32),
-                ],
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final isWide   = constraints.maxWidth > 600;
+          final isTablet = constraints.maxWidth > 800;
+          final hPad = isTablet ? 48.0 : isWide ? 32.0 : 20.0;
+          final maxW = isTablet ? 800.0 : double.infinity;
+
+          return Center(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: maxW),
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    _appHeader(isWide, isTablet),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: hPad, vertical: 20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _featureGrid(constraints.maxWidth),
+                          const SizedBox(height: 28),
+                          _sectionLabel('About This App'),
+                          const SizedBox(height: 12),
+                          _aboutText(),
+                          const SizedBox(height: 28),
+                          _sectionLabel('What\'s New — v2.5.0'),
+                          const SizedBox(height: 12),
+                          _changelogCard(),
+                          const SizedBox(height: 28),
+                          _sectionLabel('App Information'),
+                          const SizedBox(height: 12),
+                          if (isWide)
+                            _infoCardWide()
+                          else
+                            _infoCard(),
+                          const SizedBox(height: 28),
+                          _sectionLabel('Legal'),
+                          const SizedBox(height: 12),
+                          _legalCard(),
+                          const SizedBox(height: 28),
+                          _missionCard(),
+                          const SizedBox(height: 32),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
 
-  Widget _appHeader() {
+  Widget _appHeader(bool isWide, bool isTablet) {
     return Container(
       width: double.infinity,
       decoration: const BoxDecoration(
@@ -80,35 +94,34 @@ class AboutPage extends StatelessWidget {
           end: Alignment.bottomCenter,
         ),
       ),
-      padding: const EdgeInsets.symmetric(vertical: 40),
+      padding: EdgeInsets.symmetric(vertical: isTablet ? 56 : isWide ? 48 : 40),
       child: Column(
         children: [
           Container(
-            width: 100, height: 100,
+            width: isWide ? 120 : 100,
+            height: isWide ? 120 : 100,
             decoration: BoxDecoration(
               gradient: const LinearGradient(
                 colors: [Color(0xFF2E7D5A), Color(0xFF0D2E1C)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
-              borderRadius: BorderRadius.circular(26),
+              borderRadius: BorderRadius.circular(isWide ? 32 : 26),
               border: Border.all(color: _gold.withOpacity(0.5), width: 2),
               boxShadow: [
-                BoxShadow(
-                    color: _accent.withOpacity(0.4),
-                    blurRadius: 30, spreadRadius: 2)
+                BoxShadow(color: _accent.withOpacity(0.4), blurRadius: 30, spreadRadius: 2)
               ],
             ),
-            child: const Center(
-              child: Text('🕌', style: TextStyle(fontSize: 50)),
+            child: Center(
+              child: Text('🕌', style: TextStyle(fontSize: isWide ? 60 : 50)),
             ),
           ),
           const SizedBox(height: 16),
-          const Text(
+          Text(
             'Islamic App',
             style: TextStyle(
               color: _textHi,
-              fontSize: 26,
+              fontSize: isWide ? 32 : 26,
               fontWeight: FontWeight.w900,
               letterSpacing: 0.5,
             ),
@@ -118,8 +131,7 @@ class AboutPage extends StatelessWidget {
               style: TextStyle(color: _textLo, fontSize: 13)),
           const SizedBox(height: 10),
           Container(
-            padding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
             decoration: BoxDecoration(
               color: _gold.withOpacity(0.1),
               borderRadius: BorderRadius.circular(20),
@@ -127,8 +139,7 @@ class AboutPage extends StatelessWidget {
             ),
             child: const Text(
               '🌙  Your Complete Islamic Companion',
-              style: TextStyle(
-                  color: _gold, fontSize: 12, fontWeight: FontWeight.w600),
+              style: TextStyle(color: _gold, fontSize: 12, fontWeight: FontWeight.w600),
             ),
           ),
         ],
@@ -136,7 +147,7 @@ class AboutPage extends StatelessWidget {
     );
   }
 
-  Widget _featureGrid() {
+  Widget _featureGrid(double width) {
     final features = [
       _FeatureItem('🕐', 'Prayer Times', 'GPS-accurate Adhan'),
       _FeatureItem('📖', 'Holy Quran', '114 Surah + Audio'),
@@ -146,11 +157,16 @@ class AboutPage extends StatelessWidget {
       _FeatureItem('📅', 'Hijri Cal', 'Islamic dates'),
     ];
 
+    // Responsive cross-axis count
+    int crossCount = 3;
+    if (width > 800) crossCount = 6;
+    else if (width > 600) crossCount = 4;
+
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: crossCount,
         mainAxisSpacing: 12,
         crossAxisSpacing: 12,
         childAspectRatio: 1.0,
@@ -172,14 +188,11 @@ class AboutPage extends StatelessWidget {
               Text(f.title,
                   textAlign: TextAlign.center,
                   style: const TextStyle(
-                      color: _textHi,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 12)),
+                      color: _textHi, fontWeight: FontWeight.w700, fontSize: 12)),
               const SizedBox(height: 2),
               Text(f.subtitle,
                   textAlign: TextAlign.center,
-                  style:
-                  const TextStyle(color: _textLo, fontSize: 10)),
+                  style: const TextStyle(color: _textLo, fontSize: 10)),
             ],
           ),
         );
@@ -192,15 +205,11 @@ class AboutPage extends StatelessWidget {
       children: [
         Container(
           width: 4, height: 16,
-          decoration: BoxDecoration(
-              color: _gold, borderRadius: BorderRadius.circular(4)),
+          decoration: BoxDecoration(color: _gold, borderRadius: BorderRadius.circular(4)),
         ),
         const SizedBox(width: 10),
         Text(text,
-            style: const TextStyle(
-                color: _textHi,
-                fontWeight: FontWeight.w700,
-                fontSize: 15)),
+            style: const TextStyle(color: _textHi, fontWeight: FontWeight.w700, fontSize: 15)),
       ],
     );
   }
@@ -236,7 +245,6 @@ class AboutPage extends StatelessWidget {
       '🌍 Added: 15 new UI languages including Bangla',
       '🔔 Fixed: Adhan notification reliability',
     ];
-
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -249,15 +257,14 @@ class AboutPage extends StatelessWidget {
         children: changes
             .map((c) => Padding(
           padding: const EdgeInsets.symmetric(vertical: 5),
-          child: Text(c,
-              style: const TextStyle(
-                  color: _textLo, fontSize: 13, height: 1.5)),
+          child: Text(c, style: const TextStyle(color: _textLo, fontSize: 13, height: 1.5)),
         ))
             .toList(),
       ),
     );
   }
 
+  // Portrait: vertical list
   Widget _infoCard() {
     final info = [
       ('Version', '2.5.0'),
@@ -269,7 +276,6 @@ class AboutPage extends StatelessWidget {
       ('Size', '~32 MB'),
       ('Requires', 'Android 6.0+ / iOS 13+'),
     ];
-
     return Container(
       decoration: BoxDecoration(
         color: _card,
@@ -283,29 +289,78 @@ class AboutPage extends StatelessWidget {
           return Column(
             children: [
               Padding(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(item.$1,
-                        style: const TextStyle(
-                            color: _textLo, fontSize: 13)),
+                    Text(item.$1, style: const TextStyle(color: _textLo, fontSize: 13)),
                     Text(item.$2,
                         style: const TextStyle(
-                            color: _textHi,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 13)),
+                            color: _textHi, fontWeight: FontWeight.w600, fontSize: 13)),
                   ],
                 ),
               ),
-              if (!isLast)
-                Divider(
-                    height: 1,
-                    color: _accentSoft.withOpacity(0.15)),
+              if (!isLast) Divider(height: 1, color: _accentSoft.withOpacity(0.15)),
             ],
           );
         }).toList(),
+      ),
+    );
+  }
+
+  // Landscape/wide: 2-column grid
+  Widget _infoCardWide() {
+    final info = [
+      ('Version', '2.5.0'),
+      ('Build', '250'),
+      ('Released', 'April 2026'),
+      ('Platform', 'iOS & Android'),
+      ('Developer', 'Islamic App Team'),
+      ('Country', '🇧🇩 Bangladesh'),
+      ('Size', '~32 MB'),
+      ('Requires', 'Android 6.0+ / iOS 13+'),
+    ];
+    final rows = <Widget>[];
+    for (var i = 0; i < info.length; i += 2) {
+      final left  = info[i];
+      final right = i + 1 < info.length ? info[i + 1] : null;
+      rows.add(
+        IntrinsicHeight(
+          child: Row(
+            children: [
+              Expanded(child: _infoCell(left.$1, left.$2)),
+              if (right != null) ...[
+                VerticalDivider(width: 1, color: _accentSoft.withOpacity(0.15)),
+                Expanded(child: _infoCell(right.$1, right.$2)),
+              ],
+            ],
+          ),
+        ),
+      );
+      if (i + 2 < info.length) {
+        rows.add(Divider(height: 1, color: _accentSoft.withOpacity(0.15)));
+      }
+    }
+    return Container(
+      decoration: BoxDecoration(
+        color: _card,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: _accentSoft.withOpacity(0.2)),
+      ),
+      child: Column(children: rows),
+    );
+  }
+
+  Widget _infoCell(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: const TextStyle(color: _textLo, fontSize: 13)),
+          Text(value,
+              style: const TextStyle(color: _textHi, fontWeight: FontWeight.w600, fontSize: 13)),
+        ],
       ),
     );
   }
@@ -325,8 +380,7 @@ class AboutPage extends StatelessWidget {
           _legalTile(Icons.gavel_outlined, 'Terms of Service',
               'https://islamicapp.dev/terms'),
           Divider(height: 1, color: _accentSoft.withOpacity(0.15)),
-          _legalTile(Icons.source, 'Open Source Licenses',
-              null),
+          _legalTile(Icons.source, 'Open Source Licenses', null),
         ],
       ),
     );
@@ -334,23 +388,15 @@ class AboutPage extends StatelessWidget {
 
   Widget _legalTile(IconData icon, String title, String? url) {
     return GestureDetector(
-      onTap: url != null
-          ? () => launchUrl(Uri.parse(url))
-          : null,
+      onTap: url != null ? () => launchUrl(Uri.parse(url)) : null,
       child: Padding(
-        padding:
-        const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         child: Row(
           children: [
             Icon(icon, color: _accent, size: 20),
             const SizedBox(width: 14),
-            Expanded(
-              child: Text(title,
-                  style: const TextStyle(
-                      color: _textHi, fontSize: 14)),
-            ),
-            const Icon(Icons.arrow_forward_ios,
-                color: _textLo, size: 14),
+            Expanded(child: Text(title, style: const TextStyle(color: _textHi, fontSize: 14))),
+            const Icon(Icons.arrow_forward_ios, color: _textLo, size: 14),
           ],
         ),
       ),
@@ -362,37 +408,29 @@ class AboutPage extends StatelessWidget {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [
-            _accentSoft.withOpacity(0.15),
-            _gold.withOpacity(0.05),
-          ],
+          colors: [_accentSoft.withOpacity(0.15), _gold.withOpacity(0.05)],
         ),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: _gold.withOpacity(0.25)),
       ),
-      child: Column(
+      child: const Column(
         children: [
-          const Text('وَذَكِّرْ فَإِنَّ الذِّكْرَى تَنفَعُ الْمُؤْمِنِينَ',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                  color: _gold,
-                  fontSize: 18,
-                  fontFamily: 'Amiri')),
-          const SizedBox(height: 8),
-          const Text(
+          Text(
+            'وَذَكِّرْ فَإِنَّ الذِّكْرَى تَنفَعُ الْمُؤْمِنِينَ',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: _gold, fontSize: 18, fontFamily: 'Amiri'),
+          ),
+          SizedBox(height: 8),
+          Text(
             '"And remind, for indeed reminding benefits the believers."',
             textAlign: TextAlign.center,
-            style: TextStyle(
-                color: _textLo,
-                fontSize: 12,
-                fontStyle: FontStyle.italic),
+            style: TextStyle(color: _textLo, fontSize: 12, fontStyle: FontStyle.italic),
           ),
-          const Text('— Quran 51:55',
-              style: TextStyle(color: _textLo, fontSize: 11)),
-          const SizedBox(height: 16),
-          const Divider(color: Color(0x22D4AF37)),
-          const SizedBox(height: 12),
-          const Text(
+          Text('— Quran 51:55', style: TextStyle(color: _textLo, fontSize: 11)),
+          SizedBox(height: 16),
+          Divider(color: Color(0x22D4AF37)),
+          SizedBox(height: 12),
+          Text(
             '© 2026 Islamic App — All rights reserved.\nMade with ❤️ for the Ummah.',
             textAlign: TextAlign.center,
             style: TextStyle(color: _textLo, fontSize: 12, height: 1.6),
