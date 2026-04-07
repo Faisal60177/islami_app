@@ -217,8 +217,8 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                           Positioned(
                             right: 0, top: 0,
                             child: Container(
-                              width:  2,
-                              height: 1,
+                              width:  16,
+                              height: 16,
                               decoration: const BoxDecoration(
                                   color: Colors.red, shape: BoxShape.circle),
                               alignment: Alignment.center,
@@ -226,7 +226,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                                 count > 99 ? '99+' : '$count',
                                 style: TextStyle(
                                     color:      Colors.white,
-                                    fontSize:   2,
+                                    fontSize:   9,
                                     fontWeight: FontWeight.bold),
                               ),
                             ),
@@ -242,12 +242,14 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                   Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(_englishDate(), style: TextStyle(fontSize: sw * 0.025),),
-                          Text(_hijriDate(hijriOff), style: TextStyle(fontSize: sw * 0.025),),
+                          Text(_englishDate(), style: TextStyle(fontSize: (rsw * 0.030).clamp(11.0, 13.5),
+                            color: Colors.white70,),),
+                          Text(_hijriDate(hijriOff), style: TextStyle(fontSize: (rsw * 0.030).clamp(11.0, 13.5),
+                            color: Colors.white70,),),
 
                         ],
                       ),
-                      SizedBox(height: 0.000001),
+                   SizedBox(height: sh * 0.012),
 
                       BlocBuilder<PrayerTimesCubit, PrayerTimesState>(
                         builder: (context, state) {
@@ -293,9 +295,13 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                                   // Ring sits centered on top
                                   Positioned(
                                     top: rsw * 0.04,
-                                    child: PrayerProgressRing(
+                                    left: 0,
+                                    right: 0,
+                                    child: Center(
+                                      child: PrayerProgressRing(
                                       entries: ring,
-                                      size: (rsw * 0.5).clamp(190.0, 255.0),
+                                      size: (rsw * 0.55).clamp(190.0, 255.0),
+                                    ),
                                     ),
                                   ),
                                 ],
