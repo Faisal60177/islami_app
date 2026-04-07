@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'auth_controller.dart';
 
-const _bg        = Color(0xFF011A0E);
-const _surface   = Color(0xFF0D2E1C);
-const _card      = Color(0xFF122E1E);
-const _accent    = Color(0xFF4CAF82);
-const _accentSoft= Color(0xFF2E7D5A);
-const _gold      = Color(0xFFD4AF37);
-const _textHi    = Color(0xFFE8F5EC);
-const _textLo    = Color(0xFF7BAF92);
+const _bg         = Color(0xFF011A0E);
+const _surface    = Color(0xFF0D2E1C);
+const _card       = Color(0xFF122E1E);
+const _accent     = Color(0xFF4CAF82);
+const _accentSoft = Color(0xFF2E7D5A);
+const _gold       = Color(0xFFD4AF37);
+const _textHi     = Color(0xFFE8F5EC);
+const _textLo     = Color(0xFF7BAF92);
 
 class AuthPage extends StatefulWidget {
   const AuthPage({super.key});
@@ -18,7 +18,8 @@ class AuthPage extends StatefulWidget {
   State<AuthPage> createState() => _AuthPageState();
 }
 
-class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin {
+class _AuthPageState extends State<AuthPage>
+    with SingleTickerProviderStateMixin {
   final AuthController _auth = Get.find<AuthController>();
 
   late TabController _tab;
@@ -40,6 +41,9 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
   void initState() {
     super.initState();
     _tab = TabController(length: 2, vsync: this);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _auth.errorMessage.value = '';
+    });
   }
 
   @override
@@ -54,46 +58,75 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
     super.dispose();
   }
 
+  // ── Sign In ────────────────────────────────────────────────────────────────
   Future<void> _doSignIn() async {
     if (!_signInForm.currentState!.validate()) return;
+
     final ok = await _auth.signInWithEmail(
       email: _emailInCtrl.text,
       password: _passInCtrl.text,
     );
-    if (ok && mounted) {
-      Get.back();
+
+    if (!mounted) return;
+
+    if (ok) {
+      _popAuthPage();
       _snack('Welcome back! 🌙', success: true);
     } else {
-      _snack(_auth.errorMessage.value);
+      _snack(_auth.errorMessage.value.isNotEmpty
+          ? _auth.errorMessage.value
+          : 'Sign in failed. Please try again.');
     }
   }
 
+  // ── Sign Up ────────────────────────────────────────────────────────────────
   Future<void> _doSignUp() async {
     if (!_signUpForm.currentState!.validate()) return;
+
     final ok = await _auth.signUpWithEmail(
       name: _nameCtrl.text,
       email: _emailUpCtrl.text,
       password: _passUpCtrl.text,
     );
-    if (ok && mounted) {
-      Get.back();
+
+    if (!mounted) return;
+
+    if (ok) {
+      _popAuthPage();
       _snack('Account created! Assalamu Alaikum 🌙', success: true);
     } else {
-      _snack(_auth.errorMessage.value);
+      _snack(_auth.errorMessage.value.isNotEmpty
+          ? _auth.errorMessage.value
+          : 'Sign up failed. Please try again.');
     }
   }
 
+  // ── Google ─────────────────────────────────────────────────────────────────
   Future<void> _doGoogle() async {
     final ok = await _auth.signInWithGoogle();
-    if (ok && mounted) {
-      Get.back();
+    if (!mounted) return;
+    if (ok) {
+      _popAuthPage();
       _snack('Signed in with Google 🌙', success: true);
     } else if (_auth.errorMessage.value.isNotEmpty) {
       _snack(_auth.errorMessage.value);
     }
   }
 
+  // ✅ THE ROOT CAUSE FIX:
+  // Your flow is: ProfilePage/SignOutPage → AuthPage
+  // After sign in, we need to pop AuthPage off the stack.
+  // Navigator.canPop() correctly checks if there is something to return to.
+  void _popAuthPage() {
+    final nav = Navigator.of(Get.context!);
+    if (nav.canPop()) {
+      nav.pop(); // pop AuthPage, return to whatever opened it
+    }
+    // If AuthPage has no parent route, the Obx() rebuild handles the UI update
+  }
+
   void _snack(String msg, {bool success = false}) {
+    if (Get.isSnackbarOpen) Get.closeCurrentSnackbar();
     Get.snackbar(
       success ? 'Success' : 'Error',
       msg,
@@ -102,6 +135,7 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
       snackPosition: SnackPosition.BOTTOM,
       margin: const EdgeInsets.all(16),
       borderRadius: 12,
+      duration: Duration(seconds: success ? 2 : 4),
     );
   }
 
@@ -113,23 +147,30 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
         backgroundColor: _surface,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new, color: _accent),
-          onPressed: () => Get.back(),
+          onPressed: () => Navigator.of(context).pop(),
         ),
         title: const Text('My Account',
-            style: TextStyle(color: _textHi, fontSize: 18, fontWeight: FontWeight.w600)),
+            style: TextStyle(
+                color: _textHi, fontSize: 18, fontWeight: FontWeight.w600)),
         centerTitle: true,
         elevation: 0,
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(50),
           child: Container(
             margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 6),
-            decoration: BoxDecoration(color: _surface, borderRadius: BorderRadius.circular(30)),
+            decoration: BoxDecoration(
+              color: _surface,
+              borderRadius: BorderRadius.circular(30),
+            ),
             child: TabBar(
               controller: _tab,
-              indicator: BoxDecoration(color: _accentSoft, borderRadius: BorderRadius.circular(30)),
+              indicator: BoxDecoration(
+                  color: _accentSoft,
+                  borderRadius: BorderRadius.circular(30)),
               labelColor: Colors.white,
               unselectedLabelColor: _textLo,
-              labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+              labelStyle:
+              const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
               unselectedLabelStyle: const TextStyle(fontSize: 14),
               tabs: const [Tab(text: 'Sign In'), Tab(text: 'Sign Up')],
             ),
@@ -145,20 +186,19 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
 
   Widget _signInView() {
     return LayoutBuilder(builder: (context, constraints) {
-      final isWide   = constraints.maxWidth > 600;
-      final isTablet = constraints.maxWidth > 800;
-      final maxW  = isTablet ? 540.0 : isWide ? 500.0 : double.infinity;
-      final hPad  = isTablet ? 64.0 : isWide ? 48.0 : 24.0;
-
+      final maxW = constraints.maxWidth > 600 ? 500.0 : double.infinity;
       return SingleChildScrollView(
-        padding: EdgeInsets.symmetric(horizontal: hPad, vertical: 24),
+        padding: EdgeInsets.symmetric(
+          horizontal: constraints.maxWidth > 600 ? 48 : 24,
+          vertical: 24,
+        ),
         child: Center(
           child: ConstrainedBox(
             constraints: BoxConstraints(maxWidth: maxW),
             child: Column(
               children: [
                 const SizedBox(height: 16),
-                _arabicDecor(isWide),
+                _arabicDecor(),
                 const SizedBox(height: 32),
                 Form(
                   key: _signInForm,
@@ -179,20 +219,26 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
                         obscure: !_showPassIn,
                         suffix: IconButton(
                           icon: Icon(
-                            _showPassIn ? Icons.visibility_off : Icons.visibility,
-                            color: _textLo, size: 20,
+                            _showPassIn
+                                ? Icons.visibility_off
+                                : Icons.visibility,
+                            color: _textLo,
+                            size: 20,
                           ),
-                          onPressed: () => setState(() => _showPassIn = !_showPassIn),
+                          onPressed: () =>
+                              setState(() => _showPassIn = !_showPassIn),
                         ),
-                        validator: (v) =>
-                        (v == null || v.length < 6) ? 'Min 6 characters' : null,
+                        validator: (v) => (v == null || v.length < 6)
+                            ? 'Min 6 characters'
+                            : null,
                       ),
                       Align(
                         alignment: Alignment.centerRight,
                         child: TextButton(
                           onPressed: _showForgot,
                           child: const Text('Forgot password?',
-                              style: TextStyle(color: _gold, fontSize: 13)),
+                              style:
+                              TextStyle(color: _gold, fontSize: 13)),
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -218,7 +264,9 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
                       children: [
                         TextSpan(
                           text: 'Sign Up',
-                          style: TextStyle(color: _accent, fontWeight: FontWeight.w700),
+                          style: TextStyle(
+                              color: _accent,
+                              fontWeight: FontWeight.w700),
                         ),
                       ],
                     ),
@@ -234,20 +282,19 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
 
   Widget _signUpView() {
     return LayoutBuilder(builder: (context, constraints) {
-      final isWide   = constraints.maxWidth > 600;
-      final isTablet = constraints.maxWidth > 800;
-      final maxW  = isTablet ? 540.0 : isWide ? 500.0 : double.infinity;
-      final hPad  = isTablet ? 64.0 : isWide ? 48.0 : 24.0;
-
+      final maxW = constraints.maxWidth > 600 ? 500.0 : double.infinity;
       return SingleChildScrollView(
-        padding: EdgeInsets.symmetric(horizontal: hPad, vertical: 24),
+        padding: EdgeInsets.symmetric(
+          horizontal: constraints.maxWidth > 600 ? 48 : 24,
+          vertical: 24,
+        ),
         child: Center(
           child: ConstrainedBox(
             constraints: BoxConstraints(maxWidth: maxW),
             child: Column(
               children: [
                 const SizedBox(height: 16),
-                _arabicDecor(isWide),
+                _arabicDecor(),
                 const SizedBox(height: 32),
                 Form(
                   key: _signUpForm,
@@ -257,69 +304,39 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
                         controller: _nameCtrl,
                         label: 'Full Name',
                         icon: Icons.person_outline,
-                        validator: (v) =>
-                        (v == null || v.trim().isEmpty) ? 'Name required' : null,
+                        validator: (v) => (v == null || v.trim().isEmpty)
+                            ? 'Name required'
+                            : null,
                       ),
                       const SizedBox(height: 16),
-                      // Wide: email + password side-by-side
-                      if (isWide)
-                        Row(
-                          children: [
-                            Expanded(
-                              child: _field(
-                                controller: _emailUpCtrl,
-                                label: 'Email Address',
-                                icon: Icons.email_outlined,
-                                keyboardType: TextInputType.emailAddress,
-                                validator: _validateEmail,
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: _field(
-                                controller: _passUpCtrl,
-                                label: 'Password',
-                                icon: Icons.lock_outline,
-                                obscure: !_showPassUp,
-                                suffix: IconButton(
-                                  icon: Icon(
-                                    _showPassUp ? Icons.visibility_off : Icons.visibility,
-                                    color: _textLo, size: 20,
-                                  ),
-                                  onPressed: () =>
-                                      setState(() => _showPassUp = !_showPassUp),
-                                ),
-                                validator: (v) =>
-                                (v == null || v.length < 6) ? 'Min 6 characters' : null,
-                              ),
-                            ),
-                          ],
-                        )
-                      else ...[
-                        _field(
-                          controller: _emailUpCtrl,
-                          label: 'Email Address',
-                          icon: Icons.email_outlined,
-                          keyboardType: TextInputType.emailAddress,
-                          validator: _validateEmail,
-                        ),
-                        const SizedBox(height: 16),
-                        _field(
-                          controller: _passUpCtrl,
-                          label: 'Password',
-                          icon: Icons.lock_outline,
-                          obscure: !_showPassUp,
-                          suffix: IconButton(
-                            icon: Icon(
-                              _showPassUp ? Icons.visibility_off : Icons.visibility,
-                              color: _textLo, size: 20,
-                            ),
-                            onPressed: () => setState(() => _showPassUp = !_showPassUp),
+                      _field(
+                        controller: _emailUpCtrl,
+                        label: 'Email Address',
+                        icon: Icons.email_outlined,
+                        keyboardType: TextInputType.emailAddress,
+                        validator: _validateEmail,
+                      ),
+                      const SizedBox(height: 16),
+                      _field(
+                        controller: _passUpCtrl,
+                        label: 'Password',
+                        icon: Icons.lock_outline,
+                        obscure: !_showPassUp,
+                        suffix: IconButton(
+                          icon: Icon(
+                            _showPassUp
+                                ? Icons.visibility_off
+                                : Icons.visibility,
+                            color: _textLo,
+                            size: 20,
                           ),
-                          validator: (v) =>
-                          (v == null || v.length < 6) ? 'Min 6 characters' : null,
+                          onPressed: () =>
+                              setState(() => _showPassUp = !_showPassUp),
                         ),
-                      ],
+                        validator: (v) => (v == null || v.length < 6)
+                            ? 'Min 6 characters'
+                            : null,
+                      ),
                       const SizedBox(height: 16),
                       _field(
                         controller: _confirmCtrl,
@@ -328,13 +345,18 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
                         obscure: !_showConfirm,
                         suffix: IconButton(
                           icon: Icon(
-                            _showConfirm ? Icons.visibility_off : Icons.visibility,
-                            color: _textLo, size: 20,
+                            _showConfirm
+                                ? Icons.visibility_off
+                                : Icons.visibility,
+                            color: _textLo,
+                            size: 20,
                           ),
-                          onPressed: () => setState(() => _showConfirm = !_showConfirm),
+                          onPressed: () =>
+                              setState(() => _showConfirm = !_showConfirm),
                         ),
-                        validator: (v) =>
-                        v != _passUpCtrl.text ? 'Passwords do not match' : null,
+                        validator: (v) => v != _passUpCtrl.text
+                            ? 'Passwords do not match'
+                            : null,
                       ),
                       const SizedBox(height: 24),
                       Obx(() => _primaryBtn(
@@ -359,7 +381,9 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
                       children: [
                         TextSpan(
                           text: 'Sign In',
-                          style: TextStyle(color: _accent, fontWeight: FontWeight.w700),
+                          style: TextStyle(
+                              color: _accent,
+                              fontWeight: FontWeight.w700),
                         ),
                       ],
                     ),
@@ -378,9 +402,11 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
     Get.dialog(
       AlertDialog(
         backgroundColor: _card,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20)),
         title: const Text('Reset Password',
-            style: TextStyle(color: _textHi, fontWeight: FontWeight.w700)),
+            style:
+            TextStyle(color: _textHi, fontWeight: FontWeight.w700)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -400,45 +426,55 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
         actions: [
           TextButton(
             onPressed: () => Get.back(),
-            child: const Text('Cancel', style: TextStyle(color: _textLo)),
+            child:
+            const Text('Cancel', style: TextStyle(color: _textLo)),
           ),
           Obx(() => ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: _accentSoft),
+            style: ElevatedButton.styleFrom(
+                backgroundColor: _accentSoft),
             onPressed: _auth.isLoading.value
                 ? null
                 : () async {
-              final ok = await _auth.sendPasswordReset(ctrl.text);
+              if (ctrl.text.trim().isEmpty) return;
+              final ok =
+              await _auth.sendPasswordReset(ctrl.text);
               Get.back();
               _snack(
-                ok ? 'Reset email sent! Check your inbox.' : _auth.errorMessage.value,
+                ok
+                    ? 'Reset email sent! Check your inbox.'
+                    : _auth.errorMessage.value,
                 success: ok,
               );
             },
             child: _auth.isLoading.value
                 ? const SizedBox(
-                width: 16, height: 16,
-                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                : const Text('Send Link', style: TextStyle(color: Colors.white)),
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(
+                    strokeWidth: 2, color: Colors.white))
+                : const Text('Send Link',
+                style: TextStyle(color: Colors.white)),
           )),
         ],
       ),
     );
   }
 
-  Widget _arabicDecor(bool isWide) {
+  Widget _arabicDecor() {
     return Column(
       children: [
         Container(
-          padding: EdgeInsets.symmetric(horizontal: isWide ? 32 : 24, vertical: 12),
+          padding:
+          const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           decoration: BoxDecoration(
             color: _surface,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: _gold.withOpacity(0.3)),
           ),
-          child: Text(
+          child: const Text(
             'بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ',
             style: TextStyle(
-                color: _gold, fontSize: isWide ? 24 : 20, fontFamily: 'Amiri'),
+                color: _gold, fontSize: 20, fontFamily: 'Amiri'),
             textAlign: TextAlign.center,
           ),
         ),
@@ -466,6 +502,7 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
       obscureText: obscure,
       style: const TextStyle(color: _textHi),
       validator: validator,
+      autovalidateMode: AutovalidateMode.onUserInteraction,
       decoration: InputDecoration(
         labelText: label,
         labelStyle: const TextStyle(color: _textLo, fontSize: 14),
@@ -475,11 +512,13 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
         fillColor: _surface,
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: _accentSoft.withOpacity(0.3)),
+          borderSide:
+          BorderSide(color: _accentSoft.withOpacity(0.3)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: _accent, width: 1.5),
+          borderSide:
+          const BorderSide(color: _accent, width: 1.5),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
@@ -489,7 +528,8 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
           borderRadius: BorderRadius.circular(14),
           borderSide: const BorderSide(color: Colors.red),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        contentPadding:
+        const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       ),
     );
   }
@@ -506,16 +546,21 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
         onPressed: loading ? null : onTap,
         style: ElevatedButton.styleFrom(
           backgroundColor: _accentSoft,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16)),
           elevation: 4,
         ),
         child: loading
             ? const SizedBox(
-            width: 22, height: 22,
-            child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white))
+            width: 22,
+            height: 22,
+            child: CircularProgressIndicator(
+                strokeWidth: 2.5, color: Colors.white))
             : Text(label,
             style: const TextStyle(
-                color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16)),
+                color: Colors.white,
+                fontWeight: FontWeight.w700,
+                fontSize: 16)),
       ),
     );
   }
@@ -527,7 +572,8 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12),
           child: Text('or continue with',
-              style: TextStyle(color: _textLo.withOpacity(0.7), fontSize: 12)),
+              style: TextStyle(
+                  color: _textLo.withOpacity(0.7), fontSize: 12)),
         ),
         Expanded(child: Divider(color: _textLo.withOpacity(0.3))),
       ],
@@ -538,28 +584,52 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
     return Obx(() => SizedBox(
       width: double.infinity,
       height: 54,
-      child: OutlinedButton.icon(
+      child: OutlinedButton(
         onPressed: _auth.isLoading.value ? null : _doGoogle,
         style: OutlinedButton.styleFrom(
           side: BorderSide(color: _textLo.withOpacity(0.4)),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16)),
           backgroundColor: _surface,
         ),
-        icon: Image.network(
-          'https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg',
-          width: 22, height: 22,
-          errorBuilder: (_, __, ___) =>
-          const Icon(Icons.g_mobiledata, color: Colors.white, size: 24),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SizedBox(
+              width: 22,
+              height: 22,
+              child: Image.network(
+                'https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg',
+                width: 22,
+                height: 22,
+                errorBuilder: (_, __, ___) => Container(
+                  width: 22,
+                  height: 22,
+                  decoration: const BoxDecoration(
+                      shape: BoxShape.circle, color: Colors.white),
+                  child: const Center(
+                    child: Text('G',
+                        style: TextStyle(
+                            color: Color(0xFF4285F4),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14)),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            const Text('Continue with Google',
+                style: TextStyle(
+                    color: _textHi, fontWeight: FontWeight.w600)),
+          ],
         ),
-        label: const Text('Continue with Google',
-            style: TextStyle(color: _textHi, fontWeight: FontWeight.w600)),
       ),
     ));
   }
 
   String? _validateEmail(String? v) {
     if (v == null || v.trim().isEmpty) return 'Email required';
-    final regex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    final regex = RegExp(r'^[\w\-\.]+@([\w\-]+\.)+[\w\-]{2,4}$');
     if (!regex.hasMatch(v.trim())) return 'Invalid email address';
     return null;
   }

@@ -6,9 +6,16 @@ import 'package:google_sign_in/google_sign_in.dart';
 class AuthController extends GetxController {
   static AuthController get to => Get.find();
 
-  final FirebaseAuth      _auth         = FirebaseAuth.instance;
-  final FirebaseFirestore _firestore    = FirebaseFirestore.instance;
-  final GoogleSignIn      _googleSignIn = GoogleSignIn();
+  final FirebaseAuth      _auth      = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  // ✅ FIX: scopes must include 'email' AND 'profile'
+  // Without 'profile', photoUrl and displayName come back null on some devices.
+  // Do NOT pass serverClientId unless you are using backend token verification —
+  // passing a wrong serverClientId is the #1 cause of silent Google sign-in failure.
+  final GoogleSignIn _googleSignIn = GoogleSignIn(
+    scopes: ['email', 'profile'],
+  );
 
   final Rx<User?>  firebaseUser = Rx<User?>(null);
   final RxBool     isLoading    = false.obs;
@@ -21,15 +28,10 @@ class AuthController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    // ✅ CRITICAL FIX: use userChanges() NOT authStateChanges()
-    // authStateChanges() does NOT fire when updateDisplayName() is called.
-    // userChanges() fires on ALL profile updates including displayName.
     firebaseUser.bindStream(_auth.userChanges());
     ever(firebaseUser, _handleUserChanged);
   }
 
-  // ✅ FIX: made this a regular void (not async) — async void is fire-and-forget
-  // and causes race conditions with GetX reactivity.
   void _handleUserChanged(User? user) {
     if (user != null) {
       _loadUserData(user);
@@ -40,15 +42,11 @@ class AuthController extends GetxController {
     }
   }
 
-  // ✅ Separate async method — safe to await internally
   Future<void> _loadUserData(User user) async {
-    // First set whatever Firebase Auth has right now
     displayName.value = user.displayName ?? '';
     email.value       = user.email       ?? '';
     photoUrl.value    = user.photoURL    ?? '';
 
-    // If displayName is empty (known Firebase Android bug after signup),
-    // fetch from Firestore as the reliable fallback
     if (displayName.value.isEmpty) {
       try {
         final doc = await _firestore
@@ -61,9 +59,7 @@ class AuthController extends GetxController {
             displayName.value = firestoreName;
           }
         }
-      } catch (_) {
-        // Silently ignore — network may be unavailable
-      }
+      } catch (_) {}
     }
   }
 
@@ -86,7 +82,6 @@ class AuthController extends GetxController {
 
       final user = credential.user!;
 
-      // ✅ Write to Firestore FIRST (this is the reliable name store)
       await _firestore.collection('users').doc(user.uid).set({
         'uid':       user.uid,
         'name':      name.trim(),
@@ -97,12 +92,8 @@ class AuthController extends GetxController {
         'lastLogin': FieldValue.serverTimestamp(),
       });
 
-      // ✅ Update Firebase Auth profile (best-effort — known Android bug means
-      // this may not reflect immediately in the stream)
       await user.updateDisplayName(name.trim());
 
-      // ✅ Set reactive values IMMEDIATELY — do not wait for stream
-      // This guarantees the UI shows the name right after signup
       displayName.value = name.trim();
       this.email.value  = email.trim();
       photoUrl.value    = '';
@@ -135,8 +126,6 @@ class AuthController extends GetxController {
 
       final uid = credential.user!.uid;
 
-      // ✅ Always fetch name from Firestore — it's the reliable source
-      // Firebase Auth displayName may be null for email/password users
       try {
         final doc = await _firestore.collection('users').doc(uid).get();
         if (doc.exists) {
@@ -148,13 +137,11 @@ class AuthController extends GetxController {
           photoUrl.value   = data['photoUrl'] as String? ?? '';
         }
 
-        // Update last login timestamp
         await _firestore
             .collection('users')
             .doc(uid)
             .update({'lastLogin': FieldValue.serverTimestamp()});
       } catch (_) {
-        // Firestore fetch failed — fall back to Firebase Auth values
         displayName.value = credential.user!.displayName ?? 'Muslim User';
         this.email.value  = credential.user!.email ?? email.trim();
       }
@@ -177,18 +164,37 @@ class AuthController extends GetxController {
       isLoading.value    = true;
       errorMessage.value = '';
 
+      // ✅ FIX: Always sign out first to force the account picker to show.
+      // Without this, if a previous sign-in session is cached but broken,
+      // signIn() returns null silently instead of showing the picker.
+      await _googleSignIn.signOut();
+
       final googleUser = await _googleSignIn.signIn();
+
       if (googleUser == null) {
-        // User pressed back/cancelled — not an error
+        // User cancelled the picker — not an error
         isLoading.value = false;
         return false;
       }
 
-      final googleAuth = await googleUser.authentication;
+      // ✅ FIX: Wrap getAuthentication in its own try-catch.
+      // This call fails independently of signIn() on some Android versions
+      // when the Google Play Services token exchange times out.
+      GoogleSignInAuthentication googleAuth;
+      try {
+        googleAuth = await googleUser.authentication;
+      } catch (e) {
+        errorMessage.value =
+        'Google authentication failed. Please try again.';
+        isLoading.value = false;
+        return false;
+      }
 
-      // ✅ Verify tokens are not null before proceeding
       if (googleAuth.idToken == null) {
-        errorMessage.value = 'Google sign in failed. Please try again.';
+        errorMessage.value =
+        'Google sign in failed — no token received. '
+            'Check SHA-1 fingerprint in Firebase Console.';
+        isLoading.value = false;
         return false;
       }
 
@@ -200,11 +206,10 @@ class AuthController extends GetxController {
       final userCredential = await _auth.signInWithCredential(credential);
       final user           = userCredential.user!;
 
-      final name     = user.displayName ?? googleUser.displayName ?? '';
-      final userEmail = user.email ?? googleUser.email;
-      final photo    = user.photoURL ?? googleUser.photoUrl ?? '';
+      final name      = user.displayName ?? googleUser.displayName ?? '';
+      final userEmail = user.email       ?? googleUser.email;
+      final photo     = user.photoURL    ?? googleUser.photoUrl ?? '';
 
-      // Save/update in Firestore
       await _firestore.collection('users').doc(user.uid).set({
         'uid':       user.uid,
         'name':      name,
@@ -214,7 +219,6 @@ class AuthController extends GetxController {
         'lastLogin': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
 
-      // ✅ Set reactive values immediately
       displayName.value = name;
       email.value       = userEmail ?? '';
       photoUrl.value    = photo;
@@ -224,6 +228,9 @@ class AuthController extends GetxController {
       errorMessage.value = _mapFirebaseError(e.code);
       return false;
     } catch (e) {
+      // ✅ FIX: Log the actual error so you can see it in the console
+      // instead of a silent failure
+      print('[AuthController] signInWithGoogle error: $e');
       errorMessage.value = 'Google sign in failed. Please try again.';
       return false;
     } finally {
@@ -247,9 +254,10 @@ class AuthController extends GetxController {
 
   // ── Sign Out ────────────────────────────────────────────────────────────
   Future<void> signOut() async {
-    await _googleSignIn.signOut();
+    try {
+      await _googleSignIn.signOut();
+    } catch (_) {}
     await _auth.signOut();
-    // Reactive values cleared automatically by _handleUserChanged(null)
   }
 
   // ── Update Profile ──────────────────────────────────────────────────────
@@ -259,16 +267,12 @@ class AuthController extends GetxController {
       final user = _auth.currentUser;
       if (user == null) return false;
 
-      // Update Firestore first (reliable)
       await _firestore
           .collection('users')
           .doc(user.uid)
           .update({'name': name.trim()});
 
-      // Update Firebase Auth profile
       await user.updateDisplayName(name.trim());
-
-      // Set immediately
       displayName.value = name.trim();
       return true;
     } catch (_) {
@@ -287,7 +291,7 @@ class AuthController extends GetxController {
         return 'Incorrect password. Please try again.';
       case 'invalid-credential':
         return 'Incorrect email or password.';
-      case 'email-already-in-use':
+      case 'email-alreadyflutter pub get-in-use':
         return 'This email is already registered.';
       case 'weak-password':
         return 'Password must be at least 6 characters.';

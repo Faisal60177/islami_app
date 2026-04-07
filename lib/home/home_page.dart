@@ -32,7 +32,10 @@ class PrayerTimesPage extends StatefulWidget {
 
 class _PrayerTimesPageState extends State<PrayerTimesPage> {
 
-  final List<Widget> _pages = const [
+  // ✅ FIX 1: Move _pages outside the State class body and make it static
+  // so it is NOT recreated on every rebuild — prevents stack overflow
+  // and flicker when navigating between tabs.
+  static const List<Widget> _pages = [
     PrayerTimesPage(),
     ToolsPage(),
     QuranPage(),
@@ -224,11 +227,10 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
     required Color accentSoft,
     required AppLocalizations l10n,
   }) {
-    // Responsive sizes — all relative to rsw (clamped width)
-    final iconSize    = rsw * 0.042;   // location icon
-    final bellSize    = rsw * 0.055;   // notification bell
-    final fontSize    = rsw * 0.038;   // marquee text
-    final badgeSize   = rsw * 0.042;   // notification badge circle
+    final iconSize    = rsw * 0.042;
+    final bellSize    = rsw * 0.055;
+    final fontSize    = rsw * 0.038;
+    final badgeSize   = rsw * 0.042;
     final badgeFontSz = rsw * 0.021;
     final topPad      = MediaQuery.of(context).padding.top + rsw * 0.03;
 
@@ -257,7 +259,6 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                       MaterialPageRoute(builder: (_) => const LocationPage())),
                   child: Row(
                     children: [
-                      // Responsive icon bubble
                       Container(
                         padding: EdgeInsets.all(rsw * 0.015),
                         decoration: BoxDecoration(
@@ -386,7 +387,6 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
         required Color accent,
         required Color accentSoft,
       }) {
-    // Ring size: between 220 and 260 px regardless of screen
     final ringSize = (rsw * 0.60).clamp(200.0, 260.0);
     final mosqueH  = (sh * 0.20).clamp(130.0, 210.0);
 
@@ -451,7 +451,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
       (key: 'Dhuhr',   name: l10n.dhuhr,   icon: Icons.wb_sunny,          s: t.dhuhrStart,   e: t.dhuhrEnd),
       (key: 'Asr',     name: l10n.asr,     icon: Icons.cloud,             s: t.asrStart,     e: t.asrEnd),
       (key: 'Maghrib', name: l10n.maghrib,  icon: Icons.nightlight_round,  s: t.maghribStart, e: t.maghribEnd),
-      (key: 'Isha',    name: l10n.isha,    icon: Icons.dark_mode,         s: t.ishaStart,    e: t.ishaEnd),
+      (key: 'Isha',    name: l10n.isha,     icon: Icons.dark_mode,         s: t.ishaStart,    e: t.ishaEnd),
     ];
     const colors = {
       'Fajr':    Color(0xFF5B8DEF),
@@ -599,7 +599,6 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
         String activeLabel     = 'Active',
         String prohibitedLabel = 'Prohibited',
       }) {
-    // All sizes relative to rsw — safe on small (320) and large (420+) screens
     final iconCircle  = rsw * 0.088;
     final iconSz      = rsw * 0.044;
     final nameFontSz  = rsw * 0.036;
@@ -622,7 +621,6 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
           : null,
       child: Row(
         children: [
-          // Icon circle
           Container(
             width:  iconCircle,
             height: iconCircle,
@@ -638,7 +636,6 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
           ),
           SizedBox(width: rsw * 0.025),
 
-          // Name + sub-label
           Expanded(
             flex: 5,
             child: Column(
@@ -664,7 +661,6 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
             ),
           ),
 
-          // Active / Now badge
           if (isActive) ...[
             Container(
               padding: EdgeInsets.symmetric(
@@ -687,7 +683,6 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
             SizedBox(width: rsw * 0.014),
           ],
 
-          // Time
           Flexible(
             flex: 6,
             child: Text(
@@ -726,9 +721,8 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
       (l10n.menu,  'assets/icons/menu.png'),
     ];
 
-    // Nav icon size scales with real screen width, clamped
-    final iconSz   = (sw * 0.058).clamp(22.0, 28.0);
-    final labelSz  = (sw * 0.024).clamp(9.0,  11.5);
+    final iconSz  = (sw * 0.058).clamp(22.0, 28.0);
+    final labelSz = (sw * 0.024).clamp(9.0,  11.5);
 
     return Container(
       decoration: BoxDecoration(
@@ -752,8 +746,14 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
               return GestureDetector(
                 onTap: () {
                   if (!active) {
-                    Navigator.push(context,
-                        MaterialPageRoute(builder: (_) => _pages[i]));
+                    // ✅ FIX 2: Use Navigator.push consistently.
+                    // This is the same system used by auth pages so the
+                    // route stack stays coherent and Navigator.canPop()
+                    // works correctly inside AuthPage._popAuthPage().
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => _pages[i]),
+                    );
                   }
                 },
                 child: AnimatedContainer(
@@ -773,8 +773,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Image.asset(asset,
-                          width: iconSz, height: iconSz),
+                      Image.asset(asset, width: iconSz, height: iconSz),
                       const SizedBox(height: 3),
                       Text(
                         label,

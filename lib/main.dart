@@ -18,6 +18,7 @@ import 'package:islamic_app/Menu/auth/auth_controller.dart';
 import 'firebase_options.dart';
 import 'package:islamic_app/notification/cubit/notification_cubit.dart';
 import 'package:islamic_app/notification/repository/notification_repository.dart';
+import 'package:islamic_app/Quran/quran_page.dart';
 
 // ── Settings imports ──────────────────────────────────────────────────────────
 import 'package:islamic_app/settings/cubit/settings_cubit.dart';
@@ -45,7 +46,8 @@ void main() async {
   );
 
   // ✅ Register AuthController AFTER Firebase is ready
-  Get.put(AuthController());
+  // ✅ permanent: true — controller is never garbage collected
+  Get.put(AuthController(), permanent: true);
 
   // Initialize storage classes
   final locationStorage    = LocationStorage();
@@ -92,13 +94,13 @@ void main() async {
           create: (_) => DuasCubit(duasRepository)..loadAllDuas(),
         ),
       ],
-      child:  const MyApp(),
+      child: const MyApp(),
     ),
   );
 }
 
 class MyApp extends StatelessWidget {
-   const MyApp({super.key});
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {

@@ -3,14 +3,14 @@ import 'package:get/get.dart';
 import '../auth/auth_controller.dart';
 import '../auth/auth_page.dart';
 
-const _bg        = Color(0xFF011A0E);
-const _surface   = Color(0xFF0D2E1C);
-const _card      = Color(0xFF122E1E);
-const _accent    = Color(0xFF4CAF82);
-const _accentSoft= Color(0xFF2E7D5A);
-const _gold      = Color(0xFFD4AF37);
-const _textHi    = Color(0xFFE8F5EC);
-const _textLo    = Color(0xFF7BAF92);
+const _bg         = Color(0xFF011A0E);
+const _surface    = Color(0xFF0D2E1C);
+const _card       = Color(0xFF122E1E);
+const _accent     = Color(0xFF4CAF82);
+const _accentSoft = Color(0xFF2E7D5A);
+const _gold       = Color(0xFFD4AF37);
+const _textHi     = Color(0xFFE8F5EC);
+const _textLo     = Color(0xFF7BAF92);
 
 class SignOutPage extends StatelessWidget {
   const SignOutPage({super.key});
@@ -23,28 +23,35 @@ class SignOutPage extends StatelessWidget {
       backgroundColor: _bg,
       appBar: AppBar(
         backgroundColor: _surface,
+        // ✅ FIX: use Navigator.pop not Get.back so the stack is correct
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new, color: _accent),
-          onPressed: () => Get.back(),
+          onPressed: () => Navigator.of(context).pop(),
         ),
         title: const Text('Sign Out',
-            style: TextStyle(color: _textHi, fontWeight: FontWeight.w600, fontSize: 18)),
+            style: TextStyle(
+                color: _textHi,
+                fontWeight: FontWeight.w600,
+                fontSize: 18)),
         centerTitle: true,
         elevation: 0,
       ),
+      // ✅ FIX: Obx at the body level — when auth.isLoggedIn changes
+      // (after sign out), this automatically switches views without
+      // needing any navigation call at all.
       body: Obx(() {
-        if (!auth.isLoggedIn) return _notLoggedInView();
-        return _signOutView(auth);
+        if (!auth.isLoggedIn) return _notLoggedInView(context);
+        return _signOutView(context, auth);
       }),
     );
   }
 
-  Widget _signOutView(AuthController auth) {
+  Widget _signOutView(BuildContext context, AuthController auth) {
     return LayoutBuilder(builder: (context, constraints) {
-      final isWide   = constraints.maxWidth > 600;
-      final isTablet = constraints.maxWidth > 800;
-      final maxW  = isTablet ? 520.0 : isWide ? 480.0 : double.infinity;
-      final hPad  = isTablet ? 80.0 : isWide ? 64.0 : 32.0;
+      final isWide    = constraints.maxWidth > 600;
+      final isTablet  = constraints.maxWidth > 800;
+      final maxW      = isTablet ? 520.0 : isWide ? 480.0 : double.infinity;
+      final hPad      = isTablet ? 80.0 : isWide ? 64.0 : 32.0;
       final avatarSize = isTablet ? 130.0 : isWide ? 120.0 : 110.0;
 
       return Center(
@@ -58,25 +65,34 @@ class SignOutPage extends StatelessWidget {
                 children: [
                   // Avatar
                   Obx(() => Container(
-                    width: avatarSize, height: avatarSize,
+                    width: avatarSize,
+                    height: avatarSize,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: _surface,
-                      border: Border.all(color: _gold.withOpacity(0.4), width: 2.5),
+                      border: Border.all(
+                          color: _gold.withOpacity(0.4), width: 2.5),
                       boxShadow: [
                         BoxShadow(
                             color: _accent.withOpacity(0.2),
-                            blurRadius: 30, spreadRadius: 2)
+                            blurRadius: 30,
+                            spreadRadius: 2)
                       ],
                     ),
                     child: auth.photoUrl.value.isNotEmpty
                         ? ClipOval(
-                        child: Image.network(auth.photoUrl.value,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => _avatarFallback(auth)))
+                      child: Image.network(
+                        auth.photoUrl.value,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) =>
+                            _avatarFallback(auth),
+                      ),
+                    )
                         : _avatarFallback(auth),
                   )),
+
                   const SizedBox(height: 20),
+
                   Obx(() => Text(
                     auth.displayName.value.isNotEmpty
                         ? auth.displayName.value
@@ -86,9 +102,15 @@ class SignOutPage extends StatelessWidget {
                         fontSize: isWide ? 26 : 22,
                         fontWeight: FontWeight.w700),
                   )),
+
                   const SizedBox(height: 4),
-                  Obx(() => Text(auth.email.value,
-                      style: const TextStyle(color: _textLo, fontSize: 14))),
+
+                  Obx(() => Text(
+                    auth.email.value,
+                    style:
+                    const TextStyle(color: _textLo, fontSize: 14),
+                  )),
+
                   SizedBox(height: isWide ? 48 : 40),
 
                   // Confirmation card
@@ -97,12 +119,14 @@ class SignOutPage extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: _card,
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: Colors.red.withOpacity(0.25)),
+                      border: Border.all(
+                          color: Colors.red.withOpacity(0.25)),
                     ),
                     child: Column(
                       children: [
                         Icon(Icons.logout_rounded,
-                            color: Colors.redAccent, size: isWide ? 52 : 40),
+                            color: Colors.redAccent,
+                            size: isWide ? 52 : 40),
                         const SizedBox(height: 14),
                         Text(
                           'Are you sure you want to sign out?',
@@ -116,14 +140,18 @@ class SignOutPage extends StatelessWidget {
                         const Text(
                           'Your bookmarks, progress and data\nwill be saved to your account.',
                           textAlign: TextAlign.center,
-                          style: TextStyle(color: _textLo, fontSize: 13.5, height: 1.6),
+                          style: TextStyle(
+                              color: _textLo,
+                              fontSize: 13.5,
+                              height: 1.6),
                         ),
                       ],
                     ),
                   ),
+
                   const SizedBox(height: 28),
 
-                  // Sign out button
+                  // Sign Out button
                   SizedBox(
                     width: double.infinity,
                     height: 54,
@@ -131,8 +159,13 @@ class SignOutPage extends StatelessWidget {
                       onPressed: auth.isLoading.value
                           ? null
                           : () async {
+                        // ✅ FIX: Sign out first, THEN navigate.
+                        // The Obx() above will auto-switch to
+                        // _notLoggedInView — no explicit nav needed.
+                        // But we also pop back as a UX convenience.
                         await auth.signOut();
-                        Get.back();
+
+                        // Show snackbar AFTER sign out
                         Get.snackbar(
                           'Signed Out',
                           'You have been signed out. See you soon! 🌙',
@@ -140,7 +173,14 @@ class SignOutPage extends StatelessWidget {
                           colorText: Colors.white,
                           snackPosition: SnackPosition.BOTTOM,
                           margin: const EdgeInsets.all(16),
+                          duration: const Duration(seconds: 3),
                         );
+
+                        // Pop back to the previous screen
+                        // The reactive state already updated
+                        if (Navigator.of(Get.context!).canPop()) {
+                          Navigator.of(Get.context!).pop();
+                        }
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.red[800],
@@ -150,15 +190,23 @@ class SignOutPage extends StatelessWidget {
                       ),
                       icon: auth.isLoading.value
                           ? const SizedBox(
-                          width: 20, height: 20,
+                          width: 20,
+                          height: 20,
                           child: CircularProgressIndicator(
-                              strokeWidth: 2.5, color: Colors.white))
-                          : const Icon(Icons.logout, color: Colors.white, size: 20),
-                      label: const Text('Yes, Sign Me Out',
-                          style: TextStyle(
-                              color: Colors.white, fontWeight: FontWeight.w700, fontSize: 15)),
+                              strokeWidth: 2.5,
+                              color: Colors.white))
+                          : const Icon(Icons.logout,
+                          color: Colors.white, size: 20),
+                      label: const Text(
+                        'Yes, Sign Me Out',
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 15),
+                      ),
                     )),
                   ),
+
                   const SizedBox(height: 14),
 
                   // Cancel button
@@ -166,15 +214,18 @@ class SignOutPage extends StatelessWidget {
                     width: double.infinity,
                     height: 54,
                     child: OutlinedButton(
-                      onPressed: () => Get.back(),
+                      onPressed: () => Navigator.of(context).pop(),
                       style: OutlinedButton.styleFrom(
-                        side: BorderSide(color: _accentSoft.withOpacity(0.5)),
+                        side: BorderSide(
+                            color: _accentSoft.withOpacity(0.5)),
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16)),
                       ),
                       child: const Text('Cancel',
                           style: TextStyle(
-                              color: _accent, fontWeight: FontWeight.w600, fontSize: 15)),
+                              color: _accent,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 15)),
                     ),
                   ),
                 ],
@@ -193,12 +244,14 @@ class SignOutPage extends StatelessWidget {
             ? auth.displayName.value[0].toUpperCase()
             : 'M',
         style: const TextStyle(
-            color: Colors.white, fontSize: 40, fontWeight: FontWeight.bold),
+            color: Colors.white,
+            fontSize: 40,
+            fontWeight: FontWeight.bold),
       ),
     ));
   }
 
-  Widget _notLoggedInView() {
+  Widget _notLoggedInView(BuildContext context) {
     return LayoutBuilder(builder: (context, constraints) {
       final isWide = constraints.maxWidth > 600;
       final maxW = isWide ? 480.0 : double.infinity;
@@ -218,20 +271,24 @@ class SignOutPage extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: _surface,
                     shape: BoxShape.circle,
-                    border: Border.all(color: _textLo.withOpacity(0.3)),
+                    border: Border.all(
+                        color: _textLo.withOpacity(0.3)),
                   ),
                   child: Icon(Icons.person_off_outlined,
                       color: _textLo, size: isWide ? 64 : 52),
                 ),
                 const SizedBox(height: 24),
-                const Text('You\'re not signed in',
+                const Text("You're not signed in",
                     style: TextStyle(
-                        color: _textHi, fontSize: 20, fontWeight: FontWeight.w700)),
+                        color: _textHi,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700)),
                 const SizedBox(height: 8),
                 const Text(
                   'Sign in to access your profile\nand personalized features.',
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: _textLo, fontSize: 14, height: 1.6),
+                  style:
+                  TextStyle(color: _textLo, fontSize: 14, height: 1.6),
                 ),
                 const SizedBox(height: 32),
                 SizedBox(
@@ -239,7 +296,7 @@ class SignOutPage extends StatelessWidget {
                   height: 54,
                   child: ElevatedButton(
                     onPressed: () {
-                      Get.back();
+                      Navigator.of(context).pop();
                       Get.to(() => const AuthPage());
                     },
                     style: ElevatedButton.styleFrom(
