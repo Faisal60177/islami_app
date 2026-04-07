@@ -1,4 +1,4 @@
-import 'package:islamic_app/home/mosque.dart';
+import 'package:islamic_app/home/widgets/mosque.dart';
 import 'package:islamic_app/home/home_page.dart';
 import '../model/prayer_times_models.dart';
 

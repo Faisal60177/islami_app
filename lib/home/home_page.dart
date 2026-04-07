@@ -6,7 +6,7 @@ import 'package:islamic_app/tools/tools_page.dart';
 import '../../../location/cubit/location_cubit.dart';
 import '../../../location/cubit/location_state.dart';
 import 'package:islamic_app/home/cubit/prayer_times_cubit.dart';
-import 'package:islamic_app/home/state/prayer_times_state.dart';
+import 'package:islamic_app/home/cubit/prayer_times_state.dart';
 import '../../../home/model/prayer_times_models.dart';
 import 'package:intl/intl.dart';
 import 'package:islamic_app/Duas/pages/duas_page.dart';
@@ -14,8 +14,8 @@ import 'package:islamic_app/Menu/menu_page.dart';
 import 'package:islamic_app/notification/page/notification_page.dart';
 import 'package:hijri/hijri_calendar.dart';
 import 'package:marquee/marquee.dart';
-import 'mosque.dart';
-import 'ring_animation.dart';
+import 'widgets/mosque.dart';
+import 'widgets/ring_animation.dart';
 import 'package:islamic_app/notification/cubit/notification_cubit.dart';
 import 'package:islamic_app/notification/cubit/notification_state.dart';
 import 'package:islamic_app/settings/cubit/settings_cubit.dart';
@@ -32,9 +32,6 @@ class PrayerTimesPage extends StatefulWidget {
 
 class _PrayerTimesPageState extends State<PrayerTimesPage> {
 
-  // ✅ FIX 1: Move _pages outside the State class body and make it static
-  // so it is NOT recreated on every rebuild — prevents stack overflow
-  // and flicker when navigating between tabs.
   static const List<Widget> _pages = [
     PrayerTimesPage(),
     ToolsPage(),
@@ -132,18 +129,125 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
           backgroundColor: bgBase,
           body: SingleChildScrollView(
             physics: const BouncingScrollPhysics(),
-            child: Column(
+            child:
+            Padding(
+                padding: EdgeInsets.symmetric(horizontal: sw * 0.04, vertical: sh *0.04),
+                child:
+            Column(
               children: [
-                _buildHeader(sw, rsw, sh, px,
-                    bgDeep: bgDeep, accent: accent,
-                    accentSoft: accentSoft, l10n: l10n),
+            Row(
+            children: [
+            Expanded(
+              child: BlocBuilder<LocationCubit, LocationState>(
+            builder: (context, state) {
+              String text = l10n.locating;
+              if (state is LocationLoaded) {
+                text = '${state.location.city}, ${state.location.country}';
+              } else if (state is LocationPermissionDenied) {
+                text = l10n.permissionDenied;
+              }
+              return GestureDetector(
+                onTap: () => Navigator.push(context,
+                    MaterialPageRoute(builder: (_) => const LocationPage())),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: EdgeInsets.all(rsw * 0.015),
+                      decoration: BoxDecoration(
+                        color: accent.withOpacity(0.15),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(Icons.location_on,
+                          color: accent, ),
+                    ),
+                    SizedBox(width: rsw * 0.020),
+                    Flexible(
+                      child: SizedBox(
+                        width: sw * 0.4,
+                        height: sh * 0.030,
+                        child: Marquee(
+                          text:  text,
+                          style: TextStyle(
+                            color:      Colors.white,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          velocity:             28.0,
+                          pauseAfterRound:      const Duration(seconds: 2),
+                          blankSpace:           24.0,
+                          startPadding:         0,
+                          accelerationDuration: const Duration(milliseconds: 800),
+                          accelerationCurve:    Curves.easeIn,
+                          decelerationDuration: const Duration(milliseconds: 800),
+                          decelerationCurve:    Curves.easeOut,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+            ),
+            ),
 
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: px),
-                  child: Column(
-                    children: [
-                      _buildDateRow(rsw, hijriOff),
-                      SizedBox(height: sh * 0.025),
+              SizedBox(width: rsw * 0.03),
+
+              // Notification bell
+              BlocBuilder<NotificationCubit, NotificationState>(
+                builder: (context, state) {
+                  final count =
+                  state is NotificationLoaded ? state.unreadCount : 0;
+                  return GestureDetector(
+                    onTap: () => Navigator.push(context,
+                        MaterialPageRoute(builder: (_) => const NotificationPage())),
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        Container(
+                          padding: EdgeInsets.all(rsw * 0.020),
+                          decoration: BoxDecoration(
+                            color:  Colors.red.withOpacity(0.10),
+                            shape:  BoxShape.circle,
+                            border: Border.all(
+                                color: Colors.red.withOpacity(0.30), width: 1),
+                          ),
+                          child: Icon(Icons.notifications_rounded,
+                              color: Colors.red[300], size: rsw * 0.055,),
+                        ),
+                        if (count > 0)
+                          Positioned(
+                            right: 0, top: 0,
+                            child: Container(
+                              width:  2,
+                              height: 1,
+                              decoration: const BoxDecoration(
+                                  color: Colors.red, shape: BoxShape.circle),
+                              alignment: Alignment.center,
+                              child: Text(
+                                count > 99 ? '99+' : '$count',
+                                style: TextStyle(
+                                    color:      Colors.white,
+                                    fontSize:   2,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+              ],
+            ),
+                  SizedBox(height: 10,),
+                  Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(_englishDate(), style: TextStyle(fontSize: sw * 0.025),),
+                          Text(_hijriDate(hijriOff), style: TextStyle(fontSize: sw * 0.025),),
+
+                        ],
+                      ),
+                      SizedBox(height: 0.000001),
 
                       BlocBuilder<PrayerTimesCubit, PrayerTimesState>(
                         builder: (context, state) {
@@ -171,9 +275,32 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
 
                             return Column(
                               children: [
-                                _buildMosqueHero(rsw, sh, ring,
-                                    accent: accent, accentSoft: accentSoft),
-                                SizedBox(height: sh * 0.025),
+
+                              SizedBox(
+                              width: double.infinity,
+                              height: (sh * 0.30).clamp(200.0, 280.0),
+                              child: Stack(
+                                alignment: Alignment.center,
+                                children: [
+                                  // Mosque fills the bottom of the card
+                                  Positioned(
+                                    bottom: 0, left: 0, right: 0,
+                                    child: MosqueIllustration(
+                                      accentColor: accent,
+                                      height: (sh * 0.5).clamp(120.0, 180.0),
+                                    ),
+                                  ),
+                                  // Ring sits centered on top
+                                  Positioned(
+                                    top: rsw * 0.04,
+                                    child: PrayerProgressRing(
+                                      entries: ring,
+                                      size: (rsw * 0.5).clamp(190.0, 255.0),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
 
                                 _sectionLabel(rsw, l10n.salatPrayers, accent: accent),
                                 SizedBox(height: sh * 0.010),
@@ -206,10 +333,8 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                       ),
                     ],
                   ),
-                ),
-              ],
             ),
-          ),
+        ),
           bottomNavigationBar: _buildNav(
             sw: sw, rsw: rsw,
             surface: surface, accentSoft: accentSoft,
@@ -220,197 +345,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
     );
   }
 
-  // ── Header ─────────────────────────────────────────────────────────────────
-  Widget _buildHeader(double sw, double rsw, double sh, double px, {
-    required Color bgDeep,
-    required Color accent,
-    required Color accentSoft,
-    required AppLocalizations l10n,
-  }) {
-    final iconSize    = rsw * 0.042;
-    final bellSize    = rsw * 0.055;
-    final fontSize    = rsw * 0.038;
-    final badgeSize   = rsw * 0.042;
-    final badgeFontSz = rsw * 0.021;
-    final topPad      = MediaQuery.of(context).padding.top + rsw * 0.03;
 
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.only(
-          top: topPad, left: px, right: px, bottom: rsw * 0.03),
-      decoration: BoxDecoration(
-        color:  bgDeep,
-        border: Border(
-            bottom: BorderSide(color: accentSoft.withOpacity(0.20), width: 1)),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: BlocBuilder<LocationCubit, LocationState>(
-              builder: (context, state) {
-                String text = l10n.locating;
-                if (state is LocationLoaded) {
-                  text = '${state.location.city}, ${state.location.country}';
-                } else if (state is LocationPermissionDenied) {
-                  text = l10n.permissionDenied;
-                }
-                return GestureDetector(
-                  onTap: () => Navigator.push(context,
-                      MaterialPageRoute(builder: (_) => const LocationPage())),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: EdgeInsets.all(rsw * 0.015),
-                        decoration: BoxDecoration(
-                          color: accent.withOpacity(0.15),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(Icons.location_on,
-                            color: accent, size: iconSize),
-                      ),
-                      SizedBox(width: rsw * 0.020),
-                      Expanded(
-                        child: SizedBox(
-                          height: sh * 0.030,
-                          child: Marquee(
-                            text:  text,
-                            style: TextStyle(
-                              color:      Colors.white,
-                              fontWeight: FontWeight.w600,
-                              fontSize:   fontSize,
-                            ),
-                            velocity:             28.0,
-                            pauseAfterRound:      const Duration(seconds: 2),
-                            blankSpace:           24.0,
-                            startPadding:         0,
-                            accelerationDuration: const Duration(milliseconds: 800),
-                            accelerationCurve:    Curves.easeIn,
-                            decelerationDuration: const Duration(milliseconds: 800),
-                            decelerationCurve:    Curves.easeOut,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
-          ),
-          SizedBox(width: rsw * 0.03),
-
-          // Notification bell
-          BlocBuilder<NotificationCubit, NotificationState>(
-            builder: (context, state) {
-              final count =
-              state is NotificationLoaded ? state.unreadCount : 0;
-              return GestureDetector(
-                onTap: () => Navigator.push(context,
-                    MaterialPageRoute(builder: (_) => const NotificationPage())),
-                child: Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    Container(
-                      padding: EdgeInsets.all(rsw * 0.020),
-                      decoration: BoxDecoration(
-                        color:  Colors.red.withOpacity(0.10),
-                        shape:  BoxShape.circle,
-                        border: Border.all(
-                            color: Colors.red.withOpacity(0.30), width: 1),
-                      ),
-                      child: Icon(Icons.notifications_rounded,
-                          color: Colors.red[300], size: bellSize),
-                    ),
-                    if (count > 0)
-                      Positioned(
-                        right: 0, top: 0,
-                        child: Container(
-                          width:  badgeSize,
-                          height: badgeSize,
-                          decoration: const BoxDecoration(
-                              color: Colors.red, shape: BoxShape.circle),
-                          alignment: Alignment.center,
-                          child: Text(
-                            count > 99 ? '99+' : '$count',
-                            style: TextStyle(
-                                color:      Colors.white,
-                                fontSize:   badgeFontSz,
-                                fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ── Date row ───────────────────────────────────────────────────────────────
-  Widget _buildDateRow(double rsw, int hijriOff) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Flexible(child: _datePill(_englishDate(),       const Color(0xFF66BB6A), rsw)),
-        SizedBox(width: rsw * 0.02),
-        Flexible(child: _datePill(_hijriDate(hijriOff), const Color(0xFFFFB74D), rsw)),
-      ],
-    );
-  }
-
-  Widget _datePill(String text, Color color, double rsw) {
-    return Container(
-      padding: EdgeInsets.symmetric(
-          horizontal: rsw * 0.030, vertical: rsw * 0.014),
-      decoration: BoxDecoration(
-        color:        color.withOpacity(0.10),
-        borderRadius: BorderRadius.circular(rsw * 0.05),
-        border:       Border.all(color: color.withOpacity(0.35), width: 0.8),
-      ),
-      child: Text(
-        text,
-        maxLines:  1,
-        overflow:  TextOverflow.ellipsis,
-        style: TextStyle(
-            fontSize:   rsw * 0.028,
-            fontWeight: FontWeight.w600,
-            color:      color),
-      ),
-    );
-  }
-
-  // ── Mosque hero ─────────────────────────────────────────────────────────────
-  Widget _buildMosqueHero(double rsw, double sh,
-      List<PrayerRingEntry> ring, {
-        required Color accent,
-        required Color accentSoft,
-      }) {
-    final ringSize = (rsw * 0.60).clamp(200.0, 260.0);
-    final mosqueH  = (sh * 0.20).clamp(130.0, 210.0);
-
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.symmetric(vertical: rsw * 0.03),
-      decoration: BoxDecoration(
-        color:        accent.withOpacity(0.04),
-        borderRadius: BorderRadius.circular(rsw * 0.05),
-        border:       Border.all(color: accentSoft.withOpacity(0.25), width: 1),
-      ),
-      child: Column(
-        children: [
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: rsw * 0.02),
-            child: MosqueIllustration(accentColor: accent, height: mosqueH),
-          ),
-          SizedBox(height: rsw * 0.02),
-          PrayerProgressRing(entries: ring, size: ringSize),
-          SizedBox(height: rsw * 0.01),
-        ],
-      ),
-    );
-  }
 
   // ── Section label ──────────────────────────────────────────────────────────
   Widget _sectionLabel(double rsw, String label, {required Color accent}) {

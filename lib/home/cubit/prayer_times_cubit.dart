@@ -1,6 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../model/prayer_times_models.dart';
-import '../state/prayer_times_state.dart';
+import 'prayer_times_state.dart';
 import '../services/prayer_times_service.dart';
 import '../../../location/cubit/location_cubit.dart';
 import '../../../location/cubit/location_state.dart';
