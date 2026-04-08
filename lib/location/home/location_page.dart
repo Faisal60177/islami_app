@@ -115,6 +115,19 @@ class _LocationPageState extends State<LocationPage>
 
           // ── Main Content ──
           SafeArea(
+            child: BlocListener<LocationCubit, LocationState>(
+              listener: (context, state) {
+                // ✅ Snackbar trigger
+                if (state is LocationLoaded) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text("Location saved successfully ✅"),
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                }
+              },
+
             child: BlocBuilder<LocationCubit, LocationState>(
               builder: (context, state) {
                 return FadeTransition(
@@ -165,6 +178,7 @@ class _LocationPageState extends State<LocationPage>
                 );
               },
             ),
+          ),
           ),
         ],
       ),

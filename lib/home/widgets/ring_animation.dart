@@ -50,13 +50,13 @@ class _PrayerProgressRingState extends State<PrayerProgressRing>
 
   // ── Prayer colors ────────────────────────────────────────────────────────
   static const _prayerColors = <String, Color>{
-    'Fajr':    Color(0xFF5B8DEF),
-    'SunRise': Color(0xFFE57373),
-    'Ishraq':  Color(0xFF64B5F6),
-    'Noon':    Color(0xFFE57373),
-    'Dhuhr':   Color(0xFFFFD54F),
+    'Fajr':    Color(0xFFF0F8FF),
+    'SunRise': Colors.red,
+    'Ishraq':  Color(0xFF72A0C1),
+    'Noon':    Colors.red,
+    'Dhuhr':   Color(0xFF87CEEB),
     'Asr':     Color(0xFFFFB74D),
-    'SunSet':  Color(0xFFE57373),
+    'SunSet':  Colors.red,
     'Maghrib': Color(0xFFEF9A9A),
     'Isha':    Color(0xFFB39DDB),
   };
@@ -160,14 +160,14 @@ class _PrayerProgressRingState extends State<PrayerProgressRing>
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: size * 0.085,
+                        fontSize: size * 0.08,
                         fontWeight: FontWeight.w300,
                         letterSpacing: 0.5,
                         height: 1.1,
                         fontFeatures: const [FontFeature.tabularFigures()],
                       ),
                     ),
-                    SizedBox(height: size * 0.018),
+                    SizedBox(height: size * 0.025),
 
                     if (active >= 0) ...[
                       // Prayer name pill
@@ -189,7 +189,7 @@ class _PrayerProgressRingState extends State<PrayerProgressRing>
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 color: isProhibited
-                                    ? const Color(0xFFE57373)
+                                    ? const Color(0xFFFF0000)
                                     : const Color(0xFF66BB6A),
                               ),
                             ),
@@ -198,7 +198,7 @@ class _PrayerProgressRingState extends State<PrayerProgressRing>
                               widget.entries[active].name,
                               style: TextStyle(
                                 color: activeColor,
-                                fontSize: size * 0.07,
+                                fontSize: size * 0.05,
                                 fontWeight: FontWeight.w600,
                                 letterSpacing: 1.0,
                               ),
@@ -214,7 +214,7 @@ class _PrayerProgressRingState extends State<PrayerProgressRing>
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           color: Colors.white70,
-                          fontSize: size * 0.052,
+                          fontSize: size * 0.05,
                           fontWeight: FontWeight.w500,
                           letterSpacing: 0.3,
                         ),
@@ -227,7 +227,7 @@ class _PrayerProgressRingState extends State<PrayerProgressRing>
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           color: activeColor.withOpacity(0.75),
-                          fontSize: size * 0.046,
+                          fontSize: size * 0.043,
                           fontWeight: FontWeight.w400,
                         ),
                       ),
@@ -245,7 +245,7 @@ class _PrayerProgressRingState extends State<PrayerProgressRing>
                           child: Text(
                             'Prohibited time',
                             style: TextStyle(
-                              color: const Color(0xFFE57373),
+                              color: const Color(0xFFFF0000),
                               fontSize: size * 0.042,
                               fontWeight: FontWeight.w500,
                             ),
@@ -257,7 +257,7 @@ class _PrayerProgressRingState extends State<PrayerProgressRing>
                         'No active period',
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                            color: Colors.white38, fontSize: size * 0.052),
+                            color: Colors.white38, fontSize: size * 0.05),
                       ),
                     ],
                   ],
@@ -311,7 +311,7 @@ class _RingPainter extends CustomPainter {
     // ── Dark glass background ────────────────────────────────────────────────
     canvas.drawCircle(center, outerR + 2,
         Paint()
-          ..color = const Color(0xFF0A1F13).withOpacity(0.6)
+          ..color = const Color(0xFF0A1F13).withOpacity(0.5)
           ..style = PaintingStyle.fill);
 
     // ── Track ring ───────────────────────────────────────────────────────────
@@ -324,7 +324,7 @@ class _RingPainter extends CustomPainter {
     // ── Inner circle fill (dark) ─────────────────────────────────────────────
     canvas.drawCircle(center, innerR - 2,
         Paint()
-          ..color = const Color(0xFF012618)
+          ..color = const Color(0xFF012618).withOpacity(0.5)
           ..style = PaintingStyle.fill);
 
     // ── Outer subtle border ───────────────────────────────────────────────────
@@ -527,7 +527,7 @@ class _RingPainter extends CustomPainter {
     const abbr = {
       'SunRise': 'Rise',
       'SunSet': 'Set',
-      'Ishraq': 'Ishr',
+      'Ishraq': 'Ishrq,Chast',
     };
     return abbr[name] ?? name;
   }

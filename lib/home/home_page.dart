@@ -66,15 +66,15 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
         e.isAfter(s) ? now.isAfter(s) && now.isBefore(e)
             : now.isAfter(s) || now.isBefore(e);
 
-    if (inRange(t.fajrStart,    t.fajrEnd))    return 'Fajr';
-    if (inRange(t.sunRiseStart, t.sunRiseEnd)) return 'SunRise';
-    if (now.isAfter(t.sunRiseEnd) && now.isBefore(t.noonStart)) return 'Ishraq';
-    if (inRange(t.noonStart,    t.noonEnd))    return 'Noon';
-    if (inRange(t.dhuhrStart,   t.dhuhrEnd))   return 'Dhuhr';
-    if (inRange(t.asrStart,     t.asrEnd))     return 'Asr';
-    if (inRange(t.sunSetStart,  t.sunSetEnd))  return 'SunSet';
-    if (inRange(t.maghribStart, t.maghribEnd)) return 'Maghrib';
-    if (inRange(t.ishaStart,    t.ishaEnd))    return 'Isha';
+    if (inRange(t.fajrStart,    t.sunRiseStart))    return 'Fajr';
+    if (inRange(t.sunRiseStart, t.ishraqStart)) return 'SunRise';
+    if (now.isAfter(t.ishraqStart) && now.isBefore(t.noonStart)) return 'Ishraq';
+    if (inRange(t.noonStart,    t.dhuhrStart))    return 'Noon';
+    if (inRange(t.dhuhrStart,   t.asrStart))   return 'Dhuhr';
+    if (inRange(t.asrStart,     t.sunSetStart))     return 'Asr';
+    if (inRange(t.sunSetStart,  t.maghribStart))  return 'SunSet';
+    if (inRange(t.maghribStart, t.ishaStart)) return 'Maghrib';
+    if (inRange(t.ishaStart,    t.fajrStart))    return 'Isha';
     return '';
   }
 
@@ -85,14 +85,14 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
     }
     return [
       PrayerRingEntry(name: 'Fajr',    start: t.fajrStart,    end: t.sunRiseStart),
-      PrayerRingEntry(name: 'SunRise', start: t.sunRiseStart, end: t.sunRiseEnd),
-      PrayerRingEntry(name: 'Ishraq',  start: t.sunRiseEnd,   end: t.noonStart),
-      PrayerRingEntry(name: 'Noon',    start: t.noonStart,    end: t.noonEnd),
+      PrayerRingEntry(name: 'SunRise', start: t.sunRiseStart, end: t.ishraqStart),
+      PrayerRingEntry(name: 'Ishraq',  start: t.ishraqStart,   end: t.noonStart),
+      PrayerRingEntry(name: 'Noon',    start: t.noonStart,    end: t.dhuhrStart),
       PrayerRingEntry(name: 'Dhuhr',   start: t.dhuhrStart,   end: t.asrStart),
-      PrayerRingEntry(name: 'Asr',     start: t.asrStart,     end: t.maghribStart),
-      PrayerRingEntry(name: 'SunSet',  start: t.sunSetStart,  end: t.sunSetEnd),
-      PrayerRingEntry(name: 'Maghrib', start: t.maghribStart, end: t.maghribEnd),
-      PrayerRingEntry(name: 'Isha',    start: t.ishaStart,    end: ishaEnd),
+      PrayerRingEntry(name: 'Asr',     start: t.asrStart,     end: t.sunSetStart),
+      PrayerRingEntry(name: 'SunSet',  start: t.sunSetStart,  end: t.maghribStart),
+      PrayerRingEntry(name: 'Maghrib', start: t.maghribStart, end: t.ishaStart),
+      PrayerRingEntry(name: 'Isha',    start: t.ishaStart,    end: t.fajrStart),
     ];
   }
 
@@ -462,7 +462,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
       }) {
     return _glassCard(rsw, cardColor, const Color(0xFFCE93D8),
       children: [
-        _prayerRow(rsw, Icons.cloud, l10n.tahajjud,
+        _prayerRow(rsw, Icons.nightlight, l10n.tahajjud,
             '${_fmt(t.tahajjudStart, use24h: use24h)} – ${_fmt(t.tahajjudEnd, use24h: use24h)}',
             accent: const Color(0xFFCE93D8)),
         _prayerRow(rsw, Icons.wb_twilight, l10n.ishraq,
@@ -471,7 +471,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
         _prayerRow(rsw, Icons.wb_sunny, l10n.chasht,
             '${_fmt(t.chashtStart, use24h: use24h)} – ${_fmt(t.chashtEnd, use24h: use24h)}',
             accent: const Color(0xFFCE93D8)),
-        _prayerRow(rsw, Icons.dark_mode, l10n.zawal,
+        _prayerRow(rsw, Icons.wb_twilight, l10n.zawal,
             _fmt(t.zawalStart, use24h: use24h),
             accent: const Color(0xFFCE93D8)),
         _prayerRow(rsw, Icons.nightlight_round, l10n.awabin,

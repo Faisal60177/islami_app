@@ -23,10 +23,10 @@ class _FavoriteDuasPageState extends State<FavoriteDuasPage>
   @override
   void initState() {
     super.initState();
-    loadBookmarks();
+    loadFavorites();
   }
 
-  Future<void> loadBookmarks() async {
+  Future<void> loadFavorites() async {
     final allDuas = await repository.getAllDuas();
     setState(() {
       favoriteDuas = allDuas.where((dua) => dua.isFavorite).toList();
@@ -54,17 +54,18 @@ class _FavoriteDuasPageState extends State<FavoriteDuasPage>
     final h = MediaQuery.of(context).size.height;
 
     if (isLoading) {
-      return Center(
-        child: CircularProgressIndicator(color: const Color(0xFF0D6E6E), strokeWidth: 3),
+      return const Center(
+        child: CircularProgressIndicator(
+            color: Color(0xFF0D6E6E), strokeWidth: 3),
       );
     }
 
     if (favoriteDuas.isEmpty) {
-      return _EmptyState(
-        icon: Icons.bookmark_border_rounded,
+      return const _EmptyState(
+        icon: Icons.favorite_border_rounded,
         title: 'No favorites yet',
         subtitle: 'Favorite duas to revisit them quickly',
-        iconColor: const Color(0xFFD4AF37),
+        iconColor: Color(0xFFD4AF37),
       );
     }
 
@@ -82,11 +83,13 @@ class _FavoriteDuasPageState extends State<FavoriteDuasPage>
       slivers: [
         SliverToBoxAdapter(
           child: Padding(
-            padding: EdgeInsets.fromLTRB(w * 0.05, h * 0.02, w * 0.05, h * 0.01),
+            padding: EdgeInsets.fromLTRB(
+                w * 0.05, h * 0.02, w * 0.05, h * 0.01),
             child: Row(
               children: [
                 Container(
-                  padding: EdgeInsets.symmetric(horizontal: w * 0.03, vertical: h * 0.007),
+                  padding: EdgeInsets.symmetric(
+                      horizontal: w * 0.03, vertical: h * 0.007),
                   decoration: BoxDecoration(
                     color: const Color(0xFFD4AF37).withOpacity(0.12),
                     borderRadius: BorderRadius.circular(20),
@@ -94,7 +97,9 @@ class _FavoriteDuasPageState extends State<FavoriteDuasPage>
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.favorite_rounded, size: w * 0.04, color: const Color(0xFFD4AF37)),
+                      Icon(Icons.favorite_rounded,
+                          size: w * 0.04,
+                          color: const Color(0xFFD4AF37)),
                       SizedBox(width: w * 0.015),
                       Text(
                         '${filteredDuas.length} saved',
@@ -121,8 +126,10 @@ class _FavoriteDuasPageState extends State<FavoriteDuasPage>
                   dua: dua,
                   onTap: () => Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => DuasDetailPage(dua: dua)),
-                  ),
+                    MaterialPageRoute(
+                        builder: (_) => DuasDetailPage(dua: dua)),
+                    // ✅ Reload list when returning from detail page
+                  ).then((_) => loadFavorites()),
                 );
               },
               childCount: filteredDuas.length,
@@ -155,7 +162,8 @@ class _BookmarkCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFD4AF37).withOpacity(0.2), width: 1),
+        border: Border.all(
+            color: const Color(0xFFD4AF37).withOpacity(0.2), width: 1),
         boxShadow: [
           BoxShadow(
             color: const Color(0xFFD4AF37).withOpacity(0.08),
@@ -172,10 +180,11 @@ class _BookmarkCard extends StatelessWidget {
           splashColor: const Color(0xFFD4AF37).withOpacity(0.08),
           onTap: onTap,
           child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: w * 0.04, vertical: h * 0.016),
+            padding: EdgeInsets.symmetric(
+                horizontal: w * 0.04, vertical: h * 0.016),
             child: Row(
               children: [
-                // Gold bookmark icon container
+                // Gold favorite icon container
                 Container(
                   width: w * 0.12,
                   height: w * 0.12,
@@ -195,7 +204,8 @@ class _BookmarkCard extends StatelessWidget {
                     ],
                   ),
                   child: Center(
-                    child: Icon(Icons.favorite_rounded, color: Colors.white, size: w * 0.055),
+                    child: Icon(Icons.favorite_rounded,
+                        color: Colors.white, size: w * 0.055),
                   ),
                 ),
                 SizedBox(width: w * 0.035),
@@ -243,7 +253,8 @@ class _BookmarkCard extends StatelessWidget {
                 ),
 
                 SizedBox(width: w * 0.02),
-                Icon(Icons.chevron_right_rounded, color: Colors.grey[350], size: w * 0.055),
+                Icon(Icons.chevron_right_rounded,
+                    color: Colors.grey[350], size: w * 0.055),
               ],
             ),
           ),
