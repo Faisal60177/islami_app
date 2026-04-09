@@ -59,7 +59,7 @@ class TimezoneService {
     8: 'Asia/Shanghai', 9: 'Asia/Tokyo',
     10: 'Australia/Sydney', 11: 'Pacific/Noumea',
     12: 'Pacific/Auckland', 13: 'Pacific/Apia',
-    14: 'Pacific/Kiritimati', 15: 'Asia/Kuala_Lumpur',
+    14: 'Pacific/Kiritimati', 15: 'Asia/Kuching',
   };
 
   // ── Zone table ──────────────────────────────────────────────────────────
@@ -107,8 +107,9 @@ class TimezoneService {
 
     // Malaysia – Peninsular
     _Zone(1.2, 7.4, 99.6, 104.6, 'Asia/Kuala_Lumpur'),
-    // Malaysia – Borneo (Sabah/Sarawak)
-    _Zone(0.8, 7.4, 109.5, 119.3, 'Asia/Kuching'),
+
+// Zone table – Peninsular Malaysia
+    _Zone(1.2, 7.4, 99.6, 104.6, 'Asia/Kuching'), // ✅ was 'Asia/Kuala_Lumpur'
 
     // Indonesia – Java/Sumatra (WIB)
     _Zone(-8.8, 5.9, 95.0, 108.8, 'Asia/Jakarta'),
@@ -116,13 +117,15 @@ class TimezoneService {
     // Singapore
     _Zone(1.1, 1.5, 103.6, 104.0, 'Asia/Singapore'),
 
+
+    // Philippines
+    _Zone(4.5, 21.2, 116.9, 126.6, 'Asia/Manila'),
+
     // Indonesia – Bali/NTT (WITA)
     _Zone(-11.0, -7.9, 108.8, 115.7, 'Asia/Makassar'),
     // Indonesia – Maluku/Papua (WIT)
     _Zone(-8.8, 2.0, 130.0, 141.0, 'Asia/Jayapura'),
 
-    // Philippines
-    _Zone(4.5, 21.2, 116.9, 126.6, 'Asia/Manila'),
 
     // China
     _Zone(18.0, 53.6, 73.5, 135.1, 'Asia/Shanghai'),

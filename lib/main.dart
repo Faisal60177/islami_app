@@ -1,6 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz;
 import 'location/cubit/location_cubit.dart';
 import 'location/services/location_storage.dart';
@@ -19,14 +20,12 @@ import 'firebase_options.dart';
 import 'package:islamic_app/notification/cubit/notification_cubit.dart';
 import 'package:islamic_app/notification/repository/notification_repository.dart';
 import 'package:islamic_app/Quran/quran_page.dart';
-
-// ── Settings imports ──────────────────────────────────────────────────────────
 import 'package:islamic_app/settings/cubit/settings_cubit.dart';
 import 'package:islamic_app/settings/cubit/settings_state.dart';
 import 'package:islamic_app/settings/theme/app_themes.dart';
-
-// ── Prayer Times Page ─────────────────────────────────────────────────────────
 import 'package:islamic_app/home/home_page.dart';
+import 'package:islamic_app/location/services/timezone_service.dart';
+import 'location/model/location_model.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

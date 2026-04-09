@@ -56,7 +56,7 @@ class LocationRepository {
         latitude: lat,
         longitude: lon,
         city: item["display_name"],
-        country: '',
+        country: item["display_name"],
         timeZone: timeZone,
       );
     });

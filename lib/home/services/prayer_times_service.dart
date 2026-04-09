@@ -52,6 +52,15 @@ class PrayerTimesService {
     );
   }
 
+  static String _sanitizeTz(String tz) {
+    const aliases = {
+      'Asia/Kuala_Lumpur': 'Asia/Kuching',
+      'Malaysia Time':     'Asia/Kuching',
+      // add more aliases here if needed
+    };
+    return aliases[tz] ?? tz;
+  }
+
   // ── for today (used by cubit on location load) ────────────────────────────
 
   static Future<PrayerTimesModel> getPrayerTimesForLocation(
@@ -75,7 +84,7 @@ class PrayerTimesService {
       precision: true,
     );
 
-    final timezone = tz.getLocation(timeZoneName);
+    final timezone = tz.getLocation(_sanitizeTz(timeZoneName));
 
     return _buildModel(prayerTimes, timezone);
   }
