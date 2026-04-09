@@ -8,26 +8,25 @@ import 'package:islamic_app/location/model/location_model.dart';
 class LocationStorage {
   Future<void> saveLocation(LocationModel location) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setDouble("lat", location.latitude);
-    await prefs.setDouble("lon", location.longitude);
-    await prefs.setString("city", location.city);
-    await prefs.setString("country", location.country);
+    await prefs.setDouble('lat', location.latitude);
+    await prefs.setDouble('lon', location.longitude);
+    await prefs.setString('city', location.city);
+    await prefs.setString('country', location.country);
+    await prefs.setString('timeZone', location.timeZone); // NEW
   }
 
   Future<LocationModel?> getSavedLocation() async {
     final prefs = await SharedPreferences.getInstance();
-    double? lat = prefs.getDouble("lat");
-    double? lon = prefs.getDouble("lon");
-    String? city = prefs.getString("city");
-    String? country = prefs.getString("country");
-
+    final lat  = prefs.getDouble('lat');
+    final lon  = prefs.getDouble('lon');
     if (lat == null || lon == null) return null;
 
     return LocationModel(
       latitude: lat,
       longitude: lon,
-      city: city ?? "",
-      country: country ?? "",
+      city:     prefs.getString('city')     ?? '',
+      country:  prefs.getString('country')  ?? '',
+      timeZone: prefs.getString('timeZone') ?? 'Asia/Dhaka', // NEW
     );
   }
 }

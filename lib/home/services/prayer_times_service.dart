@@ -33,11 +33,11 @@ class PrayerTimesService {
       ishaStart:     tz.TZDateTime.from(prayerTimes.isha,    timezone),
       ishaEnd:       tz.TZDateTime.from(prayerTimes.fajr,    timezone).subtract(const Duration(minutes: 1)),
 
-      ishraqStart:   tz.TZDateTime.from(prayerTimes.sunrise, timezone).add(const Duration(minutes: 1)),
-      ishraqEnd:     tz.TZDateTime.from(prayerTimes.dhuhr,   timezone).subtract(const Duration(minutes: 6)),
+      ishraqStart:   tz.TZDateTime.from(prayerTimes.sunrise, timezone).add(const Duration(minutes: 16)),
+      ishraqEnd:     tz.TZDateTime.from(prayerTimes.dhuhr,   timezone).subtract(const Duration(minutes: 7)),
 
-      chashtStart:   tz.TZDateTime.from(prayerTimes.sunrise, timezone).add(const Duration(minutes: 1)),
-      chashtEnd:     tz.TZDateTime.from(prayerTimes.dhuhr,   timezone).subtract(const Duration(minutes: 6)),
+      chashtStart:   tz.TZDateTime.from(prayerTimes.sunrise, timezone).add(const Duration(minutes: 16)),
+      chashtEnd:     tz.TZDateTime.from(prayerTimes.dhuhr,   timezone).subtract(const Duration(minutes: 7)),
 
       tahajjudStart: tz.TZDateTime.from(prayerTimes.isha,    timezone),
       tahajjudEnd:   tz.TZDateTime.from(prayerTimes.fajr,    timezone).subtract(const Duration(minutes: 1)),

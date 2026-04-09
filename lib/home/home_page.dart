@@ -32,6 +32,12 @@ class PrayerTimesPage extends StatefulWidget {
 
 class _PrayerTimesPageState extends State<PrayerTimesPage> {
 
+  Duration _tzOffset(PrayerTimesModel t) {
+    // fajrStart is a TZDateTime — its UTC offset tells us the location's timezone offset
+    final tzStart = t.fajrStart;
+    return tzStart.timeZoneOffset; // ✅ works because TZDateTime carries offset
+  }
+
   static const List<Widget> _pages = [
     PrayerTimesPage(),
     ToolsPage(),
@@ -61,20 +67,26 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
   }
 
   String _currentPrayer(PrayerTimesModel t) {
-    final now = DateTime.now();
-    bool inRange(DateTime s, DateTime e) =>
-        e.isAfter(s) ? now.isAfter(s) && now.isBefore(e)
-            : now.isAfter(s) || now.isBefore(e);
+    // ✅ Compare in UTC to match TZDateTime internals
+    final nowUtc = DateTime.now().toUtc();
 
-    if (inRange(t.fajrStart,    t.sunRiseStart))    return 'Fajr';
-    if (inRange(t.sunRiseStart, t.ishraqStart)) return 'SunRise';
-    if (now.isAfter(t.ishraqStart) && now.isBefore(t.noonStart)) return 'Ishraq';
+    bool inRange(DateTime s, DateTime e) {
+      final su = s.toUtc();
+      final eu = e.toUtc();
+      return eu.isAfter(su)
+          ? nowUtc.isAfter(su) && nowUtc.isBefore(eu)
+          : nowUtc.isAfter(su) || nowUtc.isBefore(eu);
+    }
+
+    if (inRange(t.fajrStart,    t.sunRiseStart))  return 'Fajr';
+    if (inRange(t.sunRiseStart, t.ishraqStart))   return 'SunRise';
+    if (nowUtc.isAfter(t.ishraqStart.toUtc()) && nowUtc.isBefore(t.noonStart.toUtc())) return 'Ishraq';
     if (inRange(t.noonStart,    t.dhuhrStart))    return 'Noon';
-    if (inRange(t.dhuhrStart,   t.asrStart))   return 'Dhuhr';
-    if (inRange(t.asrStart,     t.sunSetStart))     return 'Asr';
+    if (inRange(t.dhuhrStart,   t.asrStart))      return 'Dhuhr';
+    if (inRange(t.asrStart,     t.sunSetStart))   return 'Asr';
     if (inRange(t.sunSetStart,  t.maghribStart))  return 'SunSet';
-    if (inRange(t.maghribStart, t.ishaStart)) return 'Maghrib';
-    if (inRange(t.ishaStart,    t.fajrStart))    return 'Isha';
+    if (inRange(t.maghribStart, t.ishaStart))     return 'Maghrib';
+    if (inRange(t.ishaStart,    t.fajrStart))     return 'Isha';
     return '';
   }
 
@@ -280,7 +292,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
 
                               SizedBox(
                               width: double.infinity,
-                              height: (sh * 0.30).clamp(200.0, 280.0),
+                              height: (sh * 0.30).clamp(240.0, 320.0),
                               child: Stack(
                                 alignment: Alignment.center,
                                 children: [
@@ -301,6 +313,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                                       child: PrayerProgressRing(
                                       entries: ring,
                                       size: (rsw * 0.55).clamp(190.0, 255.0),
+                                        tzOffset: _tzOffset(t),
                                     ),
                                     ),
                                   ),

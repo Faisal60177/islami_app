@@ -3,12 +3,14 @@ class LocationModel {
   final double longitude;
   final String city;
   final String country;
+  final String timeZone;
 
   const LocationModel({
     required this.latitude,
     required this.longitude,
     required this.city,
     required this.country,
+    this.timeZone = 'Asia/Dhaka',
   });
 
   // copyWith for immutability
@@ -17,12 +19,14 @@ class LocationModel {
     double? longitude,
     String? city,
     String? country,
+    String? timeZone,
   }) {
     return LocationModel(
       latitude: latitude ?? this.latitude,
       longitude: longitude ?? this.longitude,
       city: city ?? this.city,
       country: country ?? this.country,
+      timeZone: timeZone ?? this.timeZone,
     );
   }
 
@@ -33,6 +37,7 @@ class LocationModel {
       'longitude': longitude,
       'city': city,
       'country': country,
+      'timeZone': timeZone,
     };
   }
 
@@ -42,6 +47,7 @@ class LocationModel {
       longitude: json['longitude'],
       city: json['city'],
       country: json['country'],
+      timeZone: json['timeZone'] ?? 'Asia/Dhaka',
     );
   }
 }

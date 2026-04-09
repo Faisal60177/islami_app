@@ -25,6 +25,7 @@ class LocationCubit extends Cubit<LocationState> {
       print("Last Saved Location Loaded:");
       print("Latitude: ${saved.latitude}");
       print("Longitude: ${saved.longitude}");
+      print("Time Zone: ${saved.timeZone}");
       print("City: ${saved.city}");
       print("Country: ${saved.country}");
 
@@ -37,6 +38,7 @@ class LocationCubit extends Cubit<LocationState> {
       print("Default Location Saved (first run):");
       print("Latitude: ${defaultLocation.latitude}");
       print("Longitude: ${defaultLocation.longitude}");
+      print("Time Zone: ${defaultLocation.timeZone}");
       print("City: ${defaultLocation.city}");
       print("Country: ${defaultLocation.country}");
 
@@ -62,6 +64,7 @@ class LocationCubit extends Cubit<LocationState> {
       print("New GPS Location Saved (replaces last):");
       print(location.latitude);
       print(location.longitude);
+      print(location.timeZone);
       print(location.city);
       print(location.country);
 
@@ -77,6 +80,7 @@ class LocationCubit extends Cubit<LocationState> {
     print("Selected Location Saved (replaces last):");
     print(location.latitude);
     print(location.longitude);
+    print(location.timeZone);
     print(location.city);
     print(location.country);
 

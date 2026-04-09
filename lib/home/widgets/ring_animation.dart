@@ -1,22 +1,26 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'dart:async';
 
 // ─── Prayer Ring Entry ────────────────────────────────────────────────────────
 class PrayerRingEntry {
   final String name;
   final DateTime start;
   final DateTime end;
-  const PrayerRingEntry({required this.name, required this.start, required this.end});
+  const PrayerRingEntry(
+      {required this.name, required this.start, required this.end});
 }
 
 // ─── Prayer Progress Ring ─────────────────────────────────────────────────────
 class PrayerProgressRing extends StatefulWidget {
   final List<PrayerRingEntry> entries;
   final double size;
+  final Duration tzOffset; // ✅ NEW: offset of the prayer location timezone
 
   const PrayerProgressRing({
     super.key,
     required this.entries,
+    required this.tzOffset, // ✅ NEW
     this.size = 260,
   });
 
@@ -27,28 +31,40 @@ class PrayerProgressRing extends StatefulWidget {
 class _PrayerProgressRingState extends State<PrayerProgressRing>
     with TickerProviderStateMixin {
   late final AnimationController _pulse;
-  late final AnimationController _clock;
+  Timer? _timer;
+  DateTime _now = DateTime.now().toUtc(); // ✅ always track UTC internally
 
   @override
   void initState() {
     super.initState();
+
     _pulse = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 2000))
-      ..repeat(reverse: true);
-    // Rebuild every second for live clock
-    _clock = AnimationController(
-        vsync: this, duration: const Duration(seconds: 1))
-      ..repeat();
+      vsync: this,
+      duration: const Duration(milliseconds: 2000),
+    )..repeat(reverse: true);
+
+    // Sync to next exact second boundary — no drift, no delay
+    final msUntilNextSecond = 1000 - DateTime.now().millisecond;
+    _timer = Timer(Duration(milliseconds: msUntilNextSecond), () {
+      if (!mounted) return;
+      setState(() => _now = DateTime.now().toUtc());
+      _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+        if (!mounted) return;
+        setState(() => _now = DateTime.now().toUtc());
+      });
+    });
   }
 
   @override
   void dispose() {
     _pulse.dispose();
-    _clock.dispose();
+    _timer?.cancel();
     super.dispose();
   }
 
-  // ── Prayer colors ────────────────────────────────────────────────────────
+  // ✅ Convert UTC _now to the prayer location's local time
+  DateTime get _nowInTz => _now.add(widget.tzOffset);
+
   static const _prayerColors = <String, Color>{
     'Fajr':    Color(0xFFF0F8FF),
     'SunRise': Colors.red,
@@ -66,201 +82,268 @@ class _PrayerProgressRingState extends State<PrayerProgressRing>
   Color _colorFor(String name) =>
       _prayerColors[name] ?? const Color(0xFF4CAF82);
 
-
-  int _activeIndex(DateTime now) {
+  int _activeIndex() {
     for (int i = 0; i < widget.entries.length; i++) {
-      final e = widget.entries[i];
+      final e        = widget.entries[i];
+      final startUtc = e.start.toUtc();
+      final endUtc   = e.end.toUtc();
 
-      if (e.end.isAfter(e.start)) {
-        // Normal range — same day
-        if (now.isAfter(e.start) && now.isBefore(e.end)) return i;
+      if (endUtc.isAfter(startUtc)) {
+        if (!_now.isBefore(startUtc) && _now.isBefore(endUtc)) return i;
       } else {
-        // Crosses midnight — active if after start OR before end
-        if (now.isAfter(e.start) || now.isBefore(e.end)) return i;
+        if (!_now.isBefore(startUtc) || _now.isBefore(endUtc)) return i;
       }
     }
     return -1;
   }
 
   String _formatTime(DateTime dt) {
-    final h = dt.hour == 0 ? 12 : (dt.hour > 12 ? dt.hour - 12 : dt.hour);
-    final m = dt.minute.toString().padLeft(2, '0');
+    final h  = dt.hour == 0 ? 12 : (dt.hour > 12 ? dt.hour - 12 : dt.hour);
+    final m  = dt.minute.toString().padLeft(2, '0');
     final ap = dt.hour >= 12 ? 'PM' : 'AM';
     return '$h:$m $ap';
   }
 
-  String _Clock(DateTime dt) {
-    final h = dt.hour == 0 ? 12 : (dt.hour > 12 ? dt.hour - 12 : dt.hour);
-    final m = dt.minute.toString().padLeft(2, '0');
-    final s = dt.second.toString().padLeft(2, '0');
+  String _clockStr(DateTime dt) {
+    final h  = dt.hour == 0 ? 12 : (dt.hour > 12 ? dt.hour - 12 : dt.hour);
+    final m  = dt.minute.toString().padLeft(2, '0');
+    final s  = dt.second.toString().padLeft(2, '0');
     final ap = dt.hour >= 12 ? 'PM' : 'AM';
     return '$h:$m:$s $ap';
+  }
+
+  String _remainingStr(PrayerRingEntry entry) {
+    // Truncate UTC to second — same truncation point as the clock
+    final nowUtcTrunc = DateTime.utc(
+      _now.year, _now.month, _now.day,
+      _now.hour, _now.minute, _now.second,
+    );
+
+    final startUtc = entry.start.toUtc();
+    var   endUtc   = entry.end.toUtc();
+
+    if (!endUtc.isAfter(startUtc)) {
+      endUtc = endUtc.add(const Duration(days: 1));
+    }
+
+    var effectiveNow = nowUtcTrunc;
+    if (effectiveNow.isBefore(startUtc)) {
+      effectiveNow = effectiveNow.add(const Duration(days: 1));
+    }
+
+    final diff = endUtc.difference(effectiveNow);
+    if (diff.isNegative || diff == Duration.zero) return '';
+
+    final hh = diff.inHours;
+    final mm = diff.inMinutes.remainder(60);
+    final ss = diff.inSeconds.remainder(60);
+
+    if (hh > 0) return '${hh}h ${mm}m left';
+    if (mm > 0) return '${mm}m ${ss}s left';
+    return '${ss}s left';
   }
 
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
-      animation: Listenable.merge([_pulse, _clock]),
+      animation: _pulse,
       builder: (_, __) {
-        final now = DateTime.now();
-        final active = _activeIndex(now);
+        final nowInTz = _nowInTz; // location-local, has sub-second from UTC
+
+        // ✅ Truncate to second for ALL text displays — clock and countdown
+        // flip at exactly the same millisecond this way
+        final nowInTzTrunc = DateTime(
+          nowInTz.year, nowInTz.month, nowInTz.day,
+          nowInTz.hour, nowInTz.minute, nowInTz.second,
+        );
+
+        final active      = _activeIndex(); // uses _now (UTC) internally
         final activeEntry = active >= 0 ? widget.entries[active] : null;
-        final activeColor = active >= 0
+        final activeColor  = active >= 0
             ? _colorFor(widget.entries[active].name)
             : const Color(0xFF4CAF82);
         final isProhibited = active >= 0
             ? _prohibitedNames.contains(widget.entries[active].name)
             : false;
 
-        // Remaining time
-        String remaining = '';
-        if (activeEntry != null) {
-          final diff = activeEntry.end.difference(now);
-          final hh = diff.inHours;
-          final mm = diff.inMinutes.remainder(60);
-          final ss = diff.inSeconds.remainder(60);
-          if (hh > 0) {
-            remaining = '${hh}h ${mm}m left';
-          } else if (mm > 0) {
-            remaining = '${mm}m ${ss}s left';
-          } else {
-            remaining = '${ss}s left';
-          }
-        }
-
-        final size = widget.size;
+        final size   = widget.size;
+        final innerD = size * 0.58;
 
         return SizedBox(
-          width: size,
+          width:  size,
           height: size,
           child: Stack(
             alignment: Alignment.center,
             children: [
-              // ── Ring painter ──────────────────────────────────────────────
               CustomPaint(
                 size: Size(size, size),
                 painter: _RingPainter(
-                  entries: widget.entries,
-                  colorMap: _prayerColors,
+                  entries:     widget.entries,
+                  colorMap:    _prayerColors,
                   activeIndex: active,
-                  now: now,
-                  pulse: _pulse.value,
+                  nowLocal:    nowInTz,  // ✅ local for hand
+                  nowUtc:      _now,     // ✅ true UTC for progress
+                  pulse:       _pulse.value,
                 ),
               ),
 
-              // ── Centre content ────────────────────────────────────────────
-              SizedBox(
-                width: size * 0.62,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Live clock
-                    Text(
-                      _Clock(now),
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: size * 0.08,
-                        fontWeight: FontWeight.w300,
-                        letterSpacing: 0.5,
-                        height: 1.1,
-                        fontFeatures: const [FontFeature.tabularFigures()],
-                      ),
-                    ),
-                    SizedBox(height: size * 0.025),
+              ClipOval(
+                child: SizedBox(
+                  width:  innerD,
+                  height: innerD,
+                  child: Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(size * 0.012),
+                      child: Column(
+                        mainAxisSize:       MainAxisSize.min,
+                        mainAxisAlignment:  MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
 
-                    if (active >= 0) ...[
-                      // Prayer name pill
-                      Container(
-                        padding: EdgeInsets.symmetric(
-                            horizontal: size * 0.05, vertical: size * 0.016),
-                        decoration: BoxDecoration(
-                          color: activeColor.withOpacity(0.18),
-                          borderRadius: BorderRadius.circular(size),
-                          border: Border.all(
-                              color: activeColor.withOpacity(0.55), width: 1.2),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(
-                              width: size * 0.025,
-                              height: size * 0.025,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: isProhibited
-                                    ? const Color(0xFFFF0000)
-                                    : const Color(0xFF66BB6A),
+                          // Live clock — shows location timezone time
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              _clockStr(nowInTz), // ✅ location-local clock
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color:         Colors.white,
+                                fontSize:      size * 0.088,
+                                fontWeight:    FontWeight.w300,
+                                letterSpacing: 0.5,
+                                height:        1.1,
+                                fontFeatures: const [
+                                  FontFeature.tabularFigures(),
+                                ],
                               ),
                             ),
-                            SizedBox(width: size * 0.018),
-                            Text(
-                              widget.entries[active].name,
-                              style: TextStyle(
-                                color: activeColor,
-                                fontSize: size * 0.05,
-                                fontWeight: FontWeight.w600,
-                                letterSpacing: 1.0,
+                          ),
+
+                          SizedBox(height: size * 0.014),
+
+                          if (active >= 0 && activeEntry != null) ...[
+
+                            Container(
+                              constraints: BoxConstraints(
+                                  maxWidth: innerD - size * 0.06),
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: size * 0.036,
+                                  vertical:   size * 0.010),
+                              decoration: BoxDecoration(
+                                color: activeColor.withOpacity(0.18),
+                                borderRadius: BorderRadius.circular(size),
+                                border: Border.all(
+                                    color: activeColor.withOpacity(0.55),
+                                    width: 1.2),
+                              ),
+                              child: Row(
+                                mainAxisSize:      MainAxisSize.min,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Container(
+                                    width:  size * 0.020,
+                                    height: size * 0.020,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: isProhibited
+                                          ? const Color(0xFFFF0000)
+                                          : const Color(0xFF66BB6A),
+                                    ),
+                                  ),
+                                  SizedBox(width: size * 0.012),
+                                  Flexible(
+                                    child: Text(
+                                      widget.entries[active].name,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        color:         activeColor,
+                                        fontSize:      size * 0.042,
+                                        fontWeight:    FontWeight.w600,
+                                        letterSpacing: 0.8,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+
+                            SizedBox(height: size * 0.010),
+
+                            FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                '${_formatTime(activeEntry.start)} – ${_formatTime(activeEntry.end)}',
+                                textAlign: TextAlign.center,
+                                maxLines:  1,
+                                style: TextStyle(
+                                  color:         Colors.white70,
+                                  fontSize:      size * 0.040,
+                                  fontWeight:    FontWeight.w500,
+                                  letterSpacing: 0.2,
+                                ),
+                              ),
+                            ),
+
+                            SizedBox(height: size * 0.006),
+
+                            FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                _remainingStr(activeEntry), // ✅ no longer needs nowInTz param
+                                textAlign: TextAlign.center,
+                                maxLines:  1,
+                                style: TextStyle(
+                                  color:      activeColor.withOpacity(0.80),
+                                  fontSize:   size * 0.036,
+                                  fontWeight: FontWeight.w400,
+                                ),
+                              ),
+                            ),
+
+                            if (isProhibited) ...[
+                              SizedBox(height: size * 0.006),
+                              FittedBox(
+                                fit: BoxFit.scaleDown,
+                                child: Container(
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: size * 0.030,
+                                      vertical:   size * 0.006),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFE57373)
+                                        .withOpacity(0.15),
+                                    borderRadius:
+                                    BorderRadius.circular(size),
+                                  ),
+                                  child: Text(
+                                    'Prohibited time',
+                                    maxLines: 1,
+                                    style: TextStyle(
+                                      color:      const Color(0xFFFF0000),
+                                      fontSize:   size * 0.034,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+
+                          ] else ...[
+                            FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                'No active period',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                    color:    Colors.white38,
+                                    fontSize: size * 0.042),
                               ),
                             ),
                           ],
-                        ),
+                        ],
                       ),
-                      SizedBox(height: size * 0.016),
-
-                      // Start – End time  (same format as prayer cards)
-                      Text(
-                        '${_formatTime(widget.entries[active].start)} – ${_formatTime(widget.entries[active].end)}',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: size * 0.05,
-                          fontWeight: FontWeight.w500,
-                          letterSpacing: 0.3,
-                        ),
-                      ),
-                      SizedBox(height: size * 0.010),
-
-                      // Remaining time
-                      Text(
-                        remaining,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: activeColor.withOpacity(0.75),
-                          fontSize: size * 0.043,
-                          fontWeight: FontWeight.w400,
-                        ),
-                      ),
-
-                      // Prohibited label
-                      if (isProhibited) ...[
-                        SizedBox(height: size * 0.010),
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: size * 0.04, vertical: size * 0.010),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFE57373).withOpacity(0.15),
-                            borderRadius: BorderRadius.circular(size),
-                          ),
-                          child: Text(
-                            'Prohibited time',
-                            style: TextStyle(
-                              color: const Color(0xFFFF0000),
-                              fontSize: size * 0.042,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ] else ...[
-                      Text(
-                        'No active period',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            color: Colors.white38, fontSize: size * 0.05),
-                      ),
-                    ],
-                  ],
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -271,12 +354,13 @@ class _PrayerProgressRingState extends State<PrayerProgressRing>
   }
 }
 
-// ─── Ring Painter ─────────────────────────────────────────────────────────────
+// ─── Ring Painter — unchanged, already receives nowInTz ──────────────────────
 class _RingPainter extends CustomPainter {
   final List<PrayerRingEntry> entries;
   final Map<String, Color> colorMap;
   final int activeIndex;
-  final DateTime now;
+  final DateTime nowLocal; // location-local — for hand angle & shouldRepaint
+  final DateTime nowUtc;   // true UTC     — for progress elapsed calculation
   final double pulse;
 
   static const _prohibitedNames = {'SunRise', 'Noon', 'SunSet'};
@@ -285,14 +369,14 @@ class _RingPainter extends CustomPainter {
     required this.entries,
     required this.colorMap,
     required this.activeIndex,
-    required this.now,
+    required this.nowLocal,
+    required this.nowUtc,
     required this.pulse,
   });
 
   Color _colorFor(String name) =>
       colorMap[name] ?? const Color(0xFF4CAF82);
 
-  // Map DateTime → angle (top = midnight = -π/2)
   double _toAngle(DateTime dt) {
     final mins = dt.hour * 60.0 + dt.minute + dt.second / 60.0;
     return (mins / 1440) * 2 * math.pi - math.pi / 2;
@@ -300,200 +384,199 @@ class _RingPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final cx = size.width / 2;
-    final cy = size.height / 2;
+    // ... all your existing paint code unchanged ...
+    final cx     = size.width / 2;
+    final cy     = size.height / 2;
     final center = Offset(cx, cy);
     final outerR = cx * 0.92;
     final innerR = cx * 0.67;
     final trackR = (outerR + innerR) / 2;
     final trackW = outerR - innerR;
 
-    // ── Dark glass background ────────────────────────────────────────────────
     canvas.drawCircle(center, outerR + 2,
         Paint()
           ..color = const Color(0xFF0A1F13).withOpacity(0.5)
           ..style = PaintingStyle.fill);
-
-    // ── Track ring ───────────────────────────────────────────────────────────
     canvas.drawCircle(center, trackR,
         Paint()
-          ..color = Colors.white.withOpacity(0.05)
-          ..style = PaintingStyle.stroke
+          ..color       = Colors.white.withOpacity(0.05)
+          ..style       = PaintingStyle.stroke
           ..strokeWidth = trackW + 2);
-
-    // ── Inner circle fill (dark) ─────────────────────────────────────────────
     canvas.drawCircle(center, innerR - 2,
         Paint()
           ..color = const Color(0xFF012618).withOpacity(0.5)
           ..style = PaintingStyle.fill);
-
-    // ── Outer subtle border ───────────────────────────────────────────────────
     canvas.drawCircle(center, outerR + 1,
         Paint()
-          ..color = const Color(0xFF4CAF82).withOpacity(0.15)
-          ..style = PaintingStyle.stroke
+          ..color       = const Color(0xFF4CAF82).withOpacity(0.15)
+          ..style       = PaintingStyle.stroke
           ..strokeWidth = 1.0);
 
-    // ── Segments ─────────────────────────────────────────────────────────────
     for (int i = 0; i < entries.length; i++) {
-      final e = entries[i];
-      final color = _colorFor(e.name);
+      final e            = entries[i];
+      final color        = _colorFor(e.name);
       final isProhibited = _prohibitedNames.contains(e.name);
-      final sAngle = _toAngle(e.start);
-      final eAngle = _toAngle(e.end);
-      var sweep = eAngle - sAngle;
+      final sAngle       = _toAngle(e.start);
+      final eAngle       = _toAngle(e.end);
+      var   sweep        = eAngle - sAngle;
       if (sweep <= 0) sweep += 2 * math.pi;
 
       final isActive = i == activeIndex;
-      final gap = 0.018;
-
-      // Dim base segment
-      final basePaint = Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = trackW * (isActive ? 1.0 : 0.68)
-        ..color = isProhibited
-            ? color.withOpacity(isActive ? 0.80 : 0.18)
-            : color.withOpacity(isActive ? 0.82 : 0.22)
-        ..strokeCap = StrokeCap.butt;
+      const gap      = 0.018;
 
       canvas.drawArc(
         Rect.fromCircle(center: center, radius: trackR),
-        sAngle + gap, sweep - gap * 2, false, basePaint,
+        sAngle + gap, sweep - gap * 2, false,
+        Paint()
+          ..style       = PaintingStyle.stroke
+          ..strokeWidth = trackW * (isActive ? 1.0 : 0.68)
+          ..color       = isProhibited
+              ? color.withOpacity(isActive ? 0.80 : 0.18)
+              : color.withOpacity(isActive ? 0.82 : 0.22)
+          ..strokeCap   = StrokeCap.butt,
       );
 
       if (isActive) {
-        // ── Active: progress fill ─────────────────────────────────────────
-        final total = e.end.difference(e.start).inSeconds.toDouble();
-        final elapsed = now.difference(e.start).inSeconds.toDouble();
-        final progress = (elapsed / total).clamp(0.0, 1.0);
+        final startUtc = e.start.toUtc();
+        var   endUtc   = e.end.toUtc();
+        if (!endUtc.isAfter(startUtc)) {
+          endUtc = endUtc.add(const Duration(days: 1));
+        }
+
+        // ✅ nowUtc is real UTC — no .toUtc() needed, no double-offset
+        final total         = endUtc.difference(startUtc).inSeconds.toDouble();
+        final elapsed       = nowUtc.difference(startUtc).inSeconds
+            .toDouble().clamp(0.0, total);
+        final progress      = (elapsed / total).clamp(0.0, 1.0);
         final progressSweep = (sweep - gap * 2) * progress;
 
-        // Glow halo
-        canvas.drawArc(
-          Rect.fromCircle(center: center, radius: trackR),
-          sAngle + gap, progressSweep, false,
-          Paint()
-            ..style = PaintingStyle.stroke
-            ..strokeWidth = trackW * 1.6
-            ..color = color.withOpacity(0.10 + pulse * 0.07)
-            ..strokeCap = StrokeCap.round
-            ..maskFilter = MaskFilter.blur(BlurStyle.normal, trackW * 0.6),
-        );
+        if (progressSweep > 0.001) {
+          canvas.drawArc(
+            Rect.fromCircle(center: center, radius: trackR),
+            sAngle + gap, progressSweep, false,
+            Paint()
+              ..style       = PaintingStyle.stroke
+              ..strokeWidth = trackW * 1.6
+              ..color       = color.withOpacity(0.10 + pulse * 0.07)
+              ..strokeCap   = StrokeCap.round
+              ..maskFilter  = MaskFilter.blur(BlurStyle.normal, trackW * 0.6),
+          );
 
-        // Progress arc with sweep gradient
-        canvas.drawArc(
-          Rect.fromCircle(center: center, radius: trackR),
-          sAngle + gap, progressSweep, false,
-          Paint()
-            ..style = PaintingStyle.stroke
-            ..strokeWidth = trackW
-            ..strokeCap = StrokeCap.round
-            ..shader = SweepGradient(
-              center: Alignment.center,
-              startAngle: sAngle + gap,
-              endAngle: sAngle + gap + progressSweep,
-              colors: [color.withOpacity(0.55), color, color.withOpacity(0.9)],
-              stops: const [0.0, 0.6, 1.0],
-            ).createShader(Rect.fromCircle(center: center, radius: trackR)),
-        );
+          final double gradStart = sAngle + gap;
+          final double gradEnd   = sAngle + gap + progressSweep;
+          final Paint progressPaint;
 
-        // Leading dot
-        if (progressSweep > 0.01) {
+          if ((gradEnd - gradStart).abs() > 0.001) {
+            progressPaint = Paint()
+              ..style       = PaintingStyle.stroke
+              ..strokeWidth = trackW
+              ..strokeCap   = StrokeCap.round
+              ..shader      = SweepGradient(
+                center:     Alignment.center,
+                startAngle: gradStart,
+                endAngle:   gradEnd,
+                colors: [
+                  color.withOpacity(0.55),
+                  color,
+                  color.withOpacity(0.9),
+                ],
+                stops: const [0.0, 0.6, 1.0],
+              ).createShader(Rect.fromCircle(center: center, radius: trackR));
+          } else {
+            progressPaint = Paint()
+              ..style       = PaintingStyle.stroke
+              ..strokeWidth = trackW
+              ..strokeCap   = StrokeCap.round
+              ..color       = color.withOpacity(0.82);
+          }
+
+          canvas.drawArc(
+            Rect.fromCircle(center: center, radius: trackR),
+            sAngle + gap, progressSweep, false, progressPaint,
+          );
+
           final dotAngle = sAngle + gap + progressSweep;
-          final dotPos = Offset(
+          final dotPos   = Offset(
             center.dx + trackR * math.cos(dotAngle),
             center.dy + trackR * math.sin(dotAngle),
           );
-          // Outer glow
           canvas.drawCircle(dotPos, trackW * 0.56,
               Paint()
-                ..color = color.withOpacity(0.3 + pulse * 0.2)
+                ..color      = color.withOpacity(0.3 + pulse * 0.2)
                 ..maskFilter = MaskFilter.blur(BlurStyle.normal, trackW * 0.4));
-          // Dot fill
           canvas.drawCircle(dotPos, trackW * 0.40, Paint()..color = color);
-          // White ring
-          canvas.drawCircle(
-              dotPos, trackW * 0.40,
+          canvas.drawCircle(dotPos, trackW * 0.40,
               Paint()
-                ..color = Colors.white.withOpacity(0.85)
-                ..style = PaintingStyle.stroke
+                ..color       = Colors.white.withOpacity(0.85)
+                ..style       = PaintingStyle.stroke
                 ..strokeWidth = 1.8);
-          // Inner dot
           canvas.drawCircle(dotPos, trackW * 0.16,
               Paint()..color = Colors.white.withOpacity(0.95));
         }
       }
 
-      // ── Segment divider dot at start ──────────────────────────────────────
       final dotMarkPos = Offset(
         center.dx + trackR * math.cos(sAngle + 0.005),
         center.dy + trackR * math.sin(sAngle + 0.005),
       );
-      canvas.drawCircle(
-          dotMarkPos,
-          isActive ? 3.5 : 2.5,
+      canvas.drawCircle(dotMarkPos, isActive ? 3.5 : 2.5,
           Paint()..color = isActive ? color : color.withOpacity(0.5));
 
-      // ── Label outside ring ────────────────────────────────────────────────
       final midAngle = sAngle + sweep / 2;
-      final labelR = outerR + cx * 0.11;
-      final lx = center.dx + labelR * math.cos(midAngle);
-      final ly = center.dy + labelR * math.sin(midAngle);
-      final fontSize = cx * 0.085;
+      final labelR   = outerR + cx * 0.11;
+      final lx       = center.dx + labelR * math.cos(midAngle);
+      final ly       = center.dy + labelR * math.sin(midAngle);
 
       final tp = TextPainter(
         text: TextSpan(
           text: _shortName(e.name),
           style: TextStyle(
-            color: isActive ? color : color.withOpacity(0.55),
-            fontSize: fontSize,
-            fontWeight: isActive ? FontWeight.w700 : FontWeight.w400,
+            color:         isActive ? color : color.withOpacity(0.55),
+            fontSize:      cx * 0.085,
+            fontWeight:    isActive ? FontWeight.w700 : FontWeight.w400,
             letterSpacing: 0.2,
           ),
         ),
-        textAlign: TextAlign.center,
+        textAlign:     TextAlign.center,
         textDirection: TextDirection.ltr,
       )..layout();
       tp.paint(canvas, Offset(lx - tp.width / 2, ly - tp.height / 2));
     }
 
-    // ── Hour tick marks ───────────────────────────────────────────────────────
     for (int h = 0; h < 24; h++) {
-      final angle = (h / 24) * 2 * math.pi - math.pi / 2;
+      final angle   = (h / 24) * 2 * math.pi - math.pi / 2;
       final isMajor = h % 6 == 0;
       final isMinor = h % 3 == 0;
-      final r2 = outerR - 1;
-      final r1 = r2 + (isMajor ? cx * 0.05 : isMinor ? cx * 0.03 : cx * 0.018);
+      final r2      = outerR - 1;
+      final r1      = r2 + (isMajor ? cx * 0.05 : isMinor ? cx * 0.03 : cx * 0.018);
       canvas.drawLine(
         Offset(center.dx + r2 * math.cos(angle), center.dy + r2 * math.sin(angle)),
         Offset(center.dx + r1 * math.cos(angle), center.dy + r1 * math.sin(angle)),
         Paint()
-          ..color = Colors.white.withOpacity(isMajor ? 0.40 : isMinor ? 0.20 : 0.09)
+          ..color       = Colors.white.withOpacity(isMajor ? 0.40 : isMinor ? 0.20 : 0.09)
           ..strokeWidth = isMajor ? 1.8 : 1.0,
       );
-      // Hour number for major ticks
       if (isMajor) {
         final labelR2 = outerR + cx * 0.062;
-        final tx = center.dx + labelR2 * math.cos(angle);
-        final ty = center.dy + labelR2 * math.sin(angle);
-        final hr = h == 0 ? 12 : (h > 12 ? h - 12 : h);
-        final suffix = h < 12 ? 'a' : 'p';
-        final tp = TextPainter(
+        final tx      = center.dx + labelR2 * math.cos(angle);
+        final ty      = center.dy + labelR2 * math.sin(angle);
+        final hr      = h == 0 ? 12 : (h > 12 ? h - 12 : h);
+        final suffix  = h < 12 ? 'a' : 'p';
+        final tp2 = TextPainter(
           text: TextSpan(
             text: '$hr$suffix',
             style: TextStyle(
-                color: Colors.white.withOpacity(0.28),
-                fontSize: cx * 0.068,
+                color:      Colors.white.withOpacity(0.28),
+                fontSize:   cx * 0.068,
                 fontWeight: FontWeight.w400),
           ),
           textDirection: TextDirection.ltr,
         )..layout();
-        tp.paint(canvas, Offset(tx - tp.width / 2, ty - tp.height / 2));
+        tp2.paint(canvas, Offset(tx - tp2.width / 2, ty - tp2.height / 2));
       }
     }
 
-    // ── Now hand ─────────────────────────────────────────────────────────────
-    final nowAngle = _toAngle(now);
+    final nowAngle = _toAngle(nowLocal); // hand position uses local time
     final handOuter = Offset(
       center.dx + (outerR + cx * 0.055) * math.cos(nowAngle),
       center.dy + (outerR + cx * 0.055) * math.sin(nowAngle),
@@ -502,39 +585,31 @@ class _RingPainter extends CustomPainter {
       center.dx + innerR * 0.45 * math.cos(nowAngle + math.pi),
       center.dy + innerR * 0.45 * math.sin(nowAngle + math.pi),
     );
-    // Glow on hand
     canvas.drawLine(handInner, handOuter,
         Paint()
-          ..color = Colors.white.withOpacity(0.3)
+          ..color       = Colors.white.withOpacity(0.3)
           ..strokeWidth = 5
-          ..strokeCap = StrokeCap.round
-          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4));
-    // Hand line
+          ..strokeCap   = StrokeCap.round
+          ..maskFilter  = const MaskFilter.blur(BlurStyle.normal, 4));
     canvas.drawLine(handInner, handOuter,
         Paint()
-          ..color = Colors.white.withOpacity(0.85)
+          ..color       = Colors.white.withOpacity(0.85)
           ..strokeWidth = 1.8
-          ..strokeCap = StrokeCap.round);
-    // Center pivot
+          ..strokeCap   = StrokeCap.round);
     canvas.drawCircle(center, cx * 0.030, Paint()..color = Colors.white.withOpacity(0.9));
-    canvas.drawCircle(center, cx * 0.018,
-        Paint()..color = const Color(0xFF012618));
-    canvas.drawCircle(center, cx * 0.010,
-        Paint()..color = Colors.white.withOpacity(0.9));
+    canvas.drawCircle(center, cx * 0.018, Paint()..color = const Color(0xFF012618));
+    canvas.drawCircle(center, cx * 0.010, Paint()..color = Colors.white.withOpacity(0.9));
   }
 
   String _shortName(String name) {
-    const abbr = {
-      'SunRise': 'Rise',
-      'SunSet': 'Set',
-      'Ishraq': 'Ishrq,Chast',
-    };
+    const abbr = {'SunRise': 'Rise', 'SunSet': 'Set', 'Ishraq': 'Ishrq'};
     return abbr[name] ?? name;
   }
 
   @override
   bool shouldRepaint(_RingPainter old) =>
-      old.now.second != now.second ||
-          old.pulse != pulse ||
-          old.activeIndex != activeIndex;
+      old.nowUtc.second  != nowUtc.second  ||
+          old.nowUtc.minute  != nowUtc.minute  ||
+          old.pulse          != pulse          ||
+          old.activeIndex    != activeIndex;
 }

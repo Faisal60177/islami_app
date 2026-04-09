@@ -3,50 +3,64 @@ import 'package:http/http.dart' as http;
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:islamic_app/location/model/location_model.dart';
+import 'package:islamic_app/location/services/timezone_service.dart'; // NEW
 
 class LocationRepository {
-  // Fetch current GPS location
+
   Future<LocationModel> getCurrentLocation() async {
     Position position = await Geolocator.getCurrentPosition(
       desiredAccuracy: LocationAccuracy.high,
     );
 
-    double lat = position.latitude;
-    double lon = position.longitude;
+    final lat = position.latitude;
+    final lon = position.longitude;
 
     List<Placemark> placemarks = await placemarkFromCoordinates(lat, lon);
-    String city = placemarks.first.locality ?? "";
-    String country = placemarks.first.country ?? "";
+    final city    = placemarks.first.locality ?? '';
+    final country = placemarks.first.country ?? '';
 
-    return LocationModel(latitude: lat, longitude: lon, city: city, country: country);
+    // ✅ Resolve timezone
+    final timeZone = await TimezoneService.getTimezone(lat, lon);
+
+    return LocationModel(
+      latitude: lat,
+      longitude: lon,
+      city: city,
+      country: country,
+      timeZone: timeZone,
+    );
   }
 
-  /// Search location via OpenStreetMap API
   Future<List<LocationModel>> searchLocation(String query) async {
-    final encodedQuery = Uri.encodeComponent(query); // ✅ added
-    final url = "https://nominatim.openstreetmap.org/search?q=$encodedQuery&format=json&limit=5";
+    final encodedQuery = Uri.encodeComponent(query);
+    final url = "https://nominatim.openstreetmap.org/search"
+        "?q=$encodedQuery&format=json&limit=5";
 
-    final response = await http
-        .get(
+    final response = await http.get(
       Uri.parse(url),
       headers: {
-        'User-Agent': 'islamic_app (your_email@gmail.com)', // ✅ added
-        'Accept': 'application/json', // ✅ added
+        'User-Agent': 'islamic_app (your_email@gmail.com)',
+        'Accept': 'application/json',
       },
-    )
-        .timeout(const Duration(seconds: 10)); // ✅ added
+    ).timeout(const Duration(seconds: 10));
 
     final data = jsonDecode(response.body) as List;
-    List<LocationModel> results = [];
 
-    for (var item in data) {
-      results.add(LocationModel(
-        latitude: double.parse(item["lat"]),
-        longitude: double.parse(item["lon"]),
+    // ✅ Resolve timezone for each result (parallel)
+    final futures = data.map((item) async {
+      final lat = double.parse(item["lat"]);
+      final lon = double.parse(item["lon"]);
+      final timeZone = await TimezoneService.getTimezone(lat, lon);
+
+      return LocationModel(
+        latitude: lat,
+        longitude: lon,
         city: item["display_name"],
-        country: "", // OSM does not separate country reliably here
-      ));
-    }
-    return results;
+        country: '',
+        timeZone: timeZone,
+      );
+    });
+
+    return Future.wait(futures);
   }
 }

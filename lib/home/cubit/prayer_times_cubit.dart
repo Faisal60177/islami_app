@@ -11,7 +11,6 @@ class PrayerTimesCubit extends Cubit<PrayerTimesState> {
   final LocationCubit locationCubit;
   final PrayerTimesStorage storage;
 
-  static const String _timezone = "Asia/Dhaka";
 
   late final Stream<LocationState> _locationStream;
 
@@ -32,7 +31,7 @@ class PrayerTimesCubit extends Cubit<PrayerTimesState> {
     try {
       final times = await PrayerTimesService.getPrayerTimesForLocation(
         location,
-        _timezone,
+        location.timeZone,
       );
       await storage.savePrayerTimes(times);
       emit(PrayerTimesLoaded(times));
@@ -50,7 +49,7 @@ class PrayerTimesCubit extends Cubit<PrayerTimesState> {
     try {
       return await PrayerTimesService.getPrayerTimesForDate(
         locState.location,
-        _timezone,
+        locState.location.timeZone,
         date,
       );
     } catch (e) {
