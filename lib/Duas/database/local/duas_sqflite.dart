@@ -15,6 +15,7 @@ class DuasSqflite {
   }
 
   Future<Database> _initDB() async {
+
     final path = join(await getDatabasesPath(), 'duas.db');
     return await openDatabase(
       path,

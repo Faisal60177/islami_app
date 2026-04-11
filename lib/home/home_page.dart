@@ -700,10 +700,6 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
               return GestureDetector(
                 onTap: () {
                   if (!active) {
-                    // ✅ FIX 2: Use Navigator.push consistently.
-                    // This is the same system used by auth pages so the
-                    // route stack stays coherent and Navigator.canPop()
-                    // works correctly inside AuthPage._popAuthPage().
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (_) => _pages[i]),

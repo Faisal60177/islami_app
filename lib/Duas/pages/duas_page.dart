@@ -14,8 +14,8 @@ class DuasPage extends StatefulWidget {
 class _DuasPageState extends State<DuasPage> with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final List<Map<String, dynamic>> tabs = [
-    {'label': 'All', 'icon': Icons.auto_stories_rounded},
     {'label': 'Category', 'icon': Icons.grid_view_rounded},
+    {'label': 'All', 'icon': Icons.auto_stories_rounded},
     {'label': 'Favorite', 'icon': Icons.favorite_rounded},
     {'label': 'Bookmark', 'icon': Icons.bookmark_rounded},
   ];
@@ -45,15 +45,15 @@ class _DuasPageState extends State<DuasPage> with SingleTickerProviderStateMixin
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    final w = size.width;
-    final h = size.height;
+    final sw = size.width;
+    final sh = size.height;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7F6),
       body: NestedScrollView(
         headerSliverBuilder: (context, innerBoxIsScrolled) => [
           SliverAppBar(
-            expandedHeight: h * 0.22,
+            expandedHeight: sh * 0.22,
             floating: false,
             pinned: true,
             elevation: 0,
@@ -71,11 +71,11 @@ class _DuasPageState extends State<DuasPage> with SingleTickerProviderStateMixin
                   children: [
                     // Decorative Arabic pattern circles
                     Positioned(
-                      top: -h * 0.04,
-                      right: -w * 0.08,
+                      top: -sh * 0.04,
+                      right: -sw * 0.08,
                       child: Container(
-                        width: w * 0.45,
-                        height: w * 0.45,
+                        width: sw * 0.45,
+                        height: sw * 0.45,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           border: Border.all(color: Colors.white.withOpacity(0.08), width: 2),
@@ -83,11 +83,11 @@ class _DuasPageState extends State<DuasPage> with SingleTickerProviderStateMixin
                       ),
                     ),
                     Positioned(
-                      top: h * 0.02,
-                      right: w * 0.05,
+                      top: sh * 0.02,
+                      right: sw * 0.05,
                       child: Container(
-                        width: w * 0.25,
-                        height: w * 0.25,
+                        width: sw * 0.25,
+                        height: sw * 0.25,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           border: Border.all(color: Colors.white.withOpacity(0.1), width: 1.5),
@@ -95,11 +95,11 @@ class _DuasPageState extends State<DuasPage> with SingleTickerProviderStateMixin
                       ),
                     ),
                     Positioned(
-                      bottom: h * 0.05,
-                      left: -w * 0.05,
+                      bottom: sh * 0.05,
+                      left: -sw * 0.05,
                       child: Container(
-                        width: w * 0.3,
-                        height: w * 0.3,
+                        width: sw * 0.3,
+                        height: sw * 0.3,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           color: Colors.white.withOpacity(0.04),
@@ -123,9 +123,9 @@ class _DuasPageState extends State<DuasPage> with SingleTickerProviderStateMixin
                     // Title content
                     Padding(
                       padding: EdgeInsets.only(
-                        top: MediaQuery.of(context).padding.top + h * 0.015,
-                        left: w * 0.05,
-                        right: w * 0.05,
+                        top: MediaQuery.of(context).padding.top + sh * 0.015,
+                        left: sw * 0.05,
+                        right: sw * 0.05,
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -138,9 +138,9 @@ class _DuasPageState extends State<DuasPage> with SingleTickerProviderStateMixin
                                   color: Colors.white.withOpacity(0.15),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
-                                child: Icon(Icons.menu_book_rounded, color: const Color(0xFFD4AF37), size: w * 0.06),
+                                child: Icon(Icons.menu_book_rounded, color: const Color(0xFFD4AF37), size: sw * 0.06),
                               ),
-                              SizedBox(width: w * 0.03),
+                              SizedBox(width: sw * 0.03),
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
@@ -148,7 +148,7 @@ class _DuasPageState extends State<DuasPage> with SingleTickerProviderStateMixin
                                     'Duas & Adhkar',
                                     style: TextStyle(
                                       color: Colors.white,
-                                      fontSize: w * 0.055,
+                                      fontSize: sw * 0.055,
                                       fontWeight: FontWeight.w700,
                                       letterSpacing: 0.5,
                                     ),
@@ -157,7 +157,7 @@ class _DuasPageState extends State<DuasPage> with SingleTickerProviderStateMixin
                                     'الأدعية والأذكار',
                                     style: TextStyle(
                                       color: const Color(0xFFD4AF37),
-                                      fontSize: w * 0.04,
+                                      fontSize: sw * 0.04,
                                       fontWeight: FontWeight.w400,
                                     ),
                                   ),
@@ -165,10 +165,10 @@ class _DuasPageState extends State<DuasPage> with SingleTickerProviderStateMixin
                               ),
                             ],
                           ),
-                          SizedBox(height: h * 0.018),
+                          SizedBox(height: sh * 0.018),
                           // Search bar
                           Container(
-                            height: h * 0.055,
+                            height: sh * 0.055,
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(16),
@@ -186,20 +186,20 @@ class _DuasPageState extends State<DuasPage> with SingleTickerProviderStateMixin
                                 hintText: 'Search duas...',
                                 hintStyle: TextStyle(
                                   color: Colors.grey[400],
-                                  fontSize: w * 0.037,
+                                  fontSize: sw * 0.037,
                                 ),
                                 prefixIcon: Icon(Icons.search_rounded,
-                                    color: const Color(0xFF0D6E6E), size: w * 0.055),
+                                    color: const Color(0xFF0D6E6E), size: sw * 0.055),
                                 suffixIcon: searchQuery.isNotEmpty
                                     ? IconButton(
-                                  icon: Icon(Icons.close_rounded, size: w * 0.045, color: Colors.grey),
+                                  icon: Icon(Icons.close_rounded, size: sw * 0.045, color: Colors.grey),
                                   onPressed: () => _searchController.clear(),
                                 )
                                     : null,
                                 border: InputBorder.none,
-                                contentPadding: EdgeInsets.symmetric(vertical: h * 0.013),
+                                contentPadding: EdgeInsets.symmetric(vertical: sh * 0.013),
                               ),
-                              style: TextStyle(fontSize: w * 0.038, color: Colors.black87),
+                              style: TextStyle(fontSize: sw * 0.038, color: Colors.black87),
                             ),
                           ),
                         ],
@@ -210,7 +210,7 @@ class _DuasPageState extends State<DuasPage> with SingleTickerProviderStateMixin
               ),
             ),
             bottom: PreferredSize(
-              preferredSize: Size.fromHeight(h * 0.065),
+              preferredSize: Size.fromHeight(sh * 0.065),
               child: Container(
                 color: const Color(0xFF0A5C5C),
                 child: TabBar(
@@ -225,13 +225,13 @@ class _DuasPageState extends State<DuasPage> with SingleTickerProviderStateMixin
                     return Tab(
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 200),
-                        padding: EdgeInsets.symmetric(horizontal: w * 0.01),
+                        padding: EdgeInsets.symmetric(horizontal: sw * 0.01),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(
                               tabs[index]['icon'] as IconData,
-                              size: w * 0.048,
+                              size: sw * 0.048,
                               color: isSelected ? const Color(0xFFD4AF37) : Colors.white.withOpacity(0.55),
                             ),
                             SizedBox(height: 2),
@@ -239,7 +239,7 @@ class _DuasPageState extends State<DuasPage> with SingleTickerProviderStateMixin
                               tabs[index]['label'] as String,
                               style: TextStyle(
                                 color: isSelected ? const Color(0xFFD4AF37) : Colors.white.withOpacity(0.55),
-                                fontSize: w * 0.028,
+                                fontSize: sw * 0.028,
                                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
                                 letterSpacing: 0.3,
                               ),
@@ -258,8 +258,8 @@ class _DuasPageState extends State<DuasPage> with SingleTickerProviderStateMixin
           controller: _tabController,
           physics: const BouncingScrollPhysics(),
           children: [
-            AllDuasPage(searchQuery: searchQuery),
             CategoryPage(searchQuery: searchQuery),
+            AllDuasPage(searchQuery: searchQuery),
             FavoriteDuasPage(searchQuery: searchQuery),
             BookmarkedDuasPage(searchQuery: searchQuery),
           ],

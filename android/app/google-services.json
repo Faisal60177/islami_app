@@ -12,7 +12,20 @@
           "package_name": "com.example.islamic_app"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "330629038977-v112nukflel704hpa99to4u2ta71g2a3.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.islamic_app",
+            "certificate_hash": "ec40816eadfe9b3fc2ce4beba16d3276f118c88c"
+          }
+        },
+        {
+          "client_id": "330629038977-7ivpamsds13tqcr6v15sokcrtgav0p3o.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyB0ki9VTgCdXxwbmaLMXRWmkgz5Q5EiOSo"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "330629038977-7ivpamsds13tqcr6v15sokcrtgav0p3o.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "330629038977-ms33q46mdqfkbo71mf7gnd8gm8vkb83q.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.islamicApp"
+              }
+            }
+          ]
         }
       }
     }

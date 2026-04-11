@@ -9,6 +9,11 @@ import 'package:islamic_app/notification/page/notification_page.dart';
 import 'package:islamic_app/calendar/pages/calendar_page.dart';
 import 'package:islamic_app/qibla/pages/qibla_page.dart';
 import 'package:islamic_app/Menu/menu_page.dart';
+import 'package:islamic_app/settings/cubit/settings_cubit.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:islamic_app/settings/cubit/settings_state.dart';
+import 'package:islamic_app/settings/l10n/app_localizations.dart';
+import 'package:islamic_app/settings/theme/app_themes.dart';
 
 // ─── Palette ────────────────────────────────────────────────────────────────
 const _bg        = Color(0xFF021A10);   // near-black deep forest
@@ -73,8 +78,10 @@ class _ToolsPageState extends State<ToolsPage>
 
   @override
   Widget build(BuildContext context) {
-    final mq = MediaQuery.of(context);
-    final sw = mq.size.width;
+    final sw = MediaQuery.of(context).size.width;
+    final sh = MediaQuery.of(context).size.height;
+
+    final rsw = sw.clamp(320.0, 420.0);
 
     // Responsive grid columns
     final cols = sw > 900 ? 5 : sw > 600 ? 4 : 3;
@@ -109,107 +116,131 @@ class _ToolsPageState extends State<ToolsPage>
       ]),
     ];
 
-    return Scaffold(
-      backgroundColor: _bg,
-      extendBodyBehindAppBar: true,
-      appBar: _buildAppBar(),
-      body: Stack(
-        children: [
-          // ── Decorative top radial glow ──
-          Positioned(
-            top: -80, left: -60,
-            child: Container(
-              width: sw * 0.7, height: sw * 0.7,
-              decoration: const BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(colors: [
-                  Color(0x25388E3C), Color(0x00000000),
-                ]),
+    return BlocBuilder<SettingsCubit, SettingsState>(
+    builder: (context, settings) {
+      final theme = getThemeById(settings.themeMode);
+      final l10n = AppLocalizations(settings.languageCode);
+      final hijriOff = settings.hijriOffset;
+      final use24h = settings.use24Hour;
+
+      final bgDeep     = Color.lerp(theme.background, Colors.black,
+          theme.isDark ? 0.30 : 0.0)!;
+      final bgBase     = theme.background;
+      final surface    = theme.surface;
+      final accent     = theme.accent;
+      final accentSoft = theme.primary.withOpacity(0.55);
+      final textLo     = theme.textLow;
+
+      return Scaffold(
+        backgroundColor: _bg,
+        extendBodyBehindAppBar: true,
+        appBar: _buildAppBar(),
+        body: Stack(
+          children: [
+            // ── Decorative top radial glow ──
+            Positioned(
+              top: -80, left: -60,
+              child: Container(
+                width: sw * 0.7, height: sw * 0.7,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(colors: [
+                    Color(0x25388E3C), Color(0x00000000),
+                  ]),
+                ),
               ),
             ),
-          ),
 
-          SafeArea(
-            child: CustomScrollView(
-              physics: const BouncingScrollPhysics(),
-              slivers: [
-                // ── Header greeting ──
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: EdgeInsets.fromLTRB(sw * 0.05, 20, sw * 0.05, 4),
-                    child: _FadeSlide(
-                      delay: 0,
-                      controller: _ctrl,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('بِسْمِ اللهِ الرَّحْمَٰنِ الرَّحِيْمِ',
-                              style: TextStyle(
-                                fontFamily: 'Amiri',
-                                fontSize: sw * 0.07,
-                                color: _gold.withOpacity(0.85),
-                                letterSpacing: 1.5,
-                              )),
-                          const SizedBox(height: 2),
-                          Text('Your Islamic Toolkit',
-                              style: TextStyle(
-                                fontSize: sw * 0.038,
-                                color: _textLo,
-                                fontWeight: FontWeight.w400,
-                                letterSpacing: 0.4,
-                              )),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-
-                // Thin gold divider
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(
-                        horizontal: sw * 0.05, vertical: 14),
-                    child: _FadeSlide(
-                      delay: 0.05,
-                      controller: _ctrl,
-                      child: Container(
-                        height: 1,
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(colors: [
-                            Colors.transparent,
-                            _gold.withOpacity(0.4),
-                            Colors.transparent,
-                          ]),
+            SafeArea(
+              child: CustomScrollView(
+                physics: const BouncingScrollPhysics(),
+                slivers: [
+                  // ── Header greeting ──
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: EdgeInsets.fromLTRB(sw * 0.05, 20, sw * 0.05, 4),
+                      child: _FadeSlide(
+                        delay: 0,
+                        controller: _ctrl,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('بِسْمِ اللهِ الرَّحْمَٰنِ الرَّحِيْمِ',
+                                style: TextStyle(
+                                  fontFamily: 'Amiri',
+                                  fontSize: sw * 0.07,
+                                  color: _gold.withOpacity(0.85),
+                                  letterSpacing: 1.5,
+                                )),
+                            const SizedBox(height: 2),
+                            Text('Your Islamic Toolkit',
+                                style: TextStyle(
+                                  fontSize: sw * 0.038,
+                                  color: _textLo,
+                                  fontWeight: FontWeight.w400,
+                                  letterSpacing: 0.4,
+                                )),
+                          ],
                         ),
                       ),
                     ),
                   ),
-                ),
 
-                // ── Sections ──
-                ...sections.asMap().entries.map((e) {
-                  final idx = e.key;
-                  final sec = e.value;
-                  return SliverToBoxAdapter(
-                    child: _FadeSlide(
-                      delay: 0.1 + idx * 0.15,
-                      controller: _ctrl,
-                      child: _SectionBlock(
-                        section: sec,
-                        cols: cols,
-                        sw: sw,
+                  // Thin gold divider
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(
+                          horizontal: sw * 0.05, vertical: 14),
+                      child: _FadeSlide(
+                        delay: 0.05,
+                        controller: _ctrl,
+                        child: Container(
+                          height: 1,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(colors: [
+                              Colors.transparent,
+                              _gold.withOpacity(0.4),
+                              Colors.transparent,
+                            ]),
+                          ),
+                        ),
                       ),
                     ),
-                  );
-                }),
+                  ),
 
-                const SliverToBoxAdapter(child: SizedBox(height: 24)),
-              ],
+                  // ── Sections ──
+                  ...sections
+                      .asMap()
+                      .entries
+                      .map((e) {
+                    final idx = e.key;
+                    final sec = e.value;
+                    return SliverToBoxAdapter(
+                      child: _FadeSlide(
+                        delay: 0.1 + idx * 0.15,
+                        controller: _ctrl,
+                        child: _SectionBlock(
+                          section: sec,
+                          cols: cols,
+                          sw: sw,
+                        ),
+                      ),
+                    );
+                  }),
+
+                  const SliverToBoxAdapter(child: SizedBox(height: 24)),
+                ],
+              ),
             ),
-          ),
-        ],
-      ),
-      bottomNavigationBar: _buildNav(),
+          ],
+        ),
+        bottomNavigationBar: _buildNav(
+          sw: sw, rsw: rsw,
+          surface: surface, accentSoft: accentSoft,
+          accent: accent, textLo: textLo, l10n: l10n,
+        ),
+      );
+    }
     );
   }
 
@@ -270,21 +301,34 @@ class _ToolsPageState extends State<ToolsPage>
     ),
   );
 
-  // ── Bottom Nav ──────────────────────────────────────────────────────────
-  Widget _buildNav() {
+
+  // ── Bottom nav ─────────────────────────────────────────────────────────────
+  Widget _buildNav({
+    required double sw,
+    required double rsw,
+    required Color surface,
+    required Color accentSoft,
+    required Color accent,
+    required Color textLo,
+    required AppLocalizations l10n,
+  }) {
     final items = [
-      ('Today',  'assets/icons/today.png'),
-      ('Tools',  'assets/icons/tools.png'),
-      ('Quran',  'assets/icons/quran.png'),
-      ('Duas',   'assets/icons/duas.png'),
-      ('Menu',   'assets/icons/menu.png'),
+      (l10n.today, 'assets/icons/today.png'),
+      (l10n.tools, 'assets/icons/tools.png'),
+      (l10n.quran, 'assets/icons/quran.png'),
+      (l10n.duas,  'assets/icons/duas.png'),
+      (l10n.menu,  'assets/icons/menu.png'),
     ];
+
+    final iconSz  = (sw * 0.058).clamp(22.0, 28.0);
+    final labelSz = (sw * 0.024).clamp(9.0,  11.5);
 
     return Container(
       decoration: BoxDecoration(
-        color: _surface,
-        border: Border(top: BorderSide(color: _accentSoft.withOpacity(0.25), width: 1)),
-        boxShadow: [BoxShadow(color: Colors.black54, blurRadius: 20)],
+        color:  surface,
+        border: Border(
+            top: BorderSide(color: accentSoft.withOpacity(0.22), width: 0.8)),
+        boxShadow: const [BoxShadow(color: Colors.black54, blurRadius: 20)],
       ),
       child: SafeArea(
         top: false,
@@ -293,43 +337,50 @@ class _ToolsPageState extends State<ToolsPage>
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: items.asMap().entries.map((e) {
-              final i = e.key;
-              final label = e.value.$1;
-              final asset = e.value.$2;
+              final i      = e.key;
+              final label  = e.value.$1;
+              final asset  = e.value.$2;
               final active = i == 1;
 
               return GestureDetector(
                 onTap: () {
                   if (!active) {
-                    Navigator.push(context,
-                        MaterialPageRoute(builder: (_) => _pages[i]));
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => _pages[i]),
+                    );
                   }
                 },
                 child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 250),
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 14, vertical: 6),
+                  duration: const Duration(milliseconds: 220),
+                  padding: EdgeInsets.symmetric(
+                      horizontal: rsw * 0.032, vertical: rsw * 0.016),
                   decoration: BoxDecoration(
                     color: active
-                        ? _accentSoft.withOpacity(0.22)
+                        ? accentSoft.withOpacity(0.22)
                         : Colors.transparent,
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(rsw * 0.038),
+                    border: active
+                        ? Border.all(
+                        color: accentSoft.withOpacity(0.40), width: 0.8)
+                        : null,
                   ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Image.asset(asset,
-                          width: 24, height: 24,
-                          ),
-                      const SizedBox(height: 4),
-                      Text(label,
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: active
-                                ? FontWeight.w700
-                                : FontWeight.w400,
-                            color: active ? _accent : _textLo,
-                          )),
+                      Image.asset(asset, width: iconSz, height: iconSz),
+                      const SizedBox(height: 3),
+                      Text(
+                        label,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize:      labelSz,
+                          fontWeight:    active ? FontWeight.w700 : FontWeight.w400,
+                          color:         active ? accent : textLo,
+                          letterSpacing: 0.2,
+                        ),
+                      ),
                     ],
                   ),
                 ),

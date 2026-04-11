@@ -371,29 +371,111 @@ class _ProfilePageState extends State<ProfilePage> {
       decoration: BoxDecoration(
         color: _card,
         borderRadius: BorderRadius.circular(20),
-        border:
-        Border.all(color: _accentSoft.withOpacity(0.2)),
+        border: Border.all(color: _accentSoft.withOpacity(0.2)),
       ),
       child: Column(
         children: [
           Obx(() => _infoTile(
-            Icons.email_outlined,
-            'Email',
-            _auth.email.value.isNotEmpty
-                ? _auth.email.value
-                : '—',
+            Icons.email_outlined, 'Email',
+            _auth.email.value.isNotEmpty ? _auth.email.value : '—',
           )),
-          Divider(
-              height: 1, color: _accentSoft.withOpacity(0.15)),
-          _infoTile(
-              Icons.shield_outlined, 'Account Type', 'Standard'),
-          Divider(
-              height: 1, color: _accentSoft.withOpacity(0.15)),
+          Divider(height: 1, color: _accentSoft.withOpacity(0.15)),
+          _infoTile(Icons.shield_outlined, 'Account Type', 'Standard'),
+          Divider(height: 1, color: _accentSoft.withOpacity(0.15)),
           _infoTile(Icons.language, 'Language', 'English'),
+
+          // ── Reactive: shows/hides based on actual provider state ───────
+          Obx(() {
+            // Show "Add Password" ONLY if:
+            // 1. User has Google linked
+            // 2. User does NOT already have a password (from any source)
+            //final googleOnly = _auth.hasGoogle.value && _auth.hasPassword.value;
+
+            //if (!googleOnly) return const SizedBox.shrink(); // hide tile
+            if(_auth.hasGoogle.value && _auth.hasPassword.value){
+              return Column(
+                children: [
+                  Divider(height: 1, color: _accentSoft.withOpacity(0.15)),
+                  _securityTile(),
+                ],
+              );
+            }else if(_auth.hasGoogle.value && !_auth.hasPassword.value){
+              return Column(
+                children: [
+                  Divider(height: 1, color: _accentSoft.withOpacity(0.15)),
+                  _securityTile2(),
+                ],
+              );
+            }else{
+              return const SizedBox.shrink();
+            }
+
+
+          }),
         ],
       ),
     );
   }
+
+
+
+  // ADD THIS WIDGET:
+  Widget _securityTile() {
+    return InkWell(
+      onTap: _showSetPasswordSheet,
+      borderRadius: const BorderRadius.vertical(bottom: Radius.circular(20)),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        child: Row(
+          children: [
+            const Icon(Icons.lock_outline, color: _accent, size: 20),
+            const SizedBox(width: 14),
+            const Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Security', style: TextStyle(color: _textLo, fontSize: 11)),
+                  SizedBox(height: 2),
+                  Text('Update Password for Login',
+                      style: TextStyle(color: _textHi, fontSize: 14)),
+                ],
+              ),
+            ),
+            const Icon(Icons.chevron_right, color: _textLo, size: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _securityTile2() {
+    return InkWell(
+      onTap: _showSetPasswordSheet,
+      borderRadius: const BorderRadius.vertical(bottom: Radius.circular(20)),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        child: Row(
+          children: [
+            const Icon(Icons.lock_outline, color: _accent, size: 20),
+            const SizedBox(width: 14),
+            const Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Security', style: TextStyle(color: _textLo, fontSize: 11)),
+                  SizedBox(height: 2),
+                  Text('Add Password for Login',
+                      style: TextStyle(color: _textHi, fontSize: 14)),
+                ],
+              ),
+            ),
+            const Icon(Icons.chevron_right, color: _textLo, size: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
 
   Widget _infoTile(IconData icon, String label, String value) {
     return Padding(
@@ -441,6 +523,215 @@ class _ProfilePageState extends State<ProfilePage> {
                 fontWeight: FontWeight.w700,
                 fontSize: 15)),
       ),
+    );
+  }
+
+  // ADD THIS METHOD:
+  void _showSetPasswordSheet() {
+    final passCtrl    = TextEditingController();
+    final confirmCtrl = TextEditingController();
+    bool obscure1     = true;
+    bool obscure2     = true;
+    final isUpdate    = _auth.hasPassword.value;
+
+    Get.bottomSheet(
+      StatefulBuilder(
+        builder: (context, setSheetState) {
+          return SingleChildScrollView(
+            child: Container(
+              padding: EdgeInsets.fromLTRB(
+                24, 16, 24,
+                MediaQuery.of(context).viewInsets.bottom + 32,
+              ),
+              decoration: const BoxDecoration(
+                color: _card,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Drag handle
+                  Center(
+                    child: Container(
+                      width: 40, height: 4,
+                      decoration: BoxDecoration(
+                        color: _textLo.withOpacity(0.3),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  Text(
+                    isUpdate ? 'Update Password' : 'Add Password Login',
+                    style: const TextStyle(
+                        color: _textHi,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    isUpdate
+                        ? 'Set a new password for your account.'
+                        : 'After setting a password, you can sign in with\neither Google or your email & password.',
+                    style: const TextStyle(
+                        color: _textLo, fontSize: 13, height: 1.5),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // New password
+                  TextFormField(
+                    controller: passCtrl,
+                    obscureText: obscure1,
+                    style: const TextStyle(color: _textHi),
+                    decoration: InputDecoration(
+                      labelText: 'New Password',
+                      labelStyle: const TextStyle(color: _textLo),
+                      prefixIcon: const Icon(Icons.lock_outline,
+                          color: _accentSoft, size: 20),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          obscure1 ? Icons.visibility_off : Icons.visibility,
+                          color: _textLo, size: 20,
+                        ),
+                        onPressed: () =>
+                            setSheetState(() => obscure1 = !obscure1),
+                      ),
+                      filled: true,
+                      fillColor: _surface,
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide:
+                        BorderSide(color: _accentSoft.withOpacity(0.3)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide:
+                        const BorderSide(color: _accent, width: 1.5),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Confirm password
+                  TextFormField(
+                    controller: confirmCtrl,
+                    obscureText: obscure2,
+                    style: const TextStyle(color: _textHi),
+                    decoration: InputDecoration(
+                      labelText: 'Confirm Password',
+                      labelStyle: const TextStyle(color: _textLo),
+                      prefixIcon: const Icon(Icons.lock_outline,
+                          color: _accentSoft, size: 20),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          obscure2 ? Icons.visibility_off : Icons.visibility,
+                          color: _textLo, size: 20,
+                        ),
+                        onPressed: () =>
+                            setSheetState(() => obscure2 = !obscure2),
+                      ),
+                      filled: true,
+                      fillColor: _surface,
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide:
+                        BorderSide(color: _accentSoft.withOpacity(0.3)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide:
+                        const BorderSide(color: _accent, width: 1.5),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Submit
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: Obx(() => ElevatedButton(
+                      onPressed: _auth.isLoading.value
+                          ? null
+                          : () async {
+                        if (passCtrl.text.length < 6) {
+                          Get.snackbar(
+                              'Error',
+                              'Password must be at least 6 characters.',
+                              backgroundColor: Colors.red[900],
+                              colorText: Colors.white,
+                              snackPosition: SnackPosition.BOTTOM,
+                              margin: const EdgeInsets.all(16));
+                          return;
+                        }
+                        if (passCtrl.text != confirmCtrl.text) {
+                          Get.snackbar('Error', 'Passwords do not match.',
+                              backgroundColor: Colors.red[900],
+                              colorText: Colors.white,
+                              snackPosition: SnackPosition.BOTTOM,
+                              margin: const EdgeInsets.all(16));
+                          return;
+                        }
+
+                        final ok = await _auth.addPasswordToAccount(
+                            password: passCtrl.text);
+
+                        if (ok) {
+                          Get.back();
+                          Get.snackbar(
+                            isUpdate
+                                ? 'Password Updated ✓'
+                                : 'Password Set ✓',
+                            isUpdate
+                                ? 'Your password has been updated.'
+                                : 'You can now sign in with email & password too.',
+                            backgroundColor: _accentSoft,
+                            colorText: Colors.white,
+                            snackPosition: SnackPosition.BOTTOM,
+                            margin: const EdgeInsets.all(16),
+                            duration: const Duration(seconds: 3),
+                          );
+                        } else {
+                          Get.snackbar(
+                            'Error',
+                            _auth.errorMessage.value.isNotEmpty
+                                ? _auth.errorMessage.value
+                                : 'Failed. Please try again.',
+                            backgroundColor: Colors.red[900],
+                            colorText: Colors.white,
+                            snackPosition: SnackPosition.BOTTOM,
+                            margin: const EdgeInsets.all(16),
+                          );
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: _accentSoft,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14)),
+                      ),
+                      child: _auth.isLoading.value
+                          ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                              strokeWidth: 2, color: Colors.white))
+                          : Text(
+                          isUpdate ? 'Update Password' : 'Set Password',
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 15)),
+                    )),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+      isScrollControlled: true,
     );
   }
 

@@ -30,6 +30,7 @@ import 'location/model/location_model.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+
   // Lock orientation to portrait only
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
@@ -38,6 +39,8 @@ void main() async {
 
   // Initialize timezone package
   tz.initializeTimeZones();
+
+
 
   // ✅ Always pass DefaultFirebaseOptions — prevents silent auth failures
   await Firebase.initializeApp(

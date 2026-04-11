@@ -117,7 +117,8 @@ class _LocationPageState extends State<LocationPage>
           SafeArea(
             child: BlocListener<LocationCubit, LocationState>(
               listener: (context, state) {
-                // ✅ Snackbar trigger
+
+
                 if (state is LocationLoaded) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
