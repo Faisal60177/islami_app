@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:islamic_app/settings/cubit/settings_cubit.dart';
-import 'package:islamic_app/settings/cubit/settings_state.dart';
-import 'package:islamic_app/settings/theme/app_themes.dart';
+import 'package:muslim_app/settings/cubit/settings_cubit.dart';
+import 'package:muslim_app/settings/cubit/settings_state.dart';
+import 'package:muslim_app/settings/theme/app_themes.dart';
 import '../cubit/quran_cubit.dart';
 import '../cubit/quran_state.dart';
 import '../models/surah_model.dart';
@@ -72,7 +72,7 @@ class _SurahTile extends StatelessWidget {
           builder: (_) => BlocProvider.value(
             value: context.read<QuranCubit>(),
             child: QuranReaderPage(
-                initialPage: surah.page, surah: surah),
+                initialPage: surah.page + 2, surah: surah),
           ),
         ),
       ),

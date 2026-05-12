@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../cubit/duas_cubit.dart';
 import '../model/duas_model.dart';
 import '../repository/duas_repository.dart';
 
-// ─── Palette ────────────────────────────────────────────────────────────────
 const _bg         = Color(0xFF021A10);
 const _surface    = Color(0xFF0D2E1C);
 const _card       = Color(0xFF0F2A1A);
@@ -27,7 +28,10 @@ class _DuasDetailPageState extends State<DuasDetailPage>
     with TickerProviderStateMixin {
 
   late DuasModel _dua;
+  late String _userId;
   bool _isPlaying = false;
+  bool _interactionLoaded = false; // ✅ tracks if we loaded correct state yet
+
   late AnimationController _waveCtrl;
   late AnimationController _favCtrl;
   late AnimationController _bkmCtrl;
@@ -38,11 +42,10 @@ class _DuasDetailPageState extends State<DuasDetailPage>
   void initState() {
     super.initState();
     _dua = widget.dua;
+    _userId = context.read<DuasCubit>().userId; // ✅ get userId from cubit
 
     _waveCtrl = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 800),
-    );
+        vsync: this, duration: const Duration(milliseconds: 800));
 
     _favCtrl = AnimationController(
         vsync: this, duration: const Duration(milliseconds: 400));
@@ -59,6 +62,26 @@ class _DuasDetailPageState extends State<DuasDetailPage>
       TweenSequenceItem(tween: Tween(begin: 1.5, end: 0.88), weight: 30),
       TweenSequenceItem(tween: Tween(begin: 0.88, end: 1.0), weight: 30),
     ]).animate(CurvedAnimation(parent: _bkmCtrl, curve: Curves.easeOut));
+
+    // ✅ Load the real favorite/bookmark state for this user from user_interactions
+    _loadUserInteraction();
+  }
+
+  // ✅ NEW — reads actual state from user_interactions table
+  // The dua passed in always has is_favorite=0 from duas table
+  // This corrects it by reading from user_interactions
+  Future<void> _loadUserInteraction() async {
+    final interaction = await context.read<DuasCubit>()
+        .repository.getUserInteractionForDua(_userId, _dua.id);
+    if (interaction != null && mounted) {
+      setState(() {
+        _dua.isFavorite   = interaction['is_favorite']   == 1;
+        _dua.isBookmarked = interaction['is_bookmarked'] == 1;
+        _interactionLoaded = true;
+      });
+    } else {
+      setState(() => _interactionLoaded = true);
+    }
   }
 
   @override
@@ -69,32 +92,30 @@ class _DuasDetailPageState extends State<DuasDetailPage>
     super.dispose();
   }
 
-  // ── Actions ──────────────────────────────────────────────────────────────
+  // ── Actions ──────────────────────────────────────────────────────────
 
   Future<void> _toggleFavorite() async {
     HapticFeedback.lightImpact();
-    // ✅ Update UI instantly before async call
     setState(() => _dua.isFavorite = !_dua.isFavorite);
     _favCtrl.forward(from: 0);
     _toast(
       _dua.isFavorite ? 'Added to Favorites' : 'Removed from Favorites',
       _dua.isFavorite ? const Color(0xFFE57373) : _textLo,
     );
-    // Persist in background
-    await DuasRepository().toggleFavorite(_dua);
+    // ✅ use cubit — not a new repository instance
+    context.read<DuasCubit>().toggleFavorite(_dua);
   }
 
   Future<void> _toggleBookmark() async {
     HapticFeedback.lightImpact();
-    // ✅ Update UI instantly before async call
     setState(() => _dua.isBookmarked = !_dua.isBookmarked);
     _bkmCtrl.forward(from: 0);
     _toast(
       _dua.isBookmarked ? 'Bookmarked' : 'Bookmark Removed',
       _dua.isBookmarked ? const Color(0xFF64B5F6) : _textLo,
     );
-    // Persist in background
-    await DuasRepository().toggleBookmark(_dua);
+    // ✅ use cubit
+    context.read<DuasCubit>().toggleBookmark(_dua);
   }
 
   void _copyDua() {
@@ -110,7 +131,6 @@ class _DuasDetailPageState extends State<DuasDetailPage>
 
   void _shareDua() {
     HapticFeedback.selectionClick();
-    // Replace with: Share.share(text) from share_plus package
     _toast('Sharing…', _accent);
   }
 
@@ -143,8 +163,6 @@ class _DuasDetailPageState extends State<DuasDetailPage>
     ));
   }
 
-  // ─────────────────────────────────────────────────────────────────────────
-
   @override
   Widget build(BuildContext context) {
     final sw = MediaQuery.of(context).size.width;
@@ -164,7 +182,7 @@ class _DuasDetailPageState extends State<DuasDetailPage>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              _dua.tags ?? 'Dua Detail',
+              _dua.tags,
               style: TextStyle(
                   color: _textHi,
                   fontSize: sw * 0.042,
@@ -172,53 +190,67 @@ class _DuasDetailPageState extends State<DuasDetailPage>
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
-            Text(_dua.category ?? 'Daily Dua',
+            Text(_dua.categoryTitle,
                 style: TextStyle(color: _textLo, fontSize: sw * 0.028)),
           ],
         ),
-        // ── Action icons in AppBar ─────────────────────────────────────
         actions: [
-          // Favorite
-          ScaleTransition(
-            scale: _favBounce,
-            child: IconButton(
-              tooltip: _dua.isFavorite ? 'Unfavorite' : 'Favorite',
-              onPressed: _toggleFavorite,
-              icon: Icon(
-                _dua.isFavorite
-                    ? Icons.favorite_rounded
-                    : Icons.favorite_outline_rounded,
-                color: _dua.isFavorite
-                    ? const Color(0xFFE57373)
-                    : _textLo,
-                size: sw * 0.058,
+          // ✅ show loading indicator while reading interaction state
+          // so icons don't flash from empty to filled
+          if (!_interactionLoaded)
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              child: Center(
+                child: SizedBox(
+                  width: 18, height: 18,
+                  child: CircularProgressIndicator(
+                      color: _textLo, strokeWidth: 2),
+                ),
+              ),
+            )
+          else ...[
+            // Favorite
+            ScaleTransition(
+              scale: _favBounce,
+              child: IconButton(
+                tooltip: _dua.isFavorite ? 'Unfavorite' : 'Favorite',
+                onPressed: _toggleFavorite,
+                icon: Icon(
+                  _dua.isFavorite
+                      ? Icons.favorite_rounded
+                      : Icons.favorite_outline_rounded,
+                  color: _dua.isFavorite
+                      ? const Color(0xFFE57373)
+                      : _textLo,
+                  size: sw * 0.058,
+                ),
               ),
             ),
-          ),
-          // Bookmark
-          ScaleTransition(
-            scale: _bkmBounce,
-            child: IconButton(
-              tooltip: _dua.isBookmarked ? 'Remove Bookmark' : 'Bookmark',
-              onPressed: _toggleBookmark,
-              icon: Icon(
-                _dua.isBookmarked
-                    ? Icons.bookmark_rounded
-                    : Icons.bookmark_outline_rounded,
-                color: _dua.isBookmarked
-                    ? const Color(0xFF64B5F6)
-                    : _textLo,
-                size: sw * 0.058,
+            // Bookmark
+            ScaleTransition(
+              scale: _bkmBounce,
+              child: IconButton(
+                tooltip: _dua.isBookmarked ? 'Remove Bookmark' : 'Bookmark',
+                onPressed: _toggleBookmark,
+                icon: Icon(
+                  _dua.isBookmarked
+                      ? Icons.bookmark_rounded
+                      : Icons.bookmark_outline_rounded,
+                  color: _dua.isBookmarked
+                      ? const Color(0xFF64B5F6)
+                      : _textLo,
+                  size: sw * 0.058,
+                ),
               ),
             ),
-          ),
+          ],
           // More menu
           PopupMenuButton<String>(
             icon: Icon(Icons.more_vert_rounded,
                 color: _textLo, size: sw * 0.058),
             color: _card,
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14)),
+            shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
             onSelected: (val) {
               if (val == 'copy') _copyDua();
               if (val == 'share') _shareDua();
@@ -235,24 +267,18 @@ class _DuasDetailPageState extends State<DuasDetailPage>
           child: Container(height: 1, color: _divider),
         ),
       ),
-
       body: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-
-            // ── Arabic hero block ────────────────────────────────────────
             _ArabicHero(arabic: _dua.arabic, sw: sw),
-
-            // ── Continuous text flow ─────────────────────────────────────
             Padding(
               padding: EdgeInsets.symmetric(
                   horizontal: sw * 0.055, vertical: sw * 0.03),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-
                   _SectionLabel('Transliteration', sw),
                   SizedBox(height: sw * 0.025),
                   Text(
@@ -264,20 +290,15 @@ class _DuasDetailPageState extends State<DuasDetailPage>
                       fontStyle: FontStyle.italic,
                     ),
                   ),
-
                   _Divider(sw),
-
                   _SectionLabel('Translation', sw),
                   SizedBox(height: sw * 0.03),
                   _TranslationBlock(dua: _dua, sw: sw),
-
                   if (_dua.reference.isNotEmpty) ...[
                     _Divider(sw),
                     _ReferenceBlock(reference: _dua.reference, sw: sw),
                   ],
-
-                  if (_dua.audioUrl != null &&
-                      _dua.audioUrl!.isNotEmpty) ...[
+                  if (_dua.audioUrl != null && _dua.audioUrl!.isNotEmpty) ...[
                     _Divider(sw),
                     _AudioBar(
                       isPlaying: _isPlaying,
@@ -286,7 +307,6 @@ class _DuasDetailPageState extends State<DuasDetailPage>
                       sw: sw,
                     ),
                   ],
-
                   SizedBox(height: sw * 0.1),
                 ],
               ),
@@ -297,8 +317,7 @@ class _DuasDetailPageState extends State<DuasDetailPage>
     );
   }
 
-  PopupMenuItem<String> _menuItem(
-      String val, IconData icon, String label) =>
+  PopupMenuItem<String> _menuItem(String val, IconData icon, String label) =>
       PopupMenuItem(
         value: val,
         child: Row(children: [
@@ -310,22 +329,22 @@ class _DuasDetailPageState extends State<DuasDetailPage>
       );
 }
 
-// ─── Arabic Hero ─────────────────────────────────────────────────────────────
+// ─── Arabic Hero ──────────────────────────────────────────────────────────────
 class _ArabicHero extends StatelessWidget {
   final String arabic;
   final double sw;
   const _ArabicHero({required this.arabic, required this.sw});
 
   Widget _ornament() => Row(children: [
-    Expanded(child: Container(height: 1,
-        color: _gold.withOpacity(0.22))),
+    Expanded(
+        child: Container(height: 1, color: _gold.withOpacity(0.22))),
     Container(
         margin: EdgeInsets.symmetric(horizontal: sw * 0.04),
         width: 5, height: 5,
         decoration: BoxDecoration(
             color: _gold.withOpacity(0.45), shape: BoxShape.circle)),
-    Expanded(child: Container(height: 1,
-        color: _gold.withOpacity(0.22))),
+    Expanded(
+        child: Container(height: 1, color: _gold.withOpacity(0.22))),
   ]);
 
   @override
@@ -357,7 +376,7 @@ class _ArabicHero extends StatelessWidget {
   }
 }
 
-// ─── Section Label ───────────────────────────────────────────────────────────
+// ─── Section Label ────────────────────────────────────────────────────────────
 class _SectionLabel extends StatelessWidget {
   final String text;
   final double sw;
@@ -375,18 +394,19 @@ class _SectionLabel extends StatelessWidget {
   );
 }
 
-// ─── Divider ─────────────────────────────────────────────────────────────────
+// ─── Divider ──────────────────────────────────────────────────────────────────
 class _Divider extends StatelessWidget {
   final double sw;
   const _Divider(this.sw);
 
   @override
-  Widget build(BuildContext context) =>
-      Container(margin: EdgeInsets.symmetric(vertical: sw * 0.06),
-          height: 1, color: _divider);
+  Widget build(BuildContext context) => Container(
+      margin: EdgeInsets.symmetric(vertical: sw * 0.06),
+      height: 1,
+      color: _divider);
 }
 
-// ─── Translation Block with Language Toggle ───────────────────────────────
+// ─── Translation Block ────────────────────────────────────────────────────────
 class _TranslationBlock extends StatefulWidget {
   final DuasModel dua;
   final double sw;
@@ -459,7 +479,7 @@ class _TranslationBlockState extends State<_TranslationBlock> {
   }
 }
 
-// ─── Reference Block ─────────────────────────────────────────────────────────
+// ─── Reference Block ──────────────────────────────────────────────────────────
 class _ReferenceBlock extends StatelessWidget {
   final String reference;
   final double sw;
@@ -497,7 +517,7 @@ class _ReferenceBlock extends StatelessWidget {
   );
 }
 
-// ─── Audio Bar ───────────────────────────────────────────────────────────────
+// ─── Audio Bar ────────────────────────────────────────────────────────────────
 class _AudioBar extends StatelessWidget {
   final bool isPlaying;
   final AnimationController waveCtrl;
@@ -543,25 +563,27 @@ class _AudioBar extends StatelessWidget {
       ),
       SizedBox(width: sw * 0.04),
       Expanded(
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(
-            isPlaying ? 'Playing recitation…' : 'Listen to recitation',
-            style: TextStyle(
-              fontSize: sw * 0.035,
-              color: isPlaying ? _textHi : _textLo,
-              fontWeight:
-              isPlaying ? FontWeight.w600 : FontWeight.w400,
-            ),
-          ),
-          const SizedBox(height: 8),
-          _Waveform(isPlaying: isPlaying, ctrl: waveCtrl),
-        ]),
+        child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                isPlaying ? 'Playing recitation…' : 'Listen to recitation',
+                style: TextStyle(
+                  fontSize: sw * 0.035,
+                  color: isPlaying ? _textHi : _textLo,
+                  fontWeight:
+                  isPlaying ? FontWeight.w600 : FontWeight.w400,
+                ),
+              ),
+              const SizedBox(height: 8),
+              _Waveform(isPlaying: isPlaying, ctrl: waveCtrl),
+            ]),
       ),
     ]),
   );
 }
 
-// ─── Waveform ────────────────────────────────────────────────────────────────
+// ─── Waveform ─────────────────────────────────────────────────────────────────
 class _Waveform extends StatelessWidget {
   final bool isPlaying;
   final AnimationController ctrl;
@@ -591,8 +613,8 @@ class _Waveform extends StatelessWidget {
             animation: ctrl,
             builder: (_, __) {
               final t = (ctrl.value + offset) % 1.0;
-              final h =
-                  e.value * (0.35 + 0.65 * (t < 0.5 ? t * 2 : (1 - t) * 2));
+              final h = e.value *
+                  (0.35 + 0.65 * (t < 0.5 ? t * 2 : (1 - t) * 2));
               return Container(
                 width: 3, height: h,
                 margin: const EdgeInsets.symmetric(horizontal: 1.5),

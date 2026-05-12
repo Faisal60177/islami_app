@@ -11,20 +11,20 @@ import 'home/cubit/prayer_times_cubit.dart';
 import 'home/home_page.dart';
 import 'home/services/prayer_times_storage.dart';
 import 'Duas/cubit/duas_cubit.dart';
-import 'package:islamic_app/Duas/repository/duas_repository.dart';
+import 'package:muslim_app/Duas/repository/duas_repository.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:islamic_app/Menu/auth/auth_controller.dart';
+import 'package:muslim_app/Menu/auth/auth_controller.dart';
 import 'firebase_options.dart';
-import 'package:islamic_app/notification/cubit/notification_cubit.dart';
-import 'package:islamic_app/notification/repository/notification_repository.dart';
-import 'package:islamic_app/Quran/quran_page.dart';
-import 'package:islamic_app/settings/cubit/settings_cubit.dart';
-import 'package:islamic_app/settings/cubit/settings_state.dart';
-import 'package:islamic_app/settings/theme/app_themes.dart';
-import 'package:islamic_app/home/home_page.dart';
-import 'package:islamic_app/location/services/timezone_service.dart';
+import 'package:muslim_app/notification/cubit/notification_cubit.dart';
+import 'package:muslim_app/notification/repository/notification_repository.dart';
+import 'package:muslim_app/Quran/quran_page.dart';
+import 'package:muslim_app/settings/cubit/settings_cubit.dart';
+import 'package:muslim_app/settings/cubit/settings_state.dart';
+import 'package:muslim_app/settings/theme/app_themes.dart';
+import 'package:muslim_app/home/home_page.dart';
+import 'package:muslim_app/location/services/timezone_service.dart';
 import 'location/model/location_model.dart';
 
 void main() async {
@@ -59,10 +59,6 @@ void main() async {
 
   // Duas Repository
   final duasRepository = DuasRepository();
-
-  // Sync JSON → SQLite
-  await duasRepository.syncCategoriesFromJson('assets/json/categories.json');
-  await duasRepository.syncDuasFromJson('assets/json/duas.json');
 
   // Firestore → SQLite
   await duasRepository.syncCategoriesFromFirestore();

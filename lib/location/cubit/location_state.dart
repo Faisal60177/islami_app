@@ -1,4 +1,4 @@
-import 'package:islamic_app/location/model/location_model.dart';
+import 'package:muslim_app/location/model/location_model.dart';
 
 abstract class LocationState {}
 

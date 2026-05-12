@@ -1,6 +1,7 @@
 class DuasModel {
   final int id;
-  final String category;
+  final int categoryId;
+  final String categoryTitle;
   final String arabic;
   final String transliteration;
   final Map<String, String> translation;
@@ -12,7 +13,8 @@ class DuasModel {
 
   DuasModel({
     required this.id,
-    required this.category,
+    required this.categoryId,
+    required this.categoryTitle,
     required this.arabic,
     required this.transliteration,
     required this.translation,
@@ -26,15 +28,16 @@ class DuasModel {
   factory DuasModel.fromMap(Map<String, dynamic> map) {
     return DuasModel(
       id: map['id'],
-      category: map['category'],
-      arabic: map['arabic'],
-      transliteration: map['transliteration'],
+      categoryId: map['category_id'] ?? 0,
+      categoryTitle: map['category_title'] ?? '',
+      arabic: map['arabic']?? '',
+      transliteration: map['transliteration']?? '',
       translation: {
         'en': map['translation_en'] ?? '',
         'bn': map['translation_bn'] ?? '',
       },
-      reference: map['reference'],
-      tags: map['tags'],
+      reference: map['reference']?? '',
+      tags: map['tags']?? '',
       audioUrl: map['audio_url'],
       isFavorite: map['is_favorite'] == 1,
       isBookmarked: map['is_bookmarked'] == 1,
@@ -44,7 +47,8 @@ class DuasModel {
   Map<String, dynamic> toMap() {
     return {
       'id': id,
-      'category': category,
+      'category_id': categoryId,
+      'category_title': categoryTitle,
       'arabic': arabic,
       'transliteration': transliteration,
       'translation_en': translation['en'],

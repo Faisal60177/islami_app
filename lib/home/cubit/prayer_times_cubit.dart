@@ -5,7 +5,7 @@ import '../services/prayer_times_service.dart';
 import '../../../location/cubit/location_cubit.dart';
 import '../../../location/cubit/location_state.dart';
 import '../../../location/model/location_model.dart';
-import 'package:islamic_app/home/services/prayer_times_storage.dart';
+import 'package:muslim_app/home/services/prayer_times_storage.dart';
 
 class PrayerTimesCubit extends Cubit<PrayerTimesState> {
   final LocationCubit locationCubit;

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-import 'package:islamic_app/home/cubit/prayer_times_cubit.dart';
-import 'package:islamic_app/home/cubit/prayer_times_state.dart';
-import 'package:islamic_app/home/model/prayer_times_models.dart';
+import 'package:muslim_app/home/cubit/prayer_times_cubit.dart';
+import 'package:muslim_app/home/cubit/prayer_times_state.dart';
+import 'package:muslim_app/home/model/prayer_times_models.dart';
 
 class MonthlyCalendarPage extends StatefulWidget {
   const MonthlyCalendarPage({super.key});

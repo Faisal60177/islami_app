@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:islamic_app/location/cubit/location_cubit.dart';
-import 'package:islamic_app/location/cubit/location_state.dart';
-import 'package:islamic_app/location/model/location_model.dart';
+import 'package:muslim_app/location/cubit/location_cubit.dart';
+import 'package:muslim_app/location/cubit/location_state.dart';
+import 'package:muslim_app/location/model/location_model.dart';
 
 class LocationPage extends StatefulWidget {
   const LocationPage({Key? key}) : super(key: key);

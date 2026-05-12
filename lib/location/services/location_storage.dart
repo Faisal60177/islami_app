@@ -3,7 +3,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
-import 'package:islamic_app/location/model/location_model.dart';
+import 'package:muslim_app/location/model/location_model.dart';
 
 class LocationStorage {
   Future<void> saveLocation(LocationModel location) async {

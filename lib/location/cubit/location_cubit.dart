@@ -1,9 +1,9 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:islamic_app/location/services/default_location.dart';
-import 'package:islamic_app/location/services/permission_service.dart';
-import 'package:islamic_app/location/services/location_storage.dart';
-import 'package:islamic_app/location/model/location_model.dart';
-import 'package:islamic_app/location/repository/location_repository.dart';
+import 'package:muslim_app/location/services/default_location.dart';
+import 'package:muslim_app/location/services/permission_service.dart';
+import 'package:muslim_app/location/services/location_storage.dart';
+import 'package:muslim_app/location/model/location_model.dart';
+import 'package:muslim_app/location/repository/location_repository.dart';
 import 'location_state.dart';
 
 

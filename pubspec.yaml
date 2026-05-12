@@ -1,4 +1,4 @@
-name: islamic_app
+name: muslim_app
 description: "A new Flutter project."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
@@ -84,20 +84,30 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.4
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 
 # The following section is specific to Flutter packages.
+
+flutter_launcher_icons:
+    android: true
+    ios: true
+    image_path: "assets/icons/AppIcon.png"
+
+    # Optional: Adaptive icon for Android
+    # daptive_icon_background: "#ffffff"  # or image path
+    # adaptive_icon_foreground: "assets/icon/icon_foreground.png"
+
 flutter:
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
+
   uses-material-design: true
   assets:
-    - assets/json/categories.json
-    - assets/json/duas.json
     - assets/sounds/tasbih_click.mp3
     - assets/pdf/quran.pdf
     - assets/icons/quran.png

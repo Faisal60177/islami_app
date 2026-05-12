@@ -3,9 +3,18 @@ import '../repository/duas_repository.dart';
 import '../model/category_model.dart';
 import 'category_duas_page.dart';
 
-class CategoryPage extends StatelessWidget {
+class CategoryPage extends StatefulWidget {
   final String searchQuery;
   const CategoryPage({super.key, required this.searchQuery});
+
+  @override
+  State<CategoryPage> createState() => _CategoryPageState();
+}
+
+class _CategoryPageState extends State<CategoryPage> {
+  final DuasRepository _repository = DuasRepository();
+  List<CategoryModel> _categories = [];
+  bool _isLoading = true;
 
   // Rich color palettes for categories
   static const List<List<Color>> cardGradients = [
@@ -19,21 +28,36 @@ class CategoryPage extends StatelessWidget {
     [Color(0xFF6B5E2E), Color(0xFF9A8745)],
   ];
 
-  IconData getCategoryIconData(String iconName) {
+  @override
+  void initState() {
+    super.initState();
+    _loadCategories();
+  }
+
+  Future<void> _loadCategories() async {
+    setState(() => _isLoading = true);
+    final data = await _repository.getAllCategories();
+    setState(() {
+      _categories = data;
+      _isLoading = false;
+    });
+  }
+
+  IconData _getCategoryIconData(String iconName) {
     switch (iconName) {
-      case 'sun': return Icons.wb_sunny_rounded;
-      case 'moon': return Icons.nights_stay_rounded;
-      case 'star': return Icons.star_rounded;
-      case 'home': return Icons.home_rounded;
-      case 'food': return Icons.restaurant_rounded;
-      case 'travel': return Icons.airplanemode_active_rounded;
-      case 'prayer': return Icons.mosque_rounded;
-      case 'sleep': return Icons.bedtime_rounded;
-      case 'health': return Icons.favorite_rounded;
-      case 'rain': return Icons.water_drop_rounded;
-      case 'wind': return Icons.air_rounded;
+      case 'sun':        return Icons.wb_sunny_rounded;
+      case 'moon':       return Icons.nights_stay_rounded;
+      case 'star':       return Icons.star_rounded;
+      case 'home':       return Icons.home_rounded;
+      case 'food':       return Icons.restaurant_rounded;
+      case 'travel':     return Icons.airplanemode_active_rounded;
+      case 'prayer':     return Icons.mosque_rounded;
+      case 'sleep':      return Icons.bedtime_rounded;
+      case 'health':     return Icons.favorite_rounded;
+      case 'rain':       return Icons.water_drop_rounded;
+      case 'wind':       return Icons.air_rounded;
       case 'protection': return Icons.shield_rounded;
-      default: return Icons.auto_awesome_rounded;
+      default:           return Icons.auto_awesome_rounded;
     }
   }
 
@@ -42,101 +66,102 @@ class CategoryPage extends StatelessWidget {
     final w = MediaQuery.of(context).size.width;
     final h = MediaQuery.of(context).size.height;
 
-    return FutureBuilder<List<CategoryModel>>(
-      future: DuasRepository().getAllCategories(),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return Center(
-            child: CircularProgressIndicator(
-              color: const Color(0xFF0D6E6E),
-              strokeWidth: 3,
-            ),
-          );
-        }
+    if (_isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(
+            color: Color(0xFF0D6E6E), strokeWidth: 3),
+      );
+    }
 
-        final categories = snapshot.data!
-            .where((cat) =>
-            cat.categoryTitle.toLowerCase().contains(searchQuery.toLowerCase()))
-            .toList();
+    // ✅ Filter applied in build — searchQuery changes don't need a reload
+    final categories = _categories
+        .where((cat) => cat.categoryTitle
+        .toLowerCase()
+        .contains(widget.searchQuery.toLowerCase()))
+        .toList();
 
-        if (categories.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.category_outlined, size: w * 0.15, color: Colors.grey[300]),
-                SizedBox(height: h * 0.02),
-                Text(
-                  'No categories found',
-                  style: TextStyle(
-                    color: Colors.grey[400],
-                    fontSize: w * 0.045,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-          );
-        }
-
-        return CustomScrollView(
-          physics: const BouncingScrollPhysics(),
-          slivers: [
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: EdgeInsets.fromLTRB(w * 0.05, h * 0.022, w * 0.05, h * 0.01),
-                child: Row(
-                  children: [
-                    Text(
-                      '${categories.length} Categories',
-                      style: TextStyle(
-                        fontSize: w * 0.038,
-                        color: Colors.grey[500],
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            SliverPadding(
-              padding: EdgeInsets.fromLTRB(w * 0.04, 0, w * 0.04, h * 0.04),
-              sliver: SliverGrid(
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: w * 0.04,
-                  mainAxisSpacing: w * 0.04,
-                  childAspectRatio: 1.1,
-                ),
-                delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                    final cat = categories[index];
-                    final gradientColors = cardGradients[index % cardGradients.length];
-                    final iconData = getCategoryIconData(cat.categoryIcon);
-
-                    return _CategoryCard(
-                      category: cat,
-                      gradientColors: gradientColors,
-                      iconData: iconData,
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => CategoryDuasPage(category: cat),
-                        ),
-                      ),
-                    );
-                  },
-                  childCount: categories.length,
-                ),
+    if (categories.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.category_outlined,
+                size: w * 0.15, color: Colors.grey[300]),
+            SizedBox(height: h * 0.02),
+            Text(
+              'No categories found',
+              style: TextStyle(
+                color: Colors.grey[400],
+                fontSize: w * 0.045,
+                fontWeight: FontWeight.w500,
               ),
             ),
           ],
-        );
-      },
+        ),
+      );
+    }
+
+    return RefreshIndicator(
+      onRefresh: _loadCategories,
+      child: CustomScrollView(
+        physics: const BouncingScrollPhysics(),
+        slivers: [
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(
+                  w * 0.05, h * 0.022, w * 0.05, h * 0.01),
+              child: Text(
+                '${categories.length} Categories',
+                style: TextStyle(
+                  fontSize: w * 0.038,
+                  color: Colors.grey[500],
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ),
+          SliverPadding(
+            padding:
+            EdgeInsets.fromLTRB(w * 0.04, 0, w * 0.04, h * 0.04),
+            sliver: SliverGrid(
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: w * 0.04,
+                mainAxisSpacing: w * 0.04,
+                childAspectRatio: 1.1,
+              ),
+              delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                  final cat = categories[index];
+                  final gradientColors =
+                  cardGradients[index % cardGradients.length];
+                  final iconData =
+                  _getCategoryIconData(cat.categoryIcon);
+
+                  return _CategoryCard(
+                    category: cat,
+                    gradientColors: gradientColors,
+                    iconData: iconData,
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) =>
+                            CategoryDuasPage(category: cat),
+                      ),
+                    ),
+                  );
+                },
+                childCount: categories.length,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
 
+// ─── Category Card ────────────────────────────────────────────────────────────
 class _CategoryCard extends StatefulWidget {
   final CategoryModel category;
   final List<Color> gradientColors;
@@ -242,20 +267,15 @@ class _CategoryCardState extends State<_CategoryCard>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // Icon in frosted container
                     Container(
                       padding: EdgeInsets.all(w * 0.028),
                       decoration: BoxDecoration(
                         color: Colors.white.withOpacity(0.2),
                         borderRadius: BorderRadius.circular(14),
                       ),
-                      child: Icon(
-                        widget.iconData,
-                        color: Colors.white,
-                        size: w * 0.065,
-                      ),
+                      child: Icon(widget.iconData,
+                          color: Colors.white, size: w * 0.065),
                     ),
-
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -274,7 +294,8 @@ class _CategoryCardState extends State<_CategoryCard>
                         Row(
                           children: [
                             Icon(Icons.arrow_forward_rounded,
-                                size: w * 0.035, color: Colors.white.withOpacity(0.7)),
+                                size: w * 0.035,
+                                color: Colors.white.withOpacity(0.7)),
                             SizedBox(width: w * 0.01),
                             Text(
                               'View all',

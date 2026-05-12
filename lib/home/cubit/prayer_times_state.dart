@@ -1,5 +1,5 @@
-import 'package:islamic_app/home/widgets/mosque.dart';
-import 'package:islamic_app/home/home_page.dart';
+import 'package:muslim_app/home/widgets/mosque.dart';
+import 'package:muslim_app/home/home_page.dart';
 import '../model/prayer_times_models.dart';
 
 abstract class PrayerTimesState {}

@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
-import 'package:islamic_app/location/model/location_model.dart';
-import 'package:islamic_app/location/services/timezone_service.dart'; // NEW
+import 'package:muslim_app/location/model/location_model.dart';
+import 'package:muslim_app/location/services/timezone_service.dart'; // NEW
 
 class LocationRepository {
 

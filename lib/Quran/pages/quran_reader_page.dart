@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:islamic_app/settings/cubit/settings_cubit.dart';
-import 'package:islamic_app/settings/cubit/settings_state.dart';
-import 'package:islamic_app/settings/theme/app_themes.dart';
+import 'package:muslim_app/settings/cubit/settings_cubit.dart';
+import 'package:muslim_app/settings/cubit/settings_state.dart';
+import 'package:muslim_app/settings/theme/app_themes.dart';
 import '../cubit/quran_cubit.dart';
 import '../cubit/quran_state.dart';
 import '../models/surah_model.dart';
@@ -92,6 +92,7 @@ class _QuranReaderPageState extends State<QuranReaderPage> {
 
   SurahModel _surahForPage(int page, List<SurahModel> surahs) {
     if (surahs.isEmpty) return widget.surah;
+    final quranPage = page - 2;
     SurahModel result = surahs.first;
     for (final s in surahs) {
       if (s.page <= page) result = s;

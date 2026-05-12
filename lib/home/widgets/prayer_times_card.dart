@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:islamic_app/home/model/prayer_times_models.dart';
+import 'package:muslim_app/home/model/prayer_times_models.dart';
 import 'package:intl/intl.dart';
 
 class PrayerTimesCard extends StatelessWidget {

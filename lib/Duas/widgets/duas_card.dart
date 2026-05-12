@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:islamic_app/Duas/model/duas_model.dart';
+import 'package:muslim_app/Duas/model/duas_model.dart';
 
 class DuasCard extends StatelessWidget {
   final DuasModel dua;

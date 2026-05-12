@@ -39,7 +39,7 @@ class _AllDuasPageState extends State<AllDuasPage> with AutomaticKeepAliveClient
     return allDuas.where((dua) =>
     dua.arabic.toLowerCase().contains(query) ||
         dua.transliteration.toLowerCase().contains(query) ||
-        dua.category.toLowerCase().contains(query)).toList();
+        dua.categoryTitle.toLowerCase().contains(query)).toList();
   }
 
   String getShortDescription(String text, [int limit = 55]) {
@@ -107,10 +107,14 @@ class _AllDuasPageState extends State<AllDuasPage> with AutomaticKeepAliveClient
         return _DuaCard(
           dua: dua,
           index: index,
-          onTap: () => Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => DuasDetailPage(dua: dua)),
-          ),
+          onTap: () async {
+            // ✅ await the push — user may toggle in detail page
+            await Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => DuasDetailPage(dua: dua)),
+            );
+            // no reload needed — all duas list cards have no favorite/bookmark icons
+          },
         );
       },
     );
@@ -246,7 +250,7 @@ class _DuaCard extends StatelessWidget {
                                 ),
                                 SizedBox(width: w * 0.01),
                                 Text(
-                                  dua.category,
+                                  dua.categoryTitle,
                                   style: TextStyle(
                                     fontSize: w * 0.03,
                                     color: const Color(0xFF0D6E6E),

@@ -3,17 +3,17 @@ import 'package:get/get.dart';
 
 // Pages
 import 'profile/profile_page.dart';
-import 'package:islamic_app/settings/pages/settings_page.dart';
+import 'package:muslim_app/settings/pages/settings_page.dart';
 import 'contact/contact_page.dart';
 import 'share/share_page.dart';
 import 'rate/rate_page.dart';
 import 'about/about_page.dart';
 import 'auth/sign_out_page.dart';
 import 'auth/auth_controller.dart';
-import 'package:islamic_app/home/home_page.dart';
-import 'package:islamic_app/tools/tools_page.dart';
-import 'package:islamic_app/Quran/quran_page.dart';
-import 'package:islamic_app/Duas/pages/duas_page.dart';
+import 'package:muslim_app/home/home_page.dart';
+import 'package:muslim_app/tools/tools_page.dart';
+import 'package:muslim_app/Quran/quran_page.dart';
+import 'package:muslim_app/Duas/pages/duas_page.dart';
 
 // ─── Palette ────────────────────────────────────────────────────────────────
 const _bg        = Color(0xFF011A0E);

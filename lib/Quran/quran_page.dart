@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:islamic_app/settings/cubit/settings_cubit.dart';
-import 'package:islamic_app/settings/cubit/settings_state.dart';
-import 'package:islamic_app/settings/theme/app_themes.dart';
+import 'package:muslim_app/settings/cubit/settings_cubit.dart';
+import 'package:muslim_app/settings/cubit/settings_state.dart';
+import 'package:muslim_app/settings/theme/app_themes.dart';
 import 'cubit/quran_cubit.dart';
 import 'cubit/quran_state.dart';
 import 'repository/quran_repository.dart';
@@ -11,10 +11,10 @@ import 'pages/para_list_tab.dart';
 import 'pages/bookmark_tab.dart';
 import 'pages/search_tab.dart';
 import 'pages/last_read_tab.dart';
-import 'package:islamic_app/home/home_page.dart';
-import 'package:islamic_app/tools/tools_page.dart';
-import 'package:islamic_app/Duas/pages/duas_page.dart';
-import 'package:islamic_app/Menu/menu_page.dart';
+import 'package:muslim_app/home/home_page.dart';
+import 'package:muslim_app/tools/tools_page.dart';
+import 'package:muslim_app/Duas/pages/duas_page.dart';
+import 'package:muslim_app/Menu/menu_page.dart';
 
 class QuranPage extends StatelessWidget {
   const QuranPage({super.key});

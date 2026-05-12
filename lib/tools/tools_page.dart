@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:islamic_app/Menu/menu_page.dart';
-import 'package:islamic_app/Quran/quran_page.dart';
-import 'package:islamic_app/home/home_page.dart';
-import 'package:islamic_app/Duas/pages/duas_page.dart';
-import 'package:islamic_app/tasbih/tasbih_page.dart';
-import 'package:islamic_app/inspiration/inspiration_page.dart';
-import 'package:islamic_app/notification/page/notification_page.dart';
-import 'package:islamic_app/calendar/pages/calendar_page.dart';
-import 'package:islamic_app/qibla/pages/qibla_page.dart';
-import 'package:islamic_app/Menu/menu_page.dart';
-import 'package:islamic_app/settings/cubit/settings_cubit.dart';
+import 'package:muslim_app/Menu/menu_page.dart';
+import 'package:muslim_app/Quran/quran_page.dart';
+import 'package:muslim_app/home/home_page.dart';
+import 'package:muslim_app/Duas/pages/duas_page.dart';
+import 'package:muslim_app/tasbih/tasbih_page.dart';
+import 'package:muslim_app/inspiration/inspiration_page.dart';
+import 'package:muslim_app/notification/page/notification_page.dart';
+import 'package:muslim_app/calendar/pages/calendar_page.dart';
+import 'package:muslim_app/qibla/pages/qibla_page.dart';
+import 'package:muslim_app/Menu/menu_page.dart';
+import 'package:muslim_app/settings/cubit/settings_cubit.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:islamic_app/settings/cubit/settings_state.dart';
-import 'package:islamic_app/settings/l10n/app_localizations.dart';
-import 'package:islamic_app/settings/theme/app_themes.dart';
+import 'package:muslim_app/settings/cubit/settings_state.dart';
+import 'package:muslim_app/settings/l10n/app_localizations.dart';
+import 'package:muslim_app/settings/theme/app_themes.dart';
 
 // ─── Palette ────────────────────────────────────────────────────────────────
 const _bg        = Color(0xFF021A10);   // near-black deep forest

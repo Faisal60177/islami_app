@@ -1,80 +1,102 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:islamic_app/Duas/model/duas_model.dart';
+import 'package:muslim_app/Duas/model/duas_model.dart';
 import 'duas_state.dart';
-import 'package:islamic_app/Duas/repository/duas_repository.dart';
+import 'package:muslim_app/Duas/repository/duas_repository.dart';
 
 class DuasCubit extends Cubit<DuasState> {
   final DuasRepository repository;
-  DuasCubit(this.repository) : super(DuaInitial());
+  String userId;
 
-  /// 🔹 Load all duas
+  DuasCubit(this.repository) : userId = 'guest', super(DuaInitial());
+
+  /// ── Content loads ────────────────────────────────────
   void loadAllDuas() async {
     emit(DuaLoading());
-    final duas = await repository.getAllDuas();
-    emit(DuaLoaded(duas));
+    try {
+      final duas = await repository.getAllDuas();
+      emit(DuaLoaded(duas));
+    } catch (e) {
+      emit(DuaError(e.toString()));
+    }
   }
 
-  /// 🔹 Load duas filtered by category
-  void loadDuasByCategory(String category) async {
+  void loadDuasByCategory(String categoryTitle) async {
     emit(DuaLoading());
-    final allDuas = await repository.getAllDuas();
-    final filtered = allDuas.where((d) => d.category == category).toList();
-    emit(DuaLoaded(filtered));
-  }
-
-  /// 🔹 Toggle favorite for a dua
-  void toggleFavorite(DuasModel dua) async {
-    await repository.toggleFavorite(dua);
-    // Reload duas for current state
-    if (state is DuaLoaded) {
-      final current = (state as DuaLoaded).duas;
-      emit(DuaLoaded(List.from(current)));
-    } else {
-      loadAllDuas();
+    try {
+      final duas = await repository.getDuasByCategory(categoryTitle);
+      emit(DuaLoaded(duas));
+    } catch (e) {
+      emit(DuaError(e.toString()));
     }
   }
 
-  /// 🔹 Toggle bookmark for a dua
-  void toggleBookmark(DuasModel dua) async {
-    await repository.toggleBookmark(dua);
-    if (state is DuaLoaded) {
-      final current = (state as DuaLoaded).duas;
-      emit(DuaLoaded(List.from(current)));
-    } else {
-      loadAllDuas();
-    }
-  }
-
-  /// 🔹 Load only favorites
   void loadFavorites() async {
     emit(DuaLoading());
-    final allDuas = await repository.getAllDuas();
-    final favorites = allDuas.where((d) => d.isFavorite).toList();
-    emit(DuaLoaded(favorites));
-  }
-
-  /// 🔹 Load only bookmarked
-  void loadBookmarked() async {
-    emit(DuaLoading());
-    final allDuas = await repository.getAllDuas();
-    final bookmarks = allDuas.where((d) => d.isBookmarked).toList();
-    emit(DuaLoaded(bookmarks));
-  }
-  /// 🔹 🔥 Firestore sync → SQLite → UI
-  Future<void> syncFromFirestore() async {
     try {
-      // Sync categories & duas from Firestore
-      await repository.syncCategoriesFromFirestore();
-      await repository.syncDuasFromFirestore();
-
-      // Reload all duas in UI after sync
-      loadAllDuas();
-
-      // Optional debug
-      print("🔥 Firestore sync completed");
+      final duas = await repository.getFavoritesForUser(userId);
+      emit(DuaLoaded(duas));
     } catch (e) {
-      print("❌ Firestore sync error: $e");
+      emit(DuaError(e.toString()));
     }
   }
 
+  void loadBookmarked() async {
+    emit(DuaLoading());
+    try {
+      final duas = await repository.getBookmarkedForUser(userId);
+      emit(DuaLoaded(duas));
+    } catch (e) {
+      emit(DuaError(e.toString()));
+    }
+  }
+
+  /// ── Toggles ──────────────────────────────────────────
+  void toggleFavorite(DuasModel dua) async {
+    try {
+      await repository.toggleFavorite(dua, userId);
+      // ✅ no emit needed — UI already updated optimistically
+    } catch (e) {
+      // ✅ revert on error
+      dua.isFavorite = !dua.isFavorite;
+      emit(DuaError(e.toString()));
+    }
+  }
+
+  void toggleBookmark(DuasModel dua) async {
+    try {
+      await repository.toggleBookmark(dua, userId);
+    } catch (e) {
+      dua.isBookmarked = !dua.isBookmarked;
+      emit(DuaError(e.toString()));
+    }
+  }
+
+  /// ── Auth events ──────────────────────────────────────
+  Future<void> onUserLogin(String realUserId) async {
+    emit(DuaLoading());
+    try {
+      await repository.onUserLogin(realUserId);
+      userId = realUserId;
+      loadAllDuas();
+    } catch (e) {
+      emit(DuaError(e.toString()));
+    }
+  }
+
+  void onUserLogout() {
+    userId = 'guest';
+    loadAllDuas();
+  }
+
+  /// ── Firestore sync ───────────────────────────────────
+  Future<void> syncFromFirestore() async {
+    emit(DuaLoading());
+    try {
+      await repository.syncCategoriesFromFirestore();
+      await repository.syncDuasFromFirestore();
+      loadAllDuas();
+    } catch (e) {
+      emit(DuaError(e.toString()));
+    }
+  }
 }

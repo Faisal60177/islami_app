@@ -1,17 +1,17 @@
 class CategoryModel {
-  final String category;
+  final int categoryId;
   final String categoryTitle;
   final String categoryIcon;
 
   CategoryModel({
-    required this.category,
+    required this.categoryId,
     required this.categoryTitle,
     required this.categoryIcon,
   });
 
   factory CategoryModel.fromMap(Map<String, dynamic> map) {
     return CategoryModel(
-      category: map['category'],
+      categoryId: map['category_id'],
       categoryTitle: map['category_title'],
       categoryIcon: map['category_icon'],
     );
@@ -19,7 +19,7 @@ class CategoryModel {
 
   Map<String, dynamic> toMap() {
     return {
-      'category': category,
+      'category_id': categoryId,
       'category_title': categoryTitle,
       'category_icon': categoryIcon,
     };

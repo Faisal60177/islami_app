@@ -1,4 +1,4 @@
-import 'package:islamic_app/location/model/location_model.dart';
+import 'package:muslim_app/location/model/location_model.dart';
 
 class DefaultLocation {
   static const LocationModel location = LocationModel(

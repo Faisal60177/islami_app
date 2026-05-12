@@ -7,7 +7,7 @@ import '../../cubit/settings_cubit.dart';
 import '../../cubit/settings_state.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme/app_themes.dart';
-import 'package:islamic_app/home/home_page.dart';
+import 'package:muslim_app/home/home_page.dart';
 
 class HijriSettingsSection extends StatelessWidget {
   final AppThemeOption theme;
