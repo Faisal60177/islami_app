@@ -23,12 +23,12 @@ import 'package:muslim_app/Quran/quran_page.dart';
 import 'package:muslim_app/settings/cubit/settings_cubit.dart';
 import 'package:muslim_app/settings/cubit/settings_state.dart';
 import 'package:muslim_app/settings/theme/app_themes.dart';
-import 'package:muslim_app/home/home_page.dart';
-import 'package:muslim_app/location/services/timezone_service.dart';
-import 'location/model/location_model.dart';
+
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
 
 
   // Lock orientation to portrait only

@@ -8,47 +8,52 @@ class PrayerTimesService {
   // ── shared builder ────────────────────────────────────────────────────────
 
   static PrayerTimesModel _buildModel(PrayerTimes prayerTimes, tz.Location timezone) {
+
+    DateTime loc(DateTime tzDt) {
+      final t = tz.TZDateTime.from(tzDt, timezone);
+      return DateTime(t.year, t.month, t.day, t.hour, t.minute, t.second);
+    }
     return PrayerTimesModel(
-      fajrStart:     tz.TZDateTime.from(prayerTimes.fajr,    timezone),
-      fajrEnd:       tz.TZDateTime.from(prayerTimes.sunrise, timezone).subtract(const Duration(minutes: 1)),
+      fajrStart:     loc(prayerTimes.fajr),
+      fajrEnd:       loc(prayerTimes.sunrise).subtract(const Duration(minutes: 1)),
 
-      sunRiseStart:  tz.TZDateTime.from(prayerTimes.sunrise, timezone),
-      sunRiseEnd:    tz.TZDateTime.from(prayerTimes.sunrise, timezone).add(const Duration(minutes: 15)),
+      sunRiseStart:  loc(prayerTimes.sunrise),
+      sunRiseEnd:    loc(prayerTimes.sunrise).add(const Duration(minutes: 15)),
 
-      noonStart:     tz.TZDateTime.from(prayerTimes.dhuhr,   timezone).subtract(const Duration(minutes: 6)),
-      noonEnd:       tz.TZDateTime.from(prayerTimes.dhuhr,   timezone).subtract(const Duration(minutes: 1)),
+      noonStart:     loc(prayerTimes.dhuhr).subtract(const Duration(minutes: 6)),
+      noonEnd:       loc(prayerTimes.dhuhr).subtract(const Duration(minutes: 1)),
 
-      sunSetStart:   tz.TZDateTime.from(prayerTimes.maghrib, timezone).subtract(const Duration(minutes: 15)),
-      sunSetEnd:     tz.TZDateTime.from(prayerTimes.maghrib, timezone).subtract(const Duration(minutes: 1)),
+      sunSetStart:   loc(prayerTimes.maghrib).subtract(const Duration(minutes: 15)),
+      sunSetEnd:     loc(prayerTimes.maghrib).subtract(const Duration(minutes: 1)),
 
-      dhuhrStart:    tz.TZDateTime.from(prayerTimes.dhuhr,   timezone),
-      dhuhrEnd:      tz.TZDateTime.from(prayerTimes.asr,     timezone).subtract(const Duration(minutes: 1)),
+      dhuhrStart:    loc(prayerTimes.dhuhr),
+      dhuhrEnd:      loc(prayerTimes.asr).subtract(const Duration(minutes: 1)),
 
-      asrStart:      tz.TZDateTime.from(prayerTimes.asr,     timezone),
-      asrEnd:        tz.TZDateTime.from(prayerTimes.maghrib, timezone).subtract(const Duration(minutes: 1)),
+      asrStart:      loc(prayerTimes.asr),
+      asrEnd:        loc(prayerTimes.maghrib).subtract(const Duration(minutes: 1)),
 
-      maghribStart:  tz.TZDateTime.from(prayerTimes.maghrib, timezone),
-      maghribEnd:    tz.TZDateTime.from(prayerTimes.isha,    timezone).subtract(const Duration(minutes: 1)),
+      maghribStart:  loc(prayerTimes.maghrib),
+      maghribEnd:    loc(prayerTimes.isha).subtract(const Duration(minutes: 1)),
 
-      ishaStart:     tz.TZDateTime.from(prayerTimes.isha,    timezone),
-      ishaEnd:       tz.TZDateTime.from(prayerTimes.fajr,    timezone).subtract(const Duration(minutes: 1)),
+      ishaStart:     loc(prayerTimes.isha),
+      ishaEnd:       loc(prayerTimes.fajr).subtract(const Duration(minutes: 1)),
 
-      ishraqStart:   tz.TZDateTime.from(prayerTimes.sunrise, timezone).add(const Duration(minutes: 16)),
-      ishraqEnd:     tz.TZDateTime.from(prayerTimes.dhuhr,   timezone).subtract(const Duration(minutes: 7)),
+      ishraqStart:   loc(prayerTimes.sunrise).add(const Duration(minutes: 16)),
+      ishraqEnd:     loc(prayerTimes.dhuhr).subtract(const Duration(minutes: 7)),
 
-      chashtStart:   tz.TZDateTime.from(prayerTimes.sunrise, timezone).add(const Duration(minutes: 16)),
-      chashtEnd:     tz.TZDateTime.from(prayerTimes.dhuhr,   timezone).subtract(const Duration(minutes: 7)),
+      chashtStart:   loc(prayerTimes.sunrise).add(const Duration(minutes: 16)),
+      chashtEnd:     loc(prayerTimes.dhuhr).subtract(const Duration(minutes: 7)),
 
-      tahajjudStart: tz.TZDateTime.from(prayerTimes.isha,    timezone),
-      tahajjudEnd:   tz.TZDateTime.from(prayerTimes.fajr,    timezone).subtract(const Duration(minutes: 1)),
+      tahajjudStart: loc(prayerTimes.isha),
+      tahajjudEnd:   loc(prayerTimes.fajr).subtract(const Duration(minutes: 1)),
 
-      awabinStart:   tz.TZDateTime.from(prayerTimes.maghrib, timezone),
-      awabinEnd:     tz.TZDateTime.from(prayerTimes.isha,    timezone).subtract(const Duration(minutes: 1)),
+      awabinStart:   loc(prayerTimes.maghrib),
+      awabinEnd:     loc(prayerTimes.isha).subtract(const Duration(minutes: 1)),
 
-      zawalStart:    tz.TZDateTime.from(prayerTimes.dhuhr,   timezone),
+      zawalStart:    loc(prayerTimes.dhuhr),
 
-      sahriEnd:      tz.TZDateTime.from(prayerTimes.fajr,    timezone).subtract(const Duration(minutes: 1)),
-      iftarTime:     tz.TZDateTime.from(prayerTimes.maghrib, timezone),
+      sahriEnd:      loc(prayerTimes.fajr).subtract(const Duration(minutes: 1)),
+      iftarTime:     loc(prayerTimes.maghrib),
     );
   }
 

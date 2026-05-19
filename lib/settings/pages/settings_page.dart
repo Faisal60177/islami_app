@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:get/get.dart';
-
 import '../cubit/settings_cubit.dart';
 import '../cubit/settings_state.dart';
 import '../l10n/app_localizations.dart';
@@ -13,10 +11,12 @@ import 'sections/theme_settings_section.dart';
 import 'sections/notification_settings_section.dart';
 import 'sections/display_settings_section.dart';
 import 'sections/session_settings_section.dart';
+import 'package:muslim_app/settings/l10n/app_localizations.dart';
 
 // No local BlocProvider — reads global SettingsCubit from main.dart
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
+
 
   @override
   State<SettingsPage> createState() => _SettingsPageState();
@@ -83,37 +83,37 @@ class _SettingsPageState extends State<SettingsPage>
                     sliver: SliverList(
                       delegate: SliverChildListDelegate([
 
-                        _sectionHeader(theme, '📍', 'LOCATION', rsw),
+                        _sectionHeader(theme, '📍', l10n.locationSection, rsw),
                         SizedBox(height: rsw * 0.020),
                         _LocationTile(theme: theme, l10n: l10n),
                         SizedBox(height: rsw * 0.060),
 
-                        _sectionHeader(theme, '🗓️', 'HIJRI CALENDAR', rsw),
+                        _sectionHeader(theme, '🗓️', l10n.hijriSection, rsw),
                         SizedBox(height: rsw * 0.020),
                         HijriSettingsSection(theme: theme, l10n: l10n),
                         SizedBox(height: rsw * 0.060),
 
-                        _sectionHeader(theme, '🌐', 'LANGUAGE', rsw),
+                        _sectionHeader(theme, '🌐', l10n.languageSection, rsw),
                         SizedBox(height: rsw * 0.020),
                         LanguageSettingsSection(theme: theme, l10n: l10n),
                         SizedBox(height: rsw * 0.060),
 
-                        _sectionHeader(theme, '🎨', 'APPEARANCE', rsw),
+                        _sectionHeader(theme, '🎨', l10n.appearanceSection, rsw),
                         SizedBox(height: rsw * 0.020),
                         ThemeSettingsSection(theme: theme, l10n: l10n),
                         SizedBox(height: rsw * 0.060),
 
-                        _sectionHeader(theme, '🔔', 'NOTIFICATIONS', rsw),
+                        _sectionHeader(theme, '🔔', l10n.notificationsSection, rsw),
                         SizedBox(height: rsw * 0.020),
                         NotificationSettingsSection(theme: theme, l10n: l10n),
                         SizedBox(height: rsw * 0.060),
 
-                        _sectionHeader(theme, '🖥️', 'DISPLAY', rsw),
+                        _sectionHeader(theme, '🖥️', l10n.displaySection, rsw),
                         SizedBox(height: rsw * 0.020),
                         DisplaySettingsSection(theme: theme, l10n: l10n),
                         SizedBox(height: rsw * 0.060),
 
-                        _sectionHeader(theme, '🔐', 'SESSION', rsw),
+                        _sectionHeader(theme, '🔐', l10n.sessionSection, rsw),
                         SizedBox(height: rsw * 0.020),
                         SessionSettingsSection(theme: theme, l10n: l10n),
                         SizedBox(height: rsw * 0.050),

@@ -11,7 +11,8 @@ import 'package:flutter/foundation.dart'
 /// import 'firebase_options.dart';
 /// // ...
 /// await Firebase.initializeApp(
-///   options: DefaultFirebaseOptions.currentPlatform,
+///   options: Default
+///   FirebaseOptions.currentPlatform,
 /// );
 /// ```
 class DefaultFirebaseOptions {
@@ -58,7 +59,7 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyB0ki9VTgCdXxwbmaLMXRWmkgz5Q5EiOSo',
-    appId: '1:330629038977:android:55e7cd758913a19d3f1e80',
+    appId: '1:330629038977:android:81aa044c622b10053f1e80',
     messagingSenderId: '330629038977',
     projectId: 'islamic-app-324b7',
     storageBucket: 'islamic-app-324b7.firebasestorage.app',
@@ -70,6 +71,9 @@ class DefaultFirebaseOptions {
     messagingSenderId: '330629038977',
     projectId: 'islamic-app-324b7',
     storageBucket: 'islamic-app-324b7.firebasestorage.app',
+    androidClientId: '330629038977-v112nukflel704hpa99to4u2ta71g2a3.apps.googleusercontent.com',
+    iosClientId: '330629038977-ms33q46mdqfkbo71mf7gnd8gm8vkb83q.apps.googleusercontent.com',
     iosBundleId: 'com.example.islamicApp',
   );
+
 }

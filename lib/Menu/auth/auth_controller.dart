@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -8,10 +9,10 @@ class AuthController extends GetxController {
 
   final FirebaseAuth      _auth      = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final GoogleSignIn      _googleSignIn = GoogleSignIn.instance;
 
-  final GoogleSignIn _googleSignIn = GoogleSignIn(
-    scopes: ['email', 'profile'],
-  );
+  StreamSubscription<GoogleSignInAuthenticationEvent>? _googleAuthSub;
+  GoogleSignInAccount? _currentGoogleUser;
 
   final Rx<User?>  firebaseUser = Rx<User?>(null);
   final RxBool     isLoading    = false.obs;
@@ -21,11 +22,39 @@ class AuthController extends GetxController {
   final RxString email       = ''.obs;
   final RxString photoUrl    = ''.obs;
 
+  final RxBool hasPassword = false.obs;
+  final RxBool hasGoogle   = false.obs;
+
   @override
   void onInit() {
     super.onInit();
     firebaseUser.bindStream(_auth.userChanges());
     ever(firebaseUser, _handleUserChanged);
+    _initGoogleSignIn();
+  }
+
+  void _initGoogleSignIn() {
+    _googleSignIn.initialize().then((_) {
+      _googleAuthSub = _googleSignIn.authenticationEvents.listen(
+            (event) {
+          if (event is GoogleSignInAuthenticationEventSignIn) {
+            _currentGoogleUser = event.user;
+          } else if (event is GoogleSignInAuthenticationEventSignOut) {
+            _currentGoogleUser = null;
+          }
+        },
+        onError: (_) {
+          _currentGoogleUser = null;
+        },
+      );
+      _googleSignIn.attemptLightweightAuthentication();
+    });
+  }
+
+  @override
+  void onClose() {
+    _googleAuthSub?.cancel();
+    super.onClose();
   }
 
   void _handleUserChanged(User? user) {
@@ -38,11 +67,6 @@ class AuthController extends GetxController {
     }
   }
 
-  // ADD this observable in AuthController:
-  final RxBool hasPassword = false.obs;
-  final RxBool hasGoogle   = false.obs;
-
-// UPDATE _loadUserData() — add at the end:
   Future<void> _loadUserData(User user) async {
     displayName.value = user.displayName ?? '';
     email.value       = user.email       ?? '';
@@ -62,7 +86,6 @@ class AuthController extends GetxController {
             ? firestorePhoto
             : user.photoURL ?? '';
 
-        // ── UPDATE observable flags from Firestore ──────────────────────
         hasPassword.value = providers.contains('password');
         hasGoogle.value   = providers.contains('google');
       } else {
@@ -77,7 +100,6 @@ class AuthController extends GetxController {
     }
   }
 
-// KEEP existing getters for backward compat but they now also read from Firebase Auth:
   bool get hasPasswordLinked =>
       hasPassword.value ||
           (_auth.currentUser?.providerData.any((p) => p.providerId == 'password') ?? false);
@@ -88,9 +110,6 @@ class AuthController extends GetxController {
 
   bool get isLoggedIn => firebaseUser.value != null;
 
-  // ── Helper: Check provider from Firestore ───────────────────────────────
-  // Since fetchSignInMethodsForEmail is removed in newer Firebase SDK,
-  // we store the provider in Firestore and query it directly.
   Future<List<String>> _getProviderForEmail(String email) async {
     try {
       final query = await _firestore
@@ -102,10 +121,9 @@ class AuthController extends GetxController {
       if (query.docs.isEmpty) return [];
       final data = query.docs.first.data();
 
-      // Handle both old single string and new list format
       final raw = data['providers'];
       if (raw is List) return List<String>.from(raw);
-      if (raw is String) return [raw]; // backward compatible
+      if (raw is String) return [raw];
       return [];
     } catch (_) {
       return [];
@@ -113,7 +131,6 @@ class AuthController extends GetxController {
   }
 
   // ── Email/Password Sign Up ──────────────────────────────────────────────
-  // Requirement: if email already exists (any provider), block and inform.
   Future<bool> signUpWithEmail({
     required String name,
     required String email,
@@ -122,9 +139,6 @@ class AuthController extends GetxController {
     try {
       isLoading.value    = true;
       errorMessage.value = '';
-
-      // Check Firestore if this email was already registered
-
 
       final providers = await _getProviderForEmail(email);
       if (providers.isNotEmpty) {
@@ -137,7 +151,6 @@ class AuthController extends GetxController {
         return false;
       }
 
-      // Not in Firestore — proceed with Firebase Auth creation
       final credential = await _auth.createUserWithEmailAndPassword(
         email: email.trim(),
         password: password,
@@ -174,7 +187,6 @@ class AuthController extends GetxController {
   }
 
   // ── Email/Password Sign In ──────────────────────────────────────────────
-  // Requirement: if account was created with Google, block and inform.
   Future<bool> signInWithEmail({
     required String email,
     required String password,
@@ -190,7 +202,6 @@ class AuthController extends GetxController {
         return false;
       }
 
-      // Block only if EXCLUSIVELY google — no password at all
       if (providers.contains('google') && !providers.contains('password')) {
         errorMessage.value =
         'This account uses Google sign-in only. '
@@ -217,11 +228,9 @@ class AuthController extends GetxController {
           photoUrl.value   = data['photoUrl'] as String? ?? '';
         }
 
-        // ✅ Only update lastLogin — never touch providers here
         await _firestore.collection('users').doc(uid).update({
           'lastLogin': FieldValue.serverTimestamp(),
         });
-
       } catch (_) {
         displayName.value = credential.user!.displayName ?? 'Muslim User';
         this.email.value  = credential.user!.email ?? email.trim();
@@ -245,29 +254,19 @@ class AuthController extends GetxController {
   }
 
   // ── Google Sign In / Sign Up ────────────────────────────────────────────
-  // Requirement: works for both new and existing Google accounts.
-  // If email exists with email/password provider, block and inform.
   Future<bool> signInWithGoogle() async {
     try {
       isLoading.value    = true;
       errorMessage.value = '';
 
+      // Sign out first to force account picker
       await _googleSignIn.signOut();
-      final googleUser = await _googleSignIn.signIn();
 
-      if (googleUser == null) {
-        isLoading.value = false;
-        return false;
-      }
+      // Trigger authentication — shows account picker
+      final googleUser = await _googleSignIn.authenticate();
 
-      GoogleSignInAuthentication googleAuth;
-      try {
-        googleAuth = await googleUser.authentication;
-      } catch (e) {
-        errorMessage.value = 'Google authentication failed. Please try again.';
-        isLoading.value = false;
-        return false;
-      }
+      // authentication is now synchronous in v7
+      final googleAuth = googleUser.authentication;
 
       if (googleAuth.idToken == null) {
         errorMessage.value = 'Google sign in failed — no token received. '
@@ -277,24 +276,19 @@ class AuthController extends GetxController {
       }
 
       final googleCredential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken:     googleAuth.idToken,
+        idToken: googleAuth.idToken,
       );
 
       final providers = await _getProviderForEmail(googleUser.email);
 
-      // ── CASE 1: No account → fresh Google sign up ───────────────────────
       if (providers.isEmpty) {
         return await _completeGoogleSignIn(googleCredential, googleUser, isNew: true);
       }
 
-      // ── CASE 2: Already has Google → normal sign in ─────────────────────
       if (providers.contains('google')) {
         return await _completeGoogleSignIn(googleCredential, googleUser, isNew: false);
       }
 
-      // ── CASE 3: Has password account → auto link Google to it ───────────
-      // This is what you want: email+password user can also use Google
       if (providers.contains('password')) {
         return await _linkGoogleToExistingAccount(googleCredential, googleUser);
       }
@@ -314,7 +308,7 @@ class AuthController extends GetxController {
 
   Future<bool> _completeGoogleSignIn(
       AuthCredential credential,
-      dynamic googleUser, {
+      GoogleSignInAccount googleUser, {
         required bool isNew,
       }) async {
     final userCredential = await _auth.signInWithCredential(credential);
@@ -346,25 +340,15 @@ class AuthController extends GetxController {
     return true;
   }
 
-// ── Auto-links Google to existing email+password account ───────────────
+  // ── Auto-links Google to existing email+password account ───────────────
   Future<bool> _linkGoogleToExistingAccount(
       AuthCredential googleCredential,
-      dynamic googleUser,
+      GoogleSignInAccount googleUser,
       ) async {
     try {
-      // ── KEY INSIGHT ──────────────────────────────────────────────────────
-      // User already signed up with password = they own this email.
-      // We don't need them to prove it again.
-      //
-      // The trick: sign in with Google credential.
-      // Firebase with "same email linking" ON returns the SAME UID AAA.
-      // The password provider stays intact — Firebase just ADDS Google.
-      // No password dialog needed. No re-authentication needed.
-
       final userCredential = await _auth.signInWithCredential(googleCredential);
       final user = userCredential.user!;
 
-      // Confirm both providers now exist
       final providerIds = user.providerData.map((p) => p.providerId).toList();
       print('[Auth] Providers after Google link: $providerIds');
 
@@ -380,13 +364,12 @@ class AuthController extends GetxController {
       final existingPhoto = existingDoc.data()?['photoUrl'] as String? ?? '';
       final existingName  = existingDoc.data()?['name']     as String? ?? '';
 
-      // Build providers list from Firebase Auth — source of truth
       final linkedProviders = providerIds
           .map((id) => id == 'google.com' ? 'google' : id)
           .toList();
 
       final Map<String, dynamic> updateData = {
-        'providers': FieldValue.arrayUnion(['google']), // set exact list from Firebase Auth
+        'providers': FieldValue.arrayUnion(['google']),
         'lastLogin': FieldValue.serverTimestamp(),
       };
 
@@ -406,9 +389,6 @@ class AuthController extends GetxController {
 
     } on FirebaseAuthException catch (e) {
       if (e.code == 'account-exists-with-different-credential') {
-        // Firebase console linking is OFF — enable it
-        // Firebase Console → Authentication → Settings →
-        // "Link accounts that use the same email" → ENABLE
         errorMessage.value =
         'Could not link Google. Please enable account linking '
             'in Firebase Console, or contact support.';
@@ -419,13 +399,11 @@ class AuthController extends GetxController {
     }
   }
 
-
   // ── Forgot Password ─────────────────────────────────────────────────────
   Future<bool> sendPasswordReset(String emailAddress) async {
     try {
       isLoading.value = true;
 
-      // NEW:
       final providers = await _getProviderForEmail(emailAddress);
       if (providers.isEmpty) {
         errorMessage.value = 'No account found with this email.';
@@ -477,8 +455,6 @@ class AuthController extends GetxController {
     }
   }
 
-  // ── Add Password to Google Account ─────────────────────────────────────
-// Call this from Settings → Security → Add Password
   // ── Add OR Update Password ──────────────────────────────────────────────
   Future<bool> addPasswordToAccount({required String password}) async {
     try {
@@ -498,52 +474,30 @@ class AuthController extends GetxController {
           .any((p) => p.providerId == 'password');
 
       if (alreadyLinked) {
-        // ── UPDATE: re-auth with Google credential, then update password ──
-        // Since user is Google-linked, we re-auth silently with Google
-        // so Firebase allows updatePassword without current password.
-        final googleSignIn = GoogleSignIn(scopes: ['email', 'profile']);
-        final googleUser   = await googleSignIn.signInSilently();
-
-        if (googleUser == null) {
-          // Silent sign-in failed — fall back to direct updatePassword
-          // (works if session is fresh enough)
-          try {
-            await freshUser.updatePassword(password);
-          } on FirebaseAuthException catch (e) {
-            if (e.code == 'requires-recent-login') {
-              // Force Google sign-in to re-auth
-              final gUser = await googleSignIn.signIn();
-              if (gUser == null) {
-                errorMessage.value = 'Please sign in again to update password.';
-                return false;
-              }
-              final gAuth      = await gUser.authentication;
-              final gCred      = GoogleAuthProvider.credential(
-                accessToken: gAuth.accessToken,
-                idToken:     gAuth.idToken,
-              );
-              await freshUser.reauthenticateWithCredential(gCred);
-              await _auth.currentUser!.updatePassword(password);
-            } else {
-              rethrow;
-            }
+        // UPDATE existing password — re-auth with Google if session expired
+        try {
+          await freshUser.updatePassword(password);
+        } on FirebaseAuthException catch (e) {
+          if (e.code == 'requires-recent-login') {
+            // Re-auth with Google
+            await _googleSignIn.signOut();
+            final gUser = await _googleSignIn.authenticate();
+            final gAuth = gUser.authentication;
+            final gCred = GoogleAuthProvider.credential(
+              idToken: gAuth.idToken,
+            );
+            await freshUser.reauthenticateWithCredential(gCred);
+            await _auth.currentUser!.updatePassword(password);
+          } else {
+            rethrow;
           }
-        } else {
-          final gAuth = await googleUser.authentication;
-          final gCred = GoogleAuthProvider.credential(
-            accessToken: gAuth.accessToken,
-            idToken:     gAuth.idToken,
-          );
-          await freshUser.reauthenticateWithCredential(gCred);
-          await _auth.currentUser!.updatePassword(password);
         }
 
-        // Firestore already has 'password' — no change needed
         hasPassword.value = true;
         return true;
 
       } else {
-        // ── ADD: link new password credential ────────────────────────────
+        // ADD new password credential
         final emailCredential = EmailAuthProvider.credential(
           email:    freshUser.email!,
           password: password,
@@ -569,7 +523,6 @@ class AuthController extends GetxController {
       isLoading.value = false;
     }
   }
-
 
   // ── Error Mapping ───────────────────────────────────────────────────────
   String _mapFirebaseError(String code) {

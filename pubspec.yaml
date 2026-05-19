@@ -63,7 +63,7 @@ dependencies:
   flutter_timezone: ^5.0.2
   lat_lng_to_timezone: ^0.2.0
   web: ^1.1.1
-  google_sign_in: ^6.2.1
+  google_sign_in: ^7.2.0
   share_plus: ^12.0.2
   url_launcher: ^6.2.5
   in_app_review: ^2.0.9
@@ -72,6 +72,12 @@ dependencies:
   image_picker: ^1.1.2
   image_cropper: ^12.2.0
   firebase_storage: ^13.2.0
+  firebase_messaging: ^16.2.1
+  flutter_local_notifications: ^21.0.0
+  onesignal_flutter: ^5.5.4
+  device_info_plus: ^12.3.0
+
+
 
 
 dev_dependencies:
@@ -95,6 +101,9 @@ flutter_launcher_icons:
     android: true
     ios: true
     image_path: "assets/icons/AppIcon.png"
+    adaptive_icon_background: "#FFFFFF"
+    adaptive_icon_foreground: "assets/icons/AppIcon.png"
+    remove_alpha_ios: true
 
     # Optional: Adaptive icon for Android
     # daptive_icon_background: "#ffffff"  # or image path

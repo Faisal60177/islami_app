@@ -8,7 +8,6 @@ import 'package:muslim_app/inspiration/inspiration_page.dart';
 import 'package:muslim_app/notification/page/notification_page.dart';
 import 'package:muslim_app/calendar/pages/calendar_page.dart';
 import 'package:muslim_app/qibla/pages/qibla_page.dart';
-import 'package:muslim_app/Menu/menu_page.dart';
 import 'package:muslim_app/settings/cubit/settings_cubit.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:muslim_app/settings/cubit/settings_state.dart';
@@ -78,44 +77,6 @@ class _ToolsPageState extends State<ToolsPage>
 
   @override
   Widget build(BuildContext context) {
-    final sw = MediaQuery.of(context).size.width;
-    final sh = MediaQuery.of(context).size.height;
-
-    final rsw = sw.clamp(320.0, 420.0);
-
-    // Responsive grid columns
-    final cols = sw > 900 ? 5 : sw > 600 ? 4 : 3;
-
-    // Sections data (lambdas capture context lazily – safe)
-    final sections = [
-      _Section('Knowledge', 'Learn & Explore', _accent, [
-        _Tool('Quran',       'assets/icons/quran.png',
-                () => _push(QuranPage())),
-        _Tool('Duas',        'assets/icons/duas.png',
-                () => _push(DuasPage())),
-        _Tool('Masail',      'assets/icons/masail.png',
-                () {}),
-      ]),
-      _Section('Amal', 'Worship & Reflect', _gold, [
-        _Tool('Tasbih',      'assets/icons/tasbih.png',
-                () => _push(TasbihPage())),
-        _Tool('Prayer Times','assets/icons/prayer_time.png',
-                () => _push(PrayerTimesPage())),
-        _Tool('Inspiration', 'assets/icons/inspiration.png',
-                () => _push(InspirationPage())),
-      ]),
-      _Section('Tools', 'Utilities & More', const Color(0xFF64B5F6), [
-        _Tool('Qibla',       'assets/icons/qibla.png',
-                () => _push(QiblaPage())),
-        _Tool('Calendar',    'assets/icons/calendar.png',
-                () => _push(MonthlyCalendarPage())),
-        _Tool('Notification','assets/icons/notification.png',
-                () => _push(NotificationPage())),
-        _Tool('Menu',        'assets/icons/menu.png',
-                () => _push(MenuPage())),
-      ]),
-    ];
-
     return BlocBuilder<SettingsCubit, SettingsState>(
     builder: (context, settings) {
       final theme = getThemeById(settings.themeMode);
@@ -131,10 +92,49 @@ class _ToolsPageState extends State<ToolsPage>
       final accentSoft = theme.primary.withOpacity(0.55);
       final textLo     = theme.textLow;
 
+      final sw = MediaQuery.of(context).size.width;
+      final sh = MediaQuery.of(context).size.height;
+
+      final rsw = sw.clamp(320.0, 420.0);
+
+      // Responsive grid columns
+      final cols = sw > 900 ? 5 : sw > 600 ? 4 : 3;
+
+      // Sections data (lambdas capture context lazily – safe)
+      final sections = [
+        _Section(l10n.knowledge, l10n.learnExplore, _accent, [
+          _Tool(l10n.quran,       'assets/icons/quran.png',
+                  () => _push(QuranPage())),
+          _Tool(l10n.duas,        'assets/icons/duas.png',
+                  () => _push(DuasPage())),
+          _Tool(l10n.masail,      'assets/icons/masail.png',
+                  () {}),
+        ]),
+        _Section(l10n.amal, l10n.worshipReflect, _gold, [
+          _Tool(l10n.tasbih,      'assets/icons/tasbih.png',
+                  () => _push(TasbihPage())),
+          _Tool(l10n.prayerTimes,'assets/icons/prayer_time.png',
+                  () => _push(PrayerTimesPage())),
+          _Tool(l10n.inspiration, 'assets/icons/inspiration.png',
+                  () => _push(InspirationPage())),
+        ]),
+        _Section(l10n.tools, l10n.utilities, const Color(0xFF64B5F6), [
+          _Tool(l10n.qibla,       'assets/icons/qibla.png',
+                  () => _push(QiblaPage())),
+          _Tool(l10n.calendar,    'assets/icons/calendar.png',
+                  () => _push(MonthlyCalendarPage())),
+          _Tool(l10n.notification,'assets/icons/notification.png',
+                  () => _push(NotificationPage())),
+          _Tool(l10n.menu,        'assets/icons/menu.png',
+                  () => _push(MenuPage())),
+        ]),
+      ];
+
+
       return Scaffold(
         backgroundColor: _bg,
         extendBodyBehindAppBar: true,
-        appBar: _buildAppBar(),
+        appBar: _buildAppBar(l10n),
         body: Stack(
           children: [
             // ── Decorative top radial glow ──
@@ -173,7 +173,7 @@ class _ToolsPageState extends State<ToolsPage>
                                   letterSpacing: 1.5,
                                 )),
                             const SizedBox(height: 2),
-                            Text('Your Islamic Toolkit',
+                            Text(l10n.yourToolkit,
                                 style: TextStyle(
                                   fontSize: sw * 0.038,
                                   color: _textLo,
@@ -255,7 +255,7 @@ class _ToolsPageState extends State<ToolsPage>
   );
 
   // ── AppBar ──────────────────────────────────────────────────────────────
-  PreferredSizeWidget _buildAppBar() => AppBar(
+  PreferredSizeWidget _buildAppBar(AppLocalizations l10n) => AppBar(
     backgroundColor: Colors.transparent,
     elevation: 0,
     centerTitle: true,
@@ -281,7 +281,7 @@ class _ToolsPageState extends State<ToolsPage>
         ),
         const SizedBox(width: 10),
         Text(
-          'Tools',
+          l10n.tools,
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.w700,

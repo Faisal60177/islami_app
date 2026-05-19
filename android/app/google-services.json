@@ -48,6 +48,50 @@
           ]
         }
       }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:330629038977:android:81aa044c622b10053f1e80",
+        "android_client_info": {
+          "package_name": "com.siratalmustaqeem.muslimlife"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "330629038977-16fnvspjcfp3k19thfjrci7l23dlt6gv.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.siratalmustaqeem.muslimlife",
+            "certificate_hash": "ec40816eadfe9b3fc2ce4beba16d3276f118c88c"
+          }
+        },
+        {
+          "client_id": "330629038977-7ivpamsds13tqcr6v15sokcrtgav0p3o.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB0ki9VTgCdXxwbmaLMXRWmkgz5Q5EiOSo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "330629038977-7ivpamsds13tqcr6v15sokcrtgav0p3o.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "330629038977-ms33q46mdqfkbo71mf7gnd8gm8vkb83q.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.islamicApp"
+              }
+            }
+          ]
+        }
+      }
     }
   ],
   "configuration_version": "1"

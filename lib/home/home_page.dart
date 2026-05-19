@@ -8,20 +8,20 @@ import '../../../location/cubit/location_state.dart';
 import 'package:muslim_app/home/cubit/prayer_times_cubit.dart';
 import 'package:muslim_app/home/cubit/prayer_times_state.dart';
 import '../../../home/model/prayer_times_models.dart';
-import 'package:intl/intl.dart';
 import 'package:muslim_app/Duas/pages/duas_page.dart';
 import 'package:muslim_app/Menu/menu_page.dart';
 import 'package:muslim_app/notification/page/notification_page.dart';
 import 'package:hijri/hijri_calendar.dart';
 import 'package:marquee/marquee.dart';
-import 'widgets/mosque.dart';
-import 'widgets/ring_animation.dart';
 import 'package:muslim_app/notification/cubit/notification_cubit.dart';
 import 'package:muslim_app/notification/cubit/notification_state.dart';
 import 'package:muslim_app/settings/cubit/settings_cubit.dart';
 import 'package:muslim_app/settings/cubit/settings_state.dart';
 import 'package:muslim_app/settings/l10n/app_localizations.dart';
 import 'package:muslim_app/settings/theme/app_themes.dart';
+import 'widgets/prayer_times_card.dart';
+import 'widgets/mosque.dart';
+import 'widgets/ring_animation.dart';
 
 class PrayerTimesPage extends StatefulWidget {
   const PrayerTimesPage({super.key});
@@ -31,6 +31,94 @@ class PrayerTimesPage extends StatefulWidget {
 }
 
 class _PrayerTimesPageState extends State<PrayerTimesPage> {
+
+  //_ringData()
+  ({
+  String topLabel,
+  String bottomLabel,
+  DateTime periodStart,
+  DateTime periodEnd,
+  bool isProhibited,
+  }) _ringData(PrayerTimesModel t) {
+    final current = _currentPrayer(t);
+
+    switch (current) {
+      case 'Fajr':
+        return (
+        topLabel:     'Fajr',
+        bottomLabel:  'waqt ends in',
+        periodStart:  t.fajrStart,
+        periodEnd:    t.sunRiseStart,
+        isProhibited: false,
+        );
+      case 'SunRise':
+        return (
+        topLabel:     'Sunrise',
+        bottomLabel:  'ends in',
+        periodStart:  t.sunRiseStart,
+        periodEnd:    t.ishraqStart,
+        isProhibited: true,
+        );
+      case 'Ishraq':
+        return (
+        topLabel:     'Ishraq',
+        bottomLabel:  'waqt ends in',
+        periodStart:  t.ishraqStart,
+        periodEnd:    t.noonStart,
+        isProhibited: false,
+        );
+      case 'Noon':
+        return (
+        topLabel:     'Noon',
+        bottomLabel:  'ends in',
+        periodStart:  t.noonStart,
+        periodEnd:    t.dhuhrStart,
+        isProhibited: true,
+        );
+      case 'Dhuhr':
+        return (
+        topLabel:     'Dhuhr',
+        bottomLabel:  'waqt ends in',
+        periodStart:  t.dhuhrStart,
+        periodEnd:    t.asrStart,
+        isProhibited: false,
+        );
+      case 'Asr':
+        return (
+        topLabel:     'Asr',
+        bottomLabel:  'waqt ends in',
+        periodStart:  t.asrStart,
+        periodEnd:    t.sunSetStart,
+        isProhibited: false,
+        );
+      case 'SunSet':
+        return (
+        topLabel:     'Sunset',
+        bottomLabel:  'ends in',
+        periodStart:  t.sunSetStart,
+        periodEnd:    t.maghribStart,
+        isProhibited: true,
+        );
+      case 'Maghrib':
+        return (
+        topLabel:     'Maghrib',
+        bottomLabel:  'waqt ends in',
+        periodStart:  t.maghribStart,
+        periodEnd:    t.ishaStart,
+        isProhibited: false,
+        );
+      case 'Isha':
+      default:
+        return (
+        topLabel:     'Isha',
+        bottomLabel:  'waqt ends in',
+        periodStart:  t.ishaStart,
+        periodEnd:    t.fajrStart.add(const Duration(days: 1)),
+        isProhibited: false,
+        );
+    }
+  }
+
 
   Duration _tzOffset(PrayerTimesModel t) {
     // fajrStart is a TZDateTime — its UTC offset tells us the location's timezone offset
@@ -46,14 +134,80 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
     MenuPage(),
   ];
 
-  String _hijriDate(int offset) {
-    final adjusted = DateTime.now().add(Duration(days: offset));
-    final h = HijriCalendar.fromDate(adjusted);
-    return "${h.hDay} ${h.longMonthName} ${h.hYear} AH";
+
+  // ── Localized English date ─────────────────────────────────────────────────
+  String _localizedDate(AppLocalizations l10n) {
+    final now = DateTime.now();
+
+    // Localized weekday
+    final weekdays = [
+      l10n.monday, l10n.tuesday, l10n.wednesday,
+      l10n.thursday, l10n.friday, l10n.saturday, l10n.sunday,
+    ];
+    // DateTime.weekday: 1=Mon … 7=Sun
+    final weekday = weekdays[now.weekday - 1];
+
+    // Localized month
+    final months = [
+      l10n.january, l10n.february, l10n.march,    l10n.april,
+      l10n.mayMonth, l10n.june,   l10n.july,      l10n.august,
+      l10n.september, l10n.october, l10n.november, l10n.december,
+    ];
+    final month = months[now.month - 1];
+
+    // Localized day digits
+    final day   = _localizeDigits('${now.day}',   l10n);
+    final year  = _localizeDigits('${now.year}',  l10n);
+
+    return '$weekday, $day $month $year';
   }
 
-  String _englishDate() =>
-      DateFormat('EEEE, d MMMM yyyy').format(DateTime.now());
+// ── Localized Hijri date ───────────────────────────────────────────────────
+  String _localizedHijriDate(int offset, AppLocalizations l10n) {
+    final adjusted = DateTime.now().add(Duration(days: offset));
+    final h = HijriCalendar.fromDate(adjusted);
+
+    // Hijri month names — fixed Islamic names localized per language
+    final hijriMonths = [
+      _hijriMonthName(1,  l10n), _hijriMonthName(2,  l10n),
+      _hijriMonthName(3,  l10n), _hijriMonthName(4,  l10n),
+      _hijriMonthName(5,  l10n), _hijriMonthName(6,  l10n),
+      _hijriMonthName(7,  l10n), _hijriMonthName(8,  l10n),
+      _hijriMonthName(9,  l10n), _hijriMonthName(10, l10n),
+      _hijriMonthName(11, l10n), _hijriMonthName(12, l10n),
+    ];
+
+    final monthName = hijriMonths[h.hMonth - 1];
+    final day  = _localizeDigits('${h.hDay}',  l10n);
+    final year = _localizeDigits('${h.hYear}', l10n);
+    final ah   = _ahLabel(l10n);
+
+    return '$day $monthName $year $ah';
+  }
+
+// ── Convert ASCII digits → locale digits (Arabic/Bengali numerals) ─────────
+  String _localizeDigits(String input, AppLocalizations l10n) {
+    const digits = ['0','1','2','3','4','5','6','7','8','9'];
+    final local  = [
+      l10n.zero, l10n.one, l10n.two,   l10n.three, l10n.four,
+      l10n.five, l10n.six, l10n.seven, l10n.eight, l10n.nine,
+    ];
+    return input.split('').map((c) {
+      final i = digits.indexOf(c);
+      return i >= 0 ? local[i] : c;
+    }).join();
+  }
+
+// ── Hijri month names per language ────────────────────────────────────────
+  String _hijriMonthName(int month, AppLocalizations l10n) {
+    // Add these keys to your translation maps (see Step 2 below)
+    return l10n.translate('hijri_month_$month');
+  }
+
+// ── "AH" label per language ────────────────────────────────────────────────
+  String _ahLabel(AppLocalizations l10n) {
+    return l10n.translate('hijri_ah');
+  }
 
   String _fmt(DateTime dt, {required bool use24h}) {
     if (use24h) {
@@ -67,46 +221,26 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
   }
 
   String _currentPrayer(PrayerTimesModel t) {
-    // ✅ Compare in UTC to match TZDateTime internals
-    final nowUtc = DateTime.now().toUtc();
 
-    bool inRange(DateTime s, DateTime e) {
-      final su = s.toUtc();
-      final eu = e.toUtc();
-      return eu.isAfter(su)
-          ? nowUtc.isAfter(su) && nowUtc.isBefore(eu)
-          : nowUtc.isAfter(su) || nowUtc.isBefore(eu);
-    }
+    final now = DateTime.now(); // Use local time, not toUtc()
+
+    bool after(DateTime s) => now.isAfter(s);
+    bool before(DateTime e) => now.isBefore(e);
+    bool inRange(DateTime s, DateTime e) => after(s) && before(e);
 
     if (inRange(t.fajrStart,    t.sunRiseStart))  return 'Fajr';
-    if (inRange(t.sunRiseStart, t.ishraqStart))   return 'SunRise';
-    if (nowUtc.isAfter(t.ishraqStart.toUtc()) && nowUtc.isBefore(t.noonStart.toUtc())) return 'Ishraq';
-    if (inRange(t.noonStart,    t.dhuhrStart))    return 'Noon';
+    if (inRange(t.sunRiseStart, t.ishraqStart))   return 'SunRise';    // prohibited
+    if (inRange(t.ishraqStart,  t.noonStart))     return 'Ishraq';
+    if (inRange(t.noonStart,    t.dhuhrStart))    return 'Noon';        // prohibited
     if (inRange(t.dhuhrStart,   t.asrStart))      return 'Dhuhr';
     if (inRange(t.asrStart,     t.sunSetStart))   return 'Asr';
-    if (inRange(t.sunSetStart,  t.maghribStart))  return 'SunSet';
+    if (inRange(t.sunSetStart,  t.maghribStart))  return 'SunSet';      // prohibited
     if (inRange(t.maghribStart, t.ishaStart))     return 'Maghrib';
-    if (inRange(t.ishaStart,    t.fajrStart))     return 'Isha';
-    return '';
+    if (after(t.ishaStart) || before(t.fajrStart)) return 'Isha';
+    return 'Isha';
   }
 
-  List<PrayerRingEntry> _buildRing(PrayerTimesModel t) {
-    DateTime ishaEnd = t.ishaEnd;
-    if (!ishaEnd.isAfter(t.ishaStart)) {
-      ishaEnd = ishaEnd.add(const Duration(days: 1));
-    }
-    return [
-      PrayerRingEntry(name: 'Fajr',    start: t.fajrStart,    end: t.sunRiseStart),
-      PrayerRingEntry(name: 'SunRise', start: t.sunRiseStart, end: t.ishraqStart),
-      PrayerRingEntry(name: 'Ishraq',  start: t.ishraqStart,   end: t.noonStart),
-      PrayerRingEntry(name: 'Noon',    start: t.noonStart,    end: t.dhuhrStart),
-      PrayerRingEntry(name: 'Dhuhr',   start: t.dhuhrStart,   end: t.asrStart),
-      PrayerRingEntry(name: 'Asr',     start: t.asrStart,     end: t.sunSetStart),
-      PrayerRingEntry(name: 'SunSet',  start: t.sunSetStart,  end: t.maghribStart),
-      PrayerRingEntry(name: 'Maghrib', start: t.maghribStart, end: t.ishaStart),
-      PrayerRingEntry(name: 'Isha',    start: t.ishaStart,    end: t.fajrStart),
-    ];
-  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -132,228 +266,286 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
         final accentSoft = theme.primary.withOpacity(0.55);
         final textLo     = theme.textLow;
 
-        final cardSalat  = theme.isDark ? const Color(0xFF0A3D25) : const Color(0xFFE8F5E9);
-        final cardProhib = theme.isDark ? const Color(0xFF3B0E0E) : const Color(0xFFFFEBEE);
-        final cardSawm   = theme.isDark ? const Color(0xFF0E2A3B) : const Color(0xFFE3F2FD);
-        final cardNafal  = theme.isDark ? const Color(0xFF1A1A3B) : const Color(0xFFF3E5F5);
+
 
         return Scaffold(
+          extendBodyBehindAppBar: true,
           backgroundColor: bgBase,
-          body: SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
-            child:
-            Padding(
-                padding: EdgeInsets.symmetric(horizontal: sw * 0.04, vertical: sh *0.04),
-                child:
-            Column(
-              children: [
-            Row(
-            children: [
-            Expanded(
-              child: BlocBuilder<LocationCubit, LocationState>(
-            builder: (context, state) {
-              String text = l10n.locating;
-              if (state is LocationLoaded) {
-                text = '${state.location.city}, ${state.location.country}';
-              } else if (state is LocationPermissionDenied) {
-                text = l10n.permissionDenied;
-              }
-              return GestureDetector(
-                onTap: () => Navigator.push(context,
-                    MaterialPageRoute(builder: (_) => const LocationPage())),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: EdgeInsets.all(rsw * 0.015),
-                      decoration: BoxDecoration(
-                        color: accent.withOpacity(0.15),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(Icons.location_on,
-                          color: accent, ),
-                    ),
-                    SizedBox(width: rsw * 0.020),
-                    Flexible(
-                      child: SizedBox(
-                        width: sw * 0.4,
-                        height: sh * 0.030,
-                        child: Marquee(
-                          text:  text,
-                          style: TextStyle(
-                            color:      Colors.white,
-                            fontWeight: FontWeight.w600,
-                          ),
-                          velocity:             28.0,
-                          pauseAfterRound:      const Duration(seconds: 2),
-                          blankSpace:           24.0,
-                          startPadding:         0,
-                          accelerationDuration: const Duration(milliseconds: 800),
-                          accelerationCurve:    Curves.easeIn,
-                          decelerationDuration: const Duration(milliseconds: 800),
-                          decelerationCurve:    Curves.easeOut,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              );
+          body: RefreshIndicator(
+            color: accent,
+            backgroundColor: surface,
+            displacement: 80,
+            onRefresh: () async {
+              final locationCubit = context.read<LocationCubit>();
+
+              // Trigger GPS — same as the GPS button in LocationPage.
+              // PrayerTimesCubit will react to the new saved location automatically.
+              locationCubit.getGPSLocation();
+
+              // Keep the spinner visible until location resolves or times out.
+              await Future.any([
+                Stream.periodic(const Duration(milliseconds: 100))
+                    .asyncMap((_) => locationCubit.state)
+                    .firstWhere((s) => s is LocationLoaded || s is LocationPermissionDenied),
+                Future.delayed(const Duration(seconds: 10)),
+              ]);
             },
-            ),
-            ),
+            child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
 
-              SizedBox(width: rsw * 0.03),
+                // ── MOSQUE HERO (full width, location + dates stacked on top) ──
+                BlocBuilder<PrayerTimesCubit, PrayerTimesState>(
+                  builder: (context, state) {
+                    final heroH  = (sh * 0.46).clamp(320.0, 440.0);
+                    final ringSz = (rsw * 0.52).clamp(175.0, 230.0);
 
-              // Notification bell
-              BlocBuilder<NotificationCubit, NotificationState>(
-                builder: (context, state) {
-                  final count =
-                  state is NotificationLoaded ? state.unreadCount : 0;
-                  return GestureDetector(
-                    onTap: () => Navigator.push(context,
-                        MaterialPageRoute(builder: (_) => const NotificationPage())),
-                    child: Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        Container(
-                          padding: EdgeInsets.all(rsw * 0.020),
-                          decoration: BoxDecoration(
-                            color:  Colors.red.withOpacity(0.10),
-                            shape:  BoxShape.circle,
-                            border: Border.all(
-                                color: Colors.red.withOpacity(0.30), width: 1),
+                    String current = '';
+                    ({
+                    String topLabel,
+                    String bottomLabel,
+                    DateTime periodStart,
+                    DateTime periodEnd,
+                    bool isProhibited,
+                    })? ringData;
+
+                    if (state is PrayerTimesLoaded) {
+                      current  = _currentPrayer(state.prayerTimes);
+                      ringData = _ringData(state.prayerTimes);
+                    }
+
+                    return SizedBox(
+                      width:  double.infinity,
+                      height: heroH,
+                      child: Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+
+                          // ── 1. Mosque — full bleed, no ClipRRect ─────────────
+                          Positioned.fill(
+                            child: MosqueHeroWidget(
+                              height:        heroH,
+                              currentPrayer: current,
+                            ),
                           ),
-                          child: Icon(Icons.notifications_rounded,
-                              color: Colors.red[300], size: rsw * 0.055,),
-                        ),
-                        if (count > 0)
+
+                          // ── 2. Location row + Date row overlaid ──────────────
                           Positioned(
-                            right: 0, top: 0,
-                            child: Container(
-                              width:  16,
-                              height: 16,
-                              decoration: const BoxDecoration(
-                                  color: Colors.red, shape: BoxShape.circle),
-                              alignment: Alignment.center,
+                            top:   MediaQuery.of(context).padding.top + sh * 0.008,
+                            left:  sw * 0.04,
+                            right: sw * 0.04,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+
+                                // — Location + Notification row —
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: BlocBuilder<LocationCubit, LocationState>(
+                                        builder: (context, locState) {
+                                          String text = l10n.locating;
+                                          if (locState is LocationLoaded) {
+                                            text = '${locState.location.city}, ${locState.location.country}';
+                                          } else if (locState is LocationPermissionDenied) {
+                                            text = l10n.permissionDenied;
+                                          }
+                                          return GestureDetector(
+                                            onTap: () => Navigator.push(context,
+                                                MaterialPageRoute(builder: (_) => const LocationPage())),
+                                            child: Row(
+                                              children: [
+                                                Container(
+                                                  padding: EdgeInsets.all(rsw * 0.015),
+                                                  decoration: BoxDecoration(
+                                                    color: accent.withOpacity(0.15),
+                                                    shape: BoxShape.circle,
+                                                  ),
+                                                  child: Icon(Icons.location_on,
+                                                      color: accent),
+                                                ),
+                                                SizedBox(width: rsw * 0.020),
+                                                Flexible(
+                                                  child: SizedBox(
+                                                    width:  sw * 0.4,
+                                                    height: sh * 0.030,
+                                                    child: Marquee(
+                                                      text:  text,
+                                                      style: TextStyle(
+                                                        color: Colors.white,
+                                                        fontWeight: FontWeight.w600,
+                                                        shadows: [Shadow(color: Colors.black54, blurRadius: 4)],
+
+                                                      ),
+                                                      velocity:             28.0,
+                                                      pauseAfterRound:      const Duration(seconds: 2),
+                                                      blankSpace:           24.0,
+                                                      startPadding:         0,
+                                                      accelerationDuration: const Duration(milliseconds: 800),
+                                                      accelerationCurve:    Curves.easeIn,
+                                                      decelerationDuration: const Duration(milliseconds: 800),
+                                                      decelerationCurve:    Curves.easeOut,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ),
+
+                                    SizedBox(width: rsw * 0.03),
+
+                                    // — Notification bell —
+                                    BlocBuilder<NotificationCubit, NotificationState>(
+                                      builder: (context, notifState) {
+                                        final count = notifState is NotificationLoaded
+                                            ? notifState.unreadCount : 0;
+                                        return GestureDetector(
+                                          onTap: () => Navigator.push(context,
+                                              MaterialPageRoute(builder: (_) => const NotificationPage())),
+                                          child: Stack(
+                                            clipBehavior: Clip.none,
+                                            children: [
+                                              Container(
+                                                padding: EdgeInsets.all(rsw * 0.020),
+                                                decoration: BoxDecoration(
+                                                  color:  Colors.red.withOpacity(0.10),
+                                                  shape:  BoxShape.circle,
+                                                  border: Border.all(
+                                                      color: Colors.red.withOpacity(0.30), width: 1),
+                                                ),
+                                                child: Icon(Icons.notifications_rounded,
+                                                    color: Colors.red[300], size: rsw * 0.055),
+                                              ),
+                                              if (count > 0)
+                                                Positioned(
+                                                  right: 0, top: 0,
+                                                  child: Container(
+                                                    width: 16, height: 16,
+                                                    decoration: const BoxDecoration(
+                                                        color: Colors.red, shape: BoxShape.circle),
+                                                    alignment: Alignment.center,
+                                                    child: Text(
+                                                      count > 99 ? '99+' : '$count',
+                                                      style: const TextStyle(
+                                                          color:      Colors.white,
+                                                          fontSize:   9,
+                                                          fontWeight: FontWeight.bold),
+                                                    ),
+                                                  ),
+                                                ),
+                                            ],
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ],
+                                ),
+
+                                SizedBox(height: sh * 0.008),
+
+                                // — Gregorian + Hijri date row —
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(_localizedDate(l10n), style: TextStyle(
+                                      fontSize: (rsw * 0.030).clamp(11.0, 13.5),
+                                      color: Colors.white,
+                                      shadows: [Shadow(color: Colors.black54, blurRadius: 4)],
+                                    )),
+                                    Text(_localizedHijriDate(hijriOff, l10n), style: TextStyle(
+                                      fontSize: (rsw * 0.030).clamp(11.0, 13.5),
+                                      color: Colors.white,
+                                      shadows: const [Shadow(color: Colors.black54, blurRadius: 4)],
+                                    )),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          // ── 3. "Prayer Time" label ────────────────────────────
+                          Positioned(
+                            top:   heroH * 0.30,
+                            left:  0, right: 0,
+                            child: Center(
                               child: Text(
-                                count > 99 ? '99+' : '$count',
+                                'Prayer Time',
                                 style: TextStyle(
-                                    color:      Colors.white,
-                                    fontSize:   9,
-                                    fontWeight: FontWeight.bold),
+                                  color:         Colors.white.withOpacity(0.90),
+                                  fontSize:      (rsw * 0.040).clamp(14.0, 18.0),
+                                  fontWeight:    FontWeight.w600,
+                                  letterSpacing: 0.5,
+                                ),
                               ),
                             ),
                           ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-              ],
-            ),
-                  SizedBox(height: 10,),
-                  Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(_englishDate(), style: TextStyle(fontSize: (rsw * 0.030).clamp(11.0, 13.5),
-                            color: Colors.white70,),),
-                          Text(_hijriDate(hijriOff), style: TextStyle(fontSize: (rsw * 0.030).clamp(11.0, 13.5),
-                            color: Colors.white70,),),
 
-                        ],
-                      ),
-                   SizedBox(height: sh * 0.012),
+                          // ── 4. Ring (only when loaded) ────────────────────────
+                          if (state is PrayerTimesLoaded && ringData != null)
+                            Positioned(
+                              top:   heroH * 0.36,
+                              left:  0, right: 0,
+                              child: Center(
+                                child: PrayerRingWidget(
+                                  topLabel:     ringData.topLabel,
+                                  bottomLabel:  ringData.bottomLabel,
+                                  periodStart:  ringData.periodStart,
+                                  periodEnd:    ringData.periodEnd,
+                                  isProhibited: ringData.isProhibited,
+                                  size:         ringSz,
+                                ),
+                              ),
+                            ),
 
-                      BlocBuilder<PrayerTimesCubit, PrayerTimesState>(
-                        builder: (context, state) {
-                          if (state is PrayerTimesLoading) {
-                            return SizedBox(
-                              height: sh * 0.4,
+                          // ── 5. Loading spinner ────────────────────────────────
+                          if (state is PrayerTimesLoading)
+                            Positioned.fill(
                               child: Center(
                                 child: CircularProgressIndicator(color: accent),
                               ),
-                            );
-                          }
-                          if (state is PrayerTimesError) {
-                            return Padding(
-                              padding: EdgeInsets.all(px),
-                              child: Text(state.message,
-                                  style: TextStyle(
-                                      color: Colors.red[300],
-                                      fontSize: rsw * 0.04)),
-                            );
-                          }
-                          if (state is PrayerTimesLoaded) {
-                            final t       = state.prayerTimes;
-                            final current = _currentPrayer(t);
-                            final ring    = _buildRing(t);
-
-                            return Column(
-                              children: [
-
-                              SizedBox(
-                              width: double.infinity,
-                              height: (sh * 0.30).clamp(240.0, 320.0),
-                              child: Stack(
-                                alignment: Alignment.center,
-                                children: [
-                                  // Mosque fills the bottom of the card
-                                  Positioned(
-                                    bottom: 0, left: 0, right: 0,
-                                    child: MosqueIllustration(
-                                      accentColor: accent,
-                                      height: (sh * 0.5).clamp(120.0, 180.0),
-                                    ),
-                                  ),
-                                  // Ring sits centered on top
-                                  Positioned(
-                                    top: rsw * 0.04,
-                                    left: 0,
-                                    right: 0,
-                                    child: Center(
-                                      child: PrayerProgressRing(
-                                      entries: ring,
-                                      size: (rsw * 0.55).clamp(190.0, 255.0),
-                                        tzOffset: _tzOffset(t),
-                                    ),
-                                    ),
-                                  ),
-                                ],
-                              ),
                             ),
 
-                                _sectionLabel(rsw, l10n.salatPrayers, accent: accent),
-                                SizedBox(height: sh * 0.010),
-                                _buildSalatCard(rsw, t, current, cardSalat,
-                                    use24h: use24h, accent: accent, l10n: l10n),
-                                SizedBox(height: sh * 0.018),
-
-                                _sectionLabel(rsw, l10n.prohibitedTimes, accent: accent),
-                                SizedBox(height: sh * 0.010),
-                                _buildProhibitedCard(rsw, t, current, cardProhib,
-                                    use24h: use24h, l10n: l10n),
-                                SizedBox(height: sh * 0.018),
-
-                                _sectionLabel(rsw, l10n.sawmTimes, accent: accent),
-                                SizedBox(height: sh * 0.010),
-                                _buildSawmCard(rsw, t, cardSawm,
-                                    use24h: use24h, l10n: l10n),
-                                SizedBox(height: sh * 0.018),
-
-                                _sectionLabel(rsw, l10n.nafalPrayers, accent: accent),
-                                SizedBox(height: sh * 0.010),
-                                _buildNafalCard(rsw, t, cardNafal,
-                                    use24h: use24h, l10n: l10n),
-                                SizedBox(height: sh * 0.030),
-                              ],
-                            );
-                          }
-                          return const SizedBox();
-                        },
+                        ],
                       ),
-                    ],
-                  ),
+                    );
+                  },
+                ),
+
+                // ── PRAYER TIMES CARD (below mosque, no change) ───────────────
+                BlocBuilder<PrayerTimesCubit, PrayerTimesState>(
+                  builder: (context, state) {
+                    if (state is PrayerTimesError) {
+                      return Padding(
+                        padding: EdgeInsets.all(sw * 0.04),
+                        child: Text(state.message,
+                            style: TextStyle(
+                                color:    Colors.red[300],
+                                fontSize: rsw * 0.04)),
+                      );
+                    }
+                    if (state is PrayerTimesLoaded) {
+                      return Padding(
+                        padding: EdgeInsets.fromLTRB(sw * 0.04, 16, sw * 0.04, sw * 0.04),
+                        child: PrayerTimesCard(
+                          prayerTimes: state.prayerTimes,
+                          use24h:      use24h,
+                          l10n:        l10n,
+                        ),
+                      );
+                    }
+                    return const SizedBox();
+                  },
+                ),
+
+              ],
             ),
-        ),
+          ),
+          ),
           bottomNavigationBar: _buildNav(
             sw: sw, rsw: rsw,
             surface: surface, accentSoft: accentSoft,
@@ -366,296 +558,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
 
 
 
-  // ── Section label ──────────────────────────────────────────────────────────
-  Widget _sectionLabel(double rsw, String label, {required Color accent}) {
-    return Row(
-      children: [
-        Container(
-          width: 4, height: rsw * 0.045,
-          decoration: BoxDecoration(
-              color: accent, borderRadius: BorderRadius.circular(2)),
-        ),
-        SizedBox(width: rsw * 0.025),
-        Flexible(
-          child: Text(
-            label,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color:         Colors.white,
-              fontSize:      rsw * 0.043,
-              fontWeight:    FontWeight.w700,
-              letterSpacing: 0.4,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
 
-  // ── Salat card ─────────────────────────────────────────────────────────────
-  Widget _buildSalatCard(
-      double rsw, PrayerTimesModel t, String current, Color cardColor, {
-        required bool use24h,
-        required Color accent,
-        required AppLocalizations l10n,
-      }) {
-    final prayers = [
-      (key: 'Fajr',    name: l10n.fajr,    icon: Icons.wb_twilight,      s: t.fajrStart,    e: t.fajrEnd),
-      (key: 'Dhuhr',   name: l10n.dhuhr,   icon: Icons.wb_sunny,          s: t.dhuhrStart,   e: t.dhuhrEnd),
-      (key: 'Asr',     name: l10n.asr,     icon: Icons.cloud,             s: t.asrStart,     e: t.asrEnd),
-      (key: 'Maghrib', name: l10n.maghrib,  icon: Icons.nightlight_round,  s: t.maghribStart, e: t.maghribEnd),
-      (key: 'Isha',    name: l10n.isha,     icon: Icons.dark_mode,         s: t.ishaStart,    e: t.ishaEnd),
-    ];
-    const colors = {
-      'Fajr':    Color(0xFF5B8DEF),
-      'Dhuhr':   Color(0xFFFFD54F),
-      'Asr':     Color(0xFFFFB74D),
-      'Maghrib': Color(0xFFEF9A9A),
-      'Isha':    Color(0xFFB39DDB),
-    };
-    return _glassCard(rsw, cardColor, const Color(0xFF66BB6A),
-      children: prayers.map((p) => _prayerRow(rsw, p.icon, p.name,
-        '${_fmt(p.s, use24h: use24h)} – ${_fmt(p.e, use24h: use24h)}',
-        isActive:    p.key == current,
-        activeColor: colors[p.key] ?? accent,
-        accent:      accent,
-        activeLabel: l10n.active,
-      )).toList(),
-    );
-  }
-
-  // ── Prohibited card ────────────────────────────────────────────────────────
-  Widget _buildProhibitedCard(
-      double rsw, PrayerTimesModel t, String current, Color cardColor, {
-        required bool use24h,
-        required AppLocalizations l10n,
-      }) {
-    final items = [
-      (key: 'SunRise', name: l10n.sunrise, icon: Icons.wb_twilight, s: t.sunRiseStart, e: t.sunRiseEnd),
-      (key: 'Noon',    name: l10n.noon,    icon: Icons.wb_sunny,    s: t.noonStart,    e: t.noonEnd),
-      (key: 'SunSet',  name: l10n.sunset,  icon: Icons.cloud,       s: t.sunSetStart,  e: t.sunSetEnd),
-    ];
-    return _glassCard(rsw, cardColor, Colors.red,
-      children: items.map((item) => _prayerRow(rsw, item.icon, item.name,
-        '${_fmt(item.s, use24h: use24h)} – ${_fmt(item.e, use24h: use24h)}',
-        isActive:        item.key == current,
-        activeColor:     Colors.red[300]!,
-        isProhibited:    true,
-        accent:          Colors.red,
-        activeLabel:     l10n.now,
-        prohibitedLabel: l10n.prohibited,
-      )).toList(),
-    );
-  }
-
-  // ── Sawm card ──────────────────────────────────────────────────────────────
-  Widget _buildSawmCard(
-      double rsw, PrayerTimesModel t, Color cardColor, {
-        required bool use24h,
-        required AppLocalizations l10n,
-      }) {
-    return _glassCard(rsw, cardColor, const Color(0xFF4FC3F7),
-      children: [
-        _prayerRow(rsw, Icons.wb_twilight, l10n.iftar,
-            _fmt(t.iftarTime, use24h: use24h),
-            accent: const Color(0xFF4FC3F7)),
-        _prayerRow(rsw, Icons.wb_sunny, l10n.sahri,
-            _fmt(t.sahriEnd, use24h: use24h),
-            accent: const Color(0xFF4FC3F7)),
-      ],
-    );
-  }
-
-  // ── Nafal card ─────────────────────────────────────────────────────────────
-  Widget _buildNafalCard(
-      double rsw, PrayerTimesModel t, Color cardColor, {
-        required bool use24h,
-        required AppLocalizations l10n,
-      }) {
-    return _glassCard(rsw, cardColor, const Color(0xFFCE93D8),
-      children: [
-        _prayerRow(rsw, Icons.nightlight, l10n.tahajjud,
-            '${_fmt(t.tahajjudStart, use24h: use24h)} – ${_fmt(t.tahajjudEnd, use24h: use24h)}',
-            accent: const Color(0xFFCE93D8)),
-        _prayerRow(rsw, Icons.wb_twilight, l10n.ishraq,
-            '${_fmt(t.ishraqStart, use24h: use24h)} – ${_fmt(t.ishraqEnd, use24h: use24h)}',
-            accent: const Color(0xFFCE93D8)),
-        _prayerRow(rsw, Icons.wb_sunny, l10n.chasht,
-            '${_fmt(t.chashtStart, use24h: use24h)} – ${_fmt(t.chashtEnd, use24h: use24h)}',
-            accent: const Color(0xFFCE93D8)),
-        _prayerRow(rsw, Icons.wb_twilight, l10n.zawal,
-            _fmt(t.zawalStart, use24h: use24h),
-            accent: const Color(0xFFCE93D8)),
-        _prayerRow(rsw, Icons.nightlight_round, l10n.awabin,
-            '${_fmt(t.awabinStart, use24h: use24h)} – ${_fmt(t.awabinEnd, use24h: use24h)}',
-            accent: const Color(0xFFCE93D8)),
-      ],
-    );
-  }
-
-  // ── Glass card ─────────────────────────────────────────────────────────────
-  Widget _glassCard(double rsw, Color bg, Color accentColor,
-      {required List<Widget> children}) {
-    return Container(
-      decoration: BoxDecoration(
-        color:        bg,
-        borderRadius: BorderRadius.circular(rsw * 0.048),
-        border: Border.all(color: accentColor.withOpacity(0.25), width: 0.8),
-        boxShadow: [
-          BoxShadow(
-            color:      accentColor.withOpacity(0.06),
-            blurRadius: rsw * 0.06,
-            offset:     Offset(0, rsw * 0.010),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(rsw * 0.048),
-        child: Column(
-          children: [
-            Container(
-              height: 2.5,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(colors: [
-                  accentColor.withOpacity(0.0),
-                  accentColor.withOpacity(0.70),
-                  accentColor.withOpacity(0.0),
-                ]),
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.all(rsw * 0.042),
-              child: Column(
-                children: List.generate(children.length * 2 - 1, (i) {
-                  if (i.isEven) return children[i ~/ 2];
-                  return Divider(
-                    color:     accentColor.withOpacity(0.12),
-                    height:    rsw * 0.030,
-                    thickness: 0.6,
-                  );
-                }),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // ── Prayer row ─────────────────────────────────────────────────────────────
-  Widget _prayerRow(
-      double rsw, IconData icon, String name, String time, {
-        bool   isActive        = false,
-        Color  activeColor     = const Color(0xFF4CAF82),
-        bool   isProhibited    = false,
-        required Color accent,
-        String activeLabel     = 'Active',
-        String prohibitedLabel = 'Prohibited',
-      }) {
-    final iconCircle  = rsw * 0.088;
-    final iconSz      = rsw * 0.044;
-    final nameFontSz  = rsw * 0.036;
-    final subFontSz   = rsw * 0.027;
-    final badgeFontSz = rsw * 0.025;
-    final timeFontSz  = rsw * 0.032;
-
-    return Container(
-      padding: isActive
-          ? EdgeInsets.symmetric(
-          horizontal: rsw * 0.025, vertical: rsw * 0.016)
-          : EdgeInsets.symmetric(vertical: rsw * 0.014),
-      decoration: isActive
-          ? BoxDecoration(
-        color:        activeColor.withOpacity(0.12),
-        borderRadius: BorderRadius.circular(rsw * 0.028),
-        border:       Border.all(
-            color: activeColor.withOpacity(0.40), width: 0.8),
-      )
-          : null,
-      child: Row(
-        children: [
-          Container(
-            width:  iconCircle,
-            height: iconCircle,
-            decoration: BoxDecoration(
-              color: isActive
-                  ? activeColor.withOpacity(0.20)
-                  : Colors.white.withOpacity(0.06),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(icon,
-                size:  iconSz,
-                color: isActive ? activeColor : Colors.white54),
-          ),
-          SizedBox(width: rsw * 0.025),
-
-          Expanded(
-            flex: 5,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  name,
-                  maxLines:  1,
-                  overflow:  TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color:      isActive ? activeColor : Colors.white,
-                    fontSize:   nameFontSz,
-                    fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
-                  ),
-                ),
-                if (isProhibited && !isActive)
-                  Text(
-                    prohibitedLabel,
-                    style: TextStyle(
-                        color: Colors.red[300], fontSize: subFontSz),
-                  ),
-              ],
-            ),
-          ),
-
-          if (isActive) ...[
-            Container(
-              padding: EdgeInsets.symmetric(
-                  horizontal: rsw * 0.020, vertical: rsw * 0.007),
-              decoration: BoxDecoration(
-                color: isProhibited
-                    ? Colors.red.withOpacity(0.20)
-                    : accent.withOpacity(0.20),
-                borderRadius: BorderRadius.circular(rsw * 0.028),
-              ),
-              child: Text(
-                activeLabel,
-                style: TextStyle(
-                  color:      isProhibited ? Colors.red[300] : accent,
-                  fontSize:   badgeFontSz,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-            SizedBox(width: rsw * 0.014),
-          ],
-
-          Flexible(
-            flex: 6,
-            child: Text(
-              time,
-              textAlign: TextAlign.right,
-              maxLines:  1,
-              overflow:  TextOverflow.ellipsis,
-              style: TextStyle(
-                color:         isActive ? activeColor : Colors.white70,
-                fontSize:      timeFontSz,
-                fontWeight:    isActive ? FontWeight.w700 : FontWeight.w500,
-                letterSpacing: 0.2,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   // ── Bottom nav ─────────────────────────────────────────────────────────────
   Widget _buildNav({
