@@ -116,7 +116,6 @@ flutter:
   uses-material-design: true
   assets:
     - assets/sounds/tasbih_click.mp3
-    - assets/pdf/quran.pdf
     - assets/icons/quran.png
     - assets/icons/duas.png
     - assets/icons/tasbih.png
