@@ -38,8 +38,8 @@ dependencies:
   geolocator: ^14.0.2
   geocoding: ^4.0.0
   shared_preferences: ^2.5.4
-  flutter_typeahead: ^5.2.0
-  adhan_dart: ^1.2.0
+  flutter_typeahead: ^6.0.0
+  adhan_dart: ^2.0.1
   equatable: ^2.0.8
   timezone: ^0.11.0
   http: ^1.6.0
