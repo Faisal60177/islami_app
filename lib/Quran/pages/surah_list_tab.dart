@@ -72,7 +72,7 @@ class _SurahTile extends StatelessWidget {
           builder: (_) => BlocProvider.value(
             value: context.read<QuranCubit>(),
             child: QuranReaderPage(
-                initialPage: surah.page + 2, surah: surah),
+                initialPage: surah.page, surah: surah),
           ),
         ),
       ),

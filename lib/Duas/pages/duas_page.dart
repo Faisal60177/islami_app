@@ -3,6 +3,10 @@ import 'all_duas_page.dart';
 import 'category_page.dart';
 import 'favorite_page.dart';
 import 'bookmark_page.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:muslim_app/settings/l10n/app_localizations.dart';
+import 'package:muslim_app/settings/cubit/settings_cubit.dart';
+import 'package:muslim_app/settings/cubit/settings_state.dart';
 
 class DuasPage extends StatefulWidget {
   const DuasPage({super.key});
@@ -13,12 +17,6 @@ class DuasPage extends StatefulWidget {
 
 class _DuasPageState extends State<DuasPage> with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  final List<Map<String, dynamic>> tabs = [
-    {'label': 'Category', 'icon': Icons.grid_view_rounded},
-    {'label': 'All', 'icon': Icons.auto_stories_rounded},
-    {'label': 'Favorite', 'icon': Icons.favorite_rounded},
-    {'label': 'Bookmark', 'icon': Icons.bookmark_rounded},
-  ];
 
   final TextEditingController _searchController = TextEditingController();
   String searchQuery = '';
@@ -26,7 +24,7 @@ class _DuasPageState extends State<DuasPage> with SingleTickerProviderStateMixin
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: tabs.length, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
     _tabController.addListener(() {
       if (!_tabController.indexIsChanging) setState(() {});
     });
@@ -44,225 +42,270 @@ class _DuasPageState extends State<DuasPage> with SingleTickerProviderStateMixin
 
   @override
   Widget build(BuildContext context) {
+    // ── Read language from cubit ──────────────────────────────────────────
+    final langCode = context.watch<SettingsCubit>().state.languageCode;
+    final l10n = AppLocalizations(langCode);
+    final isRtl = l10n.isRtl;
+    // ─────────────────────────────────────────────────────────────────────
+
     final size = MediaQuery.of(context).size;
     final sw = size.width;
     final sh = size.height;
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF5F7F6),
-      body: NestedScrollView(
-        headerSliverBuilder: (context, innerBoxIsScrolled) => [
-          SliverAppBar(
-            expandedHeight: sh * 0.22,
-            floating: false,
-            pinned: true,
-            elevation: 0,
-            backgroundColor: const Color(0xFF0D6E6E),
-            flexibleSpace: FlexibleSpaceBar(
-              background: Container(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Color(0xFF0A5C5C), Color(0xFF0D8585)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
+    // Build tabs list using l10n
+    final List<Map<String, dynamic>> tabs = [
+      {'label': l10n.category, 'icon': Icons.grid_view_rounded},
+      {'label': l10n.all,      'icon': Icons.auto_stories_rounded},
+      {'label': l10n.favorite, 'icon': Icons.favorite_rounded},
+      {'label': l10n.bookmark, 'icon': Icons.bookmark_rounded},
+    ];
+
+    return Directionality(
+      // ── RTL support for Arabic / Urdu ─────────────────────────────────
+      textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF5F7F6),
+        body: NestedScrollView(
+          headerSliverBuilder: (context, innerBoxIsScrolled) => [
+            SliverAppBar(
+              expandedHeight: sh * 0.22,
+              floating: false,
+              pinned: true,
+              elevation: 0,
+              backgroundColor: const Color(0xFF0D6E6E),
+              flexibleSpace: FlexibleSpaceBar(
+                background: Container(
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Color(0xFF0A5C5C), Color(0xFF0D8585)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
                   ),
-                ),
-                child: Stack(
-                  children: [
-                    // Decorative Arabic pattern circles
-                    Positioned(
-                      top: -sh * 0.04,
-                      right: -sw * 0.08,
-                      child: Container(
-                        width: sw * 0.45,
-                        height: sw * 0.45,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white.withOpacity(0.08), width: 2),
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      top: sh * 0.02,
-                      right: sw * 0.05,
-                      child: Container(
-                        width: sw * 0.25,
-                        height: sw * 0.25,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white.withOpacity(0.1), width: 1.5),
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      bottom: sh * 0.05,
-                      left: -sw * 0.05,
-                      child: Container(
-                        width: sw * 0.3,
-                        height: sw * 0.3,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.white.withOpacity(0.04),
-                        ),
-                      ),
-                    ),
-                    // Gold accent line
-                    Positioned(
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      child: Container(
-                        height: 3,
-                        decoration: const BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [Color(0xFFD4AF37), Color(0xFFF5D76E), Color(0xFFD4AF37)],
+                  child: Stack(
+                    children: [
+                      // Decorative circles
+                      Positioned(
+                        top: -sh * 0.04,
+                        right: isRtl ? null : -sw * 0.08, // ← RTL flip
+                        left:  isRtl ? -sw * 0.08 : null,
+                        child: Container(
+                          width: sw * 0.45, height: sw * 0.45,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                                color: Colors.white.withOpacity(0.08), width: 2),
                           ),
                         ),
                       ),
-                    ),
-                    // Title content
-                    Padding(
-                      padding: EdgeInsets.only(
-                        top: MediaQuery.of(context).padding.top + sh * 0.015,
-                        left: sw * 0.05,
-                        right: sw * 0.05,
+                      Positioned(
+                        top: sh * 0.02,
+                        right: isRtl ? null : sw * 0.05,
+                        left:  isRtl ? sw * 0.05 : null,
+                        child: Container(
+                          width: sw * 0.25, height: sw * 0.25,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                                color: Colors.white.withOpacity(0.1), width: 1.5),
+                          ),
+                        ),
                       ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.15),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Icon(Icons.menu_book_rounded, color: const Color(0xFFD4AF37), size: sw * 0.06),
-                              ),
-                              SizedBox(width: sw * 0.03),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Duas & Adhkar',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: sw * 0.055,
-                                      fontWeight: FontWeight.w700,
-                                      letterSpacing: 0.5,
-                                    ),
+                      Positioned(
+                        bottom: sh * 0.05,
+                        left: isRtl ? null : -sw * 0.05,
+                        right: isRtl ? -sw * 0.05 : null,
+                        child: Container(
+                          width: sw * 0.3, height: sw * 0.3,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.white.withOpacity(0.04),
+                          ),
+                        ),
+                      ),
+                      // Gold accent line
+                      Positioned(
+                        top: 0, left: 0, right: 0,
+                        child: Container(
+                          height: 3,
+                          decoration: const BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [Color(0xFFD4AF37), Color(0xFFF5D76E), Color(0xFFD4AF37)],
+                            ),
+                          ),
+                        ),
+                      ),
+                      // Title content
+                      Padding(
+                        padding: EdgeInsets.only(
+                          top: MediaQuery.of(context).padding.top + sh * 0.015,
+                          left: sw * 0.05,
+                          right: sw * 0.05,
+                        ),
+                        child: Column(
+                          crossAxisAlignment: isRtl
+                              ? CrossAxisAlignment.end   // ← RTL
+                              : CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              // Reverse row for RTL
+                              textDirection: isRtl
+                                  ? TextDirection.rtl
+                                  : TextDirection.ltr,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.15),
+                                    borderRadius: BorderRadius.circular(12),
                                   ),
-                                  Text(
-                                    'الأدعية والأذكار',
-                                    style: TextStyle(
+                                  child: Icon(Icons.menu_book_rounded,
                                       color: const Color(0xFFD4AF37),
-                                      fontSize: sw * 0.04,
-                                      fontWeight: FontWeight.w400,
+                                      size: sw * 0.06),
+                                ),
+                                SizedBox(width: sw * 0.03),
+                                Column(
+                                  crossAxisAlignment: isRtl
+                                      ? CrossAxisAlignment.end
+                                      : CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      l10n.duasAdhkar, // ← l10n
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: sw * 0.055,
+                                        fontWeight: FontWeight.w700,
+                                        letterSpacing: 0.5,
+                                      ),
                                     ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: sh * 0.018),
-                          // Search bar
-                          Container(
-                            height: sh * 0.055,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(16),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.12),
-                                  blurRadius: 12,
-                                  offset: const Offset(0, 4),
+                                    Text(
+                                      'الأدعية والأذكار', // always Arabic subtitle
+                                      style: TextStyle(
+                                        color: const Color(0xFFD4AF37),
+                                        fontSize: sw * 0.04,
+                                        fontWeight: FontWeight.w400,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
-                            child: TextField(
-                              controller: _searchController,
-                              decoration: InputDecoration(
-                                hintText: 'Search duas...',
-                                hintStyle: TextStyle(
-                                  color: Colors.grey[400],
-                                  fontSize: sw * 0.037,
-                                ),
-                                prefixIcon: Icon(Icons.search_rounded,
-                                    color: const Color(0xFF0D6E6E), size: sw * 0.055),
-                                suffixIcon: searchQuery.isNotEmpty
-                                    ? IconButton(
-                                  icon: Icon(Icons.close_rounded, size: sw * 0.045, color: Colors.grey),
-                                  onPressed: () => _searchController.clear(),
-                                )
-                                    : null,
-                                border: InputBorder.none,
-                                contentPadding: EdgeInsets.symmetric(vertical: sh * 0.013),
+                            SizedBox(height: sh * 0.018),
+                            // Search bar
+                            Container(
+                              height: sh * 0.055,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.12),
+                                    blurRadius: 12,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
                               ),
-                              style: TextStyle(fontSize: sw * 0.038, color: Colors.black87),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            bottom: PreferredSize(
-              preferredSize: Size.fromHeight(sh * 0.065),
-              child: Container(
-                color: const Color(0xFF0A5C5C),
-                child: TabBar(
-                  controller: _tabController,
-                  indicatorColor: const Color(0xFFD4AF37),
-                  indicatorWeight: 3,
-                  indicatorSize: TabBarIndicatorSize.label,
-                  isScrollable: false,
-                  labelPadding: EdgeInsets.zero,
-                  tabs: List.generate(tabs.length, (index) {
-                    final isSelected = _tabController.index == index;
-                    return Tab(
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        padding: EdgeInsets.symmetric(horizontal: sw * 0.01),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              tabs[index]['icon'] as IconData,
-                              size: sw * 0.048,
-                              color: isSelected ? const Color(0xFFD4AF37) : Colors.white.withOpacity(0.55),
-                            ),
-                            SizedBox(height: 2),
-                            Text(
-                              tabs[index]['label'] as String,
-                              style: TextStyle(
-                                color: isSelected ? const Color(0xFFD4AF37) : Colors.white.withOpacity(0.55),
-                                fontSize: sw * 0.028,
-                                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
-                                letterSpacing: 0.3,
+                              child: TextField(
+                                controller: _searchController,
+                                textDirection: isRtl
+                                    ? TextDirection.rtl
+                                    : TextDirection.ltr,
+                                decoration: InputDecoration(
+                                  hintText: l10n.searchDuasHint, // ← l10n
+                                  hintStyle: TextStyle(
+                                    color: Colors.grey[400],
+                                    fontSize: sw * 0.037,
+                                  ),
+                                  prefixIcon: Icon(Icons.search_rounded,
+                                      color: const Color(0xFF0D6E6E),
+                                      size: sw * 0.055),
+                                  suffixIcon: searchQuery.isNotEmpty
+                                      ? IconButton(
+                                    icon: Icon(Icons.close_rounded,
+                                        size: sw * 0.045,
+                                        color: Colors.grey),
+                                    onPressed: () =>
+                                        _searchController.clear(),
+                                  )
+                                      : null,
+                                  border: InputBorder.none,
+                                  contentPadding: EdgeInsets.symmetric(
+                                      vertical: sh * 0.013),
+                                ),
+                                style: TextStyle(
+                                    fontSize: sw * 0.038,
+                                    color: Colors.black87),
                               ),
                             ),
                           ],
                         ),
                       ),
-                    );
-                  }),
+                    ],
+                  ),
+                ),
+              ),
+              bottom: PreferredSize(
+                preferredSize: Size.fromHeight(sh * 0.065),
+                child: Container(
+                  color: const Color(0xFF0A5C5C),
+                  child: TabBar(
+                    controller: _tabController,
+                    indicatorColor: const Color(0xFFD4AF37),
+                    indicatorWeight: 3,
+                    indicatorSize: TabBarIndicatorSize.label,
+                    isScrollable: false,
+                    labelPadding: EdgeInsets.zero,
+                    tabs: List.generate(tabs.length, (index) {
+                      final isSelected = _tabController.index == index;
+                      return Tab(
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: sw * 0.01),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                tabs[index]['icon'] as IconData,
+                                size: sw * 0.048,
+                                color: isSelected
+                                    ? const Color(0xFFD4AF37)
+                                    : Colors.white.withOpacity(0.55),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                tabs[index]['label'] as String,
+                                style: TextStyle(
+                                  color: isSelected
+                                      ? const Color(0xFFD4AF37)
+                                      : Colors.white.withOpacity(0.55),
+                                  fontSize: sw * 0.028,
+                                  fontWeight: isSelected
+                                      ? FontWeight.w700
+                                      : FontWeight.w400,
+                                  letterSpacing: 0.3,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }),
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
-        body: TabBarView(
-          controller: _tabController,
-          physics: const BouncingScrollPhysics(),
-          children: [
-            CategoryPage(searchQuery: searchQuery),
-            AllDuasPage(searchQuery: searchQuery),
-            FavoriteDuasPage(searchQuery: searchQuery),
-            BookmarkedDuasPage(searchQuery: searchQuery),
           ],
+          body: TabBarView(
+            controller: _tabController,
+            physics: const BouncingScrollPhysics(),
+            children: [
+              CategoryPage(searchQuery: searchQuery),
+              AllDuasPage(searchQuery: searchQuery),
+              FavoriteDuasPage(searchQuery: searchQuery),
+              BookmarkedDuasPage(searchQuery: searchQuery),
+            ],
+          ),
         ),
       ),
     );

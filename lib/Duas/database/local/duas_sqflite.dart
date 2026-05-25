@@ -23,93 +23,249 @@ class DuasSqflite {
         await db.execute('PRAGMA foreign_keys = ON');
       },
       onCreate: (db, version) async {
-
-        // categories — primary key is category_id
+        // ── Categories core table ──────────────────────────
         await db.execute('''
           CREATE TABLE categories(
             category_id INTEGER PRIMARY KEY,
-            category_title TEXT NOT NULL,
             category_icon TEXT
           )
         ''');
 
-        // duas — category_title stored for direct query without JOIN
+        // ── Category translations — one row per language ───
+        // Supports: en, bn, ar, ur (add more anytime — no schema change)
         await db.execute('''
-          CREATE TABLE duas(
-            id INTEGER PRIMARY KEY,
-            category_id INTEGER NOT NULL,
-            category_title TEXT,
-            arabic TEXT,
-            transliteration TEXT,
-            translation_en TEXT,
-            translation_bn TEXT,
-            reference TEXT,
-            tags TEXT,
-            audio_url TEXT,
-            is_favorite INTEGER DEFAULT 0,
-            is_bookmarked INTEGER DEFAULT 0,
+          CREATE TABLE category_translations(
+            category_id   INTEGER NOT NULL,
+            language_code TEXT    NOT NULL,
+            title         TEXT    NOT NULL,
+            PRIMARY KEY(category_id, language_code),
             FOREIGN KEY(category_id) REFERENCES categories(category_id)
           )
         ''');
 
+        // ── Duas core table — no translation columns here ──
+        await db.execute('''
+          CREATE TABLE duas(
+            id              INTEGER PRIMARY KEY,
+            category_id     INTEGER NOT NULL,
+            arabic          TEXT,
+            audio_url       TEXT,
+            is_favorite     INTEGER DEFAULT 0,
+            is_bookmarked   INTEGER DEFAULT 0,
+            FOREIGN KEY(category_id) REFERENCES categories(category_id)
+          )
+        ''');
+
+        // ── Dua translations — all translatable fields here ─
+        // title, transliteration, translation, reference, description
+        // description and audio_url are optional — can be null
+        await db.execute('''
+          CREATE TABLE dua_translations(
+            dua_id            INTEGER NOT NULL,
+            language_code     TEXT    NOT NULL,
+            title             TEXT,
+            transliteration   TEXT,
+            translation_text  TEXT,
+            reference         TEXT,
+            description       TEXT,
+            PRIMARY KEY(dua_id, language_code),
+            FOREIGN KEY(dua_id) REFERENCES duas(id)
+          )
+        ''');
+
+        // ── Index for fast JOIN queries ────────────────────
+        await db.execute('''
+          CREATE INDEX idx_dua_translations
+          ON dua_translations(dua_id, language_code)
+        ''');
+
+        await db.execute('''
+          CREATE INDEX idx_cat_translations
+          ON category_translations(category_id, language_code)
+        ''');
+
+        // ── User interactions ──────────────────────────────
         await db.execute('''
           CREATE TABLE user_interactions(
-            user_id TEXT NOT NULL,
-            dua_id INTEGER NOT NULL,
-            is_favorite INTEGER DEFAULT 0,
+            user_id       TEXT    NOT NULL,
+            dua_id        INTEGER NOT NULL,
+            is_favorite   INTEGER DEFAULT 0,
             is_bookmarked INTEGER DEFAULT 0,
             PRIMARY KEY(user_id, dua_id),
             FOREIGN KEY(dua_id) REFERENCES duas(id)
           )
         ''');
       },
+
+      onUpgrade: (db, oldVersion, newVersion) async {
+        // Future language additions — just new rows, no ALTER needed
+        // Schema migrations only if adding new columns to core tables
+      },
     );
   }
 
-  /// ── Categories ──────────────────────────────────────
+  // ── Categories ──────────────────────────────────────────
+
   Future<void> insertCategory(Map<String, dynamic> data) async {
     final db = await database;
     await db.insert('categories', data,
         conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
-  Future<List<Map<String, dynamic>>> getAllCategories() async {
+  Future<void> insertCategoryTranslation({
+    required int categoryId,
+    required String languageCode,
+    required String title,
+  }) async {
     final db = await database;
-    return await db.query('categories');
+    await db.insert(
+      'category_translations',
+      {
+        'category_id':   categoryId,
+        'language_code': languageCode,
+        'title':         title,
+      },
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
   }
 
-  /// ── Duas ────────────────────────────────────────────
+  // Get all categories with resolved language + COALESCE fallback to English
+  Future<List<Map<String, dynamic>>> getAllCategories(String languageCode) async {
+    final db = await database;
+    return await db.rawQuery('''
+      SELECT
+        c.category_id,
+        c.category_icon,
+        COALESCE(t.title, fallback.title, '') AS category_title
+      FROM categories c
+      LEFT JOIN category_translations t
+        ON c.category_id = t.category_id AND t.language_code = ?
+      LEFT JOIN category_translations fallback
+        ON c.category_id = fallback.category_id AND fallback.language_code = 'en'
+      ORDER BY c.category_id ASC
+    ''', [languageCode]);
+  }
+
+  // ── Duas ────────────────────────────────────────────────
+
   Future<void> insertDua(Map<String, dynamic> data) async {
     final db = await database;
     await db.insert('duas', data,
         conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
-  Future<List<Map<String, dynamic>>> getAllDuas() async {
+  Future<void> insertDuaTranslation({
+    required int duaId,
+    required String languageCode,
+    required String title,
+    required String transliteration,
+    required String translationText,
+    required String reference,
+    String? description,
+  }) async {
     final db = await database;
-    return await db.query('duas', orderBy: 'id ASC');
+    await db.insert(
+      'dua_translations',
+      {
+        'dua_id':           duaId,
+        'language_code':    languageCode,
+        'title':            title,
+        'transliteration':  transliteration,
+        'translation_text': translationText,
+        'reference':        reference,
+        'description':      description, // nullable — fine if null
+      },
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
   }
 
-  // ✅ query by category_title column
-  Future<List<Map<String, dynamic>>> getDuasByCategory(String categoryTitle) async {
+  // Get duas by category — JOIN resolves language, COALESCE falls back to English
+  Future<List<Map<String, dynamic>>> getDuasByCategory({
+    required int categoryId,
+    required String languageCode,
+    required String userId,
+  }) async {
     final db = await database;
-    return await db.query('duas',
-        where: 'category_title = ?',
-        whereArgs: [categoryTitle],
-        orderBy: 'id ASC');
+    return await db.rawQuery('''
+      SELECT
+        d.id,
+        d.category_id,
+        d.arabic,
+        d.audio_url,
+        COALESCE(t.title,            fb.title,            '') AS title,
+        COALESCE(t.transliteration,  fb.transliteration,  '') AS transliteration,
+        COALESCE(t.translation_text, fb.translation_text, '') AS translation_text,
+        COALESCE(t.reference,        fb.reference,        '') AS reference,
+        COALESCE(t.description,      fb.description,      NULL) AS description,
+        COALESCE(ui.is_favorite,  d.is_favorite,  0) AS is_favorite,
+        COALESCE(ui.is_bookmarked,d.is_bookmarked,0) AS is_bookmarked,
+        cat_t.category_title
+      FROM duas d
+      LEFT JOIN dua_translations t
+        ON d.id = t.dua_id AND t.language_code = ?
+      LEFT JOIN dua_translations fb
+        ON d.id = fb.dua_id AND fb.language_code = 'en'
+      LEFT JOIN user_interactions ui
+        ON d.id = ui.dua_id AND ui.user_id = ?
+      LEFT JOIN (
+        SELECT
+          c2.category_id,
+          COALESCE(t2.title, fb2.title, '') AS category_title
+        FROM categories c2
+        LEFT JOIN category_translations t2
+          ON c2.category_id = t2.category_id AND t2.language_code = ?
+        LEFT JOIN category_translations fb2
+          ON c2.category_id = fb2.category_id AND fb2.language_code = 'en'
+      ) cat_t ON d.category_id = cat_t.category_id
+      WHERE d.category_id = ?
+      ORDER BY d.id ASC
+    ''', [languageCode, userId, languageCode, categoryId]);
   }
 
-  Future<void> updateDua(Map<String, dynamic> data, int id) async {
+  // Get ALL duas — same JOIN logic as getDuasByCategory but no WHERE filter
+  Future<List<Map<String, dynamic>>> getAllDuas({
+    required String languageCode,
+    required String userId,
+  }) async {
     final db = await database;
-    await db.update('duas', data, where: 'id = ?', whereArgs: [id]);
+    return await db.rawQuery('''
+    SELECT
+      d.id,
+      d.category_id,
+      d.arabic,
+      d.audio_url,
+      COALESCE(t.title,            fb.title,            '') AS title,
+      COALESCE(t.transliteration,  fb.transliteration,  '') AS transliteration,
+      COALESCE(t.translation_text, fb.translation_text, '') AS translation_text,
+      COALESCE(t.reference,        fb.reference,        '') AS reference,
+      COALESCE(t.description,      fb.description,      NULL) AS description,
+      COALESCE(ui.is_favorite,   d.is_favorite,   0) AS is_favorite,
+      COALESCE(ui.is_bookmarked, d.is_bookmarked,  0) AS is_bookmarked,
+      cat_t.category_title
+    FROM duas d
+    LEFT JOIN dua_translations t
+      ON d.id = t.dua_id AND t.language_code = ?
+    LEFT JOIN dua_translations fb
+      ON d.id = fb.dua_id AND fb.language_code = 'en'
+    LEFT JOIN user_interactions ui
+      ON d.id = ui.dua_id AND ui.user_id = ?
+    LEFT JOIN (
+      SELECT
+        c2.category_id,
+        COALESCE(t2.title, fb2.title, '') AS category_title
+      FROM categories c2
+      LEFT JOIN category_translations t2
+        ON c2.category_id = t2.category_id AND t2.language_code = ?
+      LEFT JOIN category_translations fb2
+        ON c2.category_id = fb2.category_id AND fb2.language_code = 'en'
+    ) cat_t ON d.category_id = cat_t.category_id
+    ORDER BY d.id ASC
+  ''', [languageCode, userId, languageCode]);
   }
 
-  Future<void> deleteDua(int id) async {
-    final db = await database;
-    await db.delete('duas', where: 'id = ?', whereArgs: [id]);
-  }
 
-  /// ── User Interactions ───────────────────────────────
+  // ── Favorites & Bookmarks ───────────────────────────────
+
   Future<void> upsertUserInteraction({
     required String userId,
     required int duaId,
@@ -120,40 +276,76 @@ class DuasSqflite {
     await db.insert(
       'user_interactions',
       {
-        'user_id': userId,
-        'dua_id': duaId,
-        'is_favorite': isFavorite ? 1 : 0,
-        'is_bookmarked': isBookmarked ? 1 : 0,
+        'user_id':      userId,
+        'dua_id':       duaId,
+        'is_favorite':  isFavorite ? 1 : 0,
+        'is_bookmarked':isBookmarked ? 1 : 0,
       },
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
   }
 
-  Future<List<Map<String, dynamic>>> getFavoritesForUser(String userId) async {
+  Future<List<Map<String, dynamic>>> getFavoritesForUser({
+    required String userId,
+    required String languageCode,
+  }) async {
     final db = await database;
     return await db.rawQuery('''
-      SELECT d.*, ui.is_favorite, ui.is_bookmarked
+      SELECT
+        d.id,
+        d.category_id,
+        d.arabic,
+        d.audio_url,
+        COALESCE(t.title,            fb.title,            '') AS title,
+        COALESCE(t.transliteration,  fb.transliteration,  '') AS transliteration,
+        COALESCE(t.translation_text, fb.translation_text, '') AS translation_text,
+        COALESCE(t.reference,        fb.reference,        '') AS reference,
+        COALESCE(t.description,      fb.description,      NULL) AS description,
+        ui.is_favorite,
+        ui.is_bookmarked
       FROM duas d
-      INNER JOIN user_interactions ui ON d.id = ui.dua_id
-      WHERE ui.user_id = ? AND ui.is_favorite = 1
+      INNER JOIN user_interactions ui
+        ON d.id = ui.dua_id AND ui.user_id = ? AND ui.is_favorite = 1
+      LEFT JOIN dua_translations t
+        ON d.id = t.dua_id AND t.language_code = ?
+      LEFT JOIN dua_translations fb
+        ON d.id = fb.dua_id AND fb.language_code = 'en'
       ORDER BY d.id ASC
-    ''', [userId]);
+    ''', [userId, languageCode]);
   }
 
-  Future<List<Map<String, dynamic>>> getBookmarkedForUser(String userId) async {
+  Future<List<Map<String, dynamic>>> getBookmarkedForUser({
+    required String userId,
+    required String languageCode,
+  }) async {
     final db = await database;
     return await db.rawQuery('''
-      SELECT d.*, ui.is_favorite, ui.is_bookmarked
+      SELECT
+        d.id,
+        d.category_id,
+        d.arabic,
+        d.audio_url,
+        COALESCE(t.title,            fb.title,            '') AS title,
+        COALESCE(t.transliteration,  fb.transliteration,  '') AS transliteration,
+        COALESCE(t.translation_text, fb.translation_text, '') AS translation_text,
+        COALESCE(t.reference,        fb.reference,        '') AS reference,
+        COALESCE(t.description,      fb.description,      NULL) AS description,
+        ui.is_favorite,
+        ui.is_bookmarked
       FROM duas d
-      INNER JOIN user_interactions ui ON d.id = ui.dua_id
-      WHERE ui.user_id = ? AND ui.is_bookmarked = 1
+      INNER JOIN user_interactions ui
+        ON d.id = ui.dua_id AND ui.user_id = ? AND ui.is_bookmarked = 1
+      LEFT JOIN dua_translations t
+        ON d.id = t.dua_id AND t.language_code = ?
+      LEFT JOIN dua_translations fb
+        ON d.id = fb.dua_id AND fb.language_code = 'en'
       ORDER BY d.id ASC
-    ''', [userId]);
+    ''', [userId, languageCode]);
   }
 
   Future<void> replaceUserInteractions(
       String userId, List<Map<String, dynamic>> interactions) async {
-    if (interactions.isEmpty) return; // ✅ don't wipe local if Firestore is empty
+    if (interactions.isEmpty) return;
     final db = await database;
     await db.transaction((txn) async {
       await txn.delete('user_interactions',

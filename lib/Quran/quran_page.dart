@@ -15,15 +15,39 @@ import 'package:muslim_app/home/home_page.dart';
 import 'package:muslim_app/tools/tools_page.dart';
 import 'package:muslim_app/Duas/pages/duas_page.dart';
 import 'package:muslim_app/Menu/menu_page.dart';
+import 'pages/quran_download_screen.dart';
+import 'services/quran_download_service.dart';
 
 class QuranPage extends StatelessWidget {
   const QuranPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => QuranCubit(QuranRepository())..init(),
-      child: const _QuranPageBody(),
+    return FutureBuilder<bool>(
+      future: QuranDownloadService.isDownloadComplete(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          // Still checking
+          return const Scaffold(
+            backgroundColor: Colors.black,
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        if (snapshot.data == true) {
+          // Already downloaded — go straight to Quran
+          return BlocProvider(
+            create: (_) => QuranCubit(QuranRepository())..init(),
+            child: const _QuranPageBody(),
+          );
+        } else {
+          // First time — show download screen
+          return BlocProvider(
+            create: (_) => QuranCubit(QuranRepository())..init(),
+            child: const QuranDownloadScreen(),
+          );
+        }
+      },
     );
   }
 }

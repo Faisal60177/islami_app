@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
-import 'duas_detail_page.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../cubit/duas_cubit.dart';
 import '../model/duas_model.dart';
-import '../repository/duas_repository.dart';
+import 'package:muslim_app/utils/language_utils.dart';
+import 'duas_detail_page.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:muslim_app/settings/l10n/app_localizations.dart';
+import 'package:muslim_app/settings/cubit/settings_cubit.dart';
+import 'package:muslim_app/settings/cubit/settings_state.dart';
 
 class AllDuasPage extends StatefulWidget {
   final String searchQuery;
@@ -11,8 +17,8 @@ class AllDuasPage extends StatefulWidget {
   State<AllDuasPage> createState() => _AllDuasPageState();
 }
 
-class _AllDuasPageState extends State<AllDuasPage> with AutomaticKeepAliveClientMixin {
-  final DuasRepository repository = DuasRepository();
+class _AllDuasPageState extends State<AllDuasPage>
+    with AutomaticKeepAliveClientMixin {
   List<DuasModel> allDuas = [];
   bool isLoading = true;
 
@@ -26,7 +32,13 @@ class _AllDuasPageState extends State<AllDuasPage> with AutomaticKeepAliveClient
   }
 
   Future<void> loadDuas() async {
-    final duas = await repository.getAllDuas();
+    final cubit = context.read<DuasCubit>();
+
+    // ✅ getAllDuas also needs languageCode now
+    final duas = await cubit.repository.getAllDuas(
+      languageCode: cubit.currentLanguageCode,
+      userId:       cubit.userId,
+    );
     setState(() {
       allDuas = duas;
       isLoading = false;
@@ -36,10 +48,13 @@ class _AllDuasPageState extends State<AllDuasPage> with AutomaticKeepAliveClient
   List<DuasModel> get filteredDuas {
     if (widget.searchQuery.isEmpty) return allDuas;
     final query = widget.searchQuery.toLowerCase();
-    return allDuas.where((dua) =>
+    return allDuas
+        .where((dua) =>
     dua.arabic.toLowerCase().contains(query) ||
+        dua.title.toLowerCase().contains(query) ||
         dua.transliteration.toLowerCase().contains(query) ||
-        dua.categoryTitle.toLowerCase().contains(query)).toList();
+        dua.categoryTitle.toLowerCase().contains(query))
+        .toList();
   }
 
   String getShortDescription(String text, [int limit = 55]) {
@@ -50,6 +65,8 @@ class _AllDuasPageState extends State<AllDuasPage> with AutomaticKeepAliveClient
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    final cubit = context.read<DuasCubit>();
+    final isRtl = LanguageUtils.isRtl(cubit.currentLanguageCode);
     final w = MediaQuery.of(context).size.width;
     final h = MediaQuery.of(context).size.height;
 
@@ -61,18 +78,15 @@ class _AllDuasPageState extends State<AllDuasPage> with AutomaticKeepAliveClient
             SizedBox(
               width: w * 0.12,
               height: w * 0.12,
-              child: CircularProgressIndicator(
-                color: const Color(0xFF0D6E6E),
+              child: const CircularProgressIndicator(
+                color: Color(0xFF0D6E6E),
                 strokeWidth: 3,
               ),
             ),
             SizedBox(height: h * 0.02),
             Text(
               'Loading duas...',
-              style: TextStyle(
-                color: Colors.grey[500],
-                fontSize: w * 0.038,
-              ),
+              style: TextStyle(color: Colors.grey[500], fontSize: w * 0.038),
             ),
           ],
         ),
@@ -84,7 +98,8 @@ class _AllDuasPageState extends State<AllDuasPage> with AutomaticKeepAliveClient
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.search_off_rounded, size: w * 0.15, color: Colors.grey[300]),
+            Icon(Icons.search_off_rounded,
+                size: w * 0.15, color: Colors.grey[300]),
             SizedBox(height: h * 0.02),
             Text(
               'No duas found',
@@ -99,46 +114,76 @@ class _AllDuasPageState extends State<AllDuasPage> with AutomaticKeepAliveClient
       );
     }
 
-    return ListView.builder(
-      padding: EdgeInsets.fromLTRB(w * 0.04, h * 0.018, w * 0.04, h * 0.03),
-      itemCount: filteredDuas.length,
-      itemBuilder: (context, index) {
-        final dua = filteredDuas[index];
-        return _DuaCard(
-          dua: dua,
-          index: index,
-          onTap: () async {
-            // ✅ await the push — user may toggle in detail page
-            await Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => DuasDetailPage(dua: dua)),
-            );
-            // no reload needed — all duas list cards have no favorite/bookmark icons
-          },
-        );
-      },
+    // ✅ Directionality wraps entire list
+    return Directionality(
+      textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
+      child: ListView.builder(
+        padding:
+        EdgeInsets.fromLTRB(w * 0.04, h * 0.018, w * 0.04, h * 0.03),
+        itemCount: filteredDuas.length,
+        itemBuilder: (context, index) {
+          final dua = filteredDuas[index];
+          return _DuaCard(
+            dua: dua,
+            index: index,
+            isRtl: isRtl,
+            onTap: () async {
+              await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => DuasDetailPage(dua: dua),
+                ),
+              );
+            },
+          );
+        },
+      ),
     );
   }
 }
 
-class _DuaCard extends StatelessWidget {
+class _DuaCard extends StatefulWidget {
   final DuasModel dua;
   final int index;
+  final bool isRtl;
   final VoidCallback onTap;
 
-  const _DuaCard({required this.dua, required this.index, required this.onTap});
+  const _DuaCard({
+    required this.dua,
+    required this.index,
+    required this.isRtl,
+    required this.onTap,
+  });
 
+  @override
+  State<_DuaCard> createState() => _DuaCardState();
+}
+
+class _DuaCardState extends State<_DuaCard> {
   String getShortDescription(String text, [int limit = 55]) {
     if (text.length <= limit) return text;
     return '${text.substring(0, limit)}...';
   }
 
+  // ✅ Optimistic toggle directly on card
+  void _toggleFavorite() {
+    setState(() => widget.dua.isFavorite = !widget.dua.isFavorite);
+    context.read<DuasCubit>().toggleFavorite(widget.dua);
+  }
+
+  void _toggleBookmark() {
+    setState(() => widget.dua.isBookmarked = !widget.dua.isBookmarked);
+    context.read<DuasCubit>().toggleBookmark(widget.dua);
+  }
+
   @override
   Widget build(BuildContext context) {
+    final dua   = widget.dua;
+    final index = widget.index;
+    final isRtl = widget.isRtl;
     final w = MediaQuery.of(context).size.width;
     final h = MediaQuery.of(context).size.height;
 
-    // Alternating subtle accent colors for variety
     final List<Color> avatarColors = [
       const Color(0xFF0D6E6E),
       const Color(0xFF1A7A5E),
@@ -167,7 +212,7 @@ class _DuaCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(18),
           splashColor: const Color(0xFF0D6E6E).withOpacity(0.08),
           highlightColor: const Color(0xFF0D6E6E).withOpacity(0.04),
-          onTap: onTap,
+          onTap: widget.onTap,
           child: Padding(
             padding: EdgeInsets.symmetric(
               horizontal: w * 0.04,
@@ -175,7 +220,6 @@ class _DuaCard extends StatelessWidget {
             ),
             child: Row(
               children: [
-                // Number badge
                 Container(
                   width: w * 0.12,
                   height: w * 0.12,
@@ -206,30 +250,36 @@ class _DuaCard extends StatelessWidget {
                   ),
                 ),
                 SizedBox(width: w * 0.035),
-
-                // Content
                 Expanded(
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      // Arabic preview (right-aligned)
-                      Align(
-                        alignment: Alignment.centerRight,
+                      Directionality(
+                        textDirection: TextDirection.rtl,
                         child: Text(
-                          getShortDescription(dua.tags),
+                          getShortDescription(dua.arabic),
                           textAlign: TextAlign.right,
                           style: TextStyle(
                             fontSize: w * 0.042,
                             fontWeight: FontWeight.w600,
                             color: const Color(0xFF1A2B2B),
                             height: 1.4,
+                            fontFamily: 'Amiri',
                           ),
                         ),
                       ),
+                      if (dua.title.isNotEmpty)
+                        Text(
+                          dua.title,
+                          textAlign: isRtl ? TextAlign.right : TextAlign.left,
+                          style: TextStyle(
+                            fontSize: w * 0.032,
+                            color: Colors.black54,
+                          ),
+                        ),
                       SizedBox(height: h * 0.006),
-
-                      // Category chip
                       Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Container(
                             padding: EdgeInsets.symmetric(
@@ -243,11 +293,9 @@ class _DuaCard extends StatelessWidget {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(
-                                  Icons.label_rounded,
-                                  size: w * 0.03,
-                                  color: const Color(0xFF0D6E6E),
-                                ),
+                                Icon(Icons.label_rounded,
+                                    size: w * 0.03,
+                                    color: const Color(0xFF0D6E6E)),
                                 SizedBox(width: w * 0.01),
                                 Text(
                                   dua.categoryTitle,
@@ -260,18 +308,44 @@ class _DuaCard extends StatelessWidget {
                               ],
                             ),
                           ),
+                          // ✅ Inline favorite/bookmark toggles
+                          Row(
+                            children: [
+                              GestureDetector(
+                                onTap: _toggleFavorite,
+                                child: Icon(
+                                  dua.isFavorite
+                                      ? Icons.favorite_rounded
+                                      : Icons.favorite_outline_rounded,
+                                  color: dua.isFavorite
+                                      ? const Color(0xFFE57373)
+                                      : Colors.grey[350],
+                                  size: w * 0.05,
+                                ),
+                              ),
+                              SizedBox(width: w * 0.02),
+                              GestureDetector(
+                                onTap: _toggleBookmark,
+                                child: Icon(
+                                  dua.isBookmarked
+                                      ? Icons.bookmark_rounded
+                                      : Icons.bookmark_outline_rounded,
+                                  color: dua.isBookmarked
+                                      ? const Color(0xFF64B5F6)
+                                      : Colors.grey[350],
+                                  size: w * 0.05,
+                                ),
+                              ),
+                            ],
+                          ),
                         ],
                       ),
                     ],
                   ),
                 ),
-
                 SizedBox(width: w * 0.02),
-                Icon(
-                  Icons.chevron_right_rounded,
-                  color: Colors.grey[350],
-                  size: w * 0.055,
-                ),
+                Icon(Icons.chevron_right_rounded,
+                    color: Colors.grey[350], size: w * 0.055),
               ],
             ),
           ),

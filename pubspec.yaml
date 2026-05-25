@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.0.0+2
+version: 1.0.0+3
 
 environment:
   sdk: ^3.10.8
@@ -73,8 +73,10 @@ dependencies:
   firebase_storage: ^13.2.0
   firebase_messaging: ^16.2.1
   flutter_local_notifications: ^21.0.0
-
-
+  page_flip: ^0.2.5+1
+  dio: ^5.9.2
+  connectivity_plus: ^7.1.1
+  archive: ^4.0.9
 
 
 
@@ -130,7 +132,6 @@ flutter:
     - assets/icons/masail.png
     - assets/icons/mosque.png
     - assets/json/quran_metadata.json
-    - assets/quran/pages/
 
   # To add json to your application, add an json section, like this:
   # json:

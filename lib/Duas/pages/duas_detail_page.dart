@@ -3,7 +3,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../cubit/duas_cubit.dart';
 import '../model/duas_model.dart';
-import '../repository/duas_repository.dart';
+import 'package:muslim_app/utils/language_utils.dart';
+import 'package:muslim_app/settings/l10n/app_localizations.dart';
+import 'package:muslim_app/settings/cubit/settings_cubit.dart';
+import 'package:muslim_app/settings/cubit/settings_state.dart';
 
 const _bg         = Color(0xFF021A10);
 const _surface    = Color(0xFF0D2E1C);
@@ -29,8 +32,10 @@ class _DuasDetailPageState extends State<DuasDetailPage>
 
   late DuasModel _dua;
   late String _userId;
+  late bool _isRtl;         // ✅ NEW
+  late bool _isArabicUser;  // ✅ NEW
   bool _isPlaying = false;
-  bool _interactionLoaded = false; // ✅ tracks if we loaded correct state yet
+  bool _interactionLoaded = false;
 
   late AnimationController _waveCtrl;
   late AnimationController _favCtrl;
@@ -42,7 +47,13 @@ class _DuasDetailPageState extends State<DuasDetailPage>
   void initState() {
     super.initState();
     _dua = widget.dua;
-    _userId = context.read<DuasCubit>().userId; // ✅ get userId from cubit
+
+    final cubit = context.read<DuasCubit>();
+    _userId = cubit.userId;
+
+    // ✅ resolve RTL and Arabic flags once — from cubit language
+    _isRtl        = LanguageUtils.isRtl(cubit.currentLanguageCode);
+    _isArabicUser = LanguageUtils.isArabicUser(cubit.currentLanguageCode);
 
     _waveCtrl = AnimationController(
         vsync: this, duration: const Duration(milliseconds: 800));
@@ -63,13 +74,9 @@ class _DuasDetailPageState extends State<DuasDetailPage>
       TweenSequenceItem(tween: Tween(begin: 0.88, end: 1.0), weight: 30),
     ]).animate(CurvedAnimation(parent: _bkmCtrl, curve: Curves.easeOut));
 
-    // ✅ Load the real favorite/bookmark state for this user from user_interactions
     _loadUserInteraction();
   }
 
-  // ✅ NEW — reads actual state from user_interactions table
-  // The dua passed in always has is_favorite=0 from duas table
-  // This corrects it by reading from user_interactions
   Future<void> _loadUserInteraction() async {
     final interaction = await context.read<DuasCubit>()
         .repository.getUserInteractionForDua(_userId, _dua.id);
@@ -98,11 +105,11 @@ class _DuasDetailPageState extends State<DuasDetailPage>
     HapticFeedback.lightImpact();
     setState(() => _dua.isFavorite = !_dua.isFavorite);
     _favCtrl.forward(from: 0);
+    final l10n = AppLocalizations(context.read<SettingsCubit>().state.languageCode);
     _toast(
-      _dua.isFavorite ? 'Added to Favorites' : 'Removed from Favorites',
+      _dua.isFavorite ? l10n.addedToFavorites : l10n.removedFromFavorites,
       _dua.isFavorite ? const Color(0xFFE57373) : _textLo,
     );
-    // ✅ use cubit — not a new repository instance
     context.read<DuasCubit>().toggleFavorite(_dua);
   }
 
@@ -110,28 +117,42 @@ class _DuasDetailPageState extends State<DuasDetailPage>
     HapticFeedback.lightImpact();
     setState(() => _dua.isBookmarked = !_dua.isBookmarked);
     _bkmCtrl.forward(from: 0);
+    final l10n = AppLocalizations(context.read<SettingsCubit>().state.languageCode);
     _toast(
-      _dua.isBookmarked ? 'Bookmarked' : 'Bookmark Removed',
+      _dua.isBookmarked ? l10n.addedToBookmarked : l10n.removedFromBookmark,
       _dua.isBookmarked ? const Color(0xFF64B5F6) : _textLo,
     );
-    // ✅ use cubit
     context.read<DuasCubit>().toggleBookmark(_dua);
   }
 
   void _copyDua() {
     HapticFeedback.selectionClick();
-    Clipboard.setData(ClipboardData(
-      text: '${_dua.arabic}\n\n'
-          '${_dua.transliteration}\n\n'
-          '${_dua.translation['en'] ?? ''}\n\n'
-          'Reference: ${_dua.reference}',
-    ));
-    _toast('Copied to clipboard', _accent);
+    // ✅ translationText — single resolved string, no map needed
+    final copyText = StringBuffer();
+    copyText.writeln(_dua.arabic);
+    copyText.writeln();
+    // ✅ skip transliteration in copy for Arabic users
+    if (!_isArabicUser && _dua.transliteration.isNotEmpty) {
+      copyText.writeln(_dua.transliteration);
+      copyText.writeln();
+    }
+    // ✅ skip translation in copy for Arabic users
+    if (!_isArabicUser && _dua.translationText.isNotEmpty) {
+      copyText.writeln(_dua.translationText);
+      copyText.writeln();
+    }
+    if (_dua.reference.isNotEmpty) {
+      copyText.write('Reference: ${_dua.reference}');
+    }
+    final l10n = AppLocalizations(context.read<SettingsCubit>().state.languageCode);
+    Clipboard.setData(ClipboardData(text: copyText.toString()));
+    _toast(l10n.copiedToClipboard, _accent);
   }
 
   void _shareDua() {
     HapticFeedback.selectionClick();
-    _toast('Sharing…', _accent);
+    final l10n = AppLocalizations(context.read<SettingsCubit>().state.languageCode);
+    _toast(l10n.sharing, _accent);
   }
 
   void _toggleAudio() {
@@ -167,157 +188,227 @@ class _DuasDetailPageState extends State<DuasDetailPage>
   Widget build(BuildContext context) {
     final sw = MediaQuery.of(context).size.width;
 
-    return Scaffold(
-      backgroundColor: _bg,
-      appBar: AppBar(
-        backgroundColor: _surface,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded,
-              color: _textHi, size: 18),
-          onPressed: () => Navigator.pop(context),
-        ),
-        titleSpacing: 0,
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              _dua.tags,
-              style: TextStyle(
-                  color: _textHi,
-                  fontSize: sw * 0.042,
-                  fontWeight: FontWeight.w700),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+    final langCode = context.read<SettingsCubit>().state.languageCode;
+    final l10n = AppLocalizations(langCode);
+
+    // ✅ Directionality wraps entire page — RTL for Arabic/Urdu
+    return Directionality(
+      textDirection: _isRtl ? TextDirection.rtl : TextDirection.ltr,
+      child: Scaffold(
+        backgroundColor: _bg,
+        appBar: AppBar(
+          backgroundColor: _surface,
+          elevation: 0,
+          leading: IconButton(
+            // ✅ flip back arrow for RTL
+            icon: Icon(
+              _isRtl
+                  ? Icons.arrow_back_ios_new_rounded
+                  : Icons.arrow_back_ios_new_rounded,
+              color: _textHi,
+              size: 18,
             ),
-            Text(_dua.categoryTitle,
-                style: TextStyle(color: _textLo, fontSize: sw * 0.028)),
-          ],
-        ),
-        actions: [
-          // ✅ show loading indicator while reading interaction state
-          // so icons don't flash from empty to filled
-          if (!_interactionLoaded)
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16),
-              child: Center(
-                child: SizedBox(
-                  width: 18, height: 18,
-                  child: CircularProgressIndicator(
-                      color: _textLo, strokeWidth: 2),
-                ),
+            onPressed: () => Navigator.pop(context),
+          ),
+          titleSpacing: 0,
+          title: Column(
+            // ✅ title alignment respects RTL
+            crossAxisAlignment: _isRtl
+                ? CrossAxisAlignment.end
+                : CrossAxisAlignment.start,
+            children: [
+              Text(
+                _dua.title, // ✅ was _dua.tags — now uses resolved title
+                style: TextStyle(
+                    color: _textHi,
+                    fontSize: sw * 0.042,
+                    fontWeight: FontWeight.w700),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
-            )
-          else ...[
-            // Favorite
-            ScaleTransition(
-              scale: _favBounce,
-              child: IconButton(
-                tooltip: _dua.isFavorite ? 'Unfavorite' : 'Favorite',
-                onPressed: _toggleFavorite,
-                icon: Icon(
-                  _dua.isFavorite
-                      ? Icons.favorite_rounded
-                      : Icons.favorite_outline_rounded,
-                  color: _dua.isFavorite
-                      ? const Color(0xFFE57373)
-                      : _textLo,
-                  size: sw * 0.058,
-                ),
+              Text(
+                _dua.categoryTitle,
+                style: TextStyle(color: _textLo, fontSize: sw * 0.028),
               ),
-            ),
-            // Bookmark
-            ScaleTransition(
-              scale: _bkmBounce,
-              child: IconButton(
-                tooltip: _dua.isBookmarked ? 'Remove Bookmark' : 'Bookmark',
-                onPressed: _toggleBookmark,
-                icon: Icon(
-                  _dua.isBookmarked
-                      ? Icons.bookmark_rounded
-                      : Icons.bookmark_outline_rounded,
-                  color: _dua.isBookmarked
-                      ? const Color(0xFF64B5F6)
-                      : _textLo,
-                  size: sw * 0.058,
-                ),
-              ),
-            ),
-          ],
-          // More menu
-          PopupMenuButton<String>(
-            icon: Icon(Icons.more_vert_rounded,
-                color: _textLo, size: sw * 0.058),
-            color: _card,
-            shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-            onSelected: (val) {
-              if (val == 'copy') _copyDua();
-              if (val == 'share') _shareDua();
-            },
-            itemBuilder: (_) => [
-              _menuItem('copy', Icons.copy_rounded, 'Copy Dua'),
-              _menuItem('share', Icons.share_rounded, 'Share Dua'),
             ],
           ),
-          const SizedBox(width: 4),
-        ],
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(1),
-          child: Container(height: 1, color: _divider),
-        ),
-      ),
-      body: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _ArabicHero(arabic: _dua.arabic, sw: sw),
-            Padding(
-              padding: EdgeInsets.symmetric(
-                  horizontal: sw * 0.055, vertical: sw * 0.03),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _SectionLabel('Transliteration', sw),
-                  SizedBox(height: sw * 0.025),
-                  Text(
-                    _dua.transliteration,
-                    style: TextStyle(
-                      fontSize: sw * 0.04,
-                      color: _textMid,
-                      height: 1.8,
-                      fontStyle: FontStyle.italic,
-                    ),
+          actions: [
+            if (!_interactionLoaded)
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16),
+                child: Center(
+                  child: SizedBox(
+                    width: 18, height: 18,
+                    child: CircularProgressIndicator(
+                        color: _textLo, strokeWidth: 2),
                   ),
-                  _Divider(sw),
-                  _SectionLabel('Translation', sw),
-                  SizedBox(height: sw * 0.03),
-                  _TranslationBlock(dua: _dua, sw: sw),
-                  if (_dua.reference.isNotEmpty) ...[
-                    _Divider(sw),
-                    _ReferenceBlock(reference: _dua.reference, sw: sw),
-                  ],
-                  if (_dua.audioUrl != null && _dua.audioUrl!.isNotEmpty) ...[
-                    _Divider(sw),
-                    _AudioBar(
-                      isPlaying: _isPlaying,
-                      waveCtrl: _waveCtrl,
-                      onToggle: _toggleAudio,
-                      sw: sw,
-                    ),
-                  ],
-                  SizedBox(height: sw * 0.1),
-                ],
+                ),
+              )
+            else ...[
+              ScaleTransition(
+                scale: _favBounce,
+                child: IconButton(
+                  tooltip: _dua.isFavorite ? l10n.unfavorite : l10n.favorite,
+                  onPressed: _toggleFavorite,
+                  icon: Icon(
+                    _dua.isFavorite
+                        ? Icons.favorite_rounded
+                        : Icons.favorite_outline_rounded,
+                    color: _dua.isFavorite
+                        ? const Color(0xFFE57373)
+                        : _textLo,
+                    size: sw * 0.058,
+                  ),
+                ),
               ),
+              ScaleTransition(
+                scale: _bkmBounce,
+                child: IconButton(
+                  tooltip: _dua.isBookmarked
+                      ? l10n.removeBookmark
+                      : l10n.bookmark,
+                  onPressed: _toggleBookmark,
+                  icon: Icon(
+                    _dua.isBookmarked
+                        ? Icons.bookmark_rounded
+                        : Icons.bookmark_outline_rounded,
+                    color: _dua.isBookmarked
+                        ? const Color(0xFF64B5F6)
+                        : _textLo,
+                    size: sw * 0.058,
+                  ),
+                ),
+              ),
+            ],
+            PopupMenuButton<String>(
+              icon: Icon(Icons.more_vert_rounded,
+                  color: _textLo, size: sw * 0.058),
+              color: _card,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14)),
+              onSelected: (val) {
+                if (val == l10n.copy) _copyDua();
+                if (val == l10n.share) _shareDua();
+              },
+              itemBuilder: (_) => [
+                _menuItem(l10n.copy, Icons.copy_rounded, l10n.copyDua),
+                _menuItem(l10n.share, Icons.share_rounded, l10n.shareDua),
+              ],
             ),
+            const SizedBox(width: 4),
           ],
+          bottom: PreferredSize(
+            preferredSize: const Size.fromHeight(1),
+            child: Container(height: 1, color: _divider),
+          ),
+        ),
+        body: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // ✅ Arabic hero — always RTL inside, no change needed
+              _ArabicHero(arabic: _dua.arabic, sw: sw),
+
+              Padding(
+                padding: EdgeInsets.symmetric(
+                    horizontal: sw * 0.055, vertical: sw * 0.03),
+                child: Column(
+                  crossAxisAlignment: _isRtl
+                      ? CrossAxisAlignment.end   // ✅ RTL alignment
+                      : CrossAxisAlignment.start,
+                  children: [
+
+                    // ✅ Transliteration — hidden for Arabic users
+                    if (!_isArabicUser && _dua.transliteration.isNotEmpty) ...[
+                      _SectionLabel(l10n.transliteration, sw, _isRtl),
+                      SizedBox(height: sw * 0.025),
+                      Text(
+                        _dua.transliteration,
+                        textAlign: _isRtl ? TextAlign.right : TextAlign.left,
+                        style: TextStyle(
+                          fontSize: sw * 0.04,
+                          color: _textMid,
+                          height: 1.8,
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
+                      _Divider(sw),
+                    ],
+
+                    // ✅ Translation — hidden for Arabic users
+                    // Single resolved string — no language toggle needed
+                    if (!_isArabicUser && _dua.translationText.isNotEmpty) ...[
+                      _SectionLabel(l10n.translation, sw, _isRtl),
+                      SizedBox(height: sw * 0.03),
+                      Text(
+                        _dua.translationText,
+                        textAlign:
+                        _isRtl ? TextAlign.right : TextAlign.left,
+                        style: TextStyle(
+                          fontSize: sw * 0.04,
+                          color: _textMid,
+                          height: 1.85,
+                        ),
+                      ),
+                      _Divider(sw),
+                    ],
+
+                    // ✅ Reference — always shown, respects RTL
+                    if (_dua.reference.isNotEmpty) ...[
+                      _ReferenceBlock(
+                        reference: _dua.reference,
+                        sw: sw,
+                        isRtl: _isRtl,
+                        referenceLabel: l10n.referenceLabel,
+                      ),
+                    ],
+
+                    // ✅ Description — optional, hidden if null or empty
+                    if (_dua.description != null &&
+                        _dua.description!.isNotEmpty) ...[
+                      _Divider(sw),
+                      _SectionLabel(l10n.description, sw, _isRtl),
+                      SizedBox(height: sw * 0.025),
+                      Text(
+                        _dua.description!,
+                        textAlign:
+                        _isRtl ? TextAlign.right : TextAlign.left,
+                        style: TextStyle(
+                          fontSize: sw * 0.038,
+                          color: _textMid,
+                          height: 1.8,
+                        ),
+                      ),
+                    ],
+
+                    // ✅ Audio — optional, hidden if audioUrl is null
+                    if (_dua.audioUrl != null &&
+                        _dua.audioUrl!.isNotEmpty) ...[
+                      _Divider(sw),
+                      _AudioBar(
+                        isPlaying: _isPlaying,
+                        waveCtrl: _waveCtrl,
+                        onToggle: _toggleAudio,
+                        sw: sw,
+                        playingText: l10n.playingRecitation,   // ← add
+                        listenText: l10n.listenToRecitation,
+                      ),
+                    ],
+
+                    SizedBox(height: sw * 0.1),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  PopupMenuItem<String> _menuItem(String val, IconData icon, String label) =>
+  PopupMenuItem<String> _menuItem(
+      String val, IconData icon, String label) =>
       PopupMenuItem(
         value: val,
         child: Row(children: [
@@ -330,6 +421,7 @@ class _DuasDetailPageState extends State<DuasDetailPage>
 }
 
 // ─── Arabic Hero ──────────────────────────────────────────────────────────────
+// ✅ No change needed — already uses TextDirection.rtl for arabic text
 class _ArabicHero extends StatelessWidget {
   final String arabic;
   final double sw;
@@ -340,7 +432,8 @@ class _ArabicHero extends StatelessWidget {
         child: Container(height: 1, color: _gold.withOpacity(0.22))),
     Container(
         margin: EdgeInsets.symmetric(horizontal: sw * 0.04),
-        width: 5, height: 5,
+        width: 5,
+        height: 5,
         decoration: BoxDecoration(
             color: _gold.withOpacity(0.45), shape: BoxShape.circle)),
     Expanded(
@@ -352,15 +445,15 @@ class _ArabicHero extends StatelessWidget {
     return Container(
       width: double.infinity,
       color: _card,
-      padding: EdgeInsets.fromLTRB(
-          sw * 0.06, sw * 0.09, sw * 0.06, sw * 0.09),
+      padding:
+      EdgeInsets.fromLTRB(sw * 0.06, sw * 0.09, sw * 0.06, sw * 0.09),
       child: Column(children: [
         _ornament(),
         SizedBox(height: sw * 0.08),
         Text(
           arabic,
           textAlign: TextAlign.center,
-          textDirection: TextDirection.rtl,
+          textDirection: TextDirection.rtl, // ✅ always RTL — Arabic text
           style: TextStyle(
             fontFamily: 'Amiri',
             fontSize: sw * 0.075,
@@ -377,14 +470,17 @@ class _ArabicHero extends StatelessWidget {
 }
 
 // ─── Section Label ────────────────────────────────────────────────────────────
+// ✅ isRtl added for text alignment
 class _SectionLabel extends StatelessWidget {
   final String text;
   final double sw;
-  const _SectionLabel(this.text, this.sw);
+  final bool isRtl; // ✅ NEW
+  const _SectionLabel(this.text, this.sw, this.isRtl);
 
   @override
   Widget build(BuildContext context) => Text(
     text.toUpperCase(),
+    textAlign: isRtl ? TextAlign.right : TextAlign.left,
     style: TextStyle(
       fontSize: sw * 0.027,
       fontWeight: FontWeight.w800,
@@ -394,7 +490,8 @@ class _SectionLabel extends StatelessWidget {
   );
 }
 
-// ─── Divider ──────────────────────────────────────────────────────────────────
+// ─── Divider ─────────────────────────────────────────────────────────────────
+// ✅ No change needed
 class _Divider extends StatelessWidget {
   final double sw;
   const _Divider(this.sw);
@@ -406,84 +503,19 @@ class _Divider extends StatelessWidget {
       color: _divider);
 }
 
-// ─── Translation Block ────────────────────────────────────────────────────────
-class _TranslationBlock extends StatefulWidget {
-  final DuasModel dua;
-  final double sw;
-  const _TranslationBlock({required this.dua, required this.sw});
-
-  @override
-  State<_TranslationBlock> createState() => _TranslationBlockState();
-}
-
-class _TranslationBlockState extends State<_TranslationBlock> {
-  String _lang = 'en';
-
-  @override
-  Widget build(BuildContext context) {
-    final langs = {'en': 'English', 'bn': 'বাংলা'};
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: langs.entries.map((e) {
-            final active = _lang == e.key;
-            return GestureDetector(
-              onTap: () => setState(() => _lang = e.key),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                margin: const EdgeInsets.only(right: 10),
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 16, vertical: 7),
-                decoration: BoxDecoration(
-                  color: active
-                      ? _accentSoft.withOpacity(0.22)
-                      : Colors.transparent,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: active
-                        ? _accent.withOpacity(0.5)
-                        : _textLo.withOpacity(0.18),
-                  ),
-                ),
-                child: Text(
-                  e.value,
-                  style: TextStyle(
-                    fontSize: widget.sw * 0.033,
-                    fontWeight:
-                    active ? FontWeight.w700 : FontWeight.w400,
-                    color: active ? _accent : _textLo,
-                  ),
-                ),
-              ),
-            );
-          }).toList(),
-        ),
-        SizedBox(height: widget.sw * 0.045),
-        AnimatedSwitcher(
-          duration: const Duration(milliseconds: 220),
-          transitionBuilder: (child, anim) =>
-              FadeTransition(opacity: anim, child: child),
-          child: Text(
-            widget.dua.translation[_lang] ?? '',
-            key: ValueKey(_lang),
-            style: TextStyle(
-              fontSize: widget.sw * 0.04,
-              color: _textMid,
-              height: 1.85,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-// ─── Reference Block ──────────────────────────────────────────────────────────
+// ─── Reference Block ─────────────────────────────────────────────────────────
+// ✅ isRtl added — flips icon and text alignment
 class _ReferenceBlock extends StatelessWidget {
   final String reference;
   final double sw;
-  const _ReferenceBlock({required this.reference, required this.sw});
+  final bool isRtl;
+  final String referenceLabel;
+  const _ReferenceBlock({
+    required this.reference,
+    required this.sw,
+    required this.isRtl,
+    required this.referenceLabel,
+  });
 
   @override
   Widget build(BuildContext context) => Row(
@@ -494,22 +526,31 @@ class _ReferenceBlock extends StatelessWidget {
       SizedBox(width: sw * 0.03),
       Expanded(
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          // ✅ align to right for RTL
+          crossAxisAlignment: isRtl
+              ? CrossAxisAlignment.end
+              : CrossAxisAlignment.start,
           children: [
-            Text('REFERENCE',
-                style: TextStyle(
-                  fontSize: sw * 0.027,
-                  fontWeight: FontWeight.w800,
-                  color: _gold,
-                  letterSpacing: 1.4,
-                )),
+            Text(
+              referenceLabel,
+              textAlign: isRtl ? TextAlign.right : TextAlign.left,
+              style: TextStyle(
+                fontSize: sw * 0.027,
+                fontWeight: FontWeight.w800,
+                color: _gold,
+                letterSpacing: 1.4,
+              ),
+            ),
             SizedBox(height: sw * 0.015),
-            Text(reference,
-                style: TextStyle(
-                  fontSize: sw * 0.036,
-                  color: _textLo,
-                  height: 1.6,
-                )),
+            Text(
+              reference,
+              textAlign: isRtl ? TextAlign.right : TextAlign.left,
+              style: TextStyle(
+                fontSize: sw * 0.036,
+                color: _textLo,
+                height: 1.6,
+              ),
+            ),
           ],
         ),
       ),
@@ -518,16 +559,21 @@ class _ReferenceBlock extends StatelessWidget {
 }
 
 // ─── Audio Bar ────────────────────────────────────────────────────────────────
+// ✅ No change needed — audio player layout is universal
 class _AudioBar extends StatelessWidget {
   final bool isPlaying;
   final AnimationController waveCtrl;
   final VoidCallback onToggle;
   final double sw;
+  final String playingText; // ← add
+  final String listenText;  // ← add
   const _AudioBar({
     required this.isPlaying,
     required this.waveCtrl,
     required this.onToggle,
     required this.sw,
+    required this.playingText, // ← add
+    required this.listenText,
   });
 
   @override
@@ -567,7 +613,9 @@ class _AudioBar extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                isPlaying ? 'Playing recitation…' : 'Listen to recitation',
+                isPlaying
+                    ? playingText
+                    : listenText,
                 style: TextStyle(
                   fontSize: sw * 0.035,
                   color: isPlaying ? _textHi : _textLo,
@@ -584,6 +632,7 @@ class _AudioBar extends StatelessWidget {
 }
 
 // ─── Waveform ─────────────────────────────────────────────────────────────────
+// ✅ No change needed
 class _Waveform extends StatelessWidget {
   final bool isPlaying;
   final AnimationController ctrl;
@@ -616,7 +665,8 @@ class _Waveform extends StatelessWidget {
               final h = e.value *
                   (0.35 + 0.65 * (t < 0.5 ? t * 2 : (1 - t) * 2));
               return Container(
-                width: 3, height: h,
+                width: 3,
+                height: h,
                 margin: const EdgeInsets.symmetric(horizontal: 1.5),
                 decoration: BoxDecoration(
                   color: _accent,

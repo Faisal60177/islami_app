@@ -11,13 +11,13 @@ const int kTotalPdfPages = 619;
 // The PDF page range that contains actual Quran text
 // Page 3 = first Quran page (Surah Al-Fatiha)
 // Page 612 = last Quran page (end of Surah An-Nas)
-const int kQuranFirstPage = 3;    // PDF page 3 = Quran page 1
-const int kQuranLastPage  = 612;  // PDF page 612 = Quran page 604
+const int kQuranFirstPage = 1;    // PDF page 3 = Quran page 1
+const int kQuranLastPage  = 619;  // PDF page 612 = Quran page 604
 
 // Convert between "Surah page number" (1-604 in your metadata JSON)
 // and "PDF image file number" (3-612 in your assets folder)
-int surahPageToPdfPage(int surahPage) => surahPage + 2;   // add 2
-int pdfPageToSurahPage(int pdfPage)   => pdfPage - 2;     // subtract 2
+int surahPageToPdfPage(int surahPage) => surahPage;
+int pdfPageToSurahPage(int pdfPage)   => pdfPage;
 
 class QuranRepository {
   final BookmarkStorage _storage = BookmarkStorage();
@@ -26,21 +26,9 @@ class QuranRepository {
   Future<List<SurahModel>> loadSurahs() async {
     if (_cachedSurahs != null) return _cachedSurahs!;
     final raw  = await rootBundle.loadString('assets/json/quran_metadata.json');
-    final list = jsonDecode(raw) as List;
-    // Convert JSON page numbers (1-604) to PDF page numbers (3-612)
-    _cachedSurahs = list.map((e) {
-      final m = SurahModel.fromJson(e);
-      return SurahModel(
-        number:         m.number,
-        nameAr:         m.nameAr,
-        nameEn:         m.nameEn,
-        nameTranslit:   m.nameTranslit,
-        totalAyahs:     m.totalAyahs,
-        revelationType: m.revelationType,
-        page:           surahPageToPdfPage(m.page),  // now 3–612
-        para:           m.para,
-      );
-    }).toList();
+    final map  = jsonDecode(raw) as Map<String, dynamic>;
+    final list = map['surahs'] as List;
+    _cachedSurahs = list.map((e) => SurahModel.fromJson(e)).toList();
     return _cachedSurahs!;
   }
 
@@ -57,15 +45,15 @@ class QuranRepository {
         .toList();
   }
 
-  /// Returns page number for a given para (1-based)
   Future<int> getParaPage(int paraNumber) async {
-    final all = await loadSurahs();
-    final match = all.firstWhere(
-          (s) => s.para == paraNumber,
-      orElse: () => all.first,
+    final raw   = await rootBundle.loadString('assets/json/quran_metadata.json');
+    final map   = jsonDecode(raw) as Map<String, dynamic>;
+    final paras = map['paras'] as List;
+    final match = paras.firstWhere(
+          (e) => e['para'] == paraNumber,
+      orElse: () => paras.first,
     );
-    // Convert Surah page (1-604) to PDF page (3-612)
-    return surahPageToPdfPage(match.page);
+    return match['page'] as int;
   }
 
   // Bookmark delegation

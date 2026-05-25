@@ -89,7 +89,7 @@ void main() async {
           create: (_) => NotificationCubit(NotificationRepository()),
         ),
         BlocProvider(
-          create: (_) => DuasCubit(duasRepository)..loadAllDuas(),
+          create: (_) => DuasCubit(duasRepository),
         ),
       ],
       child: const MyApp(),

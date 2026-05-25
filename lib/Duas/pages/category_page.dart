@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
-import '../repository/duas_repository.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../cubit/duas_cubit.dart';
 import '../model/category_model.dart';
+import 'package:muslim_app/utils/language_utils.dart';
 import 'category_duas_page.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:muslim_app/settings/l10n/app_localizations.dart';
+import 'package:muslim_app/settings/cubit/settings_cubit.dart';
+import 'package:muslim_app/settings/cubit/settings_state.dart';
 
 class CategoryPage extends StatefulWidget {
   final String searchQuery;
@@ -12,11 +18,9 @@ class CategoryPage extends StatefulWidget {
 }
 
 class _CategoryPageState extends State<CategoryPage> {
-  final DuasRepository _repository = DuasRepository();
   List<CategoryModel> _categories = [];
   bool _isLoading = true;
 
-  // Rich color palettes for categories
   static const List<List<Color>> cardGradients = [
     [Color(0xFF0D6E6E), Color(0xFF1A9090)],
     [Color(0xFF2E6B8A), Color(0xFF3D8FB5)],
@@ -36,7 +40,12 @@ class _CategoryPageState extends State<CategoryPage> {
 
   Future<void> _loadCategories() async {
     setState(() => _isLoading = true);
-    final data = await _repository.getAllCategories();
+    final cubit = context.read<DuasCubit>();
+
+    // ✅ pass currentLanguageCode — COALESCE resolves correct language
+    final data = await cubit.repository.getAllCategories(
+      cubit.currentLanguageCode,
+    );
     setState(() {
       _categories = data;
       _isLoading = false;
@@ -63,17 +72,23 @@ class _CategoryPageState extends State<CategoryPage> {
 
   @override
   Widget build(BuildContext context) {
+    final cubit = context.read<DuasCubit>();
+    final isRtl = LanguageUtils.isRtl(cubit.currentLanguageCode);
     final w = MediaQuery.of(context).size.width;
     final h = MediaQuery.of(context).size.height;
+
+    final langCode = context.read<SettingsCubit>().state.languageCode;
+    final l10n = AppLocalizations(langCode);
 
     if (_isLoading) {
       return const Center(
         child: CircularProgressIndicator(
-            color: Color(0xFF0D6E6E), strokeWidth: 3),
+          color: Color(0xFF0D6E6E),
+          strokeWidth: 3,
+        ),
       );
     }
 
-    // ✅ Filter applied in build — searchQuery changes don't need a reload
     final categories = _categories
         .where((cat) => cat.categoryTitle
         .toLowerCase()
@@ -89,7 +104,7 @@ class _CategoryPageState extends State<CategoryPage> {
                 size: w * 0.15, color: Colors.grey[300]),
             SizedBox(height: h * 0.02),
             Text(
-              'No categories found',
+              l10n.noCategoriesFound,
               style: TextStyle(
                 color: Colors.grey[400],
                 fontSize: w * 0.045,
@@ -101,77 +116,83 @@ class _CategoryPageState extends State<CategoryPage> {
       );
     }
 
-    return RefreshIndicator(
-      onRefresh: _loadCategories,
-      child: CustomScrollView(
-        physics: const BouncingScrollPhysics(),
-        slivers: [
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: EdgeInsets.fromLTRB(
-                  w * 0.05, h * 0.022, w * 0.05, h * 0.01),
-              child: Text(
-                '${categories.length} Categories',
-                style: TextStyle(
-                  fontSize: w * 0.038,
-                  color: Colors.grey[500],
-                  fontWeight: FontWeight.w500,
+    // ✅ Directionality wraps entire category grid
+    return Directionality(
+      textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
+      child: RefreshIndicator(
+        onRefresh: _loadCategories,
+        child: CustomScrollView(
+          physics: const BouncingScrollPhysics(),
+          slivers: [
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(
+                    w * 0.05, h * 0.022, w * 0.05, h * 0.01),
+                child: Text(
+                  '${categories.length} ${l10n.categories}',
+                  textAlign: isRtl ? TextAlign.right : TextAlign.left,
+                  style: TextStyle(
+                    fontSize: w * 0.038,
+                    color: Colors.grey[500],
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
             ),
-          ),
-          SliverPadding(
-            padding:
-            EdgeInsets.fromLTRB(w * 0.04, 0, w * 0.04, h * 0.04),
-            sliver: SliverGrid(
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: w * 0.04,
-                mainAxisSpacing: w * 0.04,
-                childAspectRatio: 1.1,
-              ),
-              delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                  final cat = categories[index];
-                  final gradientColors =
-                  cardGradients[index % cardGradients.length];
-                  final iconData =
-                  _getCategoryIconData(cat.categoryIcon);
+            SliverPadding(
+              padding: EdgeInsets.fromLTRB(
+                  w * 0.04, 0, w * 0.04, h * 0.04),
+              sliver: SliverGrid(
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: w * 0.04,
+                  mainAxisSpacing: w * 0.04,
+                  childAspectRatio: 1.1,
+                ),
+                delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                    final cat = categories[index];
+                    final gradientColors =
+                    cardGradients[index % cardGradients.length];
+                    final iconData = _getCategoryIconData(cat.categoryIcon);
 
-                  return _CategoryCard(
-                    category: cat,
-                    gradientColors: gradientColors,
-                    iconData: iconData,
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) =>
-                            CategoryDuasPage(category: cat),
+                    return _CategoryCard(
+                      category: cat,
+                      gradientColors: gradientColors,
+                      iconData: iconData,
+                      isRtl: isRtl, // ✅ pass RTL flag to card
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) =>
+                              CategoryDuasPage(category: cat),
+                        ),
                       ),
-                    ),
-                  );
-                },
-                childCount: categories.length,
+                    );
+                  },
+                  childCount: categories.length,
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 }
 
-// ─── Category Card ────────────────────────────────────────────────────────────
 class _CategoryCard extends StatefulWidget {
   final CategoryModel category;
   final List<Color> gradientColors;
   final IconData iconData;
+  final bool isRtl; // ✅ NEW
   final VoidCallback onTap;
 
   const _CategoryCard({
     required this.category,
     required this.gradientColors,
     required this.iconData,
+    required this.isRtl,
     required this.onTap,
   });
 
@@ -207,6 +228,9 @@ class _CategoryCardState extends State<_CategoryCard>
     final w = MediaQuery.of(context).size.width;
     final h = MediaQuery.of(context).size.height;
 
+    final langCode = context.read<SettingsCubit>().state.languageCode;
+    final l10n = AppLocalizations(langCode);
+
     return GestureDetector(
       onTapDown: (_) => _controller.forward(),
       onTapUp: (_) {
@@ -234,7 +258,6 @@ class _CategoryCardState extends State<_CategoryCard>
           ),
           child: Stack(
             children: [
-              // Decorative circles
               Positioned(
                 top: -w * 0.06,
                 right: -w * 0.06,
@@ -259,8 +282,6 @@ class _CategoryCardState extends State<_CategoryCard>
                   ),
                 ),
               ),
-
-              // Content
               Padding(
                 padding: EdgeInsets.all(w * 0.045),
                 child: Column(
@@ -277,7 +298,10 @@ class _CategoryCardState extends State<_CategoryCard>
                           color: Colors.white, size: w * 0.065),
                     ),
                     Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      // ✅ align text to right for RTL languages
+                      crossAxisAlignment: widget.isRtl
+                          ? CrossAxisAlignment.end
+                          : CrossAxisAlignment.start,
                       children: [
                         Text(
                           widget.category.categoryTitle,
@@ -287,18 +311,29 @@ class _CategoryCardState extends State<_CategoryCard>
                             fontWeight: FontWeight.w700,
                             height: 1.2,
                           ),
+                          textAlign: widget.isRtl
+                              ? TextAlign.right
+                              : TextAlign.left,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
                         SizedBox(height: h * 0.006),
                         Row(
+                          // ✅ flip arrow direction for RTL
+                          mainAxisAlignment: widget.isRtl
+                              ? MainAxisAlignment.end
+                              : MainAxisAlignment.start,
                           children: [
-                            Icon(Icons.arrow_forward_rounded,
-                                size: w * 0.035,
-                                color: Colors.white.withOpacity(0.7)),
+                            Icon(
+                              widget.isRtl
+                                  ? Icons.arrow_back_rounded
+                                  : Icons.arrow_forward_rounded,
+                              size: w * 0.035,
+                              color: Colors.white.withOpacity(0.7),
+                            ),
                             SizedBox(width: w * 0.01),
                             Text(
-                              'View all',
+                              l10n.viewAll,
                               style: TextStyle(
                                 color: Colors.white.withOpacity(0.7),
                                 fontSize: w * 0.028,

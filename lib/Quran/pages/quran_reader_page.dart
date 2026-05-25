@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -7,6 +8,8 @@ import 'package:muslim_app/settings/theme/app_themes.dart';
 import '../cubit/quran_cubit.dart';
 import '../cubit/quran_state.dart';
 import '../models/surah_model.dart';
+import 'dart:io';
+import '../services/quran_download_service.dart';
 
 class QuranReaderPage extends StatefulWidget {
   final int initialPage;
@@ -22,41 +25,44 @@ class QuranReaderPage extends StatefulWidget {
   State<QuranReaderPage> createState() => _QuranReaderPageState();
 }
 
-class _QuranReaderPageState extends State<QuranReaderPage> {
+class _QuranReaderPageState extends State<QuranReaderPage>
+    with SingleTickerProviderStateMixin {
   static const int _totalImages = 619;
-  static const int _quranStart  = 3;
-  static const int _quranEnd    = 612;
+  static const int _quranStart  = 2;
+  static const int _quranEnd    = 619;
 
-  late PageController _pageCtrl;
   late int _currentPage;
+  late int _nextPage;
   bool _showOverlay  = true;
   bool _isBookmarked = false;
+  bool _isAnimating  = false;
 
-  // ── RTL page mapping ────────────────────────────────────────────────────────
-  // In the PageView, index 0 = last image (619), index 618 = first image (1)
-  // This makes swiping RIGHT show the next Quran page (higher image number)
-  // and swiping LEFT show the previous Quran page (lower image number),
-  // exactly matching how a physical Arabic Mushaf is read.
+  late AnimationController _curlCtrl;
+  late Animation<double> _curlAnim;
+  bool _curlingForward = true;
 
-  /// Convert a PDF page number (1–619) to a PageView index (0–618)
-  int _pageToIndex(int page) => _totalImages - page;
-
-  /// Convert a PageView index (0–618) to a PDF page number (1–619)
-  int _indexToPage(int index) => _totalImages - index;
+  double _dragX = 0;
+  bool _isDragging = false;
 
   @override
   void initState() {
     super.initState();
     _currentPage = widget.initialPage.clamp(1, _totalImages);
-    // Start at the reversed index for the initial page
-    _pageCtrl = PageController(initialPage: _pageToIndex(_currentPage));
+    _nextPage    = _currentPage;
+
+    _curlCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 400),
+    );
+    _curlAnim = CurvedAnimation(parent: _curlCtrl, curve: Curves.easeInOut);
+
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
     WidgetsBinding.instance.addPostFrameCallback((_) => _checkBookmark());
   }
 
   @override
   void dispose() {
-    _pageCtrl.dispose();
+    _curlCtrl.dispose();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     super.dispose();
   }
@@ -71,28 +77,16 @@ class _QuranReaderPageState extends State<QuranReaderPage> {
     }
   }
 
-  void _onPageChanged(int index) {
-    // Convert reversed index back to actual PDF page number
-    final page = _indexToPage(index);
-    if (!mounted) return;
-    setState(() => _currentPage = page);
-    context.read<QuranCubit>().saveLastRead(page);
-
-    final state = context.read<QuranCubit>().state;
-    if (state is QuranLoaded) {
-      setState(() {
-        _isBookmarked = state.bookmarks.any((b) => b.pageNumber == page);
-      });
-    }
+  String _imagePath(int page) {
+    // Returns local file path — loaded after one-time download
+    return ''; // placeholder — actual path built async below
   }
 
-  String _imagePath(int pdfPage) {
-    return 'assets/quran/pages/${pdfPage.toString().padLeft(3, '0')}.jpg';
-  }
+  Future<String> _getLocalPagePath(int page) =>
+      QuranDownloadService.getPagePath(page);
 
   SurahModel _surahForPage(int page, List<SurahModel> surahs) {
     if (surahs.isEmpty) return widget.surah;
-    final quranPage = page - 2;
     SurahModel result = surahs.first;
     for (final s in surahs) {
       if (s.page <= page) result = s;
@@ -111,14 +105,63 @@ class _QuranReaderPageState extends State<QuranReaderPage> {
     }
   }
 
+  // RTL Mushaf: next Quran page = lower image number
+  //             prev Quran page = higher image number
+  Future<void> _turnToPage(int targetPage, {bool forward = true}) async {
+    if (_isAnimating) return;
+    final clamped = targetPage.clamp(1, _totalImages);
+    if (clamped == _currentPage) return;
+
+    setState(() {
+      _isAnimating    = true;
+      _curlingForward = forward;
+      _nextPage       = clamped;
+    });
+
+    _curlCtrl.reset();
+    await _curlCtrl.forward();
+
+    if (mounted) {
+      setState(() {
+        _currentPage  = clamped;
+        _isAnimating  = false;
+      });
+      context.read<QuranCubit>().saveLastRead(clamped);
+      _checkBookmark();
+    }
+  }
+
+  // Right swipe / right arrow = next Quran page = lower image number
+  void _goNext() => _turnToPage(_currentPage - 1, forward: true);
+  // Left swipe / left arrow  = prev Quran page = higher image number
+  void _goPrev() => _turnToPage(_currentPage + 1, forward: false);
+
   void _jumpToPage(int page) {
-    final target = page.clamp(1, _totalImages);
-    // Animate to the reversed index
-    _pageCtrl.animateToPage(
-      _pageToIndex(target),
-      duration: const Duration(milliseconds: 350),
-      curve: Curves.easeInOut,
-    );
+    final forward = page < _currentPage;
+    _turnToPage(page, forward: forward);
+  }
+
+  void _onHorizontalDragStart(DragStartDetails d) {
+    if (_isAnimating) return;
+    _dragX      = 0;
+    _isDragging = true;
+  }
+
+  void _onHorizontalDragUpdate(DragUpdateDetails d) {
+    if (!_isDragging || _isAnimating) return;
+    setState(() => _dragX += d.delta.dx);
+  }
+
+  void _onHorizontalDragEnd(DragEndDetails d) {
+    if (!_isDragging) return;
+    _isDragging = false;
+    const threshold = 60.0;
+    if (_dragX > threshold) {
+      _goNext();
+    } else if (_dragX < -threshold) {
+      _goPrev();
+    }
+    setState(() => _dragX = 0);
   }
 
   @override
@@ -141,43 +184,34 @@ class _QuranReaderPageState extends State<QuranReaderPage> {
               backgroundColor: Colors.black,
               body: Stack(
                 children: [
-                  // ── Page viewer (RTL: index 0 = page 619, index 618 = page 1) ──
+                  // ── Page curl viewer ───────────────────────────────────
                   GestureDetector(
                     onTap: () => setState(() => _showOverlay = !_showOverlay),
                     onLongPress: () => _toggleBookmark(currentSurah),
-                    child: PageView.builder(
-                      controller: _pageCtrl,
-                      // Reversed: swiping right increases index → decreases page number
-                      // but we want swiping right to go to NEXT page (higher number)
-                      // So we reverse the mapping: index 0 = page 619
-                      itemCount: _totalImages,
-                      onPageChanged: _onPageChanged,
-                      itemBuilder: (_, index) {
-                        // Reversed index → actual PDF page number
-                        final pdfPage = _indexToPage(index);
-                        final isQP   =
-                            pdfPage >= _quranStart && pdfPage <= _quranEnd;
-                        return InteractiveViewer(
-                          minScale: 0.85,
-                          maxScale: 5.0,
-                          child: Image.asset(
-                            _imagePath(pdfPage),
-                            fit: BoxFit.contain,
-                            errorBuilder: (_, __, ___) => _PagePlaceholder(
-                              page: pdfPage,
-                              surah: isQP
-                                  ? _surahForPage(pdfPage, surahs)
-                                  : widget.surah,
-                              rsw: rsw,
-                              isQuranPage: isQP,
-                            ),
-                          ),
-                        );
-                      },
+                    onHorizontalDragStart: _onHorizontalDragStart,
+                    onHorizontalDragUpdate: _onHorizontalDragUpdate,
+                    onHorizontalDragEnd: _onHorizontalDragEnd,
+                    child: SizedBox.expand(
+                      child: AnimatedBuilder(
+                        animation: _curlAnim,
+                        builder: (_, __) => _PageCurlView(
+                          currentPage: _currentPage,
+                          nextPage: _nextPage,
+                          progress: _isAnimating ? _curlAnim.value : 0.0,
+                          forward: _curlingForward,
+                          imagePath: _imagePath,
+                          surahs: surahs,
+                          fallbackSurah: widget.surah,
+                          surahForPage: _surahForPage,
+                          rsw: rsw,
+                          quranStart: _quranStart,
+                          quranEnd: _quranEnd,
+                        ),
+                      ),
                     ),
                   ),
 
-                  // ── Top overlay ──────────────────────────────────────────────
+                  // ── Top overlay ────────────────────────────────────────
                   AnimatedOpacity(
                     opacity: _showOverlay ? 1.0 : 0.0,
                     duration: const Duration(milliseconds: 200),
@@ -197,7 +231,7 @@ class _QuranReaderPageState extends State<QuranReaderPage> {
                     ),
                   ),
 
-                  // ── Bottom overlay ───────────────────────────────────────────
+                  // ── Bottom overlay ─────────────────────────────────────
                   AnimatedOpacity(
                     opacity: _showOverlay ? 1.0 : 0.0,
                     duration: const Duration(milliseconds: 200),
@@ -210,11 +244,8 @@ class _QuranReaderPageState extends State<QuranReaderPage> {
                           rsw: rsw,
                           mq: mq,
                           currentPage: _currentPage,
-                          // Next page = higher number = swipe RIGHT
-                          // Previous page = lower number = swipe LEFT
-                          // Arrow buttons must match: right arrow → next page
-                          onNext: () => _jumpToPage(_currentPage + 1),
-                          onPrev: () => _jumpToPage(_currentPage - 1),
+                          onNext: _goNext,
+                          onPrev: _goPrev,
                           onJump: _jumpToPage,
                         ),
                       ),
@@ -226,6 +257,181 @@ class _QuranReaderPageState extends State<QuranReaderPage> {
           },
         );
       },
+    );
+  }
+}
+
+// ── Page curl renderer ────────────────────────────────────────────────────────
+class _PageCurlView extends StatelessWidget {
+  final int currentPage;
+  final int nextPage;
+  final double progress;
+  final bool forward;
+  final String Function(int) imagePath;
+  final List<SurahModel> surahs;
+  final SurahModel fallbackSurah;
+  final SurahModel Function(int, List<SurahModel>) surahForPage;
+  final double rsw;
+  final int quranStart;
+  final int quranEnd;
+
+  const _PageCurlView({
+    required this.currentPage,
+    required this.nextPage,
+    required this.progress,
+    required this.forward,
+    required this.imagePath,
+    required this.surahs,
+    required this.fallbackSurah,
+    required this.surahForPage,
+    required this.rsw,
+    required this.quranStart,
+    required this.quranEnd,
+  });
+
+  Widget _buildPage(int page) {
+    final isQP = page >= quranStart && page <= quranEnd;
+    return FutureBuilder<String>(
+      future: QuranDownloadService.getPagePath(page),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return Container(
+            color: const Color(0xFFF5F0E8),
+            child: Center(
+              child: CircularProgressIndicator(
+                color: const Color(0xFF2E6B40),
+                strokeWidth: 2,
+              ),
+            ),
+          );
+        }
+        final file = File(snapshot.data!);
+        return InteractiveViewer(
+          minScale: 0.85,
+          maxScale: 5.0,
+          child: file.existsSync()
+              ? Image.file(
+            file,
+            fit: BoxFit.contain,
+            errorBuilder: (_, __, ___) => _PagePlaceholder(
+              page: page,
+              surah: isQP
+                  ? surahForPage(page, surahs)
+                  : fallbackSurah,
+              rsw: rsw,
+              isQuranPage: isQP,
+            ),
+          )
+              : _PagePlaceholder(
+            page: page,
+            surah: isQP
+                ? surahForPage(page, surahs)
+                : fallbackSurah,
+            rsw: rsw,
+            isQuranPage: isQP,
+          ),
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final angle    = progress * math.pi;
+    final showBack = angle > math.pi / 2;
+
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        // Layer 1: destination page (behind)
+        _buildPage(nextPage),
+
+        // Layer 2: shadow cast on destination while curling
+        if (progress > 0 && progress < 1)
+          Positioned.fill(
+            child: IgnorePointer(
+              child: Opacity(
+                opacity: (progress * (1 - progress) * 4).clamp(0.0, 0.40),
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: forward
+                          ? Alignment.centerRight
+                          : Alignment.centerLeft,
+                      end: forward
+                          ? Alignment.centerLeft
+                          : Alignment.centerRight,
+                      colors: [Colors.black54, Colors.transparent],
+                      stops: const [0.0, 0.55],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+        // Layer 3: the page that's curling (3D flip)
+        if (progress > 0 && progress < 1)
+          Positioned.fill(
+            child: IgnorePointer(
+              child: Transform(
+                alignment: forward
+                    ? Alignment.centerRight
+                    : Alignment.centerLeft,
+                transform: Matrix4.identity()
+                  ..setEntry(3, 2, 0.0008)
+                  ..rotateY(forward ? angle : -angle),
+                child: showBack
+                // Back of the curling page shows next page mirrored
+                    ? Transform(
+                  alignment: Alignment.center,
+                  transform: Matrix4.identity()..rotateY(math.pi),
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      _buildPage(nextPage),
+                      // Subtle gloss on back face
+                      Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.centerLeft,
+                            end: Alignment.centerRight,
+                            colors: [
+                              Colors.white.withOpacity(0.10),
+                              Colors.transparent,
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+                // Front face: current page with right-edge curl shadow
+                    : Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    _buildPage(currentPage),
+                    Positioned(
+                      right: 0, top: 0, bottom: 0,
+                      child: Container(
+                        width: (progress * rsw * 0.18).clamp(0, rsw * 0.14),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              Colors.transparent,
+                              Colors.black
+                                  .withOpacity((progress * 0.55).clamp(0, 0.55)),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+      ],
     );
   }
 }
@@ -256,8 +462,6 @@ class _TopBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final quranPageNum = isQuranPage ? currentPage - 2 : null;
-
     return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
@@ -275,15 +479,8 @@ class _TopBar extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // Back button
-          _CircleBtn(
-            icon: Icons.arrow_back_ios_rounded,
-            onTap: onBack,
-            rsw: rsw,
-          ),
+          _CircleBtn(icon: Icons.arrow_back_ios_rounded, onTap: onBack, rsw: rsw),
           SizedBox(width: rsw * 0.022),
-
-          // Surah info
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -294,30 +491,22 @@ class _TopBar extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    color: Colors.white,
-                    fontSize: rsw * 0.036,
-                    fontWeight: FontWeight.w700,
-                  ),
+                      color: Colors.white,
+                      fontSize: rsw * 0.036,
+                      fontWeight: FontWeight.w700),
                 ),
                 Text(
                   isQuranPage
-                      ? 'Quran p.${quranPageNum!} · Para ${surah.para}'
-                      : currentPage < 3
-                      ? 'Cover page'
-                      : 'Appendix page',
+                      ? 'Page ${currentPage - 1} / 618 · Para ${surah.para}'
+                      : currentPage == 1 ? 'Cover Page' : 'Appendix',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: Colors.white54,
-                    fontSize: rsw * 0.024,
-                  ),
+                  style: TextStyle(color: Colors.white54, fontSize: rsw * 0.024),
                 ),
               ],
             ),
           ),
           SizedBox(width: rsw * 0.015),
-
-          // Arabic name (only for Quran pages)
           if (isQuranPage)
             ConstrainedBox(
               constraints: BoxConstraints(maxWidth: rsw * 0.28),
@@ -327,25 +516,18 @@ class _TopBar extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.right,
                 style: TextStyle(
-                  fontFamily: 'Amiri',
-                  color: theme.accent,
-                  fontSize: rsw * 0.042,
-                  fontWeight: FontWeight.bold,
-                ),
+                    fontFamily: 'Amiri',
+                    color: theme.accent,
+                    fontSize: rsw * 0.042,
+                    fontWeight: FontWeight.bold),
               ),
             ),
           SizedBox(width: rsw * 0.018),
-
-          // Bookmark button
           _CircleBtn(
-            icon: isBookmarked
-                ? Icons.bookmark_rounded
-                : Icons.bookmark_border_rounded,
+            icon: isBookmarked ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
             onTap: onBookmark,
             rsw: rsw,
-            color: isBookmarked
-                ? const Color(0xFFFFB74D)
-                : Colors.white70,
+            color: isBookmarked ? const Color(0xFFFFB74D) : Colors.white70,
             bgColor: isBookmarked
                 ? const Color(0xFFFFB74D).withOpacity(0.20)
                 : Colors.white.withOpacity(0.12),
@@ -362,8 +544,8 @@ class _BottomBar extends StatelessWidget {
   final double rsw;
   final MediaQueryData mq;
   final int currentPage;
-  final VoidCallback onNext;   // go to next page (higher number, swipe RIGHT)
-  final VoidCallback onPrev;   // go to prev page (lower number, swipe LEFT)
+  final VoidCallback onNext;
+  final VoidCallback onPrev;
   final void Function(int) onJump;
 
   const _BottomBar({
@@ -377,9 +559,10 @@ class _BottomBar extends StatelessWidget {
   });
 
   String get _pageLabel {
-    if (currentPage < 3)  return 'Cover';
-    if (currentPage > 612) return 'Appendix';
-    return 'Quran ${currentPage - 2} / 610';
+    if (currentPage == 1)  return 'Cover Page';
+    if (currentPage > 612) return 'Appendix · ${currentPage - 612}';
+    final quranPage = currentPage - 1;
+    return 'Page $quranPage / 611';
   }
 
   @override
@@ -401,102 +584,54 @@ class _BottomBar extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Page label
-          Text(
-            _pageLabel,
-            style: TextStyle(
-              color: Colors.white60,
-              fontSize: rsw * 0.026,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
+          Text(_pageLabel,
+              style: TextStyle(
+                  color: Colors.white60,
+                  fontSize: rsw * 0.026,
+                  fontWeight: FontWeight.w500)),
           SizedBox(height: rsw * 0.010),
 
-          // ── Direction hint ───────────────────────────────────────
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.arrow_forward_rounded,
-                  color: Colors.white24, size: rsw * 0.028),
-              SizedBox(width: rsw * 0.010),
-              Text(
-                'Swipe right for next page',
-                style: TextStyle(
-                    color: Colors.white24, fontSize: rsw * 0.020),
-              ),
-            ],
-          ),
-          SizedBox(height: rsw * 0.008),
-
-          // ── Nav row ──────────────────────────────────────────────
-          // Layout (RTL Mushaf style):
-          //   [← PREV]  ─────slider─────  [NEXT →]
-          // Pressing PREV goes to lower page number (left in Mushaf)
-          // Pressing NEXT goes to higher page number (right in Mushaf)
-          // Slider left = page 1, slider right = page 619
           Row(
             children: [
-              // PREV button (go to lower page number)
-              _CircleBtn(
-                icon: Icons.chevron_left_rounded,
-                onTap: onPrev,
-                rsw: rsw,
-                size: rsw * 0.090,
-              ),
+              _CircleBtn(icon: Icons.chevron_left_rounded, onTap: onPrev, rsw: rsw, size: rsw * 0.090),
               SizedBox(width: rsw * 0.015),
-
-              // Slider — left = page 1, right = page 619 (normal LTR slider)
               Expanded(
                 child: SliderTheme(
                   data: SliderThemeData(
                     trackHeight: 3,
-                    thumbShape: RoundSliderThumbShape(
-                        enabledThumbRadius: rsw * 0.020),
-                    overlayShape: RoundSliderOverlayShape(
-                        overlayRadius: rsw * 0.032),
+                    thumbShape: RoundSliderThumbShape(enabledThumbRadius: rsw * 0.020),
+                    overlayShape: RoundSliderOverlayShape(overlayRadius: rsw * 0.032),
                     activeTrackColor:   theme.accent,
                     inactiveTrackColor: Colors.white24,
                     thumbColor:         theme.accent,
                     overlayColor:       theme.accent.withOpacity(0.18),
                   ),
-                  child: Slider(
-                    value: currentPage.toDouble().clamp(1.0, 619.0),
-                    min: 1,
-                    max: 619,
-                    onChanged: (v) => onJump(v.round()),
+                  child: Directionality(
+                    textDirection: TextDirection.rtl,
+                    child: Slider(
+                      value: currentPage.toDouble().clamp(1.0, 619.0),
+                      min: 1,
+                      max: 619,
+                      onChanged: (v) => onJump(619 - v.round() + 1),
+                    ),
                   ),
                 ),
               ),
-
               SizedBox(width: rsw * 0.015),
-              // NEXT button (go to higher page number)
-              _CircleBtn(
-                icon: Icons.chevron_right_rounded,
-                onTap: onNext,
-                rsw: rsw,
-                size: rsw * 0.090,
-              ),
+              _CircleBtn(icon: Icons.chevron_right_rounded, onTap: onNext, rsw: rsw, size: rsw * 0.090),
             ],
           ),
 
           SizedBox(height: rsw * 0.008),
-
-          // Image index pill
           Container(
-            padding: EdgeInsets.symmetric(
-                horizontal: rsw * 0.030, vertical: rsw * 0.008),
+            padding: EdgeInsets.symmetric(horizontal: rsw * 0.030, vertical: rsw * 0.008),
             decoration: BoxDecoration(
-              color:        Colors.white.withOpacity(0.10),
+              color: Colors.white.withOpacity(0.10),
               borderRadius: BorderRadius.circular(rsw * 0.025),
-              border:       Border.all(color: Colors.white24, width: 0.5),
+              border: Border.all(color: Colors.white24, width: 0.5),
             ),
-            child: Text(
-              'Image $currentPage / 619',
-              style: TextStyle(
-                color:    Colors.white38,
-                fontSize: rsw * 0.022,
-              ),
-            ),
+            child: Text('Image $currentPage / 619',
+                style: TextStyle(color: Colors.white38, fontSize: rsw * 0.022)),
           ),
         ],
       ),
@@ -528,11 +663,10 @@ class _CircleBtn extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width:  s,
-        height: s,
+        width: s, height: s,
         decoration: BoxDecoration(
-          color:  bgColor,
-          shape:  BoxShape.circle,
+          color: bgColor,
+          shape: BoxShape.circle,
           border: Border.all(color: Colors.white12, width: 0.5),
         ),
         child: Icon(icon, color: color, size: s * 0.55),
@@ -567,19 +701,13 @@ class _PagePlaceholder extends StatelessWidget {
               Icon(Icons.menu_book_outlined,
                   color: const Color(0xFF2E6B40), size: rsw * 0.14),
               SizedBox(height: rsw * 0.03),
-              Text(
-                page < 3 ? 'Cover Page' : 'Appendix',
-                style: TextStyle(
-                    color: const Color(0xFF2E6B40),
-                    fontSize: rsw * 0.040,
-                    fontWeight: FontWeight.w700),
-              ),
-              Text(
-                'Image $page of 619',
-                style: TextStyle(
-                    color: const Color(0xFF888888),
-                    fontSize: rsw * 0.026),
-              ),
+              Text(page < 3 ? 'Cover Page' : 'Appendix',
+                  style: TextStyle(
+                      color: const Color(0xFF2E6B40),
+                      fontSize: rsw * 0.040,
+                      fontWeight: FontWeight.w700)),
+              Text('Image $page of 619',
+                  style: TextStyle(color: const Color(0xFF888888), fontSize: rsw * 0.026)),
             ],
           ),
         ),
@@ -596,36 +724,29 @@ class _PagePlaceholder extends StatelessWidget {
               'بِسْمِ اللهِ الرَّحْمَٰنِ الرَّحِيْمِ',
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontFamily: 'Amiri',
-                color: const Color(0xFF2E6B40),
-                fontSize: rsw * 0.046,
-              ),
+                  fontFamily: 'Amiri',
+                  color: const Color(0xFF2E6B40),
+                  fontSize: rsw * 0.046),
             ),
             SizedBox(height: rsw * 0.04),
-            Text(
-              surah.nameAr,
-              style: TextStyle(
-                fontFamily: 'Amiri',
-                color: const Color(0xFF2E6B40),
-                fontSize: rsw * 0.065,
-              ),
-            ),
+            Text(surah.nameAr,
+                style: TextStyle(
+                    fontFamily: 'Amiri',
+                    color: const Color(0xFF2E6B40),
+                    fontSize: rsw * 0.065)),
             SizedBox(height: rsw * 0.015),
             Container(
               padding: EdgeInsets.symmetric(
                   horizontal: rsw * 0.035, vertical: rsw * 0.012),
               decoration: BoxDecoration(
-                color:        const Color(0xFF2E6B40).withOpacity(0.08),
+                color: const Color(0xFF2E6B40).withOpacity(0.08),
                 borderRadius: BorderRadius.circular(rsw * 0.025),
-                border: Border.all(
-                    color: const Color(0xFF2E6B40).withOpacity(0.25)),
+                border: Border.all(color: const Color(0xFF2E6B40).withOpacity(0.25)),
               ),
               child: Text(
-                'Quran page ${page - 2}  ·  Image ${page.toString().padLeft(3, '0')}.jpg',
+                'Page $page  ·  Image ${page.toString().padLeft(3, '0')}.jpg',
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                    color: const Color(0xFF555555),
-                    fontSize: rsw * 0.024),
+                style: TextStyle(color: const Color(0xFF555555), fontSize: rsw * 0.024),
               ),
             ),
           ],

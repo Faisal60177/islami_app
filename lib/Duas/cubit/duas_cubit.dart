@@ -1,29 +1,47 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:muslim_app/Duas/model/duas_model.dart';
+import '../model/duas_model.dart';
+import '../repository/duas_repository.dart';
 import 'duas_state.dart';
-import 'package:muslim_app/Duas/repository/duas_repository.dart';
 
 class DuasCubit extends Cubit<DuasState> {
   final DuasRepository repository;
   String userId;
+  String currentLanguageCode;
 
-  DuasCubit(this.repository) : userId = 'guest', super(DuaInitial());
+  DuasCubit(this.repository)
+      : userId = 'guest',
+        currentLanguageCode = 'en',
+        super(DuaInitial());
 
-  /// ── Content loads ────────────────────────────────────
-  void loadAllDuas() async {
+  // ── Language update from Settings ──────────────────────
+  // Call this whenever user changes language in settings
+  void updateLanguage(String languageCode) {
+    currentLanguageCode = languageCode;
+  }
+
+  // ── Categories ──────────────────────────────────────────
+
+  void loadCategories() async {
     emit(DuaLoading());
     try {
-      final duas = await repository.getAllDuas();
-      emit(DuaLoaded(duas));
+      final categories =
+      await repository.getAllCategories(currentLanguageCode);
+      emit(CategoriesLoaded(categories));
     } catch (e) {
       emit(DuaError(e.toString()));
     }
   }
 
-  void loadDuasByCategory(String categoryTitle) async {
+  // ── Duas ────────────────────────────────────────────────
+
+  void loadDuasByCategory(int categoryId) async {
     emit(DuaLoading());
     try {
-      final duas = await repository.getDuasByCategory(categoryTitle);
+      final duas = await repository.getDuasByCategory(
+        categoryId:   categoryId,
+        languageCode: currentLanguageCode,
+        userId:       userId,
+      );
       emit(DuaLoaded(duas));
     } catch (e) {
       emit(DuaError(e.toString()));
@@ -33,7 +51,10 @@ class DuasCubit extends Cubit<DuasState> {
   void loadFavorites() async {
     emit(DuaLoading());
     try {
-      final duas = await repository.getFavoritesForUser(userId);
+      final duas = await repository.getFavoritesForUser(
+        userId:       userId,
+        languageCode: currentLanguageCode,
+      );
       emit(DuaLoaded(duas));
     } catch (e) {
       emit(DuaError(e.toString()));
@@ -43,41 +64,49 @@ class DuasCubit extends Cubit<DuasState> {
   void loadBookmarked() async {
     emit(DuaLoading());
     try {
-      final duas = await repository.getBookmarkedForUser(userId);
+      final duas = await repository.getBookmarkedForUser(
+        userId:       userId,
+        languageCode: currentLanguageCode,
+      );
       emit(DuaLoaded(duas));
     } catch (e) {
       emit(DuaError(e.toString()));
     }
   }
 
-  /// ── Toggles ──────────────────────────────────────────
+  // ── Toggles ─────────────────────────────────────────────
+
   void toggleFavorite(DuasModel dua) async {
     try {
       await repository.toggleFavorite(dua, userId);
-      // ✅ no emit needed — UI already updated optimistically
+      // ── re-emit so BlocListener in favorite/bookmark pages fires ──
+      emit(DuaLoaded([])); // lightweight signal — pages reload from DB
     } catch (e) {
-      // ✅ revert on error
-      dua.isFavorite = !dua.isFavorite;
+      dua.isFavorite = !dua.isFavorite; // revert
       emit(DuaError(e.toString()));
     }
   }
-
   void toggleBookmark(DuasModel dua) async {
     try {
       await repository.toggleBookmark(dua, userId);
+      // ── re-emit so BlocListener in favorite/bookmark pages fires ──
+      emit(DuaLoaded([])); // lightweight signal — pages reload from DB
     } catch (e) {
-      dua.isBookmarked = !dua.isBookmarked;
+      dua.isBookmarked = !dua.isBookmarked; // revert
       emit(DuaError(e.toString()));
     }
   }
 
-  /// ── Auth events ──────────────────────────────────────
+
+
+  // ── Auth ─────────────────────────────────────────────────
+
   Future<void> onUserLogin(String realUserId) async {
     emit(DuaLoading());
     try {
       await repository.onUserLogin(realUserId);
       userId = realUserId;
-      loadAllDuas();
+      loadCategories();
     } catch (e) {
       emit(DuaError(e.toString()));
     }
@@ -85,16 +114,17 @@ class DuasCubit extends Cubit<DuasState> {
 
   void onUserLogout() {
     userId = 'guest';
-    loadAllDuas();
+    loadCategories();
   }
 
-  /// ── Firestore sync ───────────────────────────────────
+  // ── Firestore Sync ───────────────────────────────────────
+
   Future<void> syncFromFirestore() async {
     emit(DuaLoading());
     try {
       await repository.syncCategoriesFromFirestore();
       await repository.syncDuasFromFirestore();
-      loadAllDuas();
+      loadCategories();
     } catch (e) {
       emit(DuaError(e.toString()));
     }

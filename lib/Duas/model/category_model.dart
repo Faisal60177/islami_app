@@ -11,17 +11,9 @@ class CategoryModel {
 
   factory CategoryModel.fromMap(Map<String, dynamic> map) {
     return CategoryModel(
-      categoryId: map['category_id'],
-      categoryTitle: map['category_title'],
-      categoryIcon: map['category_icon'],
+      categoryId:    map['category_id'],
+      categoryTitle: map['category_title'] ?? '',
+      categoryIcon:  map['category_icon']  ?? '',
     );
-  }
-
-  Map<String, dynamic> toMap() {
-    return {
-      'category_id': categoryId,
-      'category_title': categoryTitle,
-      'category_icon': categoryIcon,
-    };
   }
 }

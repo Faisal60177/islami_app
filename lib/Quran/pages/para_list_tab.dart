@@ -106,16 +106,20 @@ class _ParaCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => BlocProvider.value(
-            value: context.read<QuranCubit>(),
-            child: QuranReaderPage(
-                initialPage: firstSurah.page + 2, surah: firstSurah),
+      onTap: () async {
+        final page = await context.read<QuranCubit>().getParaPage(paraNumber);
+        if (!context.mounted) return;
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => BlocProvider.value(
+              value: context.read<QuranCubit>(),
+              child: QuranReaderPage(
+                  initialPage: page, surah: firstSurah),
+            ),
           ),
-        ),
-      ),
+        );
+      },
       child: Container(
         decoration: BoxDecoration(
           color: theme.surface,
