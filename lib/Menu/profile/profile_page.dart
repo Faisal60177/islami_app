@@ -68,8 +68,6 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    // ✅ FIX: Obx at build level — when user signs in from the logged-out
-    // view embedded here, the whole page rebuilds automatically.
     return Obx(() {
       final isLoggedIn = _auth.isLoggedIn;
       return Scaffold(
@@ -80,18 +78,20 @@ class _ProfilePageState extends State<ProfilePage> {
             icon: const Icon(Icons.arrow_back_ios_new, color: _accent),
             onPressed: () => Navigator.of(context).pop(),
           ),
-          title: const Text('Profile',
-              style: TextStyle(
-                  color: _textHi,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 18)),
+          title: const Text(
+            'Profile',
+            style: TextStyle(
+              color: _textHi,
+              fontWeight: FontWeight.w600,
+              fontSize: 18,
+            ),
+          ),
           centerTitle: true,
           elevation: 0,
           actions: isLoggedIn && !_editing
               ? [
             IconButton(
-              icon:
-              const Icon(Icons.edit_outlined, color: _accent),
+              icon: const Icon(Icons.edit_outlined, color: _accent),
               onPressed: () => setState(() {
                 _editing = true;
                 _nameCtrl.text = _auth.displayName.value;
@@ -105,7 +105,8 @@ class _ProfilePageState extends State<ProfilePage> {
     });
   }
 
-  // ── Logged In ──────────────────────────────────────────────────────────────
+  // ── Logged In ────────────────────────────────────────────────────────────
+
   Widget _loggedInView() {
     return LayoutBuilder(builder: (context, constraints) {
       final isWide   = constraints.maxWidth > 600;
@@ -168,9 +169,10 @@ class _ProfilePageState extends State<ProfilePage> {
                   border: Border.all(color: _gold, width: 2.5),
                   boxShadow: [
                     BoxShadow(
-                        color: _accent.withOpacity(0.3),
-                        blurRadius: 20,
-                        spreadRadius: 2)
+                      color: _accent.withOpacity(0.3),
+                      blurRadius: 20,
+                      spreadRadius: 2,
+                    ),
                   ],
                 ),
                 child: _auth.photoUrl.value.isNotEmpty
@@ -178,8 +180,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   child: Image.network(
                     _auth.photoUrl.value,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) =>
-                        _avatarFallback(),
+                    errorBuilder: (_, __, ___) => _avatarFallback(),
                   ),
                 )
                     : _avatarFallback(),
@@ -187,9 +188,10 @@ class _ProfilePageState extends State<ProfilePage> {
               Container(
                 padding: const EdgeInsets.all(6),
                 decoration: const BoxDecoration(
-                    shape: BoxShape.circle, color: _accentSoft),
-                child: const Icon(Icons.camera_alt,
-                    color: Colors.white, size: 14),
+                  shape: BoxShape.circle,
+                  color: _accentSoft,
+                ),
+                child: const Icon(Icons.camera_alt, color: Colors.white, size: 14),
               ),
             ],
           ),
@@ -199,29 +201,41 @@ class _ProfilePageState extends State<ProfilePage> {
                 ? _auth.displayName.value
                 : 'Muslim User',
             style: TextStyle(
-                color: _textHi,
-                fontSize: isWide ? 26 : 22,
-                fontWeight: FontWeight.w700),
+              color: _textHi,
+              fontSize: isWide ? 26 : 22,
+              fontWeight: FontWeight.w700,
+            ),
           )),
           const SizedBox(height: 4),
-          Obx(() => Text(_auth.email.value,
-              style:
-              const TextStyle(color: _textLo, fontSize: 14))),
+          Obx(() => Text(
+            _auth.email.value,
+            style: const TextStyle(color: _textLo, fontSize: 14),
+          )),
           const SizedBox(height: 8),
-          Container(
-            padding:
-            const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-            decoration: BoxDecoration(
-              color: _gold.withOpacity(0.12),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: _gold.withOpacity(0.3)),
-            ),
-            child: const Text('🕌  Verified Muslim',
-                style: TextStyle(
-                    color: _gold,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600)),
-          ),
+          // Show which providers are linked
+          Obx(() {
+            final parts = <String>[];
+            if (_auth.hasGoogle.value)   parts.add('Google');
+            if (_auth.hasPassword.value) parts.add('Email');
+            final label = parts.isEmpty ? '' : parts.join(' + ');
+            if (label.isEmpty) return const SizedBox.shrink();
+            return Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              decoration: BoxDecoration(
+                color: _gold.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: _gold.withOpacity(0.3)),
+              ),
+              child: Text(
+                '🔗  Signed in via $label',
+                style: const TextStyle(
+                  color: _gold,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            );
+          }),
         ],
       ),
     );
@@ -235,9 +249,10 @@ class _ProfilePageState extends State<ProfilePage> {
             ? _auth.displayName.value[0].toUpperCase()
             : 'M',
         style: const TextStyle(
-            color: Colors.white,
-            fontSize: 36,
-            fontWeight: FontWeight.bold),
+          color: Colors.white,
+          fontSize: 36,
+          fontWeight: FontWeight.bold,
+        ),
       )),
     );
   }
@@ -245,43 +260,42 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget _statsRow(bool isWide) {
     return Row(
       children: [
-        _statCard('0', 'Days\nStreak',
-            Icons.local_fire_department_outlined, isWide),
+        _statCard('0', 'Days\nStreak',   Icons.local_fire_department_outlined, isWide),
         const SizedBox(width: 12),
-        _statCard('0', 'Duas\nRead', Icons.book_outlined, isWide),
+        _statCard('0', 'Duas\nRead',     Icons.book_outlined,                  isWide),
         const SizedBox(width: 12),
-        _statCard(
-            '0', 'Quran\nPages', Icons.auto_stories_outlined, isWide),
+        _statCard('0', 'Quran\nPages',   Icons.auto_stories_outlined,          isWide),
       ],
     );
   }
 
-  Widget _statCard(
-      String value, String label, IconData icon, bool isWide) {
+  Widget _statCard(String value, String label, IconData icon, bool isWide) {
     return Expanded(
       child: Container(
-        padding:
-        EdgeInsets.symmetric(vertical: isWide ? 20 : 16),
+        padding: EdgeInsets.symmetric(vertical: isWide ? 20 : 16),
         decoration: BoxDecoration(
           color: _card,
           borderRadius: BorderRadius.circular(16),
-          border:
-          Border.all(color: _accentSoft.withOpacity(0.2)),
+          border: Border.all(color: _accentSoft.withOpacity(0.2)),
         ),
         child: Column(
           children: [
             Icon(icon, color: _accent, size: isWide ? 26 : 22),
             const SizedBox(height: 6),
-            Text(value,
-                style: TextStyle(
-                    color: _textHi,
-                    fontWeight: FontWeight.w800,
-                    fontSize: isWide ? 24 : 20)),
+            Text(
+              value,
+              style: TextStyle(
+                color: _textHi,
+                fontWeight: FontWeight.w800,
+                fontSize: isWide ? 24 : 20,
+              ),
+            ),
             const SizedBox(height: 2),
-            Text(label,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                    color: _textLo, fontSize: 10)),
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: _textLo, fontSize: 10),
+            ),
           ],
         ),
       ),
@@ -299,19 +313,16 @@ class _ProfilePageState extends State<ProfilePage> {
           decoration: InputDecoration(
             labelText: 'Full Name',
             labelStyle: const TextStyle(color: _textLo),
-            prefixIcon: const Icon(Icons.person_outline,
-                color: _accentSoft, size: 20),
+            prefixIcon: const Icon(Icons.person_outline, color: _accentSoft, size: 20),
             filled: true,
             fillColor: _surface,
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
-              borderSide:
-              BorderSide(color: _accentSoft.withOpacity(0.3)),
+              borderSide: BorderSide(color: _accentSoft.withOpacity(0.3)),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
-              borderSide:
-              const BorderSide(color: _accent, width: 1.5),
+              borderSide: const BorderSide(color: _accent, width: 1.5),
             ),
           ),
         ),
@@ -322,42 +333,42 @@ class _ProfilePageState extends State<ProfilePage> {
               child: OutlinedButton(
                 onPressed: () => setState(() => _editing = false),
                 style: OutlinedButton.styleFrom(
-                  side:
-                  BorderSide(color: _textLo.withOpacity(0.4)),
+                  side: BorderSide(color: _textLo.withOpacity(0.4)),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
-                  padding:
-                  const EdgeInsets.symmetric(vertical: 14),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
                 ),
-                child: const Text('Cancel',
-                    style: TextStyle(color: _textLo)),
+                child: const Text('Cancel', style: TextStyle(color: _textLo)),
               ),
             ),
             const SizedBox(width: 12),
             Expanded(
               child: Obx(() => ElevatedButton(
-                onPressed: _auth.isLoading.value
-                    ? null
-                    : _saveProfile,
+                onPressed: _auth.isLoading.value ? null : _saveProfile,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: _accentSoft,
                   shape: RoundedRectangleBorder(
-                      borderRadius:
-                      BorderRadius.circular(12)),
-                  padding: const EdgeInsets.symmetric(
-                      vertical: 14),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
                 ),
                 child: _auth.isLoading.value
                     ? const SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white))
-                    : const Text('Save',
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w700)),
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
+                )
+                    : const Text(
+                  'Save',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
               )),
             ),
           ],
@@ -376,7 +387,8 @@ class _ProfilePageState extends State<ProfilePage> {
       child: Column(
         children: [
           Obx(() => _infoTile(
-            Icons.email_outlined, 'Email',
+            Icons.email_outlined,
+            'Email',
             _auth.email.value.isNotEmpty ? _auth.email.value : '—',
           )),
           Divider(height: 1, color: _accentSoft.withOpacity(0.15)),
@@ -384,43 +396,28 @@ class _ProfilePageState extends State<ProfilePage> {
           Divider(height: 1, color: _accentSoft.withOpacity(0.15)),
           _infoTile(Icons.language, 'Language', 'English'),
 
-          // ── Reactive: shows/hides based on actual provider state ───────
+          // Security tile — reactive to actual provider state
           Obx(() {
-            // Show "Add Password" ONLY if:
-            // 1. User has Google linked
-            // 2. User does NOT already have a password (from any source)
-            //final googleOnly = _auth.hasGoogle.value && _auth.hasPassword.value;
+            final hasGoogle   = _auth.hasGoogle.value;
+            final hasPassword = _auth.hasPassword.value;
 
-            //if (!googleOnly) return const SizedBox.shrink(); // hide tile
-            if(_auth.hasGoogle.value && _auth.hasPassword.value){
-              return Column(
-                children: [
-                  Divider(height: 1, color: _accentSoft.withOpacity(0.15)),
-                  _securityTile(),
-                ],
-              );
-            }else if(_auth.hasGoogle.value && !_auth.hasPassword.value){
-              return Column(
-                children: [
-                  Divider(height: 1, color: _accentSoft.withOpacity(0.15)),
-                  _securityTile2(),
-                ],
-              );
-            }else{
-              return const SizedBox.shrink();
-            }
+            // Only show the security tile if Google is linked
+            // (email-only users don't need to add/update via this tile)
+            if (!hasGoogle) return const SizedBox.shrink();
 
-
+            return Column(
+              children: [
+                Divider(height: 1, color: _accentSoft.withOpacity(0.15)),
+                _securityTile(isUpdate: hasPassword),
+              ],
+            );
           }),
         ],
       ),
     );
   }
 
-
-
-  // ADD THIS WIDGET:
-  Widget _securityTile() {
+  Widget _securityTile({required bool isUpdate}) {
     return InkWell(
       onTap: _showSetPasswordSheet,
       borderRadius: const BorderRadius.vertical(bottom: Radius.circular(20)),
@@ -430,14 +427,21 @@ class _ProfilePageState extends State<ProfilePage> {
           children: [
             const Icon(Icons.lock_outline, color: _accent, size: 20),
             const SizedBox(width: 14),
-            const Expanded(
+            Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Security', style: TextStyle(color: _textLo, fontSize: 11)),
-                  SizedBox(height: 2),
-                  Text('Update Password for Login',
-                      style: TextStyle(color: _textHi, fontSize: 14)),
+                  const Text(
+                    'Security',
+                    style: TextStyle(color: _textLo, fontSize: 11),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    isUpdate
+                        ? 'Update Password for Login'
+                        : 'Add Password for Login',
+                    style: const TextStyle(color: _textHi, fontSize: 14),
+                  ),
                 ],
               ),
             ),
@@ -447,40 +451,10 @@ class _ProfilePageState extends State<ProfilePage> {
       ),
     );
   }
-
-  Widget _securityTile2() {
-    return InkWell(
-      onTap: _showSetPasswordSheet,
-      borderRadius: const BorderRadius.vertical(bottom: Radius.circular(20)),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        child: Row(
-          children: [
-            const Icon(Icons.lock_outline, color: _accent, size: 20),
-            const SizedBox(width: 14),
-            const Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Security', style: TextStyle(color: _textLo, fontSize: 11)),
-                  SizedBox(height: 2),
-                  Text('Add Password for Login',
-                      style: TextStyle(color: _textHi, fontSize: 14)),
-                ],
-              ),
-            ),
-            const Icon(Icons.chevron_right, color: _textLo, size: 20),
-          ],
-        ),
-      ),
-    );
-  }
-
 
   Widget _infoTile(IconData icon, String label, String value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(
-          horizontal: 16, vertical: 14),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       child: Row(
         children: [
           Icon(icon, color: _accent, size: 20),
@@ -489,13 +463,9 @@ class _ProfilePageState extends State<ProfilePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label,
-                    style: const TextStyle(
-                        color: _textLo, fontSize: 11)),
+                Text(label, style: const TextStyle(color: _textLo, fontSize: 11)),
                 const SizedBox(height: 2),
-                Text(value,
-                    style: const TextStyle(
-                        color: _textHi, fontSize: 14)),
+                Text(value, style: const TextStyle(color: _textHi, fontSize: 14)),
               ],
             ),
           ),
@@ -511,226 +481,245 @@ class _ProfilePageState extends State<ProfilePage> {
         onPressed: _confirmSignOut,
         style: OutlinedButton.styleFrom(
           side: const BorderSide(color: Colors.red, width: 1.2),
-          shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           padding: const EdgeInsets.symmetric(vertical: 14),
         ),
-        icon: const Icon(Icons.logout,
-            color: Colors.redAccent, size: 20),
-        label: const Text('Sign Out',
-            style: TextStyle(
-                color: Colors.redAccent,
-                fontWeight: FontWeight.w700,
-                fontSize: 15)),
+        icon: const Icon(Icons.logout, color: Colors.redAccent, size: 20),
+        label: const Text(
+          'Sign Out',
+          style: TextStyle(
+            color: Colors.redAccent,
+            fontWeight: FontWeight.w700,
+            fontSize: 15,
+          ),
+        ),
       ),
     );
   }
 
-  // ADD THIS METHOD:
+  // ── Set / Update Password Sheet ──────────────────────────────────────────
+
   void _showSetPasswordSheet() {
     final passCtrl    = TextEditingController();
     final confirmCtrl = TextEditingController();
     bool obscure1     = true;
     bool obscure2     = true;
-    final isUpdate    = _auth.hasPassword.value;
 
     Get.bottomSheet(
-      StatefulBuilder(
-        builder: (context, setSheetState) {
-          return SingleChildScrollView(
-            child: Container(
-              padding: EdgeInsets.fromLTRB(
-                24, 16, 24,
-                MediaQuery.of(context).viewInsets.bottom + 32,
-              ),
-              decoration: const BoxDecoration(
-                color: _card,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Drag handle
-                  Center(
-                    child: Container(
-                      width: 40, height: 4,
-                      decoration: BoxDecoration(
-                        color: _textLo.withOpacity(0.3),
-                        borderRadius: BorderRadius.circular(2),
+      // Use Obx here so isUpdate stays reactive if hasPassword changes
+      Obx(() {
+        final isUpdate = _auth.hasPassword.value;
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            return SingleChildScrollView(
+              child: Container(
+                padding: EdgeInsets.fromLTRB(
+                  24, 16, 24,
+                  MediaQuery.of(context).viewInsets.bottom + 32,
+                ),
+                decoration: const BoxDecoration(
+                  color: _card,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Drag handle
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: _textLo.withOpacity(0.3),
+                          borderRadius: BorderRadius.circular(2),
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 20),
+                    const SizedBox(height: 20),
 
-                  Text(
-                    isUpdate ? 'Update Password' : 'Add Password Login',
-                    style: const TextStyle(
+                    Text(
+                      isUpdate ? 'Update Password' : 'Add Password Login',
+                      style: const TextStyle(
                         color: _textHi,
                         fontSize: 18,
-                        fontWeight: FontWeight.w700),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    isUpdate
-                        ? 'Set a new password for your account.'
-                        : 'After setting a password, you can sign in with\neither Google or your email & password.',
-                    style: const TextStyle(
-                        color: _textLo, fontSize: 13, height: 1.5),
-                  ),
-                  const SizedBox(height: 24),
-
-                  // New password
-                  TextFormField(
-                    controller: passCtrl,
-                    obscureText: obscure1,
-                    style: const TextStyle(color: _textHi),
-                    decoration: InputDecoration(
-                      labelText: 'New Password',
-                      labelStyle: const TextStyle(color: _textLo),
-                      prefixIcon: const Icon(Icons.lock_outline,
-                          color: _accentSoft, size: 20),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          obscure1 ? Icons.visibility_off : Icons.visibility,
-                          color: _textLo, size: 20,
-                        ),
-                        onPressed: () =>
-                            setSheetState(() => obscure1 = !obscure1),
-                      ),
-                      filled: true,
-                      fillColor: _surface,
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide:
-                        BorderSide(color: _accentSoft.withOpacity(0.3)),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide:
-                        const BorderSide(color: _accent, width: 1.5),
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 12),
+                    const SizedBox(height: 4),
+                    Text(
+                      isUpdate
+                          ? 'Set a new password for your account.'
+                          : 'After setting a password, you can sign in with\neither Google or your email & password.',
+                      style: const TextStyle(color: _textLo, fontSize: 13, height: 1.5),
+                    ),
+                    const SizedBox(height: 24),
 
-                  // Confirm password
-                  TextFormField(
-                    controller: confirmCtrl,
-                    obscureText: obscure2,
-                    style: const TextStyle(color: _textHi),
-                    decoration: InputDecoration(
-                      labelText: 'Confirm Password',
-                      labelStyle: const TextStyle(color: _textLo),
-                      prefixIcon: const Icon(Icons.lock_outline,
-                          color: _accentSoft, size: 20),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          obscure2 ? Icons.visibility_off : Icons.visibility,
-                          color: _textLo, size: 20,
+                    // New password field
+                    TextFormField(
+                      controller: passCtrl,
+                      obscureText: obscure1,
+                      style: const TextStyle(color: _textHi),
+                      decoration: InputDecoration(
+                        labelText: 'New Password',
+                        labelStyle: const TextStyle(color: _textLo),
+                        prefixIcon: const Icon(Icons.lock_outline,
+                            color: _accentSoft, size: 20),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            obscure1 ? Icons.visibility_off : Icons.visibility,
+                            color: _textLo,
+                            size: 20,
+                          ),
+                          onPressed: () =>
+                              setSheetState(() => obscure1 = !obscure1),
                         ),
-                        onPressed: () =>
-                            setSheetState(() => obscure2 = !obscure2),
-                      ),
-                      filled: true,
-                      fillColor: _surface,
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide:
-                        BorderSide(color: _accentSoft.withOpacity(0.3)),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide:
-                        const BorderSide(color: _accent, width: 1.5),
+                        filled: true,
+                        fillColor: _surface,
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide:
+                          BorderSide(color: _accentSoft.withOpacity(0.3)),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide:
+                          const BorderSide(color: _accent, width: 1.5),
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 24),
+                    const SizedBox(height: 12),
 
-                  // Submit
-                  SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: Obx(() => ElevatedButton(
-                      onPressed: _auth.isLoading.value
-                          ? null
-                          : () async {
-                        if (passCtrl.text.length < 6) {
-                          Get.snackbar(
+                    // Confirm password field
+                    TextFormField(
+                      controller: confirmCtrl,
+                      obscureText: obscure2,
+                      style: const TextStyle(color: _textHi),
+                      decoration: InputDecoration(
+                        labelText: 'Confirm Password',
+                        labelStyle: const TextStyle(color: _textLo),
+                        prefixIcon: const Icon(Icons.lock_outline,
+                            color: _accentSoft, size: 20),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            obscure2 ? Icons.visibility_off : Icons.visibility,
+                            color: _textLo,
+                            size: 20,
+                          ),
+                          onPressed: () =>
+                              setSheetState(() => obscure2 = !obscure2),
+                        ),
+                        filled: true,
+                        fillColor: _surface,
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide:
+                          BorderSide(color: _accentSoft.withOpacity(0.3)),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide:
+                          const BorderSide(color: _accent, width: 1.5),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Submit button
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: Obx(() => ElevatedButton(
+                        onPressed: _auth.isLoading.value
+                            ? null
+                            : () async {
+                          if (passCtrl.text.length < 6) {
+                            Get.snackbar(
                               'Error',
                               'Password must be at least 6 characters.',
                               backgroundColor: Colors.red[900],
                               colorText: Colors.white,
                               snackPosition: SnackPosition.BOTTOM,
-                              margin: const EdgeInsets.all(16));
-                          return;
-                        }
-                        if (passCtrl.text != confirmCtrl.text) {
-                          Get.snackbar('Error', 'Passwords do not match.',
+                              margin: const EdgeInsets.all(16),
+                            );
+                            return;
+                          }
+                          if (passCtrl.text != confirmCtrl.text) {
+                            Get.snackbar(
+                              'Error',
+                              'Passwords do not match.',
                               backgroundColor: Colors.red[900],
                               colorText: Colors.white,
                               snackPosition: SnackPosition.BOTTOM,
-                              margin: const EdgeInsets.all(16));
-                          return;
-                        }
+                              margin: const EdgeInsets.all(16),
+                            );
+                            return;
+                          }
 
-                        final ok = await _auth.addPasswordToAccount(
-                            password: passCtrl.text);
+                          final ok = await _auth.addPasswordToAccount(
+                            password: passCtrl.text,
+                          );
 
-                        if (ok) {
-                          Get.back();
-                          Get.snackbar(
-                            isUpdate
-                                ? 'Password Updated ✓'
-                                : 'Password Set ✓',
-                            isUpdate
-                                ? 'Your password has been updated.'
-                                : 'You can now sign in with email & password too.',
-                            backgroundColor: _accentSoft,
-                            colorText: Colors.white,
-                            snackPosition: SnackPosition.BOTTOM,
-                            margin: const EdgeInsets.all(16),
-                            duration: const Duration(seconds: 3),
-                          );
-                        } else {
-                          Get.snackbar(
-                            'Error',
-                            _auth.errorMessage.value.isNotEmpty
-                                ? _auth.errorMessage.value
-                                : 'Failed. Please try again.',
-                            backgroundColor: Colors.red[900],
-                            colorText: Colors.white,
-                            snackPosition: SnackPosition.BOTTOM,
-                            margin: const EdgeInsets.all(16),
-                          );
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: _accentSoft,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14)),
-                      ),
-                      child: _auth.isLoading.value
-                          ? const SizedBox(
+                          if (ok) {
+                            Get.back();
+                            Get.snackbar(
+                              isUpdate
+                                  ? 'Password Updated ✓'
+                                  : 'Password Set ✓',
+                              isUpdate
+                                  ? 'Your password has been updated.'
+                                  : 'You can now sign in with email & password too.',
+                              backgroundColor: _accentSoft,
+                              colorText: Colors.white,
+                              snackPosition: SnackPosition.BOTTOM,
+                              margin: const EdgeInsets.all(16),
+                              duration: const Duration(seconds: 3),
+                            );
+                          } else {
+                            Get.snackbar(
+                              'Error',
+                              _auth.errorMessage.value.isNotEmpty
+                                  ? _auth.errorMessage.value
+                                  : 'Failed. Please try again.',
+                              backgroundColor: Colors.red[900],
+                              colorText: Colors.white,
+                              snackPosition: SnackPosition.BOTTOM,
+                              margin: const EdgeInsets.all(16),
+                            );
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: _accentSoft,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                        child: _auth.isLoading.value
+                            ? const SizedBox(
                           width: 20,
                           height: 20,
                           child: CircularProgressIndicator(
-                              strokeWidth: 2, color: Colors.white))
-                          : Text(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                            : Text(
                           isUpdate ? 'Update Password' : 'Set Password',
                           style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w700,
-                              fontSize: 15)),
-                    )),
-                  ),
-                ],
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 15,
+                          ),
+                        ),
+                      )),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          );
-        },
-      ),
+            );
+          },
+        );
+      }),
       isScrollControlled: true,
     );
   }
@@ -739,27 +728,25 @@ class _ProfilePageState extends State<ProfilePage> {
     Get.dialog(
       AlertDialog(
         backgroundColor: _card,
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20)),
-        title: const Text('Sign Out',
-            style: TextStyle(
-                color: _textHi, fontWeight: FontWeight.w700)),
-        content: const Text('Are you sure you want to sign out?',
-            style: TextStyle(color: _textLo)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text(
+          'Sign Out',
+          style: TextStyle(color: _textHi, fontWeight: FontWeight.w700),
+        ),
+        content: const Text(
+          'Are you sure you want to sign out?',
+          style: TextStyle(color: _textLo),
+        ),
         actions: [
           TextButton(
             onPressed: () => Get.back(),
-            child: const Text('Cancel',
-                style: TextStyle(color: _textLo)),
+            child: const Text('Cancel', style: TextStyle(color: _textLo)),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red[800]),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red[800]),
             onPressed: () async {
-              Get.back(); // close dialog first
+              Get.back();
               await _auth.signOut();
-              // ✅ The Obx() on build() auto-switches to _loggedOutView.
-              // No extra navigation needed. Show snackbar and we're done.
               Get.snackbar(
                 'Signed Out',
                 'You have been signed out. See you soon! 🌙',
@@ -770,21 +757,19 @@ class _ProfilePageState extends State<ProfilePage> {
                 duration: const Duration(seconds: 3),
               );
             },
-            child: const Text('Sign Out',
-                style: TextStyle(color: Colors.white)),
+            child: const Text('Sign Out', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
     );
   }
 
-  // ── Logged Out ─────────────────────────────────────────────────────────────
-  // ✅ This is shown automatically by Obx when user signs out —
-  // the profile page doesn't need to navigate anywhere.
+  // ── Logged Out View ──────────────────────────────────────────────────────
+
   Widget _loggedOutView() {
     return LayoutBuilder(builder: (context, constraints) {
       final isWide = constraints.maxWidth > 600;
-      final maxW = isWide ? 480.0 : double.infinity;
+      final maxW   = isWide ? 480.0 : double.infinity;
       return Center(
         child: ConstrainedBox(
           constraints: BoxConstraints(maxWidth: maxW),
@@ -798,46 +783,42 @@ class _ProfilePageState extends State<ProfilePage> {
                   decoration: BoxDecoration(
                     color: _surface,
                     shape: BoxShape.circle,
-                    border: Border.all(
-                        color: _gold.withOpacity(0.3)),
+                    border: Border.all(color: _gold.withOpacity(0.3)),
                   ),
                   child: Icon(Icons.person_outline,
                       color: _gold, size: isWide ? 80 : 60),
                 ),
                 const SizedBox(height: 24),
-                const Text('بِسْمِ اللَّهِ',
-                    style: TextStyle(
-                        color: _gold,
-                        fontSize: 24,
-                        fontFamily: 'Amiri')),
+                const Text(
+                  'بِسْمِ اللَّهِ',
+                  style: TextStyle(color: _gold, fontSize: 24, fontFamily: 'Amiri'),
+                ),
                 const SizedBox(height: 8),
                 const Text(
                   'Sign in to sync your progress,\nduas, and Quran bookmarks.',
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                      color: _textLo, fontSize: 15, height: 1.6),
+                  style: TextStyle(color: _textLo, fontSize: 15, height: 1.6),
                 ),
                 const SizedBox(height: 32),
                 SizedBox(
                   width: double.infinity,
                   height: 54,
                   child: ElevatedButton(
-                    // ✅ FIX: Push AuthPage on top of ProfilePage.
-                    // After sign in, AuthPage pops and Obx() rebuilds
-                    // ProfilePage to show the logged-in view automatically.
-                    onPressed: () =>
-                        Get.to(() => const AuthPage()),
+                    onPressed: () => Get.to(() => const AuthPage()),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: _accentSoft,
                       shape: RoundedRectangleBorder(
-                          borderRadius:
-                          BorderRadius.circular(16)),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
                     ),
-                    child: const Text('Sign In / Create Account',
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 15)),
+                    child: const Text(
+                      'Sign In / Create Account',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 15,
+                      ),
+                    ),
                   ),
                 ),
               ],
