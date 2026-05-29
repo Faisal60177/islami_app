@@ -101,8 +101,9 @@ class _InspirationPageState extends State<InspirationPage>
                 vsync: this,
               );
             });
-            // Auto-load all inspirations on first load
-            context.read<InspirationCubit>().loadAllInspirations();
+            if (state.categories.isNotEmpty) {
+              context.read<InspirationCubit>().loadAllInspirations();
+            }
           }
         },
         builder: (context, state) {
