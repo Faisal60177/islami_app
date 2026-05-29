@@ -4,7 +4,7 @@ import 'package:muslim_app/Quran/quran_page.dart';
 import 'package:muslim_app/home/home_page.dart';
 import 'package:muslim_app/Duas/pages/duas_page.dart';
 import 'package:muslim_app/tasbih/tasbih_page.dart';
-import 'package:muslim_app/inspiration/inspiration_page.dart';
+import 'package:muslim_app/inspiration/pages/inspiration_page.dart';
 import 'package:muslim_app/notification/page/notification_page.dart';
 import 'package:muslim_app/calendar/pages/calendar_page.dart';
 import 'package:muslim_app/qibla/pages/qibla_page.dart';

@@ -23,6 +23,8 @@ import 'package:muslim_app/Quran/quran_page.dart';
 import 'package:muslim_app/settings/cubit/settings_cubit.dart';
 import 'package:muslim_app/settings/cubit/settings_state.dart';
 import 'package:muslim_app/settings/theme/app_themes.dart';
+import 'inspiration/cubit/inspiration_cubit.dart';
+import 'inspiration/repository/inspiration_repository.dart';
 
 
 
@@ -90,6 +92,9 @@ void main() async {
         ),
         BlocProvider(
           create: (_) => DuasCubit(duasRepository),
+        ),
+        BlocProvider(
+          create: (_) => InspirationCubit(InspirationRepository()),
         ),
       ],
       child: const MyApp(),
