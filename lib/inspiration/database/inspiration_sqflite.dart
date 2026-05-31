@@ -26,7 +26,6 @@ class InspirationSqflite {
       onCreate: (db, version) async {
 
         // ── Inspiration categories core table ──────────────
-        // No color column — colors are predefined in UI code
         await db.execute('''
           CREATE TABLE inspiration_categories(
             category_id   INTEGER PRIMARY KEY,
@@ -34,8 +33,7 @@ class InspirationSqflite {
           )
         ''');
 
-        // ── Category translations — one row per language ───
-        // en, bn, ar, ur — add more anytime, no schema change
+        // ── Category translations ──────────────────────────
         await db.execute('''
           CREATE TABLE inspiration_category_translations(
             category_id   INTEGER NOT NULL,
@@ -48,7 +46,7 @@ class InspirationSqflite {
         ''');
 
         // ── Inspirations core table ────────────────────────
-        // quote_arabic is optional — null for scholar/person quotes
+        // No quote_arabic — removed completely
         await db.execute('''
           CREATE TABLE inspirations(
             id            INTEGER PRIMARY KEY,
@@ -61,8 +59,6 @@ class InspirationSqflite {
         ''');
 
         // ── Inspiration translations ───────────────────────
-        // title, quote_text — required
-        // reference, author — optional, can be null
         await db.execute('''
           CREATE TABLE inspiration_translations(
             inspiration_id INTEGER NOT NULL,
@@ -77,7 +73,7 @@ class InspirationSqflite {
           )
         ''');
 
-        // ── Indexes for fast JOIN queries ──────────────────
+        // ── Indexes ────────────────────────────────────────
         await db.execute('''
           CREATE INDEX idx_inspiration_translations
           ON inspiration_translations(inspiration_id, language_code)
@@ -105,11 +101,6 @@ class InspirationSqflite {
           ON user_inspiration_interactions(user_id, inspiration_id)
         ''');
       },
-
-      onUpgrade: (db, oldVersion, newVersion) async {
-        // Future language additions — just new rows, no ALTER needed
-        // Schema migrations only when adding new core columns
-      },
     );
   }
 
@@ -124,7 +115,6 @@ class InspirationSqflite {
     );
   }
 
-  // Get all categories — COALESCE falls back to English
   Future<List<Map<String, dynamic>>> getAllCategories(
       String languageCode) async {
     final db = await database;
@@ -155,8 +145,7 @@ class InspirationSqflite {
     );
   }
 
-  // Get inspirations by category — JOIN resolves language
-  // COALESCE falls back to English for all translatable fields
+  // ✅ No quote_arabic in SELECT — removed completely
   Future<List<Map<String, dynamic>>> getInspirationsByCategory({
     required int categoryId,
     required String languageCode,
@@ -171,41 +160,32 @@ class InspirationSqflite {
         COALESCE(t.quote_text, fb.quote_text, '') AS quote_text,
         COALESCE(t.reference,  fb.reference,  NULL) AS reference,
         COALESCE(t.author,     fb.author,     NULL) AS author,
-        COALESCE(
-          ui.is_favorite,   i.is_favorite,   0
-        ) AS is_favorite,
-        COALESCE(
-          ui.is_bookmarked, i.is_bookmarked, 0
-        ) AS is_bookmarked,
+        COALESCE(ui.is_favorite,   i.is_favorite,   0) AS is_favorite,
+        COALESCE(ui.is_bookmarked, i.is_bookmarked, 0) AS is_bookmarked,
         cat_t.category_title
       FROM inspirations i
       LEFT JOIN inspiration_translations t
-        ON i.id = t.inspiration_id
-        AND t.language_code = ?
+        ON i.id = t.inspiration_id AND t.language_code = ?
       LEFT JOIN inspiration_translations fb
-        ON i.id = fb.inspiration_id
-        AND fb.language_code = 'en'
+        ON i.id = fb.inspiration_id AND fb.language_code = 'en'
       LEFT JOIN user_inspiration_interactions ui
-        ON i.id = ui.inspiration_id
-        AND ui.user_id = ?
+        ON i.id = ui.inspiration_id AND ui.user_id = ?
       LEFT JOIN (
         SELECT
           c2.category_id,
           COALESCE(t2.title, fb2.title, '') AS category_title
         FROM inspiration_categories c2
         LEFT JOIN inspiration_category_translations t2
-          ON c2.category_id = t2.category_id
-          AND t2.language_code = ?
+          ON c2.category_id = t2.category_id AND t2.language_code = ?
         LEFT JOIN inspiration_category_translations fb2
-          ON c2.category_id = fb2.category_id
-          AND fb2.language_code = 'en'
+          ON c2.category_id = fb2.category_id AND fb2.language_code = 'en'
       ) cat_t ON i.category_id = cat_t.category_id
       WHERE i.category_id = ?
       ORDER BY i.id ASC
     ''', [languageCode, userId, languageCode, categoryId]);
   }
 
-  // Get ALL inspirations — same JOIN, no WHERE filter
+  // ✅ No quote_arabic in SELECT — removed completely
   Future<List<Map<String, dynamic>>> getAllInspirations({
     required String languageCode,
     required String userId,
@@ -215,39 +195,29 @@ class InspirationSqflite {
       SELECT
         i.id,
         i.category_id,
-        i.quote_arabic,
         COALESCE(t.title,      fb.title,      '') AS title,
         COALESCE(t.quote_text, fb.quote_text, '') AS quote_text,
         COALESCE(t.reference,  fb.reference,  NULL) AS reference,
         COALESCE(t.author,     fb.author,     NULL) AS author,
-        COALESCE(
-          ui.is_favorite,   i.is_favorite,   0
-        ) AS is_favorite,
-        COALESCE(
-          ui.is_bookmarked, i.is_bookmarked, 0
-        ) AS is_bookmarked,
+        COALESCE(ui.is_favorite,   i.is_favorite,   0) AS is_favorite,
+        COALESCE(ui.is_bookmarked, i.is_bookmarked, 0) AS is_bookmarked,
         cat_t.category_title
       FROM inspirations i
       LEFT JOIN inspiration_translations t
-        ON i.id = t.inspiration_id
-        AND t.language_code = ?
+        ON i.id = t.inspiration_id AND t.language_code = ?
       LEFT JOIN inspiration_translations fb
-        ON i.id = fb.inspiration_id
-        AND fb.language_code = 'en'
+        ON i.id = fb.inspiration_id AND fb.language_code = 'en'
       LEFT JOIN user_inspiration_interactions ui
-        ON i.id = ui.inspiration_id
-        AND ui.user_id = ?
+        ON i.id = ui.inspiration_id AND ui.user_id = ?
       LEFT JOIN (
         SELECT
           c2.category_id,
           COALESCE(t2.title, fb2.title, '') AS category_title
         FROM inspiration_categories c2
         LEFT JOIN inspiration_category_translations t2
-          ON c2.category_id = t2.category_id
-          AND t2.language_code = ?
+          ON c2.category_id = t2.category_id AND t2.language_code = ?
         LEFT JOIN inspiration_category_translations fb2
-          ON c2.category_id = fb2.category_id
-          AND fb2.language_code = 'en'
+          ON c2.category_id = fb2.category_id AND fb2.language_code = 'en'
       ) cat_t ON i.category_id = cat_t.category_id
       ORDER BY i.id ASC
     ''', [languageCode, userId, languageCode]);
@@ -283,7 +253,6 @@ class InspirationSqflite {
       SELECT
         i.id,
         i.category_id,
-        i.quote_arabic,
         COALESCE(t.title,      fb.title,      '') AS title,
         COALESCE(t.quote_text, fb.quote_text, '') AS quote_text,
         COALESCE(t.reference,  fb.reference,  NULL) AS reference,
@@ -293,14 +262,11 @@ class InspirationSqflite {
       FROM inspirations i
       INNER JOIN user_inspiration_interactions ui
         ON i.id = ui.inspiration_id
-        AND ui.user_id = ?
-        AND ui.is_favorite = 1
+        AND ui.user_id = ? AND ui.is_favorite = 1
       LEFT JOIN inspiration_translations t
-        ON i.id = t.inspiration_id
-        AND t.language_code = ?
+        ON i.id = t.inspiration_id AND t.language_code = ?
       LEFT JOIN inspiration_translations fb
-        ON i.id = fb.inspiration_id
-        AND fb.language_code = 'en'
+        ON i.id = fb.inspiration_id AND fb.language_code = 'en'
       ORDER BY i.id ASC
     ''', [userId, languageCode]);
   }
@@ -314,7 +280,6 @@ class InspirationSqflite {
       SELECT
         i.id,
         i.category_id,
-        i.quote_arabic,
         COALESCE(t.title,      fb.title,      '') AS title,
         COALESCE(t.quote_text, fb.quote_text, '') AS quote_text,
         COALESCE(t.reference,  fb.reference,  NULL) AS reference,
@@ -324,14 +289,11 @@ class InspirationSqflite {
       FROM inspirations i
       INNER JOIN user_inspiration_interactions ui
         ON i.id = ui.inspiration_id
-        AND ui.user_id = ?
-        AND ui.is_bookmarked = 1
+        AND ui.user_id = ? AND ui.is_bookmarked = 1
       LEFT JOIN inspiration_translations t
-        ON i.id = t.inspiration_id
-        AND t.language_code = ?
+        ON i.id = t.inspiration_id AND t.language_code = ?
       LEFT JOIN inspiration_translations fb
-        ON i.id = fb.inspiration_id
-        AND fb.language_code = 'en'
+        ON i.id = fb.inspiration_id AND fb.language_code = 'en'
       ORDER BY i.id ASC
     ''', [userId, languageCode]);
   }

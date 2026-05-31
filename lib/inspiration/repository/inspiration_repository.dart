@@ -28,7 +28,6 @@ class InspirationRepository {
         final int categoryId =
         ((data['id'] ?? data['ID'] ?? 0) as num).toInt();
 
-        // Insert core category — no color column
         await txn.insert(
           'inspiration_categories',
           {
@@ -38,7 +37,6 @@ class InspirationRepository {
           conflictAlgorithm: ConflictAlgorithm.replace,
         );
 
-        // Fetch translations subcollection
         final transSnap = await _firestore
             .collection('inspiration_categories')
             .doc(doc.id)
@@ -99,25 +97,22 @@ class InspirationRepository {
         final int inspirationId =
             data['id'] ?? int.tryParse(doc.id) ?? 0;
 
-        // Step 1 — Insert core inspiration row
-        // quote_arabic nullable — null for scholar/person quotes
+        // ✅ No quote_arabic — removed completely
         await txn.insert(
           'inspirations',
           {
-            'id':           inspirationId,
-            'category_id':  (data['category_id'] as num).toInt(),
+            'id':          inspirationId,
+            'category_id': (data['category_id'] as num).toInt(),
           },
           conflictAlgorithm: ConflictAlgorithm.replace,
         );
 
-        // Step 2 — Fetch translations subcollection
         final transSnap = await _firestore
             .collection('inspirations')
             .doc(doc.id)
             .collection('translations')
             .get();
 
-        // Step 3 — Insert each language translation row
         for (var tDoc in transSnap.docs) {
           final t = tDoc.data();
           await txn.insert(
@@ -213,8 +208,6 @@ class InspirationRepository {
     );
     return data.map((e) => InspirationModel.fromMap(e)).toList();
   }
-
-  // ── Auth events ───────────────────────────────────────────
 
   Future<void> onUserLogin(String userId) async {
     final guestRows = await dbHelper.getGuestInteractions();

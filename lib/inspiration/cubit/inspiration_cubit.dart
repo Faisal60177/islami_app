@@ -13,8 +13,6 @@ class InspirationCubit extends Cubit<InspirationState> {
         currentLanguageCode = 'en',
         super(InspirationInitial());
 
-  // ── Language update from Settings ──────────────────────
-  // Call this whenever user changes language in settings
   void updateLanguage(String languageCode) {
     currentLanguageCode = languageCode;
   }
@@ -93,9 +91,9 @@ class InspirationCubit extends Cubit<InspirationState> {
     inspiration.isFavorite = !inspiration.isFavorite;
     try {
       await repository.toggleFavorite(inspiration, userId);
-      emit(InspirationLoaded([])); // signal to reload
+      emit(InspirationLoaded([]));
     } catch (e) {
-      inspiration.isFavorite = !inspiration.isFavorite; // revert
+      inspiration.isFavorite = !inspiration.isFavorite;
       emit(InspirationError(e.toString()));
     }
   }
@@ -104,9 +102,9 @@ class InspirationCubit extends Cubit<InspirationState> {
     inspiration.isBookmarked = !inspiration.isBookmarked;
     try {
       await repository.toggleBookmark(inspiration, userId);
-      emit(InspirationLoaded([])); // signal to reload
+      emit(InspirationLoaded([]));
     } catch (e) {
-      inspiration.isBookmarked = !inspiration.isBookmarked; // revert
+      inspiration.isBookmarked = !inspiration.isBookmarked;
       emit(InspirationError(e.toString()));
     }
   }
@@ -130,12 +128,15 @@ class InspirationCubit extends Cubit<InspirationState> {
   }
 
   // ── Firestore Sync ───────────────────────────────────────
+  // ✅ Call this FIRST before loadCategories
+  // Without sync, SQLite is empty → nothing shows
 
   Future<void> syncFromFirestore() async {
     emit(InspirationLoading());
     try {
       await repository.syncCategoriesFromFirestore();
       await repository.syncInspirationsFromFirestore();
+      // After sync → load categories → listener loads inspirations
       loadCategories();
     } catch (e) {
       emit(InspirationError(e.toString()));

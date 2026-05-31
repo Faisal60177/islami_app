@@ -79,6 +79,7 @@ dependencies:
   archive: ^4.0.9
   flutter_staggered_grid_view: ^0.7.0
   auto_size_text: ^3.0.0
+  flutter_native_splash: ^2.4.8
 
 
 
@@ -103,9 +104,21 @@ flutter_launcher_icons:
     android: true
     ios: true
     image_path: "assets/icons/AppIcon.png"
-    adaptive_icon_background: "#FFFFFF"
-    adaptive_icon_foreground: "assets/icons/AppIcon.png"
     remove_alpha_ios: true
+
+
+flutter_native_splash:
+  color: "#0a3d1f"
+  image: assets/icons/AppIcon_foreground.png
+  color_dark: "#0a3d1f"
+  image_dark: assets/icons/AppIcon_foreground.png
+  fullscreen: true
+  android_gravity: center
+  ios_content_mode: scaleAspectFit
+  android_12:
+    image: assets/icons/AppIcon_foreground.png
+    icon_background_color: "#0a3d1f"
+
 
     # Optional: Adaptive icon for Android
     # daptive_icon_background: "#ffffff"  # or image path
@@ -134,6 +147,8 @@ flutter:
     - assets/icons/masail.png
     - assets/icons/mosque.png
     - assets/json/quran_metadata.json
+    - assets/icons/AppIcon_foreground.png
+    - assets/icons/AppIcon.png
 
   # To add json to your application, add an json section, like this:
   # json:

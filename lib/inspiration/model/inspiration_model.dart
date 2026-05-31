@@ -1,11 +1,11 @@
 class InspirationModel {
   final int id;
   final int categoryId;
-  final String categoryTitle;  // resolved language via JOIN
-  final String title;          // resolved language — short label
-  final String quoteText;      // resolved language — main quote body
-  final String? reference;     // optional — "Quran 94:6", null = hide
-  final String? author;        // optional — "Imam Abu Hanifa", null = hide
+  final String categoryTitle;
+  final String title;
+  final String quoteText;
+  final String? reference;
+  final String? author;
   bool isFavorite;
   bool isBookmarked;
 
@@ -28,8 +28,8 @@ class InspirationModel {
       categoryTitle: map['category_title'] ?? '',
       title:         map['title'] ?? '',
       quoteText:     map['quote_text'] ?? '',
-      reference:     map['reference'],       // null if not provided
-      author:        map['author'],          // null if not provided
+      reference:     map['reference'],
+      author:        map['author'],
       isFavorite:    map['is_favorite'] == 1,
       isBookmarked:  map['is_bookmarked'] == 1,
     );

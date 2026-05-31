@@ -41,7 +41,8 @@ class _InspirationPageState extends State<InspirationPage>
   void initState() {
     super.initState();
     _tabController = TabController(length: 1, vsync: this);
-    context.read<InspirationCubit>().loadCategories();
+    final cubit = context.read<InspirationCubit>();
+    cubit.syncFromFirestore();
   }
 
   @override

@@ -21,14 +21,14 @@ import 'package:muslim_app/settings/cubit/settings_cubit.dart';
 import 'package:muslim_app/settings/cubit/settings_state.dart';
 import 'package:muslim_app/settings/theme/app_themes.dart';
 import 'inspiration/cubit/inspiration_cubit.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'inspiration/repository/inspiration_repository.dart';
 
 
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-
-
+  WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
   // Lock orientation to portrait only
   await SystemChrome.setPreferredOrientations([
@@ -38,8 +38,6 @@ void main() async {
 
   // Initialize timezone package
   tz.initializeTimeZones();
-
-
 
   // ✅ Always pass DefaultFirebaseOptions — prevents silent auth failures
   await Firebase.initializeApp(
@@ -66,6 +64,7 @@ void main() async {
   final inspirationRepository = InspirationRepository();
   await inspirationRepository.syncCategoriesFromFirestore();
   await inspirationRepository.syncInspirationsFromFirestore();
+  FlutterNativeSplash.remove();
 
   runApp(
     MultiBlocProvider(
