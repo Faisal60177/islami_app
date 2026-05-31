@@ -113,12 +113,11 @@ flutter_native_splash:
   color_dark: "#0a3d1f"
   image_dark: assets/icons/AppIcon_foreground.png
   fullscreen: true
-  android_gravity: center
-  ios_content_mode: scaleAspectFit
   android_12:
     image: assets/icons/AppIcon_foreground.png
     icon_background_color: "#0a3d1f"
-
+    image_dark: assets/icons/AppIcon_foreground.png
+    icon_background_color_dark: "#0a3d1f"
 
     # Optional: Adaptive icon for Android
     # daptive_icon_background: "#ffffff"  # or image path
