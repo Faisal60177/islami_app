@@ -23,6 +23,8 @@ import 'package:muslim_app/settings/theme/app_themes.dart';
 import 'inspiration/cubit/inspiration_cubit.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'inspiration/repository/inspiration_repository.dart';
+import 'package:muslim_app/masail/cubit/masail_cubit.dart';
+import 'package:muslim_app/masail/repository/masail_repository.dart';
 
 
 
@@ -64,6 +66,11 @@ void main() async {
   final inspirationRepository = InspirationRepository();
   await inspirationRepository.syncCategoriesFromFirestore();
   await inspirationRepository.syncInspirationsFromFirestore();
+
+  final masailRepository = MasailRepository();
+  await masailRepository.syncCategoriesFromFirestore();
+  await masailRepository.syncMasailFromFirestore();
+
   FlutterNativeSplash.remove();
 
   runApp(
@@ -95,6 +102,9 @@ void main() async {
         ),
         BlocProvider(
           create: (_) => InspirationCubit(InspirationRepository()),
+        ),
+        BlocProvider(
+          create: (_) => MasailCubit(masailRepository),
         ),
       ],
       child: const MyApp(),

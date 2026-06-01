@@ -14,6 +14,8 @@ import 'package:muslim_app/settings/cubit/settings_state.dart';
 import 'package:muslim_app/settings/l10n/app_localizations.dart';
 import 'package:muslim_app/settings/theme/app_themes.dart';
 
+import '../masail/pages/masail_page.dart';
+
 // ─── Palette ────────────────────────────────────────────────────────────────
 const _bg        = Color(0xFF021A10);   // near-black deep forest
 const _surface   = Color(0xFF0D2E1C);   // card base
@@ -108,7 +110,7 @@ class _ToolsPageState extends State<ToolsPage>
           _Tool(l10n.duas,        'assets/icons/duas.png',
                   () => _push(DuasPage())),
           _Tool(l10n.masail,      'assets/icons/masail.png',
-                  () {}),
+                  () => _push(MasailPage())),
         ]),
         _Section(l10n.amal, l10n.worshipReflect, _gold, [
           _Tool(l10n.tasbih,      'assets/icons/tasbih.png',
