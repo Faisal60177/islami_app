@@ -25,6 +25,7 @@ import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'inspiration/repository/inspiration_repository.dart';
 import 'package:muslim_app/masail/cubit/masail_cubit.dart';
 import 'package:muslim_app/masail/repository/masail_repository.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 
 
@@ -49,6 +50,11 @@ void main() async {
   // ✅ Register AuthController AFTER Firebase is ready
   // ✅ permanent: true — controller is never garbage collected
   Get.put(AuthController(), permanent: true);
+
+  // ── Load saved language BEFORE creating cubits ──────────────
+  final prefs = await SharedPreferences.getInstance();
+  final savedLanguage = prefs.getString('language') ?? 'en';
+
 
   // Initialize storage classes
   final locationStorage    = LocationStorage();
@@ -98,13 +104,16 @@ void main() async {
           create: (_) => NotificationCubit(NotificationRepository()),
         ),
         BlocProvider(
-          create: (_) => DuasCubit(duasRepository),
+          create: (_) => DuasCubit(duasRepository)
+            ..updateLanguage(savedLanguage),
         ),
         BlocProvider(
-          create: (_) => InspirationCubit(InspirationRepository()),
+          create: (_) => InspirationCubit(inspirationRepository)
+            ..updateLanguage(savedLanguage),
         ),
         BlocProvider(
-          create: (_) => MasailCubit(masailRepository),
+          create: (_) => MasailCubit(masailRepository)
+            ..updateLanguage(savedLanguage),
         ),
       ],
       child: const MyApp(),
