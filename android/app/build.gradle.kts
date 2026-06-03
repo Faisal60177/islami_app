@@ -57,16 +57,24 @@ android {
     }
 
     buildTypes {
+        debug {
+            // flutter run → uses this block automatically
+            ndk {
+                abiFilters += listOf("arm64-v8a", "armeabi-v7a", "x86_64")
+            }
+        }
         release {
-            signingConfig = signingConfigs.getByName("release")
-            isShrinkResources = true
-            isMinifyEnabled = true
-            proguardFiles(
+            // flutter build appbundle → uses this block automatically
+            signingConfig = signingConfigs.getByName("release")  // ← signing
+            isShrinkResources = true                              // ← shrink
+            isMinifyEnabled = true                                // ← R8
+            proguardFiles(                                        // ← proguard
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
             ndk {
-                debugSymbolLevel = "SYMBOL_TABLE"
+                debugSymbolLevel = "SYMBOL_TABLE"                 // ← symbols
+                abiFilters += listOf("arm64-v8a", "armeabi-v7a") // ← no x86_64
             }
         }
     }
