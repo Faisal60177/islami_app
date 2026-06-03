@@ -62,7 +62,7 @@ class _RatePageState extends State<RatePage> with SingleTickerProviderStateMixin
         await review.requestReview();
       } else {
         await launchUrl(Uri.parse(
-            'https://play.google.com/store/apps/details?id=com.islamicapp.dev'));
+            'https://play.google.com/store/apps/details?id=com.siratalmustaqeem.muslimlife'));
       }
     }
     setState(() => _submitted = true);
@@ -255,20 +255,19 @@ class _RatePageState extends State<RatePage> with SingleTickerProviderStateMixin
   }
 
   Widget _storeButtons() {
-    return Row(
-      children: [
-        Expanded(child: _storeBtn('Google Play', '▶', const Color(0xFF01875F))),
-        const SizedBox(width: 12),
-        Expanded(child: _storeBtn('App Store', '', const Color(0xFF0A84FF))),
-      ],
+    // Cleaner, layout-safe implementation for a single button
+    return SizedBox(
+      width: double.infinity,
+      child: _storeBtn('Google Play', '▶', const Color(0xFF01875F)),
     );
   }
 
   Widget _storeBtn(String label, String icon, Color color) {
     return GestureDetector(
-      onTap: () => launchUrl(Uri.parse(_selectedStars >= 4
-          ? 'https://play.google.com/store'
-          : 'https://apps.apple.com')),
+      onTap: () => launchUrl(
+        Uri.parse('https://play.google.com/store/apps/details?id=com.siratalmustaqeem.muslimlife'),
+        mode: LaunchMode.externalApplication,
+      ),
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
         decoration: BoxDecoration(

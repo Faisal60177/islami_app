@@ -103,10 +103,13 @@ class _SettingsPageState extends State<SettingsPage>
                         ThemeSettingsSection(theme: theme, l10n: l10n),
                         SizedBox(height: rsw * 0.060),
 
+                        /*
                         _sectionHeader(theme, '🔔', l10n.notificationsSection, rsw),
                         SizedBox(height: rsw * 0.020),
                         NotificationSettingsSection(theme: theme, l10n: l10n),
                         SizedBox(height: rsw * 0.060),
+
+                         */
 
                         _sectionHeader(theme, '🖥️', l10n.displaySection, rsw),
                         SizedBox(height: rsw * 0.020),

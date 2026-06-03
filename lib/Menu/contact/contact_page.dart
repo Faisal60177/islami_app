@@ -50,51 +50,6 @@ class ContactPage extends StatelessWidget {
                     const SizedBox(height: 8),
                     _headerBanner(isWide),
                     const SizedBox(height: 28),
-                    _sectionLabel('Development Team'),
-                    const SizedBox(height: 12),
-                    if (isWide)
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: _developerCard(
-                              name: 'Abdullah Rahman',
-                              role: 'Lead Developer & Designer',
-                              avatar: '🧑‍💻',
-                              email: 'abdullah@islamicapp.dev',
-                              github: 'github.com/abdullahrahman',
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: _developerCard(
-                              name: 'Fatima Al-Zahra',
-                              role: 'Islamic Content Specialist',
-                              avatar: '👩‍🎓',
-                              email: 'fatima@islamicapp.dev',
-                              github: null,
-                            ),
-                          ),
-                        ],
-                      )
-                    else ...[
-                      _developerCard(
-                        name: 'Abdullah Rahman',
-                        role: 'Lead Developer & Designer',
-                        avatar: '🧑‍💻',
-                        email: 'abdullah@islamicapp.dev',
-                        github: 'github.com/abdullahrahman',
-                      ),
-                      const SizedBox(height: 12),
-                      _developerCard(
-                        name: 'Fatima Al-Zahra',
-                        role: 'Islamic Content Specialist',
-                        avatar: '👩‍🎓',
-                        email: 'fatima@islamicapp.dev',
-                        github: null,
-                      ),
-                    ],
-                    const SizedBox(height: 28),
                     _sectionLabel('Get In Touch'),
                     const SizedBox(height: 12),
                     if (isWide)
@@ -110,10 +65,10 @@ class ContactPage extends StatelessWidget {
                             icon: Icons.email_outlined,
                             color: const Color(0xFF4285F4),
                             title: 'Email Support',
-                            subtitle: 'support@islamicapp.dev',
+                            subtitle: 'siratalmustaqeem60177@gmail.com',
                             hint: 'Response within 24–48 hours',
-                            onTap: () => _launchUrl('mailto:support@islamicapp.dev'),
-                            onCopy: () => _copy('support@islamicapp.dev', 'Email copied'),
+                            onTap: () => _launchUrl('mailto:siratalmustaqeem60177@gmail.com'),
+                            onCopy: () => _copy('siratalmustaqeem60177@gmail.com', 'Email copied'),
                           ),
                           _contactCard(
                             icon: Icons.chat_bubble_outline,
@@ -124,7 +79,7 @@ class ContactPage extends StatelessWidget {
                             onTap: () => _launchUrl('https://wa.me/8801700000000'),
                             onCopy: () => _copy('+8801700000000', 'Number copied'),
                           ),
-                          _contactCard(
+                          /* _contactCard(
                             icon: Icons.telegram,
                             color: const Color(0xFF0088CC),
                             title: 'Telegram Channel',
@@ -142,6 +97,8 @@ class ContactPage extends StatelessWidget {
                             onTap: () => _launchUrl('https://www.islamicapp.dev'),
                             onCopy: null,
                           ),
+
+                           */
                         ],
                       )
                     else ...[
@@ -149,21 +106,22 @@ class ContactPage extends StatelessWidget {
                         icon: Icons.email_outlined,
                         color: const Color(0xFF4285F4),
                         title: 'Email Support',
-                        subtitle: 'support@islamicapp.dev',
+                        subtitle: 'siratalmustaqeem60177@gmail.com',
                         hint: 'Response within 24–48 hours',
-                        onTap: () => _launchUrl('mailto:support@islamicapp.dev'),
-                        onCopy: () => _copy('support@islamicapp.dev', 'Email copied'),
+                        onTap: () => _launchUrl('mailto:siratalmustaqeem60177@gmail.com'),
+                        onCopy: () => _copy('siratalmustaqeem60177@gmail.com', 'Email copied'),
                       ),
                       const SizedBox(height: 12),
                       _contactCard(
                         icon: Icons.chat_bubble_outline,
                         color: const Color(0xFF25D366),
                         title: 'WhatsApp Support',
-                        subtitle: '+880 1700-000000',
-                        hint: 'Mon – Fri, 9 AM – 6 PM',
-                        onTap: () => _launchUrl('https://wa.me/8801700000000'),
-                        onCopy: () => _copy('+8801700000000', 'Number copied'),
+                        subtitle: '+8801334543168',
+                        hint: 'Every Day, 8 AM – 8 PM',
+                        onTap: () => _launchUrl('https://wa.me/8801334543168'),
+                        onCopy: () => _copy('+8801334543168', 'Number copied'),
                       ),
+                      /* HIDING TELEGRAM & WEBSITE FOR NOW
                       const SizedBox(height: 12),
                       _contactCard(
                         icon: Icons.telegram,
@@ -184,13 +142,13 @@ class ContactPage extends StatelessWidget {
                         onTap: () => _launchUrl('https://www.islamicapp.dev'),
                         onCopy: null,
                       ),
+
+                       */
                     ],
                     const SizedBox(height: 28),
                     _sectionLabel('Report a Bug'),
                     const SizedBox(height: 12),
                     _bugReportCard(),
-                    const SizedBox(height: 28),
-                    _officeCard(),
                     const SizedBox(height: 32),
                   ],
                 ),
@@ -228,19 +186,21 @@ class ContactPage extends StatelessWidget {
             child: const Icon(Icons.support_agent, color: _accent, size: 42),
           ),
           const SizedBox(width: 24),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'We\'re Here to Help',
-                style: TextStyle(color: _textHi, fontSize: 22, fontWeight: FontWeight.w800),
-              ),
-              const SizedBox(height: 6),
-              const Text(
-                'Have a question, suggestion, or encountered a bug?\nOur team is ready to assist you — always.',
-                style: TextStyle(color: _textLo, fontSize: 13.5, height: 1.6),
-              ),
-            ],
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: const[
+                 Text(
+                  'We\'re Here to Help',
+                  style: TextStyle(color: _textHi, fontSize: 22, fontWeight: FontWeight.w800),
+                ),
+                 SizedBox(height: 6),
+                 Text(
+                  'Have a question, suggestion, or encountered a bug?\nOur team is ready to assist you — always.',
+                  style: TextStyle(color: _textLo, fontSize: 13.5, height: 1.6),
+                ),
+              ],
+            ),
           ),
         ],
       )
@@ -282,66 +242,6 @@ class ContactPage extends StatelessWidget {
             style: const TextStyle(
                 color: _textHi, fontWeight: FontWeight.w700, fontSize: 15, letterSpacing: 0.3)),
       ],
-    );
-  }
-
-  Widget _developerCard({
-    required String name,
-    required String role,
-    required String avatar,
-    required String email,
-    String? github,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: _card,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: _accentSoft.withOpacity(0.2)),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 56, height: 56,
-            decoration: BoxDecoration(
-              color: _surface,
-              shape: BoxShape.circle,
-              border: Border.all(color: _gold.withOpacity(0.3)),
-            ),
-            child: Center(child: Text(avatar, style: const TextStyle(fontSize: 26))),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(name,
-                    style: const TextStyle(color: _textHi, fontWeight: FontWeight.w700, fontSize: 15)),
-                const SizedBox(height: 2),
-                Text(role, style: const TextStyle(color: _accent, fontSize: 12)),
-                const SizedBox(height: 4),
-                GestureDetector(
-                  onTap: () => _launchUrl('mailto:$email'),
-                  child: Text(email,
-                      style: const TextStyle(
-                          color: _textLo,
-                          fontSize: 12,
-                          decoration: TextDecoration.underline,
-                          decorationColor: _textLo)),
-                ),
-                if (github != null) ...[
-                  const SizedBox(height: 2),
-                  Text(github, style: const TextStyle(color: _textLo, fontSize: 11)),
-                ],
-              ],
-            ),
-          ),
-          IconButton(
-            icon: const Icon(Icons.email_outlined, color: _accent, size: 20),
-            onPressed: () => _launchUrl('mailto:$email'),
-          ),
-        ],
-      ),
     );
   }
 
@@ -431,7 +331,7 @@ class ContactPage extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
-              onPressed: () => _launchUrl('mailto:bugs@islamicapp.dev?subject=Bug Report'),
+              onPressed: () => _launchUrl('mailto:siratalmustaqeem60177@gmail.com?subject=Bug Report'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.orange.withOpacity(0.15),
                 side: BorderSide(color: Colors.orange.withOpacity(0.5)),
@@ -447,33 +347,6 @@ class ContactPage extends StatelessWidget {
     );
   }
 
-  Widget _officeCard() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: _card,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: _accentSoft.withOpacity(0.2)),
-      ),
-      child: Column(
-        children: [
-          Row(
-            children: const [
-              Icon(Icons.location_on_outlined, color: _accent, size: 20),
-              SizedBox(width: 10),
-              Text('Our Office',
-                  style: TextStyle(color: _textHi, fontWeight: FontWeight.w700, fontSize: 15)),
-            ],
-          ),
-          const SizedBox(height: 12),
-          const Text(
-            'Islamic App Team\nDhaka, Bangladesh 1000\nBusiness Hours: Sat – Thu, 9 AM – 6 PM BST',
-            style: TextStyle(color: _textLo, fontSize: 13, height: 1.7),
-          ),
-        ],
-      ),
-    );
-  }
 
   Future<void> _launchUrl(String url) async {
     final uri = Uri.parse(url);

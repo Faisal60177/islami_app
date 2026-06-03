@@ -6,24 +6,23 @@ import '../cubit/inspiration_state.dart';
 import '../model/inspiration_model.dart';
 import '../model/inspiration_category_model.dart';
 import 'inspiration_detail_page.dart';
+import 'bookmarked_inspirations_page.dart';
 
 // ── Predefined gradient colors per category index ──────────────
 const List<List<Color>> kCategoryGradients = [
-  [Color(0xFF0D3B35), Color(0xFF1A6B5A)], // Deep Teal
-  [Color(0xFF1A1A4E), Color(0xFF2D2D8F)], // Deep Navy
-  [Color(0xFF2D1B4E), Color(0xFF6B3FA0)], // Deep Purple
-  [Color(0xFF1A3A1A), Color(0xFF2D7A2D)], // Forest Green
-  [Color(0xFF3B1A0D), Color(0xFF8B4513)], // Deep Brown
-  [Color(0xFF0D1A3B), Color(0xFF1A3A6B)], // Midnight Blue
-  [Color(0xFF2D1A1A), Color(0xFF8B2020)], // Deep Crimson
-  [Color(0xFF1A2D3B), Color(0xFF2D6B8B)], // Ocean Blue
+  [Color(0xFF0D3B35), Color(0xFF1A6B5A)],
+  [Color(0xFF1A1A4E), Color(0xFF2D2D8F)],
+  [Color(0xFF2D1B4E), Color(0xFF6B3FA0)],
+  [Color(0xFF1A3A1A), Color(0xFF2D7A2D)],
+  [Color(0xFF3B1A0D), Color(0xFF8B4513)],
+  [Color(0xFF0D1A3B), Color(0xFF1A3A6B)],
+  [Color(0xFF2D1A1A), Color(0xFF8B2020)],
+  [Color(0xFF1A2D3B), Color(0xFF2D6B8B)],
 ];
 
-List<Color> gradientForIndex(int index) {
-  return kCategoryGradients[index % kCategoryGradients.length];
-}
+List<Color> gradientForIndex(int index) =>
+    kCategoryGradients[index % kCategoryGradients.length];
 
-// ── Main List Page ──────────────────────────────────────────────
 class InspirationPage extends StatefulWidget {
   const InspirationPage({super.key});
 
@@ -37,12 +36,17 @@ class _InspirationPageState extends State<InspirationPage>
   List<InspirationCategoryModel> _categories = [];
   int _selectedCategoryId = -1; // -1 = All
 
+  // ── Track whether categories were already loaded once ──────────
+  // Prevents listener from re-calling loadAllInspirations on every
+  // toggle emit (toggleFavorite/toggleBookmark emit InspirationLoaded([]))
+  bool _categoriesLoaded = false;
+
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 1, vsync: this);
-    final cubit = context.read<InspirationCubit>();
-    cubit.syncFromFirestore();
+    // ── Load SQLite instantly; sync Firestore silently ───────────
+    context.read<InspirationCubit>().loadCategoriesIfEmpty();
   }
 
   @override
@@ -76,8 +80,8 @@ class _InspirationPageState extends State<InspirationPage>
         title: const Text(
           'Inspiration',
           style: TextStyle(
-            color: Colors.white,
-            fontSize: 20,
+            color:      Colors.white,
+            fontSize:   20,
             fontWeight: FontWeight.w600,
             letterSpacing: 0.3,
           ),
@@ -87,14 +91,28 @@ class _InspirationPageState extends State<InspirationPage>
             icon: const Icon(Icons.bookmark_border_rounded,
                 color: Colors.white, size: 24),
             onPressed: () {
-              context.read<InspirationCubit>().loadBookmarked();
+              // ── Navigate to dedicated bookmarks page ───────────
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => BlocProvider.value(
+                    value: context.read<InspirationCubit>(),
+                    child: const BookmarkedInspirationsPage(),
+                  ),
+                ),
+              );
             },
           ),
         ],
       ),
       body: BlocConsumer<InspirationCubit, InspirationState>(
         listener: (context, state) {
-          if (state is InspirationCategoriesLoaded) {
+          // ── Only rebuild categories once on first load ─────────
+          // Do NOT re-trigger loadAllInspirations on every state
+          // change — that caused the spinner loop
+          if (state is InspirationCategoriesLoaded &&
+              !_categoriesLoaded) {
+            _categoriesLoaded = true;
             setState(() {
               _categories = state.categories;
               _tabController = TabController(
@@ -102,22 +120,17 @@ class _InspirationPageState extends State<InspirationPage>
                 vsync: this,
               );
             });
-            if (state.categories.isNotEmpty) {
-              context.read<InspirationCubit>().loadAllInspirations();
-            }
+            // ── Do NOT call loadAllInspirations here ─────────────
+            // loadCategoriesIfEmpty already emits InspirationLoaded
+            // right after InspirationCategoriesLoaded
           }
         },
         builder: (context, state) {
           return Column(
             children: [
-              // ── Category Tab Bar ──────────────────────────────
               _buildCategoryTabs(),
               const SizedBox(height: 12),
-
-              // ── Inspiration Grid ──────────────────────────────
-              Expanded(
-                child: _buildBody(state),
-              ),
+              Expanded(child: _buildBody(state)),
             ],
           );
         },
@@ -139,15 +152,15 @@ class _InspirationPageState extends State<InspirationPage>
         padding: const EdgeInsets.symmetric(horizontal: 16),
         itemCount: allCategories.length,
         itemBuilder: (context, index) {
-          final cat = allCategories[index];
+          final cat        = allCategories[index];
           final isSelected = cat.categoryId == _selectedCategoryId;
           return GestureDetector(
             onTap: () => _onCategorySelected(cat.categoryId),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
-              margin: const EdgeInsets.only(right: 10),
-              padding:
-              const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              margin:  const EdgeInsets.only(right: 10),
+              padding: const EdgeInsets.symmetric(
+                  horizontal: 20, vertical: 8),
               decoration: BoxDecoration(
                 color: isSelected
                     ? Colors.white
@@ -166,7 +179,7 @@ class _InspirationPageState extends State<InspirationPage>
                   color: isSelected
                       ? const Color(0xFF071A15)
                       : Colors.white70,
-                  fontSize: 13,
+                  fontSize:   13,
                   fontWeight: isSelected
                       ? FontWeight.w700
                       : FontWeight.w400,
@@ -184,28 +197,22 @@ class _InspirationPageState extends State<InspirationPage>
     if (state is InspirationLoading) {
       return const Center(
         child: CircularProgressIndicator(
-          color: Color(0xFF2ECC71),
-          strokeWidth: 2,
-        ),
+            color: Color(0xFF2ECC71), strokeWidth: 2),
       );
     }
 
     if (state is InspirationError) {
       return Center(
-        child: Text(
-          state.message,
-          style: const TextStyle(color: Colors.white54),
-        ),
+        child: Text(state.message,
+            style: const TextStyle(color: Colors.white54)),
       );
     }
 
     if (state is InspirationLoaded) {
       if (state.inspirations.isEmpty) {
         return const Center(
-          child: Text(
-            'No inspirations found.',
-            style: TextStyle(color: Colors.white38, fontSize: 14),
-          ),
+          child: Text('No inspirations found.',
+              style: TextStyle(color: Colors.white38, fontSize: 14)),
         );
       }
       return _buildGrid(state.inspirations);
@@ -216,43 +223,39 @@ class _InspirationPageState extends State<InspirationPage>
 
   Widget _buildGrid(List<InspirationModel> inspirations) {
     return MasonryGridView.count(
-      crossAxisCount: 2,
+      crossAxisCount:  2,
       mainAxisSpacing: 10,
       crossAxisSpacing: 10,
       padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
       itemCount: inspirations.length,
       itemBuilder: (context, index) {
         return _InspirationCard(
-          inspiration: inspirations[index],
+          inspiration:    inspirations[index],
           gradientColors: gradientForIndex(index),
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => InspirationDetailPage(
-                  inspirations: inspirations,
-                  initialIndex: index,
-                ),
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => InspirationDetailPage(
+                inspirations: inspirations,
+                initialIndex: index,
               ),
-            );
-          },
-          onFavoriteTap: () {
-            context
-                .read<InspirationCubit>()
-                .toggleFavorite(inspirations[index]);
-          },
+            ),
+          ),
+          onFavoriteTap: () => context
+              .read<InspirationCubit>()
+              .toggleFavorite(inspirations[index]),
         );
       },
     );
   }
 }
 
-// ── Inspiration Card Widget ─────────────────────────────────────
+// ── Inspiration Card ────────────────────────────────────────────
 class _InspirationCard extends StatelessWidget {
   final InspirationModel inspiration;
-  final List<Color> gradientColors;
-  final VoidCallback onTap;
-  final VoidCallback onFavoriteTap;
+  final List<Color>      gradientColors;
+  final VoidCallback     onTap;
+  final VoidCallback     onFavoriteTap;
 
   const _InspirationCard({
     required this.inspiration,
@@ -269,8 +272,8 @@ class _InspirationCard extends StatelessWidget {
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: gradientColors,
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+            begin:  Alignment.topLeft,
+            end:    Alignment.bottomRight,
           ),
           borderRadius: BorderRadius.circular(16),
         ),
@@ -278,54 +281,51 @@ class _InspirationCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Reference (optional) ──────────────────────
+            // Reference — only if present
             if (inspiration.reference != null &&
                 inspiration.reference!.isNotEmpty)
               Text(
                 inspiration.reference!,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+                maxLines:  1,
+                overflow:  TextOverflow.ellipsis,
                 style: const TextStyle(
-                  color: Colors.white54,
-                  fontSize: 10,
-                  fontWeight: FontWeight.w400,
+                  color:       Colors.white54,
+                  fontSize:    10,
+                  fontWeight:  FontWeight.w400,
                   letterSpacing: 0.3,
                 ),
               ),
 
             const SizedBox(height: 4),
 
-            // ── Title ─────────────────────────────────────
             Text(
               inspiration.title,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
+              maxLines:  2,
+              overflow:  TextOverflow.ellipsis,
               style: const TextStyle(
-                color: Colors.white,
-                fontSize: 13,
+                color:      Colors.white,
+                fontSize:   13,
                 fontWeight: FontWeight.w600,
-                height: 1.3,
+                height:     1.3,
               ),
             ),
 
             const SizedBox(height: 8),
 
-            // ── Quote preview ─────────────────────────────
             Text(
               inspiration.quoteText,
-              maxLines: 4,
-              overflow: TextOverflow.ellipsis,
+              maxLines:  4,
+              overflow:  TextOverflow.ellipsis,
               style: const TextStyle(
-                color: Colors.white,
-                fontSize: 15,
+                color:      Colors.white,
+                fontSize:   15,
                 fontWeight: FontWeight.w700,
-                height: 1.4,
+                height:     1.4,
               ),
             ),
 
             const SizedBox(height: 10),
 
-            // ── Heart icon ────────────────────────────────
             Align(
               alignment: Alignment.bottomRight,
               child: GestureDetector(

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 const _bg        = Color(0xFF011A0E);
 const _surface   = Color(0xFF0D2E1C);
@@ -12,7 +14,7 @@ const _textHi    = Color(0xFFE8F5EC);
 const _textLo    = Color(0xFF7BAF92);
 
 const _appLink =
-    'https://play.google.com/store/apps/details?id=com.islamicapp.dev';
+    'https://play.google.com/store/apps/details?id=com.siratalmustaqeem.muslimlife';
 
 const _shareMessage =
     '🕌 Assalamu Alaikum!\n\n'
@@ -281,52 +283,61 @@ class SharePage extends StatelessWidget {
     );
   }
 
-  // ── Share Handlers ─────────────────────────────────────────────────────────
-  Future<void> _shareGeneral() async =>
-      await Share.share(_shareMessage, subject: 'Islamic App');
+// ── Share Handlers ─────────────────────────────────────────────────────────
+Future<void> _shareGeneral() async =>
+await Share.share(_shareMessage, subject: 'Islamic App');
 
-  Future<void> _shareToWhatsApp() async {
-    final url = 'whatsapp://send?text=${Uri.encodeComponent(_shareMessage)}';
-    await _tryLaunch(url, fallback: _shareGeneral);
-  }
+Future<void> _shareToWhatsApp() async {
+// Modern universal HTTPS formats reliably wake up the installed application
+final url = 'https://wa.me/?text=${Uri.encodeComponent(_shareMessage)}';
+await _tryLaunch(url);
+}
 
-  Future<void> _shareToTelegram() async {
-    final url = 'tg://msg?text=${Uri.encodeComponent(_shareMessage)}';
-    await _tryLaunch(url, fallback: _shareGeneral);
-  }
+Future<void> _shareToTelegram() async {
+final url = 'https://t.me/share/url?url=${Uri.encodeComponent(_appLink)}&text=${Uri.encodeComponent(_shareMessage.replaceAll(_appLink, ''))}';
+await _tryLaunch(url);
+}
 
-  Future<void> _shareToFacebook() async {
-    final url = 'https://www.facebook.com/sharer/sharer.php?u=${Uri.encodeComponent(_appLink)}';
-    await _tryLaunch(url, fallback: _shareGeneral);
-  }
+Future<void> _shareToFacebook() async {
+final url = 'https://www.facebook.com/sharer/sharer.php?u=${Uri.encodeComponent(_appLink)}';
+await _tryLaunch(url);
+}
 
-  Future<void> _shareToTwitter() async {
-    final url = 'https://twitter.com/intent/tweet?text=${Uri.encodeComponent(_shareMessage)}';
-    await _tryLaunch(url, fallback: _shareGeneral);
-  }
+Future<void> _shareToTwitter() async {
+final url = 'https://twitter.com/intent/tweet?text=${Uri.encodeComponent(_shareMessage)}';
+await _tryLaunch(url);
+}
 
-  Future<void> _shareViaEmail() async {
-    final url = 'mailto:?subject=Check out Islamic App&body=${Uri.encodeComponent(_shareMessage)}';
-    await _tryLaunch(url, fallback: _shareGeneral);
-  }
+Future<void> _shareViaEmail() async {
+final url = 'mailto:?subject=${Uri.encodeComponent('Check out Islamic App')}&body=${Uri.encodeComponent(_shareMessage)}';
+await _tryLaunch(url);
+}
 
-  Future<void> _copyLink() async {
-    await Share.share(_appLink);
-    Get.snackbar('Copied!', 'App link copied to clipboard',
-        backgroundColor: _accentSoft,
-        colorText: Colors.white,
-        snackPosition: SnackPosition.BOTTOM,
-        margin: const EdgeInsets.all(16));
-  }
+Future<void> _copyLink() async {
+// Fixed: Now actually copies text to device clipboard instead of calling Share.share()
+await Clipboard.setData(const ClipboardData(text: _appLink));
+Get.snackbar('Copied!', 'App link copied to clipboard',
+backgroundColor: _accentSoft,
+colorText: Colors.white,
+snackPosition: SnackPosition.BOTTOM,
+margin: const EdgeInsets.all(16),
+duration: const Duration(seconds: 2));
+}
 
-  Future<void> _tryLaunch(String url, {required Future<void> Function() fallback}) async {
+// Fixed: Engine now attempts a real platform application launch before resorting to generic share sheets
+  Future<void> _tryLaunch(String urlString) async {
+    final uri = Uri.parse(urlString);
     try {
-      await fallback();
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        await _shareGeneral(); // Fallback if the specific app isn't installed
+      }
     } catch (_) {
-      await fallback();
+      await _shareGeneral(); // Safe generic backup plan
     }
   }
-}
+} // <── THIS CLOSING BRACKET WAS MISSING TO CLOSE THE SharePage CLASS
 
 class _PlatformItem {
   final String icon, label;

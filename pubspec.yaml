@@ -83,6 +83,7 @@ dependencies:
 
 
 
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -114,9 +115,9 @@ flutter_native_splash:
   image_dark: assets/icons/AppIcon.png
   fullscreen: true
   android_12:
-    image: assets/icons/AppIcon_foreground.png
+    image: assets/icons/AppIcon.png
     icon_background_color: "#0a3d1f"
-    image_dark: assets/icons/AppIcon_foreground.png
+    image_dark: assets/icons/AppIcon.png
     icon_background_color_dark: "#0a3d1f"
 
     # Optional: Adaptive icon for Android

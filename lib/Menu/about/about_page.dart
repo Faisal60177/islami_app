@@ -54,21 +54,19 @@ class AboutPage extends StatelessWidget {
                           const SizedBox(height: 12),
                           _aboutText(),
                           const SizedBox(height: 28),
+                          _sectionLabel('Our Aqeedah & Fiqh / আমাদের আক্বিদা ও ফিকহ'),
+                          const SizedBox(height: 12),
+                          _aqeedahFiqhCard(),
+                          const SizedBox(height: 28),
                           _sectionLabel('What\'s New — v2.5.0'),
                           const SizedBox(height: 12),
                           _changelogCard(),
-                          const SizedBox(height: 28),
-                          _sectionLabel('App Information'),
                           const SizedBox(height: 12),
-                          if (isWide)
-                            _infoCardWide()
-                          else
-                            _infoCard(),
-                          const SizedBox(height: 28),
-                          _sectionLabel('Legal'),
-                          const SizedBox(height: 12),
-                          _legalCard(),
-                          const SizedBox(height: 28),
+                          if (isWide) ...[
+                            _infoCardWide(),
+                            const SizedBox(height: 28),
+                          ],
+
                           _missionCard(),
                           const SizedBox(height: 32),
                         ],
@@ -208,9 +206,73 @@ class AboutPage extends StatelessWidget {
           decoration: BoxDecoration(color: _gold, borderRadius: BorderRadius.circular(4)),
         ),
         const SizedBox(width: 10),
-        Text(text,
-            style: const TextStyle(color: _textHi, fontWeight: FontWeight.w700, fontSize: 15)),
+        Expanded(
+          child: Text(text,
+              style: const TextStyle(color: _textHi, fontWeight: FontWeight.w700, fontSize: 15)),
+        ),
       ],
+    );
+  }
+
+  Widget _aqeedahFiqhCard() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: _card,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: _accentSoft.withOpacity(0.2)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // BANGLA SECTION
+          const Text(
+            'আমাদের আক্বিদা',
+            style: TextStyle(color: _gold, fontWeight: FontWeight.bold, fontSize: 14),
+          ),
+          const SizedBox(height: 6),
+          const Text(
+            'আমরা আহলুস সুন্নাহ ওয়াল জামায়াতের আক্বিদা পোষণ করি। আমরা চেষ্টা করি নবীজির (সা) সুন্নাহ, সাহাবীগণ (রাঃ) এবং তাবেয়ী-তাবে তাবেয়ীগণের (রহ) আমল ও শিক্ষা অনুসরণ করার। যাবতীয় শিরক ও বিদআত থেকে আমরা দূরে থাকার চেষ্টা করি, যার প্রতিফলন এই অ্যাপে হয়ে থাকে।',
+            style: TextStyle(color: _textLo, fontSize: 13, height: 1.6),
+          ),
+          const SizedBox(height: 14),
+          const Text(
+            'আমাদের ফিকহী মাযহাব',
+            style: TextStyle(color: _gold, fontWeight: FontWeight.bold, fontSize: 14),
+          ),
+          const SizedBox(height: 6),
+          const Text(
+            'আমরা ফিকহে হানাফী (হানাফী মাযহাব) অনুসরণ করি। যেহেতু আমাদের অঞ্চলের বেশির ভাগ মানুষ হানাফী মাযহাব অনুসরণ করেন, তাই এই অ্যাপের সমস্ত ডিফল্ট সেটিংস, নামাজের সময়সূচী এবং ফিকহী মাসআলাসমূহ সম্পূর্ণরূপে হানাফী ফিকহ অনুযায়ী সাজানো হয়েছে।',
+            style: TextStyle(color: _textLo, fontSize: 13, height: 1.6),
+          ),
+
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 16),
+            child: Divider(color: Color(0x1A7BAF92), height: 1),
+          ),
+
+          // ENGLISH SECTION
+          const Text(
+            'Our Aqeedah',
+            style: TextStyle(color: _gold, fontWeight: FontWeight.bold, fontSize: 14),
+          ),
+          const SizedBox(height: 6),
+          const Text(
+            'We hold the Aqeedah (creed) of Ahlus Sunnah wal Jama\'ah. We strive to follow the Sunnah of the Prophet (ﷺ), and the practices and teachings of the Companions (Sahabah), the Tabi\'un, and the Atba\' al-Tabi\'un. We sincerely endeavor to stay away from all forms of Shirk (polytheism) and Bid\'ah (innovation), which is strictly reflected throughout this app.',
+            style: TextStyle(color: _textLo, fontSize: 13, height: 1.6),
+          ),
+          const SizedBox(height: 14),
+          const Text(
+            'Fiqh School of Thought',
+            style: TextStyle(color: _gold, fontWeight: FontWeight.bold, fontSize: 14),
+          ),
+          const SizedBox(height: 6),
+          const Text(
+            'We strictly follow the Hanafi Fiqh (Hanafi Madhhab). Since the vast majority of Muslims in our region follow the Hanafi school of thought, all the default settings, prayer time calculations, and Islamic rulings (Mas\'alah) provided in this app are completely based on the Hanafi Fiqh.',
+            style: TextStyle(color: _textLo, fontSize: 13, height: 1.6),
+          ),
+        ],
+      ),
     );
   }
 
@@ -260,50 +322,6 @@ class AboutPage extends StatelessWidget {
           child: Text(c, style: const TextStyle(color: _textLo, fontSize: 13, height: 1.5)),
         ))
             .toList(),
-      ),
-    );
-  }
-
-  // Portrait: vertical list
-  Widget _infoCard() {
-    final info = [
-      ('Version', '2.5.0'),
-      ('Build', '250'),
-      ('Released', 'April 2026'),
-      ('Platform', 'iOS & Android'),
-      ('Developer', 'Islamic App Team'),
-      ('Country', '🇧🇩 Bangladesh'),
-      ('Size', '~32 MB'),
-      ('Requires', 'Android 6.0+ / iOS 13+'),
-    ];
-    return Container(
-      decoration: BoxDecoration(
-        color: _card,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: _accentSoft.withOpacity(0.2)),
-      ),
-      child: Column(
-        children: info.asMap().entries.map((e) {
-          final isLast = e.key == info.length - 1;
-          final item = e.value;
-          return Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(item.$1, style: const TextStyle(color: _textLo, fontSize: 13)),
-                    Text(item.$2,
-                        style: const TextStyle(
-                            color: _textHi, fontWeight: FontWeight.w600, fontSize: 13)),
-                  ],
-                ),
-              ),
-              if (!isLast) Divider(height: 1, color: _accentSoft.withOpacity(0.15)),
-            ],
-          );
-        }).toList(),
       ),
     );
   }
@@ -361,44 +379,6 @@ class AboutPage extends StatelessWidget {
           Text(value,
               style: const TextStyle(color: _textHi, fontWeight: FontWeight.w600, fontSize: 13)),
         ],
-      ),
-    );
-  }
-
-  Widget _legalCard() {
-    return Container(
-      decoration: BoxDecoration(
-        color: _card,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: _accentSoft.withOpacity(0.2)),
-      ),
-      child: Column(
-        children: [
-          _legalTile(Icons.privacy_tip_outlined, 'Privacy Policy',
-              'https://islamicapp.dev/privacy'),
-          Divider(height: 1, color: _accentSoft.withOpacity(0.15)),
-          _legalTile(Icons.gavel_outlined, 'Terms of Service',
-              'https://islamicapp.dev/terms'),
-          Divider(height: 1, color: _accentSoft.withOpacity(0.15)),
-          _legalTile(Icons.source, 'Open Source Licenses', null),
-        ],
-      ),
-    );
-  }
-
-  Widget _legalTile(IconData icon, String title, String? url) {
-    return GestureDetector(
-      onTap: url != null ? () => launchUrl(Uri.parse(url)) : null,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        child: Row(
-          children: [
-            Icon(icon, color: _accent, size: 20),
-            const SizedBox(width: 14),
-            Expanded(child: Text(title, style: const TextStyle(color: _textHi, fontSize: 14))),
-            const Icon(Icons.arrow_forward_ios, color: _textLo, size: 14),
-          ],
-        ),
       ),
     );
   }

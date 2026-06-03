@@ -126,7 +126,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   padding: EdgeInsets.symmetric(horizontal: hPad),
                   child: Column(
                     children: [
-                      if (_editing) _editForm() else _statsRow(isWide),
+                      // if (_editing) _editForm() else _statsRow(isWide),
                       const SizedBox(height: 24),
                       _infoSection(),
                       const SizedBox(height: 32),
@@ -257,7 +257,7 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget _statsRow(bool isWide) {
+  /* Widget _statsRow(bool isWide) {
     return Row(
       children: [
         _statCard('0', 'Days\nStreak',   Icons.local_fire_department_outlined, isWide),
@@ -268,6 +268,8 @@ class _ProfilePageState extends State<ProfilePage> {
       ],
     );
   }
+
+   */
 
   Widget _statCard(String value, String label, IconData icon, bool isWide) {
     return Expanded(

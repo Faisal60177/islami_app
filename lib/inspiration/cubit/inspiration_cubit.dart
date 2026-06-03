@@ -17,6 +17,63 @@ class InspirationCubit extends Cubit<InspirationState> {
     currentLanguageCode = languageCode;
   }
 
+  // ── Smart load: SQLite first, Firestore silently in background ──
+  // Called once on page open. Never emits InspirationLoading if
+  // SQLite already has data — so no spinner on returning visits.
+  Future<void> loadCategoriesIfEmpty() async {
+    try {
+      final categories =
+      await repository.getAllCategories(currentLanguageCode);
+
+      if (categories.isEmpty) {
+        // ── First launch: SQLite empty → must sync from Firestore ──
+        emit(InspirationLoading());
+        await repository.syncCategoriesFromFirestore();
+        await repository.syncInspirationsFromFirestore();
+        final refreshed =
+        await repository.getAllCategories(currentLanguageCode);
+        final inspirations = await repository.getAllInspirations(
+          languageCode: currentLanguageCode,
+          userId:       userId,
+        );
+        emit(InspirationCategoriesLoaded(refreshed));
+        emit(InspirationLoaded(inspirations));
+      } else {
+        // ── Has data: emit instantly with no spinner ──────────────
+        final inspirations = await repository.getAllInspirations(
+          languageCode: currentLanguageCode,
+          userId:       userId,
+        );
+        emit(InspirationCategoriesLoaded(categories));
+        emit(InspirationLoaded(inspirations));
+
+        // ── Background sync — silent, no loading state emitted ───
+        _syncSilently();
+      }
+    } catch (e) {
+      emit(InspirationError(e.toString()));
+    }
+  }
+
+  // Syncs Firestore in background without touching UI state
+  Future<void> _syncSilently() async {
+    try {
+      await repository.syncCategoriesFromFirestore();
+      await repository.syncInspirationsFromFirestore();
+      // Refresh data after sync — still no loading spinner
+      final categories =
+      await repository.getAllCategories(currentLanguageCode);
+      final inspirations = await repository.getAllInspirations(
+        languageCode: currentLanguageCode,
+        userId:       userId,
+      );
+      emit(InspirationCategoriesLoaded(categories));
+      emit(InspirationLoaded(inspirations));
+    } catch (_) {
+      // Silent — don't show error for background sync failures
+    }
+  }
+
   // ── Categories ──────────────────────────────────────────
 
   void loadCategories() async {
@@ -91,9 +148,9 @@ class InspirationCubit extends Cubit<InspirationState> {
     inspiration.isFavorite = !inspiration.isFavorite;
     try {
       await repository.toggleFavorite(inspiration, userId);
-      emit(InspirationLoaded([]));
+      emit(InspirationLoaded([])); // lightweight signal
     } catch (e) {
-      inspiration.isFavorite = !inspiration.isFavorite;
+      inspiration.isFavorite = !inspiration.isFavorite; // revert
       emit(InspirationError(e.toString()));
     }
   }
@@ -102,9 +159,9 @@ class InspirationCubit extends Cubit<InspirationState> {
     inspiration.isBookmarked = !inspiration.isBookmarked;
     try {
       await repository.toggleBookmark(inspiration, userId);
-      emit(InspirationLoaded([]));
+      emit(InspirationLoaded([])); // lightweight signal
     } catch (e) {
-      inspiration.isBookmarked = !inspiration.isBookmarked;
+      inspiration.isBookmarked = !inspiration.isBookmarked; // revert
       emit(InspirationError(e.toString()));
     }
   }
@@ -127,16 +184,12 @@ class InspirationCubit extends Cubit<InspirationState> {
     loadCategories();
   }
 
-  // ── Firestore Sync ───────────────────────────────────────
-  // ✅ Call this FIRST before loadCategories
-  // Without sync, SQLite is empty → nothing shows
-
+  // ── Firestore Sync (explicit full sync with spinner) ─────
   Future<void> syncFromFirestore() async {
     emit(InspirationLoading());
     try {
       await repository.syncCategoriesFromFirestore();
       await repository.syncInspirationsFromFirestore();
-      // After sync → load categories → listener loads inspirations
       loadCategories();
     } catch (e) {
       emit(InspirationError(e.toString()));
