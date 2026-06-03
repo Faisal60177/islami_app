@@ -50,7 +50,6 @@ dependencies:
   audioplayers: ^6.6.0
   sqflite: ^2.4.2
   marquee: ^2.3.0
-  qcf_quran: ^0.0.5
   firebase_auth: ^6.3.0
   path_provider: ^2.1.5
   firebase_core: ^4.6.0
@@ -147,7 +146,6 @@ flutter:
     - assets/icons/prayer_time.png
     - assets/icons/inspiration.png
     - assets/icons/masail.png
-    - assets/icons/mosque.png
     - assets/json/quran_metadata.json
     - assets/icons/AppIcon.png
 
