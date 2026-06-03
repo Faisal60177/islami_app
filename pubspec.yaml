@@ -106,19 +106,21 @@ flutter_launcher_icons:
     ios: true
     image_path: "assets/icons/AppIcon.png"
     remove_alpha_ios: true
+    adaptive_icon_background: "#0a3d1f"        # ← add
+    adaptive_icon_foreground: "assets/icons/AppIcon.png"  # ← add
 
 
 flutter_native_splash:
-  color: "#0a3d1f"
+  color: "#0A3D1F"
   image: assets/icons/AppIcon.png
-  color_dark: "#0a3d1f"
+  color_dark: "#0A3D1F"
   image_dark: assets/icons/AppIcon.png
   fullscreen: true
   android_12:
     image: assets/icons/AppIcon.png
-    icon_background_color: "#0a3d1f"
+    icon_background_color: "#0A3D1F"
     image_dark: assets/icons/AppIcon.png
-    icon_background_color_dark: "#0a3d1f"
+    icon_background_color_dark: "#0A3D1F"
 
     # Optional: Adaptive icon for Android
     # daptive_icon_background: "#ffffff"  # or image path
@@ -147,7 +149,6 @@ flutter:
     - assets/icons/masail.png
     - assets/icons/mosque.png
     - assets/json/quran_metadata.json
-    - assets/icons/AppIcon_foreground.png
     - assets/icons/AppIcon.png
 
   # To add json to your application, add an json section, like this:
