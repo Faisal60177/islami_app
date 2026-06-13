@@ -74,6 +74,9 @@ const Map<String, Map<String, String>> _translations = {
     'enable_gps_permission_desc': 'Please enable GPS permission in your device settings.',
     'result': 'result',
     'found': 'found',
+    'search': 'Search',
+    'save': 'Save',
+
 
     //duas page
     'category': 'Category',
@@ -250,6 +253,8 @@ const Map<String, Map<String, String>> _translations = {
     'enable_gps_permission_desc': 'يرجى تمكين إذن GPS في إعدادات جهازك.',
     'result': 'نتيجة',
     'found': 'تم العثور عليها',
+    'search': 'بحث',
+    'save': 'حفظ',
 
     'category': 'الفئة',
     'all': 'الكل',
@@ -423,6 +428,8 @@ const Map<String, Map<String, String>> _translations = {
     'enable_gps_permission_desc': 'অনুগ্রহ করে আপনার ডিভাইসের সেটিংসে GPS অনুমতি সক্রিয় করুন।',
     'result': 'ফলাফল',
     'found': 'পাওয়া গেছে',
+    'search': 'অনুসন্ধান',
+    'save': 'সংরক্ষণ করুন',
 
     'category': 'বিভাগ',
     'all': 'সব',
@@ -635,6 +642,8 @@ const Map<String, Map<String, String>> _translations = {
     'enable_gps_permission_desc': 'براہ کرم اپنے ڈیوائس کی ترتیبات میں GPS اجازت فعال کریں۔',
     'result': 'نتیجہ',
     'found': 'مل گیا',
+    'search': 'تلاش',
+    'save': 'محفوظ کریں',
 
     'category': 'زمرہ',
     'all': 'سب',
@@ -808,6 +817,9 @@ const Map<String, Map<String, String>> _translations = {
     'enable_gps_permission_desc': 'Lütfen cihazınızın ayarlarından GPS iznini etkinleştirin.',
     'result': 'sonuç',
     'found': 'bulundu',
+    'search': 'Ara',
+    'save': 'Kaydet',
+
 
     'category': 'Kategori',
     'all': 'Tümü',
@@ -981,6 +993,8 @@ const Map<String, Map<String, String>> _translations = {
     'enable_gps_permission_desc': 'Harap aktifkan izin GPS di pengaturan perangkat Anda.',
     'result': 'hasil',
     'found': 'ditemukan',
+    'search': 'Cari',
+    'save': 'Simpan',
 
     'category': 'Kategori',
     'all': 'Semua',
@@ -1154,6 +1168,8 @@ const Map<String, Map<String, String>> _translations = {
     'enable_gps_permission_desc': 'Sila aktifkan kebenaran GPS dalam tetapan peranti anda.',
     'result': 'keputusan',
     'found': 'ditemui',
+    'search': 'Cari',
+    'save': 'Simpan',
 
     'category': 'Kategori',
     'all': 'Semua',
@@ -1327,6 +1343,8 @@ const Map<String, Map<String, String>> _translations = {
     'enable_gps_permission_desc': 'Veuillez activer l\'autorisation GPS dans les paramètres de votre appareil.',
     'result': 'résultat',
     'found': 'trouvé',
+    'search': 'Rechercher',
+    'save': 'Enregistrer',
 
     'category': 'Catégorie',
     'all': 'Tout',
@@ -1499,6 +1517,8 @@ const Map<String, Map<String, String>> _translations = {
     'enable_gps_permission_desc': 'Bitte aktivieren Sie die GPS-Berechtigung in den Geräteeinstellungen.',
     'result': 'Ergebnis',
     'found': 'gefunden',
+    'search': 'Suchen',
+    'save': 'Speichern',
 
     'category': 'Catégorie',
     'all': 'Tout',
@@ -1671,6 +1691,8 @@ const Map<String, Map<String, String>> _translations = {
     'enable_gps_permission_desc': 'Пожалуйста, включите разрешение GPS в настройках устройства.',
     'result': 'результат',
     'found': 'найдено',
+    'search': 'Поиск',
+    'save': 'Сохранить',
 
     'category': 'Категория',
     'all': 'Все',
@@ -1955,6 +1977,8 @@ class AppLocalizations {
   String get enableGpsPermissionDesc     => translate('enable_gps_permission_desc');
   String get result                      => translate('result');
   String get found                       => translate('found');
+  String get search                      => translate('search');
+  String get save                        => translate('save');
 
 
 

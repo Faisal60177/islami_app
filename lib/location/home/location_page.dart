@@ -312,7 +312,7 @@ class _LocationPageState extends State<LocationPage>
                 ],
               ),
               child: Text(
-                "Search",
+                l10n.search,
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: sw * 0.042,
@@ -607,7 +607,7 @@ class _LocationPageState extends State<LocationPage>
           ),
           child: Center(
             child: Text(
-              l10n.saved, // add 'save': 'Save' key to all 10 languages
+              l10n.save,
               style: TextStyle(
                 color: Colors.white,
                 fontSize: sw * 0.045,
