@@ -32,6 +32,7 @@ class PrayerTimesPage extends StatefulWidget {
 
 class _PrayerTimesPageState extends State<PrayerTimesPage> {
 
+
   //_ringData()
   ({
   String topLabel,
@@ -278,17 +279,48 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
             onRefresh: () async {
               final locationCubit = context.read<LocationCubit>();
 
-              // Trigger GPS — same as the GPS button in LocationPage.
-              // PrayerTimesCubit will react to the new saved location automatically.
               locationCubit.getGPSLocation();
 
-              // Keep the spinner visible until location resolves or times out.
-              await Future.any([
+              final result = await Future.any([
                 Stream.periodic(const Duration(milliseconds: 100))
                     .asyncMap((_) => locationCubit.state)
                     .firstWhere((s) => s is LocationLoaded || s is LocationPermissionDenied),
                 Future.delayed(const Duration(seconds: 10)),
               ]);
+
+              if (!context.mounted) return;
+
+              if (result is LocationLoaded) {
+                await locationCubit.saveCurrentLocation();
+                if (!context.mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(l10n.locationUpdatedSuccessfully),
+                    backgroundColor: accent,
+                    behavior: SnackBarBehavior.floating,
+                    duration: const Duration(seconds: 2),
+                  ),
+                );
+              } else if (result is LocationPermissionDenied) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(l10n.permissionDenied),
+                    backgroundColor: Colors.red[400],
+                    behavior: SnackBarBehavior.floating,
+                    duration: const Duration(seconds: 2),
+                  ),
+                );
+              } else {
+                // timeout case (10 seconds elapsed, result is null)
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(l10n.permissionDenied), // add this key too
+                    backgroundColor: Colors.orange[400],
+                    behavior: SnackBarBehavior.floating,
+                    duration: const Duration(seconds: 2),
+                  ),
+                );
+              }
             },
             child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
@@ -468,24 +500,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                             ),
                           ),
 
-                          // ── 3. "Prayer Time" label ────────────────────────────
-                          Positioned(
-                            top:   heroH * 0.30,
-                            left:  0, right: 0,
-                            child: Center(
-                              child: Text(
-                                'Prayer Time',
-                                style: TextStyle(
-                                  color:         Colors.white.withOpacity(0.90),
-                                  fontSize:      (rsw * 0.040).clamp(14.0, 18.0),
-                                  fontWeight:    FontWeight.w600,
-                                  letterSpacing: 0.5,
-                                ),
-                              ),
-                            ),
-                          ),
-
-                          // ── 4. Ring (only when loaded) ────────────────────────
+                          // ── 3. Ring (only when loaded) ────────────────────────
                           if (state is PrayerTimesLoaded && ringData != null)
                             Positioned(
                               top:   heroH * 0.36,
@@ -502,7 +517,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                               ),
                             ),
 
-                          // ── 5. Loading spinner ────────────────────────────────
+                          // ── 4. Loading spinner ────────────────────────────────
                           if (state is PrayerTimesLoading)
                             Positioned.fill(
                               child: Center(

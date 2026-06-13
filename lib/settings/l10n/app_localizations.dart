@@ -62,6 +62,19 @@ const Map<String, Map<String, String>> _translations = {
     'notification': 'Notification',
     'masail': 'Masail',
 
+    'location_updated_successfully': 'Location updated successfully',
+    'location_saved_successfully': 'Location saved successfully',
+    'set_up_location': 'Set Up Location',
+    'find_city_for_prayer_times': 'Find your city for prayer times',
+    'search_your_city': 'Search your city...',
+    'current_location': 'Current Location',
+    'use_current_location_gps': 'Use Current Location (GPS)',
+    'detecting_your_location': 'Detecting your location...',
+    'location_permission_denied_title': 'Location Permission Denied',
+    'enable_gps_permission_desc': 'Please enable GPS permission in your device settings.',
+    'result': 'result',
+    'found': 'found',
+
     //duas page
     'category': 'Category',
     'all': 'All',
@@ -225,6 +238,19 @@ const Map<String, Map<String, String>> _translations = {
     'notification': 'الإشعارات',
     'masail': 'مسائل',
 
+    'location_updated_successfully': 'تم تحديث الموقع بنجاح',
+    'location_saved_successfully': 'تم حفظ الموقع بنجاح',
+    'set_up_location': 'تعيين الموقع',
+    'find_city_for_prayer_times': 'ابحث عن مدينتك لأوقات الصلاة',
+    'search_your_city': 'ابحث عن مدينتك...',
+    'current_location': 'الموقع الحالي',
+    'use_current_location_gps': 'استخدام الموقع الحالي (GPS)',
+    'detecting_your_location': 'جارٍ تحديد موقعك...',
+    'location_permission_denied_title': 'تم رفض إذن الموقع',
+    'enable_gps_permission_desc': 'يرجى تمكين إذن GPS في إعدادات جهازك.',
+    'result': 'نتيجة',
+    'found': 'تم العثور عليها',
+
     'category': 'الفئة',
     'all': 'الكل',
     'favorite': 'المفضلة',
@@ -384,6 +410,19 @@ const Map<String, Map<String, String>> _translations = {
     'calendar': 'ক্যালেন্ডার',
     'notification': 'নোটিফিকেশন',
     'masail': 'মাসাইল',
+
+    'location_updated_successfully': 'অবস্থান সফলভাবে আপডেট হয়েছে',
+    'location_saved_successfully': 'অবস্থান সফলভাবে সংরক্ষিত হয়েছে',
+    'set_up_location': 'অবস্থান সেট করুন',
+    'find_city_for_prayer_times': 'নামাজের সময়ের জন্য আপনার শহর খুঁজুন',
+    'search_your_city': 'আপনার শহর খুঁজুন...',
+    'current_location': 'বর্তমান অবস্থান',
+    'use_current_location_gps': 'বর্তমান অবস্থান ব্যবহার করুন (GPS)',
+    'detecting_your_location': 'আপনার অবস্থান সনাক্ত করা হচ্ছে...',
+    'location_permission_denied_title': 'অবস্থান অনুমতি প্রত্যাখ্যাত',
+    'enable_gps_permission_desc': 'অনুগ্রহ করে আপনার ডিভাইসের সেটিংসে GPS অনুমতি সক্রিয় করুন।',
+    'result': 'ফলাফল',
+    'found': 'পাওয়া গেছে',
 
     'category': 'বিভাগ',
     'all': 'সব',
@@ -584,6 +623,19 @@ const Map<String, Map<String, String>> _translations = {
     'quote_patience': '"صبر اور نماز کے ذریعے مدد مانگو۔"',
     'quote_patience_ref': '— قرآن 2:45',
 
+    'location_updated_successfully': 'مقام کامیابی سے اپ ڈیٹ ہو گیا',
+    'location_saved_successfully': 'مقام کامیابی سے محفوظ ہو گیا',
+    'set_up_location': 'مقام سیٹ کریں',
+    'find_city_for_prayer_times': 'نماز کے اوقات کے لیے اپنا شہر تلاش کریں',
+    'search_your_city': 'اپنا شہر تلاش کریں...',
+    'current_location': 'موجودہ مقام',
+    'use_current_location_gps': 'موجودہ مقام استعمال کریں (GPS)',
+    'detecting_your_location': 'آپ کا مقام معلوم کیا جا رہا ہے...',
+    'location_permission_denied_title': 'مقام کی اجازت مسترد',
+    'enable_gps_permission_desc': 'براہ کرم اپنے ڈیوائس کی ترتیبات میں GPS اجازت فعال کریں۔',
+    'result': 'نتیجہ',
+    'found': 'مل گیا',
+
     'category': 'زمرہ',
     'all': 'سب',
     'favorite': 'پسندیدہ',
@@ -743,6 +795,19 @@ const Map<String, Map<String, String>> _translations = {
     'version': 'Sürüm 2.5.0',
     'quote_patience': '"Sabır ve namazla yardım isteyin."',
     'quote_patience_ref': '— Kuran 2:45',
+
+    'location_updated_successfully': 'Konum başarıyla güncellendi',
+    'location_saved_successfully': 'Konum başarıyla kaydedildi',
+    'set_up_location': 'Konumu Ayarla',
+    'find_city_for_prayer_times': 'Namaz vakitleri için şehrinizi bulun',
+    'search_your_city': 'Şehrinizi arayın...',
+    'current_location': 'Mevcut Konum',
+    'use_current_location_gps': 'Mevcut Konumu Kullan (GPS)',
+    'detecting_your_location': 'Konumunuz tespit ediliyor...',
+    'location_permission_denied_title': 'Konum İzni Reddedildi',
+    'enable_gps_permission_desc': 'Lütfen cihazınızın ayarlarından GPS iznini etkinleştirin.',
+    'result': 'sonuç',
+    'found': 'bulundu',
 
     'category': 'Kategori',
     'all': 'Tümü',
@@ -904,6 +969,19 @@ const Map<String, Map<String, String>> _translations = {
     'quote_patience': '"Dan mintalah pertolongan dengan sabar dan shalat."',
     'quote_patience_ref': '— Quran 2:45',
 
+    'location_updated_successfully': 'Lokasi berhasil diperbarui',
+    'location_saved_successfully': 'Lokasi berhasil disimpan',
+    'set_up_location': 'Atur Lokasi',
+    'find_city_for_prayer_times': 'Temukan kota Anda untuk waktu shalat',
+    'search_your_city': 'Cari kota Anda...',
+    'current_location': 'Lokasi Saat Ini',
+    'use_current_location_gps': 'Gunakan Lokasi Saat Ini (GPS)',
+    'detecting_your_location': 'Mendeteksi lokasi Anda...',
+    'location_permission_denied_title': 'Izin Lokasi Ditolak',
+    'enable_gps_permission_desc': 'Harap aktifkan izin GPS di pengaturan perangkat Anda.',
+    'result': 'hasil',
+    'found': 'ditemukan',
+
     'category': 'Kategori',
     'all': 'Semua',
     'favorite': 'Favorit',
@@ -1063,6 +1141,19 @@ const Map<String, Map<String, String>> _translations = {
     'version': 'Versi 2.5.0',
     'quote_patience': '"Dan mintalah pertolongan dengan sabar dan solat."',
     'quote_patience_ref': '— Quran 2:45',
+
+    'location_updated_successfully': 'Lokasi berjaya dikemas kini',
+    'location_saved_successfully': 'Lokasi berjaya disimpan',
+    'set_up_location': 'Tetapkan Lokasi',
+    'find_city_for_prayer_times': 'Cari bandar anda untuk waktu solat',
+    'search_your_city': 'Cari bandar anda...',
+    'current_location': 'Lokasi Semasa',
+    'use_current_location_gps': 'Gunakan Lokasi Semasa (GPS)',
+    'detecting_your_location': 'Mengesan lokasi anda...',
+    'location_permission_denied_title': 'Kebenaran Lokasi Ditolak',
+    'enable_gps_permission_desc': 'Sila aktifkan kebenaran GPS dalam tetapan peranti anda.',
+    'result': 'keputusan',
+    'found': 'ditemui',
 
     'category': 'Kategori',
     'all': 'Semua',
@@ -1224,6 +1315,19 @@ const Map<String, Map<String, String>> _translations = {
     'quote_patience': '"Cherchez aide par la patience et la prière."',
     'quote_patience_ref': '— Coran 2:45',
 
+    'location_updated_successfully': 'Localisation mise à jour avec succès',
+    'location_saved_successfully': 'Localisation enregistrée avec succès',
+    'set_up_location': 'Configurer la localisation',
+    'find_city_for_prayer_times': 'Trouvez votre ville pour les horaires de prière',
+    'search_your_city': 'Rechercher votre ville...',
+    'current_location': 'Position actuelle',
+    'use_current_location_gps': 'Utiliser la position actuelle (GPS)',
+    'detecting_your_location': 'Détection de votre position...',
+    'location_permission_denied_title': 'Permission de localisation refusée',
+    'enable_gps_permission_desc': 'Veuillez activer l\'autorisation GPS dans les paramètres de votre appareil.',
+    'result': 'résultat',
+    'found': 'trouvé',
+
     'category': 'Catégorie',
     'all': 'Tout',
     'favorite': 'Favori',
@@ -1383,6 +1487,19 @@ const Map<String, Map<String, String>> _translations = {
     'quote_patience': '"Sucht Hilfe durch Geduld und Gebet."',
     'quote_patience_ref': '— Koran 2:45',
 
+    'location_updated_successfully': 'Standort erfolgreich aktualisiert',
+    'location_saved_successfully': 'Standort erfolgreich gespeichert',
+    'set_up_location': 'Standort einrichten',
+    'find_city_for_prayer_times': 'Finden Sie Ihre Stadt für Gebetszeiten',
+    'search_your_city': 'Stadt suchen...',
+    'current_location': 'Aktueller Standort',
+    'use_current_location_gps': 'Aktuellen Standort verwenden (GPS)',
+    'detecting_your_location': 'Standort wird ermittelt...',
+    'location_permission_denied_title': 'Standortberechtigung verweigert',
+    'enable_gps_permission_desc': 'Bitte aktivieren Sie die GPS-Berechtigung in den Geräteeinstellungen.',
+    'result': 'Ergebnis',
+    'found': 'gefunden',
+
     'category': 'Catégorie',
     'all': 'Tout',
     'favorite': 'Favori',
@@ -1541,6 +1658,19 @@ const Map<String, Map<String, String>> _translations = {
     'version': 'Версия 2.5.0',
     'quote_patience': '"Ищите помощи в терпении и молитве."',
     'quote_patience_ref': '— Коран 2:45',
+
+    'location_updated_successfully': 'Местоположение успешно обновлено',
+    'location_saved_successfully': 'Местоположение успешно сохранено',
+    'set_up_location': 'Настроить местоположение',
+    'find_city_for_prayer_times': 'Найдите свой город для времени молитв',
+    'search_your_city': 'Поиск города...',
+    'current_location': 'Текущее местоположение',
+    'use_current_location_gps': 'Использовать текущее местоположение (GPS)',
+    'detecting_your_location': 'Определение вашего местоположения...',
+    'location_permission_denied_title': 'Доступ к местоположению запрещён',
+    'enable_gps_permission_desc': 'Пожалуйста, включите разрешение GPS в настройках устройства.',
+    'result': 'результат',
+    'found': 'найдено',
 
     'category': 'Категория',
     'all': 'Все',
@@ -1810,7 +1940,21 @@ class AppLocalizations {
   String get listenToRecitation    => translate('listen_to_recitation');
   String get duasAdhkar            => translate('duas_adhkar');
   String get saved                 => translate('saved');
-  String get searchDuasHint => translate('search_duas_hint'); // hint text
+  String get searchDuasHint => translate('search_duas_hint');
+
+  //location page
+  String get locationUpdatedSuccessfully => translate('location_updated_successfully');
+  String get locationSavedSuccessfully   => translate('location_saved_successfully');
+  String get setUpLocation               => translate('set_up_location');
+  String get findCityForPrayerTimes      => translate('find_city_for_prayer_times');
+  String get searchYourCity              => translate('search_your_city');
+  String get currentLocation             => translate('current_location');
+  String get useCurrentLocationGps       => translate('use_current_location_gps');
+  String get detectingYourLocation       => translate('detecting_your_location');
+  String get locationPermissionDeniedTitle => translate('location_permission_denied_title');
+  String get enableGpsPermissionDesc     => translate('enable_gps_permission_desc');
+  String get result                      => translate('result');
+  String get found                       => translate('found');
 
 
 

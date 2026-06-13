@@ -4,6 +4,9 @@ import 'package:muslim_app/location/cubit/location_cubit.dart';
 import 'package:muslim_app/location/cubit/location_state.dart';
 import 'package:muslim_app/location/model/location_model.dart';
 
+import '../../settings/cubit/settings_cubit.dart';
+import '../../settings/l10n/app_localizations.dart';
+
 class LocationPage extends StatefulWidget {
   const LocationPage({Key? key}) : super(key: key);
 
@@ -58,6 +61,8 @@ class _LocationPageState extends State<LocationPage>
   Widget build(BuildContext context) {
     final sw = MediaQuery.of(context).size.width;
     final sh = MediaQuery.of(context).size.height;
+    final l10n = AppLocalizations(context.watch<SettingsCubit>().state.languageCode);
+
 
     return Scaffold(
       backgroundColor: const Color(0xFF0A1F14),
@@ -115,19 +120,6 @@ class _LocationPageState extends State<LocationPage>
 
           // ── Main Content ──
           SafeArea(
-            child: BlocListener<LocationCubit, LocationState>(
-              listener: (context, state) {
-
-
-                if (state is LocationLoaded) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text("Location saved successfully ✅"),
-                      duration: Duration(seconds: 2),
-                    ),
-                  );
-                }
-              },
 
             child: BlocBuilder<LocationCubit, LocationState>(
               builder: (context, state) {
@@ -135,7 +127,7 @@ class _LocationPageState extends State<LocationPage>
                   opacity: _fadeAnimation,
                   child: SlideTransition(
                     position: _slideAnimation,
-                    child: Padding(
+                    child: SingleChildScrollView(
                       padding: EdgeInsets.symmetric(
                         horizontal: sw * 0.05,
                         vertical: sh * 0.015,
@@ -144,34 +136,34 @@ class _LocationPageState extends State<LocationPage>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           // ── Header ──
-                          _buildHeader(sw),
+                          _buildHeader(sw, l10n),
                           SizedBox(height: sh * 0.035),
 
                           // ── Search Bar ──
-                          _buildSearchBar(context, sw, sh),
+                          _buildSearchBar(context, sw, sh, l10n),
                           SizedBox(height: sh * 0.025),
 
                           // ── Saved Location Card ──
                           if (state is LocationLoaded) ...[
-                            _buildLocationCard(state.location, sw, sh),
+                            _buildLocationCard(state.location, sw, sh, l10n),
                             SizedBox(height: sh * 0.02),
-
-                            // ── GPS Button ──
-                            _buildGPSButton(context, state, sw, sh),
+                            _buildGPSButton(context, state, sw, sh, l10n),
+                            SizedBox(height: sh * 0.03),
+                            _buildSaveButton(context, state, sw, sh, l10n),
                             SizedBox(height: sh * 0.03),
                           ],
 
                           // ── Loading Indicator ──
                           if (state is LocationLoading)
-                            _buildLoadingState(sw, sh),
+                            _buildLoadingState(sw, sh, l10n),
 
                           // ── Permission Denied ──
                           if (state is LocationPermissionDenied)
-                            _buildPermissionDenied(sw),
+                            _buildPermissionDenied(sw, l10n),
 
                           // ── Search Results ──
                           if (state is LocationSearchResults)
-                            _buildSearchResults(context, state, sw, sh),
+                            _buildSearchResults(context, state, sw, sh, l10n),
                         ],
                       ),
                     ),
@@ -180,14 +172,13 @@ class _LocationPageState extends State<LocationPage>
               },
             ),
           ),
-          ),
         ],
       ),
     );
   }
 
   // ────────────────────────────────────────────────
-  Widget _buildHeader(double sw) {
+  Widget _buildHeader(double sw, AppLocalizations l10n) {
     return Row(
       children: [
         GestureDetector(
@@ -214,7 +205,7 @@ class _LocationPageState extends State<LocationPage>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "Set Up Location",
+              l10n.setUpLocation,
               style: TextStyle(
                 color: Colors.white,
                 fontSize: sw * 0.065,
@@ -224,7 +215,7 @@ class _LocationPageState extends State<LocationPage>
               ),
             ),
             Text(
-              "Find your city for prayer times",
+              l10n.findCityForPrayerTimes,
               style: TextStyle(
                 color: Colors.white.withOpacity(0.45),
                 fontSize: sw * 0.035,
@@ -239,7 +230,7 @@ class _LocationPageState extends State<LocationPage>
   }
 
   // ────────────────────────────────────────────────
-  Widget _buildSearchBar(BuildContext context, double sw, double sh) {
+  Widget _buildSearchBar(BuildContext context, double sw, double sh, AppLocalizations l10n) {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(sw * 0.04),
@@ -273,7 +264,7 @@ class _LocationPageState extends State<LocationPage>
                   fontWeight: FontWeight.w400,
                 ),
                 decoration: InputDecoration(
-                  hintText: "Search your city...",
+                  hintText: l10n.searchYourCity,
                   hintStyle: TextStyle(
                     color: Colors.white.withOpacity(0.35),
                     fontSize: sw * 0.042,
@@ -337,7 +328,7 @@ class _LocationPageState extends State<LocationPage>
   }
 
   // ────────────────────────────────────────────────
-  Widget _buildLocationCard(LocationModel location, double sw, double sh) {
+  Widget _buildLocationCard(LocationModel location, double sw, double sh, AppLocalizations l10n) {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.symmetric(
@@ -391,7 +382,7 @@ class _LocationPageState extends State<LocationPage>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "Current Location",
+                  l10n.currentLocation,
                   style: TextStyle(
                     color: Colors.white.withOpacity(0.5),
                     fontSize: sw * 0.032,
@@ -402,6 +393,8 @@ class _LocationPageState extends State<LocationPage>
                 SizedBox(height: sh * 0.004),
                 Text(
                   "${location.city}, ${location.country}",
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: sw * 0.052,
@@ -422,7 +415,7 @@ class _LocationPageState extends State<LocationPage>
               borderRadius: BorderRadius.circular(sw * 0.02),
             ),
             child: Text(
-              "Active",
+              l10n.activeBadge,
               style: TextStyle(
                 color: const Color(0xFF4DFFA6),
                 fontSize: sw * 0.03,
@@ -438,7 +431,7 @@ class _LocationPageState extends State<LocationPage>
 
   // ────────────────────────────────────────────────
   Widget _buildGPSButton(
-      BuildContext context, LocationState state, double sw, double sh) {
+      BuildContext context, LocationState state, double sw, double sh, AppLocalizations l10n) {
     final isLoading = state is LocationLoading;
     return SizedBox(
       width: double.infinity,
@@ -483,7 +476,7 @@ class _LocationPageState extends State<LocationPage>
                 ),
               SizedBox(width: sw * 0.03),
               Text(
-                isLoading ? "Locating..." : "Use Current Location (GPS)",
+                isLoading ? l10n.loading : l10n.useCurrentLocationGps,
                 style: TextStyle(
                   color: isLoading
                       ? Colors.white.withOpacity(0.5)
@@ -501,8 +494,9 @@ class _LocationPageState extends State<LocationPage>
   }
 
   // ────────────────────────────────────────────────
-  Widget _buildLoadingState(double sw, double sh) {
-    return Expanded(
+  Widget _buildLoadingState(double sw, double sh, AppLocalizations l10n) {
+    return SizedBox(
+      height: sh * 0.5,
       child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -518,7 +512,7 @@ class _LocationPageState extends State<LocationPage>
             ),
             SizedBox(height: sh * 0.025),
             Text(
-              "Detecting your location...",
+              l10n.detectingYourLocation,
               style: TextStyle(
                 color: Colors.white.withOpacity(0.6),
                 fontSize: sw * 0.04,
@@ -532,7 +526,7 @@ class _LocationPageState extends State<LocationPage>
   }
 
   // ────────────────────────────────────────────────
-  Widget _buildPermissionDenied(double sw) {
+  Widget _buildPermissionDenied(double sw, AppLocalizations l10n) {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.all(sw * 0.06),
@@ -553,7 +547,7 @@ class _LocationPageState extends State<LocationPage>
           ),
           SizedBox(height: sw * 0.03),
           Text(
-            "Location Permission Denied",
+            l10n.locationPermissionDeniedTitle,
             style: TextStyle(
               color: Colors.white,
               fontSize: sw * 0.045,
@@ -563,7 +557,7 @@ class _LocationPageState extends State<LocationPage>
           ),
           SizedBox(height: sw * 0.015),
           Text(
-            "Please enable GPS permission in your device cubit.",
+            l10n.enableGpsPermissionDesc,
             style: TextStyle(
               color: Colors.white.withOpacity(0.5),
               fontSize: sw * 0.037,
@@ -575,30 +569,83 @@ class _LocationPageState extends State<LocationPage>
     );
   }
 
-  // ────────────────────────────────────────────────
-  Widget _buildSearchResults(
-      BuildContext context, LocationSearchResults state, double sw, double sh) {
-    return Expanded(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: EdgeInsets.only(bottom: sh * 0.015, left: sw * 0.01),
+
+  Widget _buildSaveButton(BuildContext context, LocationState state, double sw, double sh, AppLocalizations l10n) {
+    if (state is! LocationLoaded) return const SizedBox.shrink();
+
+    return SizedBox(
+      width: double.infinity,
+      child: GestureDetector(
+        onTap: () async {
+          await context.read<LocationCubit>().saveCurrentLocation();
+          if (!context.mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(l10n.locationSavedSuccessfully),
+              backgroundColor: const Color(0xFF00A86B),
+              behavior: SnackBarBehavior.floating,
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        },
+        child: Container(
+          padding: EdgeInsets.symmetric(vertical: sh * 0.02),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF00A86B), Color(0xFF007A4D)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(sw * 0.04),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF00A86B).withOpacity(0.4),
+                blurRadius: 16,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Center(
             child: Text(
-              "${state.results.length} result${state.results.length != 1 ? 's' : ''} found",
+              l10n.saved, // add 'save': 'Save' key to all 10 languages
               style: TextStyle(
-                color: Colors.white.withOpacity(0.45),
-                fontSize: sw * 0.035,
-                fontWeight: FontWeight.w500,
+                color: Colors.white,
+                fontSize: sw * 0.045,
+                fontWeight: FontWeight.w700,
                 letterSpacing: 0.3,
               ),
             ),
           ),
-          Expanded(
-            child: ListView.separated(
-              itemCount: state.results.length,
-              separatorBuilder: (_, __) => SizedBox(height: sh * 0.012),
-              itemBuilder: (context, index) {
+        ),
+      ),
+    );
+  }
+
+
+  // ────────────────────────────────────────────────
+  Widget _buildSearchResults(
+      BuildContext context, LocationSearchResults state, double sw, double sh, AppLocalizations l10n) {
+    return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+    Padding(
+    padding: EdgeInsets.only(bottom: sh * 0.015, left: sw * 0.01),
+    child: Text(
+    "${state.results.length} ${l10n.result}${state.results.length != 1 ? 's' : ''} ${l10n.found}",
+    style: TextStyle(
+    color: Colors.white.withOpacity(0.45),
+    fontSize: sw * 0.035,
+    fontWeight: FontWeight.w500,
+    letterSpacing: 0.3,
+    ),
+    ),
+    ),
+    ListView.separated(
+    shrinkWrap: true,
+    physics: const NeverScrollableScrollPhysics(),
+    itemCount: state.results.length,
+    separatorBuilder: (_, __) => SizedBox(height: sh * 0.012),
+    itemBuilder: (context, index) {
                 final LocationModel loc = state.results[index];
                 return GestureDetector(
                   onTap: () =>
@@ -653,9 +700,7 @@ class _LocationPageState extends State<LocationPage>
                 );
               },
             ),
-          ),
         ],
-      ),
     );
   }
 }

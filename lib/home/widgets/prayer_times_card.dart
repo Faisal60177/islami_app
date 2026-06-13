@@ -32,7 +32,11 @@ class PrayerTimesCard extends StatelessWidget {
     if (inRange(prayerTimes.dhuhrStart,   prayerTimes.dhuhrEnd))   return 'Dhuhr';
     if (inRange(prayerTimes.asrStart,     prayerTimes.asrEnd))     return 'Asr';
     if (inRange(prayerTimes.maghribStart, prayerTimes.maghribEnd)) return 'Maghrib';
-    if (inRange(prayerTimes.ishaStart,    prayerTimes.ishaEnd))    return 'Isha';
+    final now_ = DateTime.now();
+    if (now_.isAfter(prayerTimes.ishaStart) || now_.isBefore(prayerTimes.fajrStart)) {
+      return 'Isha';
+    }
+
     return null;
   }
 
@@ -61,11 +65,11 @@ class PrayerTimesCard extends StatelessWidget {
           bgColor:     const Color(0xFF151D2E),
           accentColor: const Color(0xFF7B5EA7),
           children: [
-            _SalatRow(name: l10n.fajr,    icon: Icons.wb_twilight,       time: _range(prayerTimes.fajrStart,    prayerTimes.fajrEnd),    isActive: activeSalat == 'Fajr'),
-            _SalatRow(name: l10n.dhuhr,   icon: Icons.wb_sunny_outlined, time: _range(prayerTimes.dhuhrStart,   prayerTimes.dhuhrEnd),   isActive: activeSalat == 'Dhuhr'),
-            _SalatRow(name: l10n.asr,     icon: Icons.cloud_outlined,    time: _range(prayerTimes.asrStart,     prayerTimes.asrEnd),     isActive: activeSalat == 'Asr'),
-            _SalatRow(name: l10n.maghrib, icon: Icons.nights_stay,       time: _range(prayerTimes.maghribStart, prayerTimes.maghribEnd), isActive: activeSalat == 'Maghrib'),
-            _SalatRow(name: l10n.isha,    icon: Icons.dark_mode_outlined,time: _range(prayerTimes.ishaStart,    prayerTimes.ishaEnd),    isActive: activeSalat == 'Isha', isLast: true),
+            _SalatRow(name: l10n.fajr,    icon: Icons.wb_twilight,       time: _range(prayerTimes.fajrStart,    prayerTimes.fajrEnd),    isActive: activeSalat == 'Fajr', l10n: l10n),
+            _SalatRow(name: l10n.dhuhr,   icon: Icons.wb_sunny_outlined, time: _range(prayerTimes.dhuhrStart,   prayerTimes.dhuhrEnd),   isActive: activeSalat == 'Dhuhr', l10n: l10n),
+            _SalatRow(name: l10n.asr,     icon: Icons.cloud_outlined,    time: _range(prayerTimes.asrStart,     prayerTimes.asrEnd),     isActive: activeSalat == 'Asr', l10n: l10n),
+            _SalatRow(name: l10n.maghrib, icon: Icons.nights_stay,       time: _range(prayerTimes.maghribStart, prayerTimes.maghribEnd), isActive: activeSalat == 'Maghrib', l10n: l10n),
+            _SalatRow(name: l10n.isha,    icon: Icons.dark_mode_outlined,time: _range(prayerTimes.ishaStart,    prayerTimes.ishaEnd),    isActive: activeSalat == 'Isha', isLast: true, l10n: l10n),
           ],
         ),
 
@@ -79,9 +83,9 @@ class PrayerTimesCard extends StatelessWidget {
           bgColor:     const Color(0xFF1E1212),
           accentColor: Colors.red,
           children: [
-            _ProhibitedRow(name: l10n.sunrise, icon: Icons.wb_twilight,    time: _range(prayerTimes.sunRiseStart, prayerTimes.sunRiseEnd), isActive: activeProhibited == 'Sunrise'),
-            _ProhibitedRow(name: l10n.noon,    icon: Icons.wb_sunny,       time: _range(prayerTimes.noonStart,    prayerTimes.noonEnd),    isActive: activeProhibited == 'Noon'),
-            _ProhibitedRow(name: l10n.sunset,  icon: Icons.wb_cloudy,      time: _range(prayerTimes.sunSetStart,  prayerTimes.sunSetEnd),  isActive: activeProhibited == 'Sunset', isLast: true),
+            _ProhibitedRow(name: l10n.sunrise, icon: Icons.wb_twilight,    time: _range(prayerTimes.sunRiseStart, prayerTimes.sunRiseEnd), isActive: activeProhibited == 'Sunrise', l10n: l10n),
+            _ProhibitedRow(name: l10n.noon,    icon: Icons.wb_sunny,       time: _range(prayerTimes.noonStart,    prayerTimes.noonEnd),    isActive: activeProhibited == 'Noon', l10n: l10n),
+            _ProhibitedRow(name: l10n.sunset,  icon: Icons.wb_cloudy,      time: _range(prayerTimes.sunSetStart,  prayerTimes.sunSetEnd),  isActive: activeProhibited == 'Sunset', isLast: true, l10n: l10n),
           ],
         ),
 
@@ -198,11 +202,13 @@ class _SalatRow extends StatelessWidget {
   final IconData icon;      // ← add
   final bool     isActive;
   final bool     isLast;
+  final AppLocalizations l10n;
 
   const _SalatRow({
     required this.name,
     required this.time,
-    required this.icon,     // ← add
+    required this.icon,
+    required this.l10n,
     this.isActive = false,
     this.isLast   = false,
   });
@@ -239,7 +245,7 @@ class _SalatRow extends StatelessWidget {
                     color:        const Color(0xFF7B5EA7),
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: const Text('Active',
+                  child:  Text(l10n.active,
                       style: TextStyle(
                           color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600)),
                 ),
@@ -268,11 +274,13 @@ class _ProhibitedRow extends StatelessWidget {
   final IconData icon;      // ← add
   final bool     isActive;
   final bool     isLast;
+  final AppLocalizations l10n;
 
   const _ProhibitedRow({
     required this.name,
     required this.time,
-    required this.icon,     // ← add
+    required this.icon,
+    required this.l10n,
     this.isActive = false,
     this.isLast   = false,
   });
@@ -302,7 +310,7 @@ class _ProhibitedRow extends StatelessWidget {
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
-                  isActive ? 'Now' : 'Prohibited',
+                  isActive ? l10n.now : l10n.prohibited,
                   style: const TextStyle(
                       color: Color(0xFFFFCDD2), fontSize: 11, fontWeight: FontWeight.w600),
                 ),

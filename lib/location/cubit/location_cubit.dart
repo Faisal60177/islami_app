@@ -58,31 +58,14 @@ class LocationCubit extends Cubit<LocationState> {
 
     try {
       final location = await repository.getCurrentLocation();
-
-      // Replace last saved location
-      await storage.saveLocation(location);
-      print("New GPS Location Saved (replaces last):");
-      print(location.latitude);
-      print(location.longitude);
-      print(location.timeZone);
-      print(location.city);
-      print(location.country);
-
       emit(LocationLoaded(location));
     } catch (e) {
       emit(LocationError(e.toString()));
     }
   }
 
-  /// Search location → replace last saved location
+  /// Search location
   Future<void> selectLocation(LocationModel location) async {
-    await storage.saveLocation(location);
-    print("Selected Location Saved (replaces last):");
-    print(location.latitude);
-    print(location.longitude);
-    print(location.timeZone);
-    print(location.city);
-    print(location.country);
 
     emit(LocationLoaded(location));
   }
@@ -98,4 +81,20 @@ class LocationCubit extends Cubit<LocationState> {
       emit(LocationError(e.toString()));
     }
   }
+
+  /// Explicitly save the currently displayed location
+  Future<void> saveCurrentLocation() async {
+    if (state is LocationLoaded) {
+      final location = (state as LocationLoaded).location;
+      await storage.saveLocation(location);
+
+      print("Location Saved (explicit):");
+      print(location.latitude);
+      print(location.longitude);
+      print(location.timeZone);
+      print(location.city);
+      print(location.country);
+    }
+  }
+
 }
