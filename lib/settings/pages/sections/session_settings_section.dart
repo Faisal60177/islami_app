@@ -5,7 +5,6 @@ import '../../l10n/app_localizations.dart';
 import '../../theme/app_themes.dart';
 import '../../../Menu/auth/sign_out_page.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:get/get.dart' as gets;
 import 'package:url_launcher/url_launcher.dart';
 
 Future<void> _launchPrivacyPolicy() async {
@@ -58,8 +57,23 @@ class SessionSettingsSection extends StatelessWidget {
                 color: Colors.transparent,
                 child: InkWell(
                   borderRadius: BorderRadius.circular(18),
-                  onTap: () => gets.Get.to(() => const SignOutPage(),
-                      transition: gets.Transition.rightToLeft),
+                  onTap: () => Navigator.push(
+                    context,
+                    PageRouteBuilder(
+                      pageBuilder: (_, __, ___) => const SignOutPage(),
+                      transitionDuration: const Duration(milliseconds: 300),
+                      reverseTransitionDuration: const Duration(milliseconds: 300),
+                      transitionsBuilder: (_, animation, __, child) {
+                        return SlideTransition(
+                          position: Tween<Offset>(
+                            begin: const Offset(1, 0),
+                            end: Offset.zero,
+                          ).animate(animation),
+                          child: child,
+                        );
+                      },
+                    ),
+                  ),
                   splashColor: Colors.red.withOpacity(0.08),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(

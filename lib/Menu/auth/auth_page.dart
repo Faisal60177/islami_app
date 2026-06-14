@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'auth_controller.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'auth_notifier.dart';
 
 const _bg         = Color(0xFF011A0E);
 const _surface    = Color(0xFF0D2E1C);
@@ -11,21 +11,19 @@ const _gold       = Color(0xFFD4AF37);
 const _textHi     = Color(0xFFE8F5EC);
 const _textLo     = Color(0xFF7BAF92);
 
-class AuthPage extends StatefulWidget {
+class AuthPage extends ConsumerStatefulWidget {
   const AuthPage({super.key});
 
   @override
-  State<AuthPage> createState() => _AuthPageState();
+  ConsumerState<AuthPage> createState() => _AuthPageState();
 }
 
-class _AuthPageState extends State<AuthPage>
+class _AuthPageState extends ConsumerState<AuthPage>
     with SingleTickerProviderStateMixin {
-  final AuthController _auth = Get.find<AuthController>();
-
   late TabController _tab;
-  final _signInForm = GlobalKey<FormState>();
-  final _signUpForm = GlobalKey<FormState>();
 
+  final _signInForm  = GlobalKey<FormState>();
+  final _signUpForm  = GlobalKey<FormState>();
   final _nameCtrl    = TextEditingController();
   final _emailInCtrl = TextEditingController();
   final _passInCtrl  = TextEditingController();
@@ -41,16 +39,11 @@ class _AuthPageState extends State<AuthPage>
   void initState() {
     super.initState();
     _tab = TabController(length: 2, vsync: this);
-
-    // Clear errors when switching tabs so stale messages don't show
     _tab.addListener(() {
       if (_tab.indexIsChanging) {
-        _auth.errorMessage.value = '';
+        ref.read(authNotifierProvider.notifier)
+            .state = ref.read(authNotifierProvider).copyWith(errorMessage: '');
       }
-    });
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _auth.errorMessage.value = '';
     });
   }
 
@@ -66,84 +59,63 @@ class _AuthPageState extends State<AuthPage>
     super.dispose();
   }
 
-  // ── Sign In ──────────────────────────────────────────────────────────────
+  void _snack(String msg, {bool success = false}) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(msg),
+        backgroundColor: success ? _accentSoft : Colors.red[900],
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.all(16),
+        duration: Duration(seconds: success ? 2 : 4),
+      ),
+    );
+  }
 
   Future<void> _doSignIn() async {
     if (!_signInForm.currentState!.validate()) return;
-
-    final ok = await _auth.signInWithEmail(
+    final ok = await ref.read(authNotifierProvider.notifier).signInWithEmail(
       email:    _emailInCtrl.text,
       password: _passInCtrl.text,
     );
-
     if (!mounted) return;
-
     if (ok) {
-      _popAuthPage();
+      Navigator.of(context).pop();
       _snack('Welcome back! 🌙', success: true);
     } else {
-      _snack(_auth.errorMessage.value.isNotEmpty
-          ? _auth.errorMessage.value
-          : 'Sign in failed. Please try again.');
+      final err = ref.read(authNotifierProvider).errorMessage;
+      _snack(err.isNotEmpty ? err : 'Sign in failed. Please try again.');
     }
   }
 
-  // ── Sign Up ──────────────────────────────────────────────────────────────
-
   Future<void> _doSignUp() async {
     if (!_signUpForm.currentState!.validate()) return;
-
-    final ok = await _auth.signUpWithEmail(
+    final ok = await ref.read(authNotifierProvider.notifier).signUpWithEmail(
       name:     _nameCtrl.text,
       email:    _emailUpCtrl.text,
       password: _passUpCtrl.text,
     );
-
     if (!mounted) return;
-
     if (ok) {
-      _popAuthPage();
+      Navigator.of(context).pop();
       _snack('Account created! Assalamu Alaikum 🌙', success: true);
     } else {
-      _snack(_auth.errorMessage.value.isNotEmpty
-          ? _auth.errorMessage.value
-          : 'Sign up failed. Please try again.');
+      final err = ref.read(authNotifierProvider).errorMessage;
+      _snack(err.isNotEmpty ? err : 'Sign up failed. Please try again.');
     }
   }
-
-  // ── Google ───────────────────────────────────────────────────────────────
 
   Future<void> _doGoogle() async {
-    final ok = await _auth.signInWithGoogle();
+    final ok = await ref.read(authNotifierProvider.notifier).signInWithGoogle();
     if (!mounted) return;
     if (ok) {
-      _popAuthPage();
+      Navigator.of(context).pop();
       _snack('Signed in with Google 🌙', success: true);
-    } else if (_auth.errorMessage.value.isNotEmpty) {
-      _snack(_auth.errorMessage.value);
+    } else {
+      final err = ref.read(authNotifierProvider).errorMessage;
+      if (err.isNotEmpty) _snack(err);
     }
   }
-
-  void _popAuthPage() {
-    final nav = Navigator.of(Get.context!);
-    if (nav.canPop()) nav.pop();
-  }
-
-  void _snack(String msg, {bool success = false}) {
-    if (Get.isSnackbarOpen) Get.closeCurrentSnackbar();
-    Get.snackbar(
-      success ? 'Success' : 'Error',
-      msg,
-      backgroundColor: success ? _accentSoft : Colors.red[900],
-      colorText: Colors.white,
-      snackPosition: SnackPosition.BOTTOM,
-      margin: const EdgeInsets.all(16),
-      borderRadius: 12,
-      duration: Duration(seconds: success ? 2 : 4),
-    );
-  }
-
-  // ── Build ────────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
@@ -155,10 +127,8 @@ class _AuthPageState extends State<AuthPage>
           icon: const Icon(Icons.arrow_back_ios_new, color: _accent),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: const Text(
-          'My Account',
-          style: TextStyle(color: _textHi, fontSize: 18, fontWeight: FontWeight.w600),
-        ),
+        title: const Text('My Account',
+            style: TextStyle(color: _textHi, fontSize: 18, fontWeight: FontWeight.w600)),
         centerTitle: true,
         elevation: 0,
         bottom: PreferredSize(
@@ -171,10 +141,7 @@ class _AuthPageState extends State<AuthPage>
             ),
             child: TabBar(
               controller: _tab,
-              indicator: BoxDecoration(
-                color: _accentSoft,
-                borderRadius: BorderRadius.circular(30),
-              ),
+              indicator: BoxDecoration(color: _accentSoft, borderRadius: BorderRadius.circular(30)),
               labelColor: Colors.white,
               unselectedLabelColor: _textLo,
               labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
@@ -191,294 +158,214 @@ class _AuthPageState extends State<AuthPage>
     );
   }
 
-  // ── Sign In View ─────────────────────────────────────────────────────────
-
   Widget _signInView() {
-    return LayoutBuilder(builder: (context, constraints) {
-      final maxW = constraints.maxWidth > 600 ? 500.0 : double.infinity;
-      return SingleChildScrollView(
-        padding: EdgeInsets.symmetric(
-          horizontal: constraints.maxWidth > 600 ? 48 : 24,
-          vertical: 24,
-        ),
-        child: Center(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(maxWidth: maxW),
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+      child: Column(
+        children: [
+          const SizedBox(height: 16),
+          _arabicDecor(),
+          const SizedBox(height: 32),
+          Form(
+            key: _signInForm,
             child: Column(
               children: [
+                _field(controller: _emailInCtrl, label: 'Email Address',
+                    icon: Icons.email_outlined,
+                    keyboardType: TextInputType.emailAddress,
+                    validator: _validateEmail),
                 const SizedBox(height: 16),
-                _arabicDecor(),
-                const SizedBox(height: 32),
-                Form(
-                  key: _signInForm,
-                  child: Column(
-                    children: [
-                      _field(
-                        controller: _emailInCtrl,
-                        label: 'Email Address',
-                        icon: Icons.email_outlined,
-                        keyboardType: TextInputType.emailAddress,
-                        validator: _validateEmail,
-                      ),
-                      const SizedBox(height: 16),
-                      _field(
-                        controller: _passInCtrl,
-                        label: 'Password',
-                        icon: Icons.lock_outline,
-                        obscure: !_showPassIn,
-                        suffix: IconButton(
-                          icon: Icon(
-                            _showPassIn ? Icons.visibility_off : Icons.visibility,
-                            color: _textLo,
-                            size: 20,
-                          ),
-                          onPressed: () => setState(() => _showPassIn = !_showPassIn),
-                        ),
-                        validator: (v) =>
-                        (v == null || v.length < 6) ? 'Min 6 characters' : null,
-                      ),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: TextButton(
-                          onPressed: _showForgot,
-                          child: const Text(
-                            'Forgot password?',
-                            style: TextStyle(color: _gold, fontSize: 13),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Obx(() => _primaryBtn(
-                        label: 'Sign In',
-                        loading: _auth.isLoading.value,
-                        onTap: _doSignIn,
-                      )),
-                    ],
+                _field(
+                  controller: _passInCtrl, label: 'Password',
+                  icon: Icons.lock_outline, obscure: !_showPassIn,
+                  suffix: IconButton(
+                    icon: Icon(_showPassIn ? Icons.visibility_off : Icons.visibility,
+                        color: _textLo, size: 20),
+                    onPressed: () => setState(() => _showPassIn = !_showPassIn),
+                  ),
+                  validator: (v) => (v == null || v.length < 6) ? 'Min 6 characters' : null,
+                ),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: _showForgot,
+                    child: const Text('Forgot password?',
+                        style: TextStyle(color: _gold, fontSize: 13)),
                   ),
                 ),
-                const SizedBox(height: 24),
-                _divider(),
-                const SizedBox(height: 24),
-                _googleBtn(),
-                const SizedBox(height: 16),
-                TextButton(
-                  onPressed: () => _tab.animateTo(1),
-                  child: RichText(
-                    text: const TextSpan(
-                      text: "Don't have an account? ",
-                      style: TextStyle(color: _textLo),
-                      children: [
-                        TextSpan(
-                          text: 'Sign Up',
-                          style: TextStyle(color: _accent, fontWeight: FontWeight.w700),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+                const SizedBox(height: 8),
+                Consumer(builder: (_, ref, __) {
+                  final loading = ref.watch(authNotifierProvider).isLoading;
+                  return _primaryBtn(label: 'Sign In', loading: loading, onTap: _doSignIn);
+                }),
               ],
             ),
           ),
-        ),
-      );
-    });
-  }
-
-  // ── Sign Up View ─────────────────────────────────────────────────────────
-
-  Widget _signUpView() {
-    return LayoutBuilder(builder: (context, constraints) {
-      final maxW = constraints.maxWidth > 600 ? 500.0 : double.infinity;
-      return SingleChildScrollView(
-        padding: EdgeInsets.symmetric(
-          horizontal: constraints.maxWidth > 600 ? 48 : 24,
-          vertical: 24,
-        ),
-        child: Center(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(maxWidth: maxW),
-            child: Column(
-              children: [
-                const SizedBox(height: 16),
-                _arabicDecor(),
-                const SizedBox(height: 32),
-                // Info banner explaining that same email works with both methods
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                  margin: const EdgeInsets.only(bottom: 20),
-                  decoration: BoxDecoration(
-                    color: _accentSoft.withOpacity(0.15),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: _accentSoft.withOpacity(0.4)),
-                  ),
-                  child: const Row(
-                    children: [
-                      Icon(Icons.info_outline, color: _accent, size: 18),
-                      SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          'You can use the same email for both Google and email/password sign-in. They will be linked to one account.',
-                          style: TextStyle(color: _textLo, fontSize: 12, height: 1.5),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Form(
-                  key: _signUpForm,
-                  child: Column(
-                    children: [
-                      _field(
-                        controller: _nameCtrl,
-                        label: 'Full Name',
-                        icon: Icons.person_outline,
-                        validator: (v) =>
-                        (v == null || v.trim().isEmpty) ? 'Name required' : null,
-                      ),
-                      const SizedBox(height: 16),
-                      _field(
-                        controller: _emailUpCtrl,
-                        label: 'Email Address',
-                        icon: Icons.email_outlined,
-                        keyboardType: TextInputType.emailAddress,
-                        validator: _validateEmail,
-                      ),
-                      const SizedBox(height: 16),
-                      _field(
-                        controller: _passUpCtrl,
-                        label: 'Password',
-                        icon: Icons.lock_outline,
-                        obscure: !_showPassUp,
-                        suffix: IconButton(
-                          icon: Icon(
-                            _showPassUp ? Icons.visibility_off : Icons.visibility,
-                            color: _textLo,
-                            size: 20,
-                          ),
-                          onPressed: () => setState(() => _showPassUp = !_showPassUp),
-                        ),
-                        validator: (v) =>
-                        (v == null || v.length < 6) ? 'Min 6 characters' : null,
-                      ),
-                      const SizedBox(height: 16),
-                      _field(
-                        controller: _confirmCtrl,
-                        label: 'Confirm Password',
-                        icon: Icons.lock_outline,
-                        obscure: !_showConfirm,
-                        suffix: IconButton(
-                          icon: Icon(
-                            _showConfirm ? Icons.visibility_off : Icons.visibility,
-                            color: _textLo,
-                            size: 20,
-                          ),
-                          onPressed: () => setState(() => _showConfirm = !_showConfirm),
-                        ),
-                        validator: (v) =>
-                        v != _passUpCtrl.text ? 'Passwords do not match' : null,
-                      ),
-                      const SizedBox(height: 24),
-                      Obx(() => _primaryBtn(
-                        label: 'Create Account',
-                        loading: _auth.isLoading.value,
-                        onTap: _doSignUp,
-                      )),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 24),
-                _divider(),
-                const SizedBox(height: 24),
-                _googleBtn(),
-                const SizedBox(height: 16),
-                TextButton(
-                  onPressed: () => _tab.animateTo(0),
-                  child: RichText(
-                    text: const TextSpan(
-                      text: 'Already have an account? ',
-                      style: TextStyle(color: _textLo),
-                      children: [
-                        TextSpan(
-                          text: 'Sign In',
-                          style: TextStyle(color: _accent, fontWeight: FontWeight.w700),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      );
-    });
-  }
-
-  // ── Forgot Password Dialog ───────────────────────────────────────────────
-
-  void _showForgot() {
-    final ctrl = TextEditingController();
-    Get.dialog(
-      AlertDialog(
-        backgroundColor: _card,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text(
-          'Reset Password',
-          style: TextStyle(color: _textHi, fontWeight: FontWeight.w700),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-              'Enter your email and we will send a reset link.',
-              style: TextStyle(color: _textLo, fontSize: 13),
-            ),
-            const SizedBox(height: 16),
-            _field(
-              controller: ctrl,
-              label: 'Email Address',
-              icon: Icons.email_outlined,
-              keyboardType: TextInputType.emailAddress,
-            ),
-          ],
-        ),
-        actions: [
+          const SizedBox(height: 24),
+          _divider(),
+          const SizedBox(height: 24),
+          _googleBtn(),
+          const SizedBox(height: 16),
           TextButton(
-            onPressed: () => Get.back(),
-            child: const Text('Cancel', style: TextStyle(color: _textLo)),
-          ),
-          Obx(() => ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: _accentSoft),
-            onPressed: _auth.isLoading.value
-                ? null
-                : () async {
-              if (ctrl.text.trim().isEmpty) return;
-              final ok = await _auth.sendPasswordReset(ctrl.text);
-              Get.back();
-              _snack(
-                ok
-                    ? 'Reset email sent! Check your inbox.'
-                    : _auth.errorMessage.value,
-                success: ok,
-              );
-            },
-            child: _auth.isLoading.value
-                ? const SizedBox(
-              width: 16,
-              height: 16,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: Colors.white,
+            onPressed: () => _tab.animateTo(1),
+            child: RichText(
+              text: const TextSpan(
+                text: "Don't have an account? ",
+                style: TextStyle(color: _textLo),
+                children: [TextSpan(text: 'Sign Up',
+                    style: TextStyle(color: _accent, fontWeight: FontWeight.w700))],
               ),
-            )
-                : const Text('Send Link', style: TextStyle(color: Colors.white)),
-          )),
+            ),
+          ),
         ],
       ),
     );
   }
 
-  // ── Shared Widgets ───────────────────────────────────────────────────────
+  Widget _signUpView() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+      child: Column(
+        children: [
+          const SizedBox(height: 16),
+          _arabicDecor(),
+          const SizedBox(height: 32),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            margin: const EdgeInsets.only(bottom: 20),
+            decoration: BoxDecoration(
+              color: _accentSoft.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: _accentSoft.withOpacity(0.4)),
+            ),
+            child: const Row(
+              children: [
+                Icon(Icons.info_outline, color: _accent, size: 18),
+                SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    'You can use the same email for both Google and email/password. They will be linked to one account.',
+                    style: TextStyle(color: _textLo, fontSize: 12, height: 1.5),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Form(
+            key: _signUpForm,
+            child: Column(
+              children: [
+                _field(controller: _nameCtrl, label: 'Full Name',
+                    icon: Icons.person_outline,
+                    validator: (v) =>
+                    (v == null || v.trim().isEmpty) ? 'Name required' : null),
+                const SizedBox(height: 16),
+                _field(controller: _emailUpCtrl, label: 'Email Address',
+                    icon: Icons.email_outlined,
+                    keyboardType: TextInputType.emailAddress,
+                    validator: _validateEmail),
+                const SizedBox(height: 16),
+                _field(
+                  controller: _passUpCtrl, label: 'Password',
+                  icon: Icons.lock_outline, obscure: !_showPassUp,
+                  suffix: IconButton(
+                    icon: Icon(_showPassUp ? Icons.visibility_off : Icons.visibility,
+                        color: _textLo, size: 20),
+                    onPressed: () => setState(() => _showPassUp = !_showPassUp),
+                  ),
+                  validator: (v) => (v == null || v.length < 6) ? 'Min 6 characters' : null,
+                ),
+                const SizedBox(height: 16),
+                _field(
+                  controller: _confirmCtrl, label: 'Confirm Password',
+                  icon: Icons.lock_outline, obscure: !_showConfirm,
+                  suffix: IconButton(
+                    icon: Icon(_showConfirm ? Icons.visibility_off : Icons.visibility,
+                        color: _textLo, size: 20),
+                    onPressed: () => setState(() => _showConfirm = !_showConfirm),
+                  ),
+                  validator: (v) => v != _passUpCtrl.text ? 'Passwords do not match' : null,
+                ),
+                const SizedBox(height: 24),
+                Consumer(builder: (_, ref, __) {
+                  final loading = ref.watch(authNotifierProvider).isLoading;
+                  return _primaryBtn(label: 'Create Account', loading: loading, onTap: _doSignUp);
+                }),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+          _divider(),
+          const SizedBox(height: 24),
+          _googleBtn(),
+          const SizedBox(height: 16),
+          TextButton(
+            onPressed: () => _tab.animateTo(0),
+            child: RichText(
+              text: const TextSpan(
+                text: 'Already have an account? ',
+                style: TextStyle(color: _textLo),
+                children: [TextSpan(text: 'Sign In',
+                    style: TextStyle(color: _accent, fontWeight: FontWeight.w700))],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showForgot() {
+    final ctrl = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (dialogCtx) => AlertDialog(
+        backgroundColor: _card,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text('Reset Password',
+            style: TextStyle(color: _textHi, fontWeight: FontWeight.w700)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Enter your email and we will send a reset link.',
+                style: TextStyle(color: _textLo, fontSize: 13)),
+            const SizedBox(height: 16),
+            _field(controller: ctrl, label: 'Email Address',
+                icon: Icons.email_outlined,
+                keyboardType: TextInputType.emailAddress),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogCtx).pop(),
+            child: const Text('Cancel', style: TextStyle(color: _textLo)),
+          ),
+          Consumer(builder: (_, ref, __) {
+            final loading = ref.watch(authNotifierProvider).isLoading;
+            return ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: _accentSoft),
+              onPressed: loading ? null : () async {
+                if (ctrl.text.trim().isEmpty) return;
+                final ok = await ref.read(authNotifierProvider.notifier)
+                    .sendPasswordReset(ctrl.text);
+                if (!dialogCtx.mounted) return;
+                Navigator.of(dialogCtx).pop();
+                _snack(
+                  ok ? 'Reset email sent! Check your inbox.'
+                      : ref.read(authNotifierProvider).errorMessage,
+                  success: ok,
+                );
+              },
+              child: loading
+                  ? const SizedBox(width: 16, height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                  : const Text('Send Link', style: TextStyle(color: Colors.white)),
+            );
+          }),
+        ],
+      ),
+    );
+  }
 
   Widget _arabicDecor() {
     return Column(
@@ -490,17 +377,13 @@ class _AuthPageState extends State<AuthPage>
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: _gold.withOpacity(0.3)),
           ),
-          child: const Text(
-            'بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ',
-            style: TextStyle(color: _gold, fontSize: 20, fontFamily: 'Amiri'),
-            textAlign: TextAlign.center,
-          ),
+          child: const Text('بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ',
+              style: TextStyle(color: _gold, fontSize: 20, fontFamily: 'Amiri'),
+              textAlign: TextAlign.center),
         ),
         const SizedBox(height: 8),
-        const Text(
-          'In the name of Allah, the Most Gracious',
-          style: TextStyle(color: _textLo, fontSize: 12),
-        ),
+        const Text('In the name of Allah, the Most Gracious',
+            style: TextStyle(color: _textLo, fontSize: 12)),
       ],
     );
   }
@@ -555,29 +438,18 @@ class _AuthPageState extends State<AuthPage>
     required VoidCallback onTap,
   }) {
     return SizedBox(
-      width: double.infinity,
-      height: 54,
+      width: double.infinity, height: 54,
       child: ElevatedButton(
         onPressed: loading ? null : onTap,
         style: ElevatedButton.styleFrom(
           backgroundColor: _accentSoft,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          elevation: 4,
         ),
         child: loading
-            ? const SizedBox(
-          width: 22,
-          height: 22,
-          child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white),
-        )
-            : Text(
-          label,
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w700,
-            fontSize: 16,
-          ),
-        ),
+            ? const SizedBox(width: 22, height: 22,
+            child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white))
+            : Text(label, style: const TextStyle(color: Colors.white,
+            fontWeight: FontWeight.w700, fontSize: 16)),
       ),
     );
   }
@@ -588,10 +460,8 @@ class _AuthPageState extends State<AuthPage>
         Expanded(child: Divider(color: _textLo.withOpacity(0.3))),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12),
-          child: Text(
-            'or continue with',
-            style: TextStyle(color: _textLo.withOpacity(0.7), fontSize: 12),
-          ),
+          child: Text('or continue with',
+              style: TextStyle(color: _textLo.withOpacity(0.7), fontSize: 12)),
         ),
         Expanded(child: Divider(color: _textLo.withOpacity(0.3))),
       ],
@@ -599,55 +469,37 @@ class _AuthPageState extends State<AuthPage>
   }
 
   Widget _googleBtn() {
-    return Obx(() => SizedBox(
-      width: double.infinity,
-      height: 54,
-      child: OutlinedButton(
-        onPressed: _auth.isLoading.value ? null : _doGoogle,
-        style: OutlinedButton.styleFrom(
-          side: BorderSide(color: _textLo.withOpacity(0.4)),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          backgroundColor: _surface,
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            SizedBox(
-              width: 22,
-              height: 22,
-              child: Image.network(
+    return Consumer(builder: (_, ref, __) {
+      final loading = ref.watch(authNotifierProvider).isLoading;
+      return SizedBox(
+        width: double.infinity, height: 54,
+        child: OutlinedButton(
+          onPressed: loading ? null : _doGoogle,
+          style: OutlinedButton.styleFrom(
+            side: BorderSide(color: _textLo.withOpacity(0.4)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            backgroundColor: _surface,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Image.network(
                 'https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg',
-                width: 22,
-                height: 22,
-                errorBuilder: (_, __, ___) => Container(
-                  width: 22,
-                  height: 22,
-                  decoration: const BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.white,
-                  ),
-                  child: const Center(
-                    child: Text(
-                      'G',
-                      style: TextStyle(
-                        color: Color(0xFF4285F4),
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ),
+                width: 22, height: 22,
+                errorBuilder: (_, __, ___) => const CircleAvatar(
+                  backgroundColor: Colors.white, radius: 11,
+                  child: Text('G', style: TextStyle(color: Color(0xFF4285F4),
+                      fontWeight: FontWeight.bold, fontSize: 14)),
                 ),
               ),
-            ),
-            const SizedBox(width: 12),
-            const Text(
-              'Continue with Google',
-              style: TextStyle(color: _textHi, fontWeight: FontWeight.w600),
-            ),
-          ],
+              const SizedBox(width: 12),
+              const Text('Continue with Google',
+                  style: TextStyle(color: _textHi, fontWeight: FontWeight.w600)),
+            ],
+          ),
         ),
-      ),
-    ));
+      );
+    });
   }
 
   String? _validateEmail(String? v) {

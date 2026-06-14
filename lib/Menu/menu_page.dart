@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:get/get.dart' as getx;
-import 'package:get/get_state_manager/src/rx_flutter/rx_getx_widget.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'auth/auth_notifier.dart';
 import 'package:muslim_app/settings/l10n/app_localizations.dart';
 import 'package:muslim_app/settings/cubit/settings_cubit.dart';
 import 'package:muslim_app/settings/cubit/settings_state.dart';
@@ -12,7 +12,7 @@ import 'share/share_page.dart';
 import 'rate/rate_page.dart';
 import 'about/about_page.dart';
 import 'auth/sign_out_page.dart';
-import 'auth/auth_controller.dart';
+import 'auth/auth_notifier.dart';
 import 'package:muslim_app/home/home_page.dart';
 import 'package:muslim_app/tools/tools_page.dart';
 import 'package:muslim_app/Quran/quran_page.dart';
@@ -87,34 +87,34 @@ class MenuPage extends StatelessWidget {
         ],
       ),
       actions: [
-        getx.Obx(() {
-          final auth = getx.Get.find<AuthController>();
-          if (auth.isLoggedIn) {
-            return GestureDetector(
-              onTap: () => getx.Get.to(() => const ProfilePage()),
-              child: Container(
-                margin: const EdgeInsets.only(right: 16),
-                width: 38,
-                height: 38,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: _accentSoft,
-                  border: Border.all(color: _gold.withOpacity(0.5)),
-                ),
-                child: auth.photoUrl.value.isNotEmpty
-                    ? ClipOval(
-                  child: Image.network(
-                    auth.photoUrl.value,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) =>
-                        _initials(auth.displayName.value),
-                  ),
-                )
-                    : _initials(auth.displayName.value),
+        Consumer(builder: (_, ref, __) {
+          final auth = ref.watch(authNotifierProvider);
+          if (!auth.isLoggedIn) return const SizedBox.shrink();
+          return GestureDetector(
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const ProfilePage()),
+            ),
+            child: Container(
+              margin: const EdgeInsets.only(right: 16),
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: _accentSoft,
+                border: Border.all(color: _gold.withOpacity(0.5)),
               ),
-            );
-          }
-          return const SizedBox.shrink();
+              child: auth.photoUrl.isNotEmpty
+                  ? ClipOval(
+                child: Image.network(
+                  auth.photoUrl,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) =>
+                      _initials(auth.displayName),
+                ),
+              )
+                  : _initials(auth.displayName),
+            ),
+          );
         }),
       ],
     );
@@ -323,9 +323,13 @@ class MenuPage extends StatelessWidget {
               return GestureDetector(
                 onTap: () {
                   if (!active) {
-                    getx.Get.off(
-                          () => _pages[i],
-                        transition: getx.Transition.noTransition
+                    Navigator.pushReplacement(
+                      context,
+                      PageRouteBuilder(
+                        pageBuilder: (_, __, ___) => _pages[i],
+                        transitionDuration: Duration.zero,
+                        reverseTransitionDuration: Duration.zero,
+                      ),
                     );
                   }
                 },
@@ -369,161 +373,133 @@ class MenuPage extends StatelessWidget {
 
 // ─── User Greeting Card ───────────────────────────────────────────────────────
 // ✅ Now accepts l10n as a required parameter
-class _UserGreetingCard extends StatelessWidget {
+class _UserGreetingCard extends ConsumerWidget {
   final AppLocalizations l10n;
   const _UserGreetingCard({required this.l10n});
 
   @override
-  Widget build(BuildContext context) {
-    return getx.Obx(() {
-      final auth = getx.Get.find<AuthController>();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final auth = ref.watch(authNotifierProvider);
 
-      return Container(
-        margin: const EdgeInsets.all(16),
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFF0D2E1C), Color(0xFF122E1E)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: _gold.withOpacity(0.2)),
-          boxShadow: [
-            BoxShadow(
+    return Container(
+      margin: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF0D2E1C), Color(0xFF122E1E)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: _gold.withOpacity(0.2)),
+        boxShadow: [
+          BoxShadow(
               color: Colors.black.withOpacity(0.3),
               blurRadius: 12,
-              offset: const Offset(0, 4),
+              offset: const Offset(0, 4)),
+        ],
+      ),
+      child: Row(
+        children: [
+          // Avatar
+          GestureDetector(
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const ProfilePage()),
             ),
-          ],
-        ),
-        child: Row(
-          children: [
-            // ── Avatar ────────────────────────────────────────────────
-            GestureDetector(
-              onTap: () => getx.Get.to(() => const ProfilePage()),
-              child: Container(
-                width: 60,
-                height: 60,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: _accentSoft,
-                  border: Border.all(
-                    color: _gold.withOpacity(0.5),
-                    width: 2,
-                  ),
-                ),
-                child: auth.isLoggedIn && auth.photoUrl.value.isNotEmpty
-                    ? ClipOval(
-                  child: Image.network(
-                    auth.photoUrl.value,
-                    fit: BoxFit.cover,
-                  ),
-                )
-                    : Center(
-                  child: Text(
-                    auth.isLoggedIn &&
-                        auth.displayName.value.isNotEmpty
-                        ? auth.displayName.value[0].toUpperCase()
-                        : '🙋',
-                    style: const TextStyle(
+            child: Container(
+              width: 60, height: 60,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: _accentSoft,
+                border: Border.all(color: _gold.withOpacity(0.5), width: 2),
+              ),
+              child: auth.isLoggedIn && auth.photoUrl.isNotEmpty
+                  ? ClipOval(
+                  child: Image.network(auth.photoUrl, fit: BoxFit.cover))
+                  : Center(
+                child: Text(
+                  auth.isLoggedIn && auth.displayName.isNotEmpty
+                      ? auth.displayName[0].toUpperCase()
+                      : '🙋',
+                  style: const TextStyle(
                       color: Colors.white,
                       fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                      fontWeight: FontWeight.bold),
                 ),
               ),
             ),
-            const SizedBox(width: 14),
+          ),
+          const SizedBox(width: 14),
 
-            // ── Name / greeting ───────────────────────────────────────
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    // ✅ Localized greeting
-                    auth.isLoggedIn
-                        ? l10n.assalamuAlaikum
-                        : l10n.welcome,
-                    style: const TextStyle(color: _textLo, fontSize: 12),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    auth.isLoggedIn
-                        ? (auth.displayName.value.isNotEmpty
-                        ? auth.displayName.value
-                    // ✅ Localized fallback name
-                        : l10n.muslimUser)
-                    // ✅ Localized sign-in prompt
-                        : l10n.signInSubtitle,
-                    style: const TextStyle(
+          // Name / greeting
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  auth.isLoggedIn ? l10n.assalamuAlaikum : l10n.welcome,
+                  style: const TextStyle(color: _textLo, fontSize: 12),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  auth.isLoggedIn
+                      ? (auth.displayName.isNotEmpty
+                      ? auth.displayName
+                      : l10n.muslimUser)
+                      : l10n.signInSubtitle,
+                  style: const TextStyle(
                       color: _textHi,
                       fontWeight: FontWeight.w700,
-                      fontSize: 17,
+                      fontSize: 17),
+                  overflow: TextOverflow.ellipsis,
+                ),
+                if (!auth.isLoggedIn)
+                  GestureDetector(
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const ProfilePage()),
                     ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  if (!auth.isLoggedIn)
-                    GestureDetector(
-                      onTap: () => getx.Get.to(() => const ProfilePage()),
-                      child: Container(
-                        margin: const EdgeInsets.only(top: 6),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
+                    child: Container(
+                      margin: const EdgeInsets.only(top: 6),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
                           color: _accentSoft,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          // ✅ Localized
-                          l10n.signIn,
+                          borderRadius: BorderRadius.circular(8)),
+                      child: Text(l10n.signIn,
                           style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ),
+                              color: Colors.white,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700)),
                     ),
+                  ),
+              ],
+            ),
+          ),
+
+          // Active badge
+          if (auth.isLoggedIn)
+            Container(
+              padding:
+              const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: _gold.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: _gold.withOpacity(0.3)),
+              ),
+              child: Column(
+                children: [
+                  const Text('🌙', style: TextStyle(fontSize: 16)),
+                  Text(l10n.activeBadge,
+                      style: const TextStyle(
+                          color: _gold,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700)),
                 ],
               ),
             ),
-
-            // ── Active badge ──────────────────────────────────────────
-            if (auth.isLoggedIn)
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: _gold.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: _gold.withOpacity(0.3)),
-                ),
-                child: Column(
-                  children: [
-                    const Text('🌙', style: TextStyle(fontSize: 16)),
-                    Text(
-                      // ✅ Localized
-                      l10n.activeBadge,
-                      style: const TextStyle(
-                        color: _gold,
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-          ],
-        ),
-      );
-    });
+        ],
+      ),
+    );
   }
 }
 
@@ -582,10 +558,22 @@ class _MenuTile extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         borderRadius: BorderRadius.circular(18),
-        onTap: () => getx.Get.to(
-              () => item.page,
-          transition: getx.Transition.rightToLeft,
-          duration: const Duration(milliseconds: 280),
+        onTap: () => Navigator.push(
+          context,
+          PageRouteBuilder(
+            pageBuilder: (_, __, ___) => item.page,                    // = () => item.page
+            transitionDuration: const Duration(milliseconds: 280),     // = duration: 280ms
+            reverseTransitionDuration: const Duration(milliseconds: 280),
+            transitionsBuilder: (_, animation, __, child) {             // = transition: Transition.rightToLeft
+              return SlideTransition(
+                position: Tween<Offset>(
+                  begin: const Offset(1, 0),
+                  end: Offset.zero,
+                ).animate(animation),
+                child: child,
+              );
+            },
+          ),
         ),
         splashColor: _accentSoft.withOpacity(0.1),
         child: Padding(
@@ -688,10 +676,22 @@ class _SignOutTile extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(18),
-          onTap: () => getx.Get.to(
-                () => const SignOutPage(),
-            transition: getx.Transition.rightToLeft,
-            duration: const Duration(milliseconds: 280),
+          onTap: () => Navigator.push(
+            context,
+            PageRouteBuilder(
+              pageBuilder: (_, __, ___) => const SignOutPage(),
+              transitionDuration: const Duration(milliseconds: 280),
+              reverseTransitionDuration: const Duration(milliseconds: 280),
+              transitionsBuilder: (_, animation, __, child) {
+                return SlideTransition(
+                  position: Tween<Offset>(
+                    begin: const Offset(1, 0),
+                    end: Offset.zero,
+                  ).animate(animation),
+                  child: child,
+                );
+              },
+            ),
           ),
           splashColor: Colors.red.withOpacity(0.08),
           child: Padding(

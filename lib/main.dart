@@ -12,8 +12,7 @@ import 'home/services/prayer_times_storage.dart';
 import 'Duas/cubit/duas_cubit.dart';
 import 'package:muslim_app/Duas/repository/duas_repository.dart';
 import 'package:flutter/services.dart';
-import 'package:get/get.dart';
-import 'package:muslim_app/Menu/auth/auth_controller.dart';
+import 'package:muslim_app/Menu/auth/auth_notifier.dart';
 import 'firebase_options.dart';
 import 'package:muslim_app/notification/cubit/notification_cubit.dart';
 import 'package:muslim_app/notification/repository/notification_repository.dart';
@@ -26,6 +25,8 @@ import 'inspiration/repository/inspiration_repository.dart';
 import 'package:muslim_app/masail/cubit/masail_cubit.dart';
 import 'package:muslim_app/masail/repository/masail_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 
 
 
@@ -49,7 +50,6 @@ void main() async {
 
   // ✅ Register AuthController AFTER Firebase is ready
   // ✅ permanent: true — controller is never garbage collected
-  Get.put(AuthController(), permanent: true);
 
   // ── Load saved language BEFORE creating cubits ──────────────
   final prefs = await SharedPreferences.getInstance();
@@ -80,6 +80,7 @@ void main() async {
   FlutterNativeSplash.remove();
 
   runApp(
+      ProviderScope(child:
     MultiBlocProvider(
       providers: [
         // ── Settings (must be first — theme/language wraps the whole app) ──
@@ -118,6 +119,7 @@ void main() async {
       ],
       child: const MyApp(),
     ),
+  )
   );
 }
 
@@ -135,19 +137,19 @@ class MyApp extends StatelessWidget {
         final isRtl = settingsState.languageCode == 'ar' ||
             settingsState.languageCode == 'ur';
 
-        return GetMaterialApp(
+        return MaterialApp(
           debugShowCheckedModeBanner: false,
           title: 'Prayer Times App',
           theme: buildThemeData(appTheme),
 
           // ── RTL / LTR support ─────────────────────────────────────────
-          builder: (context, child) {
-            return Directionality(
+          builder: (context, child)
+            => Directionality(
               textDirection:
               isRtl ? TextDirection.rtl : TextDirection.ltr,
               child: child!,
-            );
-          },
+
+            ),
 
           home: const PrayerTimesPage(),
         );

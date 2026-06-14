@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 const _bg        = Color(0xFF011A0E);
 const _surface   = Color(0xFF0D2E1C);
@@ -22,7 +22,7 @@ class AboutPage extends StatelessWidget {
         backgroundColor: _surface,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new, color: _accent),
-          onPressed: () => Get.back(),
+          onPressed: () => Navigator.of(context).pop(),
         ),
         title: const Text('About App',
             style: TextStyle(color: _textHi, fontWeight: FontWeight.w600, fontSize: 18)),

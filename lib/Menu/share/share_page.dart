@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:get/get.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -33,7 +32,7 @@ class SharePage extends StatelessWidget {
         backgroundColor: _surface,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new, color: _accent),
-          onPressed: () => Get.back(),
+          onPressed: () => Navigator.of(context).pop(),
         ),
         title: const Text('Share App',
             style: TextStyle(
@@ -64,7 +63,7 @@ class SharePage extends StatelessWidget {
                     const SizedBox(height: 28),
                     const _SectionLabel('Copy App Link'),
                     const SizedBox(height: 14),
-                    _linkCard(),
+                    _linkCard(context),
                     const SizedBox(height: 28),
                     _generalShareBtn(),
                     const SizedBox(height: 28),
@@ -199,7 +198,7 @@ class SharePage extends StatelessWidget {
     );
   }
 
-  Widget _linkCard() {
+  Widget _linkCard(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
@@ -219,7 +218,7 @@ class SharePage extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           GestureDetector(
-            onTap: _copyLink,
+            onTap: () => _copyLink(context),
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(color: _accentSoft, borderRadius: BorderRadius.circular(8)),
@@ -313,16 +312,22 @@ final url = 'mailto:?subject=${Uri.encodeComponent('Check out Islamic App')}&bod
 await _tryLaunch(url);
 }
 
-Future<void> _copyLink() async {
-// Fixed: Now actually copies text to device clipboard instead of calling Share.share()
-await Clipboard.setData(const ClipboardData(text: _appLink));
-Get.snackbar('Copied!', 'App link copied to clipboard',
-backgroundColor: _accentSoft,
-colorText: Colors.white,
-snackPosition: SnackPosition.BOTTOM,
-margin: const EdgeInsets.all(16),
-duration: const Duration(seconds: 2));
-}
+  Future<void> _copyLink(BuildContext context) async {
+    await Clipboard.setData(const ClipboardData(text: _appLink));
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text(
+          'App link copied to clipboard',
+          style: TextStyle(color: Colors.white),
+        ),
+        backgroundColor: _accentSoft,
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.all(16),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
 
 // Fixed: Engine now attempts a real platform application launch before resorting to generic share sheets
   Future<void> _tryLaunch(String urlString) async {

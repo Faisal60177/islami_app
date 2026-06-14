@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import '../auth/auth_controller.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../auth/auth_notifier.dart';
 import '../auth/auth_page.dart';
 
 const _bg         = Color(0xFF011A0E);
@@ -12,22 +12,21 @@ const _gold       = Color(0xFFD4AF37);
 const _textHi     = Color(0xFFE8F5EC);
 const _textLo     = Color(0xFF7BAF92);
 
-class ProfilePage extends StatefulWidget {
+class ProfilePage extends ConsumerStatefulWidget {
   const ProfilePage({super.key});
 
   @override
-  State<ProfilePage> createState() => _ProfilePageState();
+  ConsumerState<ProfilePage> createState() => _ProfilePageState();
 }
 
-class _ProfilePageState extends State<ProfilePage> {
-  final AuthController _auth = Get.find<AuthController>();
+class _ProfilePageState extends ConsumerState<ProfilePage> {
   final _nameCtrl = TextEditingController();
   bool _editing = false;
 
   @override
   void initState() {
     super.initState();
-    _nameCtrl.text = _auth.displayName.value;
+    _nameCtrl.text = ref.read(authNotifierProvider).displayName;
   }
 
   @override
@@ -36,78 +35,66 @@ class _ProfilePageState extends State<ProfilePage> {
     super.dispose();
   }
 
+  void _snack(String msg, {bool success = false}) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(msg),
+        backgroundColor: success ? _accentSoft : Colors.red[900],
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.all(16),
+        duration: Duration(seconds: success ? 2 : 4),
+      ),
+    );
+  }
+
   Future<void> _saveProfile() async {
     final trimmed = _nameCtrl.text.trim();
     if (trimmed.isEmpty) return;
-
-    final ok = await _auth.updateProfile(name: trimmed);
+    final ok = await ref.read(authNotifierProvider.notifier).updateProfile(name: trimmed);
     if (!mounted) return;
-
     if (ok) {
       setState(() => _editing = false);
-      Get.snackbar(
-        'Saved',
-        'Profile updated successfully',
-        backgroundColor: _accentSoft,
-        colorText: Colors.white,
-        snackPosition: SnackPosition.BOTTOM,
-        margin: const EdgeInsets.all(16),
-        duration: const Duration(seconds: 2),
-      );
+      _snack('Profile updated successfully', success: true);
     } else {
-      Get.snackbar(
-        'Error',
-        'Could not update profile. Please try again.',
-        backgroundColor: Colors.red[900],
-        colorText: Colors.white,
-        snackPosition: SnackPosition.BOTTOM,
-        margin: const EdgeInsets.all(16),
-      );
+      _snack('Could not update profile. Please try again.');
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Obx(() {
-      final isLoggedIn = _auth.isLoggedIn;
-      return Scaffold(
-        backgroundColor: _bg,
-        appBar: AppBar(
-          backgroundColor: _surface,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new, color: _accent),
-            onPressed: () => Navigator.of(context).pop(),
-          ),
-          title: const Text(
-            'Profile',
-            style: TextStyle(
-              color: _textHi,
-              fontWeight: FontWeight.w600,
-              fontSize: 18,
-            ),
-          ),
-          centerTitle: true,
-          elevation: 0,
-          actions: isLoggedIn && !_editing
-              ? [
-            IconButton(
-              icon: const Icon(Icons.edit_outlined, color: _accent),
-              onPressed: () => setState(() {
-                _editing = true;
-                _nameCtrl.text = _auth.displayName.value;
-              }),
-            ),
-          ]
-              : null,
+    final auth       = ref.watch(authNotifierProvider);
+    final isLoggedIn = auth.isLoggedIn;
+
+    return Scaffold(
+      backgroundColor: _bg,
+      appBar: AppBar(
+        backgroundColor: _surface,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new, color: _accent),
+          onPressed: () => Navigator.of(context).pop(),
         ),
-        body: isLoggedIn ? _loggedInView() : _loggedOutView(),
-      );
-    });
+        title: const Text('Profile',
+            style: TextStyle(color: _textHi, fontWeight: FontWeight.w600, fontSize: 18)),
+        centerTitle: true,
+        elevation: 0,
+        actions: isLoggedIn && !_editing
+            ? [
+          IconButton(
+            icon: const Icon(Icons.edit_outlined, color: _accent),
+            onPressed: () => setState(() {
+              _editing = true;
+              _nameCtrl.text = auth.displayName;
+            }),
+          ),
+        ]
+            : null,
+      ),
+      body: isLoggedIn ? _loggedInView(auth) : _loggedOutView(),
+    );
   }
 
-  // ── Logged In ────────────────────────────────────────────────────────────
-
-  Widget _loggedInView() {
+  Widget _loggedInView(auth) {
     return LayoutBuilder(builder: (context, constraints) {
       final isWide   = constraints.maxWidth > 600;
       final isTablet = constraints.maxWidth > 800;
@@ -120,15 +107,14 @@ class _ProfilePageState extends State<ProfilePage> {
           child: SingleChildScrollView(
             child: Column(
               children: [
-                _profileHeader(isWide, isTablet),
+                _profileHeader(auth, isWide, isTablet),
                 SizedBox(height: isWide ? 32 : 24),
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: hPad),
                   child: Column(
                     children: [
-                      // if (_editing) _editForm() else _statsRow(isWide),
                       const SizedBox(height: 24),
-                      _infoSection(),
+                      _infoSection(auth),
                       const SizedBox(height: 32),
                       _signOutBtn(),
                       const SizedBox(height: 32),
@@ -143,7 +129,7 @@ class _ProfilePageState extends State<ProfilePage> {
     });
   }
 
-  Widget _profileHeader(bool isWide, bool isTablet) {
+  Widget _profileHeader(auth, bool isWide, bool isTablet) {
     final avatarSize = isTablet ? 120.0 : isWide ? 110.0 : 100.0;
 
     return Container(
@@ -161,7 +147,7 @@ class _ProfilePageState extends State<ProfilePage> {
           Stack(
             alignment: Alignment.bottomRight,
             children: [
-              Obx(() => Container(
+              Container(
                 width: avatarSize,
                 height: avatarSize,
                 decoration: BoxDecoration(
@@ -169,55 +155,46 @@ class _ProfilePageState extends State<ProfilePage> {
                   border: Border.all(color: _gold, width: 2.5),
                   boxShadow: [
                     BoxShadow(
-                      color: _accent.withOpacity(0.3),
-                      blurRadius: 20,
-                      spreadRadius: 2,
-                    ),
+                        color: _accent.withOpacity(0.3),
+                        blurRadius: 20,
+                        spreadRadius: 2)
                   ],
                 ),
-                child: _auth.photoUrl.value.isNotEmpty
+                child: auth.photoUrl.isNotEmpty
                     ? ClipOval(
                   child: Image.network(
-                    _auth.photoUrl.value,
+                    auth.photoUrl,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => _avatarFallback(),
+                    errorBuilder: (_, __, ___) => _avatarFallback(auth.displayName),
                   ),
                 )
-                    : _avatarFallback(),
-              )),
+                    : _avatarFallback(auth.displayName),
+              ),
               Container(
                 padding: const EdgeInsets.all(6),
                 decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: _accentSoft,
-                ),
+                    shape: BoxShape.circle, color: _accentSoft),
                 child: const Icon(Icons.camera_alt, color: Colors.white, size: 14),
               ),
             ],
           ),
           const SizedBox(height: 16),
-          Obx(() => Text(
-            _auth.displayName.value.isNotEmpty
-                ? _auth.displayName.value
-                : 'Muslim User',
+          Text(
+            auth.displayName.isNotEmpty ? auth.displayName : 'Muslim User',
             style: TextStyle(
-              color: _textHi,
-              fontSize: isWide ? 26 : 22,
-              fontWeight: FontWeight.w700,
-            ),
-          )),
+                color: _textHi,
+                fontSize: isWide ? 26 : 22,
+                fontWeight: FontWeight.w700),
+          ),
           const SizedBox(height: 4),
-          Obx(() => Text(
-            _auth.email.value,
-            style: const TextStyle(color: _textLo, fontSize: 14),
-          )),
+          Text(auth.email,
+              style: const TextStyle(color: _textLo, fontSize: 14)),
           const SizedBox(height: 8),
-          // Show which providers are linked
-          Obx(() {
+          Builder(builder: (_) {
             final parts = <String>[];
-            if (_auth.hasGoogle.value)   parts.add('Google');
-            if (_auth.hasPassword.value) parts.add('Email');
-            final label = parts.isEmpty ? '' : parts.join(' + ');
+            if (auth.hasGoogle)   parts.add('Google');
+            if (auth.hasPassword) parts.add('Email');
+            final label = parts.join(' + ');
             if (label.isEmpty) return const SizedBox.shrink();
             return Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
@@ -226,14 +203,9 @@ class _ProfilePageState extends State<ProfilePage> {
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(color: _gold.withOpacity(0.3)),
               ),
-              child: Text(
-                '🔗  Signed in via $label',
-                style: const TextStyle(
-                  color: _gold,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+              child: Text('🔗  Signed in via $label',
+                  style: const TextStyle(
+                      color: _gold, fontSize: 12, fontWeight: FontWeight.w600)),
             );
           }),
         ],
@@ -241,145 +213,18 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget _avatarFallback() {
+  Widget _avatarFallback(String displayName) {
     return CircleAvatar(
       backgroundColor: _accentSoft,
-      child: Obx(() => Text(
-        _auth.displayName.value.isNotEmpty
-            ? _auth.displayName.value[0].toUpperCase()
-            : 'M',
+      child: Text(
+        displayName.isNotEmpty ? displayName[0].toUpperCase() : 'M',
         style: const TextStyle(
-          color: Colors.white,
-          fontSize: 36,
-          fontWeight: FontWeight.bold,
-        ),
-      )),
-    );
-  }
-
-  /* Widget _statsRow(bool isWide) {
-    return Row(
-      children: [
-        _statCard('0', 'Days\nStreak',   Icons.local_fire_department_outlined, isWide),
-        const SizedBox(width: 12),
-        _statCard('0', 'Duas\nRead',     Icons.book_outlined,                  isWide),
-        const SizedBox(width: 12),
-        _statCard('0', 'Quran\nPages',   Icons.auto_stories_outlined,          isWide),
-      ],
-    );
-  }
-
-   */
-
-  Widget _statCard(String value, String label, IconData icon, bool isWide) {
-    return Expanded(
-      child: Container(
-        padding: EdgeInsets.symmetric(vertical: isWide ? 20 : 16),
-        decoration: BoxDecoration(
-          color: _card,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: _accentSoft.withOpacity(0.2)),
-        ),
-        child: Column(
-          children: [
-            Icon(icon, color: _accent, size: isWide ? 26 : 22),
-            const SizedBox(height: 6),
-            Text(
-              value,
-              style: TextStyle(
-                color: _textHi,
-                fontWeight: FontWeight.w800,
-                fontSize: isWide ? 24 : 20,
-              ),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              label,
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: _textLo, fontSize: 10),
-            ),
-          ],
-        ),
+            color: Colors.white, fontSize: 36, fontWeight: FontWeight.bold),
       ),
     );
   }
 
-  Widget _editForm() {
-    return Column(
-      children: [
-        TextFormField(
-          controller: _nameCtrl,
-          style: const TextStyle(color: _textHi),
-          textInputAction: TextInputAction.done,
-          onFieldSubmitted: (_) => _saveProfile(),
-          decoration: InputDecoration(
-            labelText: 'Full Name',
-            labelStyle: const TextStyle(color: _textLo),
-            prefixIcon: const Icon(Icons.person_outline, color: _accentSoft, size: 20),
-            filled: true,
-            fillColor: _surface,
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: BorderSide(color: _accentSoft.withOpacity(0.3)),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(color: _accent, width: 1.5),
-            ),
-          ),
-        ),
-        const SizedBox(height: 16),
-        Row(
-          children: [
-            Expanded(
-              child: OutlinedButton(
-                onPressed: () => setState(() => _editing = false),
-                style: OutlinedButton.styleFrom(
-                  side: BorderSide(color: _textLo.withOpacity(0.4)),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                ),
-                child: const Text('Cancel', style: TextStyle(color: _textLo)),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Obx(() => ElevatedButton(
-                onPressed: _auth.isLoading.value ? null : _saveProfile,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: _accentSoft,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                ),
-                child: _auth.isLoading.value
-                    ? const SizedBox(
-                  width: 18,
-                  height: 18,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: Colors.white,
-                  ),
-                )
-                    : const Text(
-                  'Save',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              )),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _infoSection() {
+  Widget _infoSection(auth) {
     return Container(
       decoration: BoxDecoration(
         color: _card,
@@ -388,32 +233,14 @@ class _ProfilePageState extends State<ProfilePage> {
       ),
       child: Column(
         children: [
-          Obx(() => _infoTile(
-            Icons.email_outlined,
-            'Email',
-            _auth.email.value.isNotEmpty ? _auth.email.value : '—',
-          )),
+          _infoTile(Icons.email_outlined, 'Email',
+              auth.email.isNotEmpty ? auth.email : '—'),
           Divider(height: 1, color: _accentSoft.withOpacity(0.15)),
           _infoTile(Icons.shield_outlined, 'Account Type', 'Standard'),
           Divider(height: 1, color: _accentSoft.withOpacity(0.15)),
           _infoTile(Icons.language, 'Language', 'English'),
-
-          // Security tile — reactive to actual provider state
-          Obx(() {
-            final hasGoogle   = _auth.hasGoogle.value;
-            final hasPassword = _auth.hasPassword.value;
-
-            // Only show the security tile if Google is linked
-            // (email-only users don't need to add/update via this tile)
-            if (!hasGoogle) return const SizedBox.shrink();
-
-            return Column(
-              children: [
-                Divider(height: 1, color: _accentSoft.withOpacity(0.15)),
-                _securityTile(isUpdate: hasPassword),
-              ],
-            );
-          }),
+          Divider(height: 1, color: _accentSoft.withOpacity(0.15)),
+          _securityTile(isUpdate: auth.hasPassword),
         ],
       ),
     );
@@ -433,15 +260,11 @@ class _ProfilePageState extends State<ProfilePage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Security',
-                    style: TextStyle(color: _textLo, fontSize: 11),
-                  ),
+                  const Text('Security',
+                      style: TextStyle(color: _textLo, fontSize: 11)),
                   const SizedBox(height: 2),
                   Text(
-                    isUpdate
-                        ? 'Update Password for Login'
-                        : 'Add Password for Login',
+                    isUpdate ? 'Update Password for Login' : 'Add Password for Login',
                     style: const TextStyle(color: _textHi, fontSize: 14),
                   ),
                 ],
@@ -487,286 +310,265 @@ class _ProfilePageState extends State<ProfilePage> {
           padding: const EdgeInsets.symmetric(vertical: 14),
         ),
         icon: const Icon(Icons.logout, color: Colors.redAccent, size: 20),
-        label: const Text(
-          'Sign Out',
-          style: TextStyle(
-            color: Colors.redAccent,
-            fontWeight: FontWeight.w700,
-            fontSize: 15,
-          ),
-        ),
+        label: const Text('Sign Out',
+            style: TextStyle(
+                color: Colors.redAccent,
+                fontWeight: FontWeight.w700,
+                fontSize: 15)),
       ),
     );
   }
 
-  // ── Set / Update Password Sheet ──────────────────────────────────────────
-
   void _showSetPasswordSheet() {
     final passCtrl    = TextEditingController();
     final confirmCtrl = TextEditingController();
-    bool obscure1     = true;
-    bool obscure2     = true;
 
-    Get.bottomSheet(
-      // Use Obx here so isUpdate stays reactive if hasPassword changes
-      Obx(() {
-        final isUpdate = _auth.hasPassword.value;
-        return StatefulBuilder(
-          builder: (context, setSheetState) {
-            return SingleChildScrollView(
-              child: Container(
-                padding: EdgeInsets.fromLTRB(
-                  24, 16, 24,
-                  MediaQuery.of(context).viewInsets.bottom + 32,
-                ),
-                decoration: const BoxDecoration(
-                  color: _card,
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Drag handle
-                    Center(
-                      child: Container(
-                        width: 40,
-                        height: 4,
-                        decoration: BoxDecoration(
-                          color: _textLo.withOpacity(0.3),
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-
-                    Text(
-                      isUpdate ? 'Update Password' : 'Add Password Login',
-                      style: const TextStyle(
-                        color: _textHi,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      isUpdate
-                          ? 'Set a new password for your account.'
-                          : 'After setting a password, you can sign in with\neither Google or your email & password.',
-                      style: const TextStyle(color: _textLo, fontSize: 13, height: 1.5),
-                    ),
-                    const SizedBox(height: 24),
-
-                    // New password field
-                    TextFormField(
-                      controller: passCtrl,
-                      obscureText: obscure1,
-                      style: const TextStyle(color: _textHi),
-                      decoration: InputDecoration(
-                        labelText: 'New Password',
-                        labelStyle: const TextStyle(color: _textLo),
-                        prefixIcon: const Icon(Icons.lock_outline,
-                            color: _accentSoft, size: 20),
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            obscure1 ? Icons.visibility_off : Icons.visibility,
-                            color: _textLo,
-                            size: 20,
-                          ),
-                          onPressed: () =>
-                              setSheetState(() => obscure1 = !obscure1),
-                        ),
-                        filled: true,
-                        fillColor: _surface,
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(14),
-                          borderSide:
-                          BorderSide(color: _accentSoft.withOpacity(0.3)),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(14),
-                          borderSide:
-                          const BorderSide(color: _accent, width: 1.5),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-
-                    // Confirm password field
-                    TextFormField(
-                      controller: confirmCtrl,
-                      obscureText: obscure2,
-                      style: const TextStyle(color: _textHi),
-                      decoration: InputDecoration(
-                        labelText: 'Confirm Password',
-                        labelStyle: const TextStyle(color: _textLo),
-                        prefixIcon: const Icon(Icons.lock_outline,
-                            color: _accentSoft, size: 20),
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            obscure2 ? Icons.visibility_off : Icons.visibility,
-                            color: _textLo,
-                            size: 20,
-                          ),
-                          onPressed: () =>
-                              setSheetState(() => obscure2 = !obscure2),
-                        ),
-                        filled: true,
-                        fillColor: _surface,
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(14),
-                          borderSide:
-                          BorderSide(color: _accentSoft.withOpacity(0.3)),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(14),
-                          borderSide:
-                          const BorderSide(color: _accent, width: 1.5),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-
-                    // Submit button
-                    SizedBox(
-                      width: double.infinity,
-                      height: 50,
-                      child: Obx(() => ElevatedButton(
-                        onPressed: _auth.isLoading.value
-                            ? null
-                            : () async {
-                          if (passCtrl.text.length < 6) {
-                            Get.snackbar(
-                              'Error',
-                              'Password must be at least 6 characters.',
-                              backgroundColor: Colors.red[900],
-                              colorText: Colors.white,
-                              snackPosition: SnackPosition.BOTTOM,
-                              margin: const EdgeInsets.all(16),
-                            );
-                            return;
-                          }
-                          if (passCtrl.text != confirmCtrl.text) {
-                            Get.snackbar(
-                              'Error',
-                              'Passwords do not match.',
-                              backgroundColor: Colors.red[900],
-                              colorText: Colors.white,
-                              snackPosition: SnackPosition.BOTTOM,
-                              margin: const EdgeInsets.all(16),
-                            );
-                            return;
-                          }
-
-                          final ok = await _auth.addPasswordToAccount(
-                            password: passCtrl.text,
-                          );
-
-                          if (ok) {
-                            Get.back();
-                            Get.snackbar(
-                              isUpdate
-                                  ? 'Password Updated ✓'
-                                  : 'Password Set ✓',
-                              isUpdate
-                                  ? 'Your password has been updated.'
-                                  : 'You can now sign in with email & password too.',
-                              backgroundColor: _accentSoft,
-                              colorText: Colors.white,
-                              snackPosition: SnackPosition.BOTTOM,
-                              margin: const EdgeInsets.all(16),
-                              duration: const Duration(seconds: 3),
-                            );
-                          } else {
-                            Get.snackbar(
-                              'Error',
-                              _auth.errorMessage.value.isNotEmpty
-                                  ? _auth.errorMessage.value
-                                  : 'Failed. Please try again.',
-                              backgroundColor: Colors.red[900],
-                              colorText: Colors.white,
-                              snackPosition: SnackPosition.BOTTOM,
-                              margin: const EdgeInsets.all(16),
-                            );
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: _accentSoft,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                        ),
-                        child: _auth.isLoading.value
-                            ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
-                            : Text(
-                          isUpdate ? 'Update Password' : 'Set Password',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 15,
-                          ),
-                        ),
-                      )),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-        );
-      }),
+    showModalBottomSheet(
+      context: context,
       isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetCtx) => Consumer(
+        builder: (_, ref, __) {
+          final auth     = ref.watch(authNotifierProvider);
+          final isUpdate = auth.hasPassword;
+          final loading  = auth.isLoading;
+
+          return StatefulBuilder(
+            builder: (_, setSheetState) {
+              bool obscure1 = true;
+              bool obscure2 = true;
+
+              return Padding(
+                padding: EdgeInsets.only(
+                    bottom: MediaQuery.of(sheetCtx).viewInsets.bottom),
+                child: SingleChildScrollView(
+                  child: Container(
+                    padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+                    decoration: const BoxDecoration(
+                      color: _card,
+                      borderRadius:
+                      BorderRadius.vertical(top: Radius.circular(24)),
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Center(
+                          child: Container(
+                            width: 40,
+                            height: 4,
+                            decoration: BoxDecoration(
+                              color: _textLo.withOpacity(0.3),
+                              borderRadius: BorderRadius.circular(2),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        Text(
+                          isUpdate ? 'Update Password' : 'Add Password Login',
+                          style: const TextStyle(
+                              color: _textHi,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          isUpdate
+                              ? 'Set a new password for your account.'
+                              : 'After setting a password, you can sign in with either Google or your email & password.',
+                          style: const TextStyle(
+                              color: _textLo, fontSize: 13, height: 1.5),
+                        ),
+                        const SizedBox(height: 24),
+                        StatefulBuilder(builder: (_, ss) {
+                          return Column(
+                            children: [
+                              TextFormField(
+                                controller: passCtrl,
+                                obscureText: obscure1,
+                                style: const TextStyle(color: _textHi),
+                                decoration: InputDecoration(
+                                  labelText: 'New Password',
+                                  labelStyle:
+                                  const TextStyle(color: _textLo),
+                                  prefixIcon: const Icon(
+                                      Icons.lock_outline,
+                                      color: _accentSoft,
+                                      size: 20),
+                                  suffixIcon: IconButton(
+                                    icon: Icon(
+                                        obscure1
+                                            ? Icons.visibility_off
+                                            : Icons.visibility,
+                                        color: _textLo,
+                                        size: 20),
+                                    onPressed: () =>
+                                        ss(() => obscure1 = !obscure1),
+                                  ),
+                                  filled: true,
+                                  fillColor: _surface,
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(14),
+                                    borderSide: BorderSide(
+                                        color: _accentSoft.withOpacity(0.3)),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(14),
+                                    borderSide: const BorderSide(
+                                        color: _accent, width: 1.5),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              TextFormField(
+                                controller: confirmCtrl,
+                                obscureText: obscure2,
+                                style: const TextStyle(color: _textHi),
+                                decoration: InputDecoration(
+                                  labelText: 'Confirm Password',
+                                  labelStyle:
+                                  const TextStyle(color: _textLo),
+                                  prefixIcon: const Icon(
+                                      Icons.lock_outline,
+                                      color: _accentSoft,
+                                      size: 20),
+                                  suffixIcon: IconButton(
+                                    icon: Icon(
+                                        obscure2
+                                            ? Icons.visibility_off
+                                            : Icons.visibility,
+                                        color: _textLo,
+                                        size: 20),
+                                    onPressed: () =>
+                                        ss(() => obscure2 = !obscure2),
+                                  ),
+                                  filled: true,
+                                  fillColor: _surface,
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(14),
+                                    borderSide: BorderSide(
+                                        color: _accentSoft.withOpacity(0.3)),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(14),
+                                    borderSide: const BorderSide(
+                                        color: _accent, width: 1.5),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
+                        }),
+                        const SizedBox(height: 24),
+                        SizedBox(
+                          width: double.infinity,
+                          height: 50,
+                          child: ElevatedButton(
+                            onPressed: loading
+                                ? null
+                                : () async {
+                              if (passCtrl.text.length < 6) {
+                                _snack('Password must be at least 6 characters.');
+                                return;
+                              }
+                              if (passCtrl.text != confirmCtrl.text) {
+                                _snack('Passwords do not match.');
+                                return;
+                              }
+                              final ok = await ref
+                                  .read(authNotifierProvider.notifier)
+                                  .addPasswordToAccount(
+                                  password: passCtrl.text);
+                              if (!sheetCtx.mounted) return;
+                              Navigator.of(sheetCtx).pop();
+                              if (ok) {
+                                _snack(
+                                  isUpdate
+                                      ? 'Your password has been updated.'
+                                      : 'You can now sign in with email & password too.',
+                                  success: true,
+                                );
+                              } else {
+                                final err = ref
+                                    .read(authNotifierProvider)
+                                    .errorMessage;
+                                _snack(err.isNotEmpty
+                                    ? err
+                                    : 'Failed. Please try again.');
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: _accentSoft,
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(14)),
+                            ),
+                            child: loading
+                                ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                    strokeWidth: 2, color: Colors.white))
+                                : Text(
+                                isUpdate
+                                    ? 'Update Password'
+                                    : 'Set Password',
+                                style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 15)),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
+          );
+        },
+      ),
     );
   }
 
   void _confirmSignOut() {
-    Get.dialog(
-      AlertDialog(
+    showDialog(
+      context: context,
+      builder: (dialogCtx) => AlertDialog(
         backgroundColor: _card,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text(
-          'Sign Out',
-          style: TextStyle(color: _textHi, fontWeight: FontWeight.w700),
-        ),
-        content: const Text(
-          'Are you sure you want to sign out?',
-          style: TextStyle(color: _textLo),
-        ),
+        title: const Text('Sign Out',
+            style: TextStyle(color: _textHi, fontWeight: FontWeight.w700)),
+        content: const Text('Are you sure you want to sign out?',
+            style: TextStyle(color: _textLo)),
         actions: [
           TextButton(
-            onPressed: () => Get.back(),
+            onPressed: () => Navigator.of(dialogCtx).pop(),
             child: const Text('Cancel', style: TextStyle(color: _textLo)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red[800]),
             onPressed: () async {
-              Get.back();
-              await _auth.signOut();
-              Get.snackbar(
-                'Signed Out',
-                'You have been signed out. See you soon! 🌙',
-                backgroundColor: _accentSoft,
-                colorText: Colors.white,
-                snackPosition: SnackPosition.BOTTOM,
-                margin: const EdgeInsets.all(16),
-                duration: const Duration(seconds: 3),
+              Navigator.of(dialogCtx).pop();
+              await ref.read(authNotifierProvider.notifier).signOut();
+              if (!mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: const Text(
+                      'You have been signed out. See you soon! 🌙'),
+                  backgroundColor: _accentSoft,
+                  behavior: SnackBarBehavior.floating,
+                  margin: const EdgeInsets.all(16),
+                  duration: const Duration(seconds: 3),
+                ),
               );
             },
-            child: const Text('Sign Out', style: TextStyle(color: Colors.white)),
+            child: const Text('Sign Out',
+                style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
     );
   }
-
-  // ── Logged Out View ──────────────────────────────────────────────────────
 
   Widget _loggedOutView() {
     return LayoutBuilder(builder: (context, constraints) {
@@ -791,36 +593,34 @@ class _ProfilePageState extends State<ProfilePage> {
                       color: _gold, size: isWide ? 80 : 60),
                 ),
                 const SizedBox(height: 24),
-                const Text(
-                  'بِسْمِ اللَّهِ',
-                  style: TextStyle(color: _gold, fontSize: 24, fontFamily: 'Amiri'),
-                ),
+                const Text('بِسْمِ اللَّهِ',
+                    style: TextStyle(
+                        color: _gold, fontSize: 24, fontFamily: 'Amiri')),
                 const SizedBox(height: 8),
                 const Text(
                   'Sign in to sync your progress,\nduas, and Quran bookmarks.',
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: _textLo, fontSize: 15, height: 1.6),
+                  style:
+                  TextStyle(color: _textLo, fontSize: 15, height: 1.6),
                 ),
                 const SizedBox(height: 32),
                 SizedBox(
                   width: double.infinity,
                   height: 54,
                   child: ElevatedButton(
-                    onPressed: () => Get.to(() => const AuthPage()),
+                    onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const AuthPage()),
+                    ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: _accentSoft,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
+                          borderRadius: BorderRadius.circular(16)),
                     ),
-                    child: const Text(
-                      'Sign In / Create Account',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 15,
-                      ),
-                    ),
+                    child: const Text('Sign In / Create Account',
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 15)),
                   ),
                 ),
               ],

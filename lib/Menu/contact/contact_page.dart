@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:get/get.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 const _bg        = Color(0xFF011A0E);
@@ -23,7 +23,7 @@ class ContactPage extends StatelessWidget {
         backgroundColor: _surface,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new, color: _accent),
-          onPressed: () => Get.back(),
+          onPressed: () => Navigator.of(context).pop(),
         ),
         title: const Text('Contact Us',
             style: TextStyle(
@@ -68,7 +68,7 @@ class ContactPage extends StatelessWidget {
                             subtitle: 'siratalmustaqeem60177@gmail.com',
                             hint: 'Response within 24–48 hours',
                             onTap: () => _launchUrl('mailto:siratalmustaqeem60177@gmail.com'),
-                            onCopy: () => _copy('siratalmustaqeem60177@gmail.com', 'Email copied'),
+                            onCopy: () => _copy(context,'siratalmustaqeem60177@gmail.com', 'Email copied'),
                           ),
                           _contactCard(
                             icon: Icons.chat_bubble_outline,
@@ -77,7 +77,7 @@ class ContactPage extends StatelessWidget {
                             subtitle: '+880 1700-000000',
                             hint: 'Mon – Fri, 9 AM – 6 PM',
                             onTap: () => _launchUrl('https://wa.me/8801700000000'),
-                            onCopy: () => _copy('+8801700000000', 'Number copied'),
+                            onCopy: () => _copy(context, '+8801700000000', 'Number copied'),
                           ),
                           /* _contactCard(
                             icon: Icons.telegram,
@@ -109,7 +109,7 @@ class ContactPage extends StatelessWidget {
                         subtitle: 'siratalmustaqeem60177@gmail.com',
                         hint: 'Response within 24–48 hours',
                         onTap: () => _launchUrl('mailto:siratalmustaqeem60177@gmail.com'),
-                        onCopy: () => _copy('siratalmustaqeem60177@gmail.com', 'Email copied'),
+                        onCopy: () => _copy(context, 'siratalmustaqeem60177@gmail.com', 'Email copied'),
                       ),
                       const SizedBox(height: 12),
                       _contactCard(
@@ -119,7 +119,7 @@ class ContactPage extends StatelessWidget {
                         subtitle: '+8801334543168',
                         hint: 'Every Day, 8 AM – 8 PM',
                         onTap: () => _launchUrl('https://wa.me/8801334543168'),
-                        onCopy: () => _copy('+8801334543168', 'Number copied'),
+                        onCopy: () => _copy(context, '+8801334543168', 'Number copied'),
                       ),
                       /* HIDING TELEGRAM & WEBSITE FOR NOW
                       const SizedBox(height: 12),
@@ -353,13 +353,19 @@ class ContactPage extends StatelessWidget {
     if (await canLaunchUrl(uri)) await launchUrl(uri);
   }
 
-  void _copy(String text, String msg) {
+  void _copy(BuildContext context, String text, String msg) {
     Clipboard.setData(ClipboardData(text: text));
-    Get.snackbar('Copied', msg,
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          msg,
+          style: const TextStyle(color: Colors.white),
+        ),
         backgroundColor: _accentSoft,
-        colorText: Colors.white,
-        snackPosition: SnackPosition.BOTTOM,
+        behavior: SnackBarBehavior.floating,
         margin: const EdgeInsets.all(16),
-        duration: const Duration(seconds: 2));
+        duration: const Duration(seconds: 2),
+      ),
+    );
   }
 }

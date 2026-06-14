@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_app_review/in_app_review.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -49,11 +49,21 @@ class _RatePageState extends State<RatePage> with SingleTickerProviderStateMixin
 
   Future<void> _submit() async {
     if (_selectedStars == 0) {
-      Get.snackbar('Oops!', 'Please select a star rating first',
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: const [
+              Text('Oops!', style: TextStyle(fontWeight: FontWeight.bold)),
+              Text('Please select a star rating first'),
+            ],
+          ),
           backgroundColor: Colors.orange[800],
-          colorText: Colors.white,
-          snackPosition: SnackPosition.BOTTOM,
-          margin: const EdgeInsets.all(16));
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.all(16),
+        ),
+      );
       return;
     }
     if (_selectedStars >= 4) {
@@ -76,7 +86,7 @@ class _RatePageState extends State<RatePage> with SingleTickerProviderStateMixin
         backgroundColor: _surface,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new, color: _accent),
-          onPressed: () => Get.back(),
+          onPressed: () => Navigator.of(context).pop(),
         ),
         title: const Text('Rate Us',
             style: TextStyle(color: _textHi, fontWeight: FontWeight.w600, fontSize: 18)),
@@ -396,7 +406,7 @@ class _RatePageState extends State<RatePage> with SingleTickerProviderStateMixin
                     width: double.infinity,
                     height: 54,
                     child: ElevatedButton(
-                      onPressed: () => Get.back(),
+                      onPressed: () => Navigator.of(context).pop(),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: _accentSoft,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
