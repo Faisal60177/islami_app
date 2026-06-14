@@ -10,7 +10,7 @@ class QuranDownloadService {
 
   // ── Replace with your actual GitHub URL ──────────────────────────
   static const String _zipUrl =
-      'https://github.com/Faisal60177/quran-pages/releases/download/v1.0/quran_pages.zip';
+      'https://github.com/Faisal60177/quran-pages/releases/download/v2.0/quran_pages_webp.zip';
 
   final Dio _dio = Dio();
 
@@ -33,7 +33,7 @@ class QuranDownloadService {
   // ── Get path for a single page ────────────────────────────────────
   static Future<String> getPagePath(int page) async {
     final dir = await getQuranDir();
-    final fileName = '${page.toString().padLeft(3, '0')}.jpg';
+    final fileName = '${page.toString().padLeft(3, '0')}.webp';
     return '${dir.path}/$fileName';
   }
 
@@ -45,7 +45,7 @@ class QuranDownloadService {
   }) async {
     try {
       final appDir = await getApplicationDocumentsDirectory();
-      final zipPath = '${appDir.path}/quran_pages.zip';
+      final zipPath = '${appDir.path}/quran_pages_webp.zip';
       final zipFile = File(zipPath);
 
       // ── Phase 1: Download zip ─────────────────────────────────────
@@ -113,7 +113,7 @@ class QuranDownloadService {
 
     int extracted = 0;
     final imageFiles =
-    archive.files.where((f) => f.name.endsWith('.jpg')).toList();
+    archive.files.where((f) => f.name.endsWith('.webp')).toList();
     final total = imageFiles.length;
 
     for (final file in imageFiles) {
@@ -137,7 +137,7 @@ class QuranDownloadService {
   Future<int> _countExtractedPages(Directory dir) async {
     int count = 0;
     for (int i = 1; i <= totalPages; i++) {
-      final fileName = '${i.toString().padLeft(3, '0')}.jpg';
+      final fileName = '${i.toString().padLeft(3, '0')}.webp';
       final file = File('${dir.path}/$fileName');
       if (await file.exists()) count++;
     }

@@ -744,7 +744,7 @@ class _PagePlaceholder extends StatelessWidget {
                 border: Border.all(color: const Color(0xFF2E6B40).withOpacity(0.25)),
               ),
               child: Text(
-                'Page $page  ·  Image ${page.toString().padLeft(3, '0')}.jpg',
+                'Page $page  ·  Image ${page.toString().padLeft(3, '0')}.webp',
                 textAlign: TextAlign.center,
                 style: TextStyle(color: const Color(0xFF555555), fontSize: rsw * 0.024),
               ),
