@@ -6,7 +6,7 @@
         <item name="android:forceDarkAllowed">false</item>
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
-        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
+        <item name="android:windowLayoutInDisplayCutoutMode">always</item>
         <item name="android:enforceNavigationBarContrast">false</item>
     </style>
     <!-- Theme applied to the Android Window as soon as the process has started.

@@ -22,6 +22,22 @@
           }
         },
         {
+          "client_id": "330629038977-bsitb0brs35sov2fnej8kf5jdvh5gm9p.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.siratalmustaqeem.muslimlife",
+            "certificate_hash": "8ada5f73ad189a292362afcc7bf14eb61284181f"
+          }
+        },
+        {
+          "client_id": "330629038977-ls382ff5ffcgqpqaasar6p79ihqc5m32.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.siratalmustaqeem.muslimlife",
+            "certificate_hash": "39c00787e85814cf3fb535109c1777606c548dd8"
+          }
+        },
+        {
           "client_id": "330629038977-7ivpamsds13tqcr6v15sokcrtgav0p3o.apps.googleusercontent.com",
           "client_type": 3
         }
