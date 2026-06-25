@@ -22,6 +22,7 @@ import 'package:muslim_app/settings/theme/app_themes.dart';
 import 'widgets/prayer_times_card.dart';
 import 'widgets/mosque.dart';
 import 'widgets/ring_animation.dart';
+import 'package:flutter/services.dart';
 
 class PrayerTimesPage extends StatefulWidget {
   const PrayerTimesPage({super.key});
@@ -271,8 +272,18 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
 
         return Scaffold(
           extendBodyBehindAppBar: true,
+          extendBody: true,
           backgroundColor: bgBase,
-          body: RefreshIndicator(
+          body: AnnotatedRegion<SystemUiOverlayStyle>(    // ✅ Add this wrapper
+            value: SystemUiOverlayStyle(
+              statusBarColor: Colors.transparent,
+              statusBarIconBrightness:
+              theme.isDark ? Brightness.light : Brightness.dark,
+              systemNavigationBarColor: Colors.transparent,
+              systemNavigationBarIconBrightness:
+              theme.isDark ? Brightness.light : Brightness.dark,
+            ),
+            child: RefreshIndicator(
             color: accent,
             backgroundColor: surface,
             displacement: 80,
@@ -559,6 +570,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
 
               ],
             ),
+          ),
           ),
           ),
           bottomNavigationBar: _buildNav(

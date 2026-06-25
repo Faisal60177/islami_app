@@ -17,6 +17,8 @@ import 'package:muslim_app/Duas/pages/duas_page.dart';
 import 'package:muslim_app/Menu/menu_page.dart';
 import 'pages/quran_download_screen.dart';
 import 'services/quran_download_service.dart';
+import 'package:muslim_app/settings/l10n/app_localizations.dart';
+
 
 class QuranPage extends StatelessWidget {
   const QuranPage({super.key});
@@ -97,6 +99,7 @@ class _QuranPageBodyState extends State<_QuranPageBody>
   Widget build(BuildContext context) {
     return BlocBuilder<SettingsCubit, SettingsState>(
       builder: (ctx, settings) {
+        final l10n  = AppLocalizations(settings.languageCode);
         final theme = getThemeById(settings.themeMode);
         final mq    = MediaQuery.of(context);
         final sw    = mq.size.width;
@@ -148,20 +151,20 @@ class _QuranPageBodyState extends State<_QuranPageBody>
               ],
             ),
           ),
-          bottomNavigationBar: _buildNav(context, theme, rsw, sw),
+          bottomNavigationBar: _buildNav(context, theme, rsw, sw, l10n),
         );
       },
     );
   }
 
   Widget _buildNav(BuildContext context, AppThemeOption theme,
-      double rsw, double sw) {
+      double rsw, double sw, AppLocalizations l10n) {
     final items = [
-      ('Today', 'assets/icons/today.png'),
-      ('Tools', 'assets/icons/tools.png'),
-      ('Quran', 'assets/icons/quran.png'),
-      ('Duas',  'assets/icons/duas.png'),
-      ('Menu',  'assets/icons/menu.png'),
+      (l10n.today, 'assets/icons/today.png'),
+      (l10n.tools, 'assets/icons/tools.png'),
+      (l10n.quran, 'assets/icons/quran.png'),
+      (l10n.duas,  'assets/icons/duas.png'),
+      (l10n.menu,  'assets/icons/menu.png'),
     ];
     final iconSz  = (sw * 0.058).clamp(22.0, 28.0);
     final labelSz = (sw * 0.024).clamp(9.0, 11.5);
