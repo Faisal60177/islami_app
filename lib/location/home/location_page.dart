@@ -69,20 +69,22 @@ class _LocationPageState extends State<LocationPage>
       bottomNavigationBar: BlocBuilder<LocationCubit, LocationState>(
         builder: (ctx, state) {
           if (state is! LocationLoaded) return const SizedBox.shrink();
-          return Container(
-            padding: EdgeInsets.fromLTRB(
-              sw * 0.05,
-              sw * 0.03,
-              sw * 0.05,
-              MediaQuery.of(context).padding.bottom + sw * 0.03,
-            ),
-            decoration: BoxDecoration(
-              color: const Color(0xFF0A1F14),
-              border: Border(
-                top: BorderSide(color: Colors.white.withOpacity(0.08), width: 0.8),
+          return SafeArea(
+            child: Container(
+              padding: EdgeInsets.fromLTRB(
+                sw * 0.05,
+                sw * 0.025,
+                sw * 0.05,
+                sw * 0.025,
               ),
+              decoration: BoxDecoration(
+                color: const Color(0xFF0A1F14),
+                border: Border(
+                  top: BorderSide(color: Colors.white.withOpacity(0.08), width: 0.8),
+                ),
+              ),
+              child: _buildSaveButton(ctx, state, sw, sh, l10n),
             ),
-            child: _buildSaveButton(ctx, state, sw, sh, l10n),
           );
         },
       ),
