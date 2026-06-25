@@ -66,6 +66,27 @@ class _LocationPageState extends State<LocationPage>
 
     return Scaffold(
       backgroundColor: const Color(0xFF0A1F14),
+      bottomNavigationBar: BlocBuilder<LocationCubit, LocationState>(
+        builder: (ctx, state) {
+          if (state is! LocationLoaded) return const SizedBox.shrink();
+          return Container(
+            padding: EdgeInsets.fromLTRB(
+              sw * 0.05,
+              sw * 0.03,
+              sw * 0.05,
+              MediaQuery.of(context).padding.bottom + sw * 0.03,
+            ),
+            decoration: BoxDecoration(
+              color: const Color(0xFF0A1F14),
+              border: Border(
+                top: BorderSide(color: Colors.white.withOpacity(0.08), width: 0.8),
+              ),
+            ),
+            child: _buildSaveButton(ctx, state, sw, sh, l10n),
+          );
+        },
+      ),
+
       body: Stack(
         children: [
           // ── Background decorative circles ──
@@ -148,8 +169,6 @@ class _LocationPageState extends State<LocationPage>
                             _buildLocationCard(state.location, sw, sh, l10n),
                             SizedBox(height: sh * 0.02),
                             _buildGPSButton(context, state, sw, sh, l10n),
-                            SizedBox(height: sh * 0.03),
-                            _buildSaveButton(context, state, sw, sh, l10n),
                             SizedBox(height: sh * 0.03),
                           ],
 
