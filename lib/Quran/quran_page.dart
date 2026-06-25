@@ -341,7 +341,7 @@ class _QuickActionsRow extends StatelessWidget {
               SizedBox(width: rsw * 0.028),
               Expanded(
                 child: _ActionCard(
-                  icon: Icons.tag_rounded,
+                  icon: Icons.find_in_page,
                   label: 'Go to Page',
                   theme: theme,
                   rsw: rsw,
