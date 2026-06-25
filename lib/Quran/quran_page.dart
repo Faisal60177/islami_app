@@ -386,7 +386,7 @@ class _QuickActionsRow extends StatelessWidget {
                       fontSize: rsw * 0.040,
                       fontWeight: FontWeight.w700)),
               SizedBox(height: rsw * 0.008),
-              Text('Enter a Quran page number from 1 to 610',
+              Text('Enter a Quran page number from 1 to 611',
                   style: TextStyle(
                       color: theme.textLow, fontSize: rsw * 0.026)),
               SizedBox(height: rsw * 0.026),
@@ -421,17 +421,17 @@ class _QuickActionsRow extends StatelessWidget {
                   ),
                   onPressed: () {
                     final n = int.tryParse(ctrl.text.trim());
-                    if (n == null || n < 1 || n > 610) {
+                    if (n == null || n < 1 || n > 611) {
                       ScaffoldMessenger.of(sheetCtx).showSnackBar(
                         const SnackBar(
                             content:
-                            Text('Enter a valid page number (1–610)')),
+                            Text('Enter a valid page number (1–611)')),
                       );
                       return;
                     }
 
                     // Quran page N corresponds to image page N + 2
-                    final imagePage = n + 2;
+                    final imagePage = n + 1;
 
                     if (surahs.isEmpty) return;
                     var s = surahs.first;
