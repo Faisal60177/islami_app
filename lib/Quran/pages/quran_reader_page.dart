@@ -58,7 +58,7 @@ class _QuranReaderPageState extends State<QuranReaderPage>
       vsync: this,
       duration: const Duration(milliseconds: _defaultTurnMs),
     );
-    _curlAnim = CurvedAnimation(parent: _curlCtrl, curve: Curves.easeOutCubic);
+    _curlAnim = CurvedAnimation(parent: _curlCtrl, curve: Curves.easeInOutCubic);
 
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
     WidgetsBinding.instance.addPostFrameCallback((_) => _checkBookmark());
