@@ -55,9 +55,9 @@ class _QuranReaderPageState extends State<QuranReaderPage>
 
     _curlCtrl = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 400),
+      duration: const Duration(milliseconds: 700),
     );
-    _curlAnim = CurvedAnimation(parent: _curlCtrl, curve: Curves.easeInOut);
+    _curlAnim = CurvedAnimation(parent: _curlCtrl, curve: Curves.easeOutCubic);
 
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
     WidgetsBinding.instance.addPostFrameCallback((_) => _checkBookmark());
@@ -169,9 +169,9 @@ class _QuranReaderPageState extends State<QuranReaderPage>
     _isDragging = false;
     const threshold = 60.0;
     if (_dragX > threshold) {
-      _goNext();
+      _goPrev();           // ✅ swipe right = previous page (higher image number)
     } else if (_dragX < -threshold) {
-      _goPrev();
+      _goNext();           // ✅ swipe left = next page (lower image number)
     }
     setState(() => _dragX = 0);
   }
