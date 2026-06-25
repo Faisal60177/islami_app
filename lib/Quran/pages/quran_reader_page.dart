@@ -44,6 +44,9 @@ class _QuranReaderPageState extends State<QuranReaderPage>
   double _dragX = 0;
   bool _isDragging = false;
 
+  // ✅ Resolved once at startup — used to build page paths synchronously
+  String? _quranDirPath;
+
   @override
   void initState() {
     super.initState();
@@ -58,6 +61,16 @@ class _QuranReaderPageState extends State<QuranReaderPage>
 
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
     WidgetsBinding.instance.addPostFrameCallback((_) => _checkBookmark());
+
+    _loadQuranDirPath(); // ✅ resolve directory path once
+  }
+
+  // ✅ Resolve the Quran directory path a single time (instead of per page)
+  Future<void> _loadQuranDirPath() async {
+    final dir = await QuranDownloadService.getQuranDir();
+    if (mounted) {
+      setState(() => _quranDirPath = dir.path);
+    }
   }
 
   @override
@@ -77,13 +90,12 @@ class _QuranReaderPageState extends State<QuranReaderPage>
     }
   }
 
+  // ✅ Synchronous path builder — no FutureBuilder, no spinner flash per page
   String _imagePath(int page) {
-    // Returns local file path — loaded after one-time download
-    return ''; // placeholder — actual path built async below
+    if (_quranDirPath == null) return '';
+    final fileName = '${page.toString().padLeft(3, '0')}.webp';
+    return '$_quranDirPath/$fileName';
   }
-
-  Future<String> _getLocalPagePath(int page) =>
-      QuranDownloadService.getPagePath(page);
 
   SurahModel _surahForPage(int page, List<SurahModel> surahs) {
     if (surahs.isEmpty) return widget.surah;
@@ -169,6 +181,17 @@ class _QuranReaderPageState extends State<QuranReaderPage>
     final mq  = MediaQuery.of(context);
     final sw  = mq.size.width;
     final rsw = sw.clamp(320.0, 420.0);
+
+    // ✅ Show a single loading screen only until the directory path resolves
+    // (resolves almost instantly — just builds a path string, no disk scan)
+    if (_quranDirPath == null) {
+      return const Scaffold(
+        backgroundColor: Colors.black,
+        body: Center(
+          child: CircularProgressIndicator(color: Colors.white),
+        ),
+      );
+    }
 
     return BlocBuilder<SettingsCubit, SettingsState>(
       builder: (_, settings) {
@@ -289,49 +312,37 @@ class _PageCurlView extends StatelessWidget {
     required this.quranEnd,
   });
 
+  // ✅ Synchronous path, no spinner flash
   Widget _buildPage(int page) {
     final isQP = page >= quranStart && page <= quranEnd;
-    return FutureBuilder<String>(
-      future: QuranDownloadService.getPagePath(page),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return Container(
-            color: const Color(0xFFF5F0E8),
-            child: Center(
-              child: CircularProgressIndicator(
-                color: const Color(0xFF2E6B40),
-                strokeWidth: 2,
-              ),
-            ),
-          );
-        }
-        final file = File(snapshot.data!);
-        return InteractiveViewer(
-          minScale: 0.85,
-          maxScale: 5.0,
-          child: file.existsSync()
-              ? Image.file(
-            file,
-            fit: BoxFit.contain,
-            errorBuilder: (_, __, ___) => _PagePlaceholder(
-              page: page,
-              surah: isQP
-                  ? surahForPage(page, surahs)
-                  : fallbackSurah,
-              rsw: rsw,
-              isQuranPage: isQP,
-            ),
-          )
-              : _PagePlaceholder(
-            page: page,
-            surah: isQP
-                ? surahForPage(page, surahs)
-                : fallbackSurah,
-            rsw: rsw,
-            isQuranPage: isQP,
-          ),
-        );
-      },
+
+    final path = imagePath(page);
+    final file = File(path);
+
+    return InteractiveViewer(
+      minScale: 0.85,
+      maxScale: 5.0,
+      child: file.existsSync()
+          ? Image.file(
+        file,
+        fit: BoxFit.contain,
+        errorBuilder: (_, __, ___) => _PagePlaceholder(
+          page: page,
+          surah: isQP
+              ? surahForPage(page, surahs)
+              : fallbackSurah,
+          rsw: rsw,
+          isQuranPage: isQP,
+        ),
+      )
+          : _PagePlaceholder(
+        page: page,
+        surah: isQP
+            ? surahForPage(page, surahs)
+            : fallbackSurah,
+        rsw: rsw,
+        isQuranPage: isQP,
+      ),
     );
   }
 
