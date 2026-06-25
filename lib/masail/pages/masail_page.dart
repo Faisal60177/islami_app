@@ -69,8 +69,10 @@ class _MasailPageState extends State<MasailPage>
       child: Scaffold(
         backgroundColor: _bg,
         body: NestedScrollView(
+          physics: const ClampingScrollPhysics(),
           headerSliverBuilder: (context, innerBoxIsScrolled) => [
             SliverAppBar(
+              automaticallyImplyLeading: false,
               expandedHeight: sh * 0.24,
               floating: false,
               pinned: true,
@@ -321,7 +323,7 @@ class _MasailPageState extends State<MasailPage>
           ],
           body: TabBarView(
             controller: _tabController,
-            physics: const BouncingScrollPhysics(),
+            physics: const ClampingScrollPhysics(),
             children: [
               MasailCategoryPage(searchQuery: searchQuery),
               AllMasailPage(searchQuery: searchQuery),

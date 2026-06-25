@@ -251,7 +251,7 @@ class _InspirationPageState extends State<InspirationPage>
 }
 
 // ── Inspiration Card ────────────────────────────────────────────
-class _InspirationCard extends StatelessWidget {
+class _InspirationCard extends StatefulWidget {
   final InspirationModel inspiration;
   final List<Color>      gradientColors;
   final VoidCallback     onTap;
@@ -265,15 +265,21 @@ class _InspirationCard extends StatelessWidget {
   });
 
   @override
+  State<_InspirationCard> createState() => _InspirationCardState();
+}
+
+class _InspirationCardState extends State<_InspirationCard> {
+  @override
   Widget build(BuildContext context) {
+    final inspiration = widget.inspiration;
     return GestureDetector(
-      onTap: onTap,
+      onTap: widget.onTap,
       child: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: gradientColors,
-            begin:  Alignment.topLeft,
-            end:    Alignment.bottomRight,
+            colors: widget.gradientColors,
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
           borderRadius: BorderRadius.circular(16),
         ),
@@ -281,55 +287,36 @@ class _InspirationCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Reference — only if present
             if (inspiration.reference != null &&
                 inspiration.reference!.isNotEmpty)
-              Text(
-                inspiration.reference!,
-                maxLines:  1,
-                overflow:  TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color:       Colors.white54,
-                  fontSize:    10,
-                  fontWeight:  FontWeight.w400,
-                  letterSpacing: 0.3,
-                ),
-              ),
-
+              Text(inspiration.reference!,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(color: Colors.white54, fontSize: 10)),
             const SizedBox(height: 4),
-
-            Text(
-              inspiration.title,
-              maxLines:  2,
-              overflow:  TextOverflow.ellipsis,
-              style: const TextStyle(
-                color:      Colors.white,
-                fontSize:   13,
-                fontWeight: FontWeight.w600,
-                height:     1.3,
-              ),
-            ),
-
+            Text(inspiration.title,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                    color: Colors.white, fontSize: 13,
+                    fontWeight: FontWeight.w600, height: 1.3)),
             const SizedBox(height: 8),
-
-            Text(
-              inspiration.quoteText,
-              maxLines:  4,
-              overflow:  TextOverflow.ellipsis,
-              style: const TextStyle(
-                color:      Colors.white,
-                fontSize:   15,
-                fontWeight: FontWeight.w700,
-                height:     1.4,
-              ),
-            ),
-
+            Text(inspiration.quoteText,
+                maxLines: 4,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                    color: Colors.white, fontSize: 15,
+                    fontWeight: FontWeight.w700, height: 1.4)),
             const SizedBox(height: 10),
-
             Align(
               alignment: Alignment.bottomRight,
               child: GestureDetector(
-                onTap: onFavoriteTap,
+                onTap: () {
+                  setState(() {
+                    inspiration.isFavorite = !inspiration.isFavorite; // ✅
+                  });
+                  widget.onFavoriteTap();
+                },
                 child: Icon(
                   inspiration.isFavorite
                       ? Icons.favorite_rounded

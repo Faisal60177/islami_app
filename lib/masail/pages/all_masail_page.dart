@@ -5,7 +5,6 @@ import '../model/masail_model.dart';
 import 'package:muslim_app/utils/language_utils.dart';
 import 'masail_detail_page.dart';
 import 'category_masail_page.dart'; // MasailCard (public)
-
 const Color _primary = Color(0xFF6B1E2E);
 
 class AllMasailPage extends StatefulWidget {
@@ -73,6 +72,7 @@ class _AllMasailPageState extends State<AllMasailPage>
         color: _primary,
         onRefresh: _load,
         child: ListView.builder(
+          physics: const ClampingScrollPhysics(),
           padding: EdgeInsets.fromLTRB(w * 0.04, h * 0.018, w * 0.04, h * 0.04),
           itemCount: _filtered.length,
           itemBuilder: (_, i) => MasailCard(

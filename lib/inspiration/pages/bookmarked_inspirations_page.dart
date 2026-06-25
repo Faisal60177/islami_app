@@ -49,9 +49,9 @@ class _BookmarkedInspirationsPageState
   }
 
   Future<void> _removeBookmark(InspirationModel inspiration) async {
+    inspiration.isBookmarked = false;
     context.read<InspirationCubit>().toggleBookmark(inspiration);
-    setState(() =>
-        _bookmarked.removeWhere((x) => x.id == inspiration.id));
+    setState(() => _bookmarked.removeWhere((x) => x.id == inspiration.id));
   }
 
   @override
@@ -87,10 +87,8 @@ class _BookmarkedInspirationsPageState
               color: Colors.white38, fontSize: 14),
         ),
       )
-          : RefreshIndicator(
-        color:     const Color(0xFF2ECC71),
-        onRefresh: _load,
-        child: MasonryGridView.count(
+          : MasonryGridView.count(
+        physics: const ClampingScrollPhysics(),
           crossAxisCount:   2,
           mainAxisSpacing:  10,
           crossAxisSpacing: 10,
@@ -114,7 +112,7 @@ class _BookmarkedInspirationsPageState
             );
           },
         ),
-      ),
+
     );
   }
 }

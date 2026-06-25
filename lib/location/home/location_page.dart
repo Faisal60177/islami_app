@@ -66,29 +66,6 @@ class _LocationPageState extends State<LocationPage>
 
     return Scaffold(
       backgroundColor: const Color(0xFF0A1F14),
-      bottomNavigationBar: BlocBuilder<LocationCubit, LocationState>(
-        builder: (ctx, state) {
-          if (state is! LocationLoaded) return const SizedBox.shrink();
-          return SafeArea(
-            child: Container(
-              padding: EdgeInsets.fromLTRB(
-                sw * 0.05,
-                sw * 0.025,
-                sw * 0.05,
-                sw * 0.025,
-              ),
-              decoration: BoxDecoration(
-                color: const Color(0xFF0A1F14),
-                border: Border(
-                  top: BorderSide(color: Colors.white.withOpacity(0.08), width: 0.8),
-                ),
-              ),
-              child: _buildSaveButton(ctx, state, sw, sh, l10n),
-            ),
-          );
-        },
-      ),
-
       body: Stack(
         children: [
           // ── Background decorative circles ──
@@ -143,50 +120,69 @@ class _LocationPageState extends State<LocationPage>
 
           // ── Main Content ──
           SafeArea(
-
             child: BlocBuilder<LocationCubit, LocationState>(
               builder: (context, state) {
                 return FadeTransition(
                   opacity: _fadeAnimation,
                   child: SlideTransition(
                     position: _slideAnimation,
-                    child: SingleChildScrollView(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: sw * 0.05,
-                        vertical: sh * 0.015,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // ── Header ──
-                          _buildHeader(sw, l10n),
-                          SizedBox(height: sh * 0.035),
+                    child: Column(
+                      children: [
+                        // ── All scrollable content ──
+                        Expanded(
+                          child: SingleChildScrollView(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: sw * 0.05,
+                              vertical: sh * 0.015,
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                _buildHeader(sw, l10n),
+                                SizedBox(height: sh * 0.035),
+                                _buildSearchBar(context, sw, sh, l10n),
+                                SizedBox(height: sh * 0.025),
 
-                          // ── Search Bar ──
-                          _buildSearchBar(context, sw, sh, l10n),
-                          SizedBox(height: sh * 0.025),
+                                if (state is LocationLoaded) ...[
+                                  _buildLocationCard(state.location, sw, sh, l10n),
+                                  SizedBox(height: sh * 0.02),
+                                  _buildGPSButton(context, state, sw, sh, l10n),
+                                ],
 
-                          // ── Saved Location Card ──
-                          if (state is LocationLoaded) ...[
-                            _buildLocationCard(state.location, sw, sh, l10n),
-                            SizedBox(height: sh * 0.02),
-                            _buildGPSButton(context, state, sw, sh, l10n),
-                            SizedBox(height: sh * 0.03),
-                          ],
+                                if (state is LocationLoading)
+                                  _buildLoadingState(sw, sh, l10n),
 
-                          // ── Loading Indicator ──
-                          if (state is LocationLoading)
-                            _buildLoadingState(sw, sh, l10n),
+                                if (state is LocationPermissionDenied)
+                                  _buildPermissionDenied(sw, l10n),
 
-                          // ── Permission Denied ──
-                          if (state is LocationPermissionDenied)
-                            _buildPermissionDenied(sw, l10n),
+                                if (state is LocationSearchResults)
+                                  _buildSearchResults(context, state, sw, sh, l10n),
+                              ],
+                            ),
+                          ),
+                        ),
 
-                          // ── Search Results ──
-                          if (state is LocationSearchResults)
-                            _buildSearchResults(context, state, sw, sh, l10n),
-                        ],
-                      ),
+                        // ── Pinned Save button at bottom ──
+                        if (state is LocationLoaded)
+                          Container(
+                            padding: EdgeInsets.fromLTRB(
+                              sw * 0.05,
+                              sw * 0.025,
+                              sw * 0.05,
+                              sw * 0.035,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF0A1F14),
+                              border: Border(
+                                top: BorderSide(
+                                  color: Colors.white.withOpacity(0.08),
+                                  width: 0.8,
+                                ),
+                              ),
+                            ),
+                            child: _buildSaveButton(context, state, sw, sh, l10n),
+                          ),
+                      ],
                     ),
                   ),
                 );

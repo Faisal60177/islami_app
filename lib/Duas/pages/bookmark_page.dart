@@ -129,7 +129,7 @@ class _BookmarkedDuasPageState extends State<BookmarkedDuasPage>
         color: const Color(0xFF0D6E6E),
         onRefresh: loadBookmarks,
         child: CustomScrollView(
-          physics: const BouncingScrollPhysics(),
+          physics: const ClampingScrollPhysics(),
           slivers: [
             SliverToBoxAdapter(
               child: Padding(

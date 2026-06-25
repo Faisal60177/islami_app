@@ -118,7 +118,7 @@ class _BookmarkedMasailPageState extends State<BookmarkedMasailPage>
         color:     _primary,
         onRefresh: _load,
         child: CustomScrollView(
-          physics: const BouncingScrollPhysics(),
+          physics: const ClampingScrollPhysics(),
           slivers: [
             // ── Saved count header ──
             SliverToBoxAdapter(

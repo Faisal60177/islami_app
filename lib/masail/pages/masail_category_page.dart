@@ -109,7 +109,7 @@ class _MasailCategoryPageState extends State<MasailCategoryPage> {
         color: _primary,
         onRefresh: _loadCategories,
         child: CustomScrollView(
-          physics: const BouncingScrollPhysics(),
+          physics: const ClampingScrollPhysics(),
           slivers: [
             // ── Section header ──
             SliverToBoxAdapter(

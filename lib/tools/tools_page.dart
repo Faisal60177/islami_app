@@ -155,7 +155,7 @@ class _ToolsPageState extends State<ToolsPage>
 
             SafeArea(
               child: CustomScrollView(
-                physics: const BouncingScrollPhysics(),
+                physics: const ClampingScrollPhysics(),
                 slivers: [
                   // ── Header greeting ──
                   SliverToBoxAdapter(

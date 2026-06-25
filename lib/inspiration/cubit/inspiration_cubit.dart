@@ -143,28 +143,26 @@ class InspirationCubit extends Cubit<InspirationState> {
   }
 
   // ── Toggles ─────────────────────────────────────────────
-
   void toggleFavorite(InspirationModel inspiration) async {
-    inspiration.isFavorite = !inspiration.isFavorite;
+    // ✅ NO mutation here — UI already did setState
     try {
       await repository.toggleFavorite(inspiration, userId);
-      emit(InspirationLoaded([])); // lightweight signal
     } catch (e) {
-      inspiration.isFavorite = !inspiration.isFavorite; // revert
+      inspiration.isFavorite = !inspiration.isFavorite; // revert only on error
       emit(InspirationError(e.toString()));
     }
   }
 
   void toggleBookmark(InspirationModel inspiration) async {
-    inspiration.isBookmarked = !inspiration.isBookmarked;
+    // ✅ NO mutation here — UI already did setState
     try {
       await repository.toggleBookmark(inspiration, userId);
-      emit(InspirationLoaded([])); // lightweight signal
     } catch (e) {
-      inspiration.isBookmarked = !inspiration.isBookmarked; // revert
+      inspiration.isBookmarked = !inspiration.isBookmarked; // revert only on error
       emit(InspirationError(e.toString()));
     }
   }
+
 
   // ── Auth ─────────────────────────────────────────────────
 

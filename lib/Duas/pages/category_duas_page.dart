@@ -87,37 +87,35 @@ class _CategoryDuasPageState extends State<CategoryDuasPage> {
             ],
           ),
         )
-            : RefreshIndicator(
-          onRefresh: loadDuas,
-          child: ListView.builder(
-            padding: EdgeInsets.fromLTRB(
-                w * 0.04, h * 0.018, w * 0.04, h * 0.03),
-            itemCount: duas.length,
-            itemBuilder: (context, index) {
-              final dua = duas[index];
-              return _DuaCard(
-                dua: dua,
-                index: index,
-                isRtl: isRtl,
-                onTap: () async {
-                  await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => DuasDetailPage(dua: dua),
-                    ),
-                  );
-                },
-              );
-            },
-          ),
+        // ── No RefreshIndicator — plain ListView, no pull refresh ──
+            : ListView.builder(
+          physics: const BouncingScrollPhysics(),
+          padding: EdgeInsets.fromLTRB(
+              w * 0.04, h * 0.018, w * 0.04, h * 0.03),
+          itemCount: duas.length,
+          itemBuilder: (context, index) {
+            final dua = duas[index];
+            return _DuaCard(
+              dua: dua,
+              index: index,
+              isRtl: isRtl,
+              onTap: () async {
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => DuasDetailPage(dua: dua),
+                  ),
+                );
+              },
+            );
+          },
         ),
       ),
     );
   }
 }
 
-// ── Exact same _DuaCard from AllDuasPage ────────────────────────────────────
-
+// ── Dua Card ──────────────────────────────────────────────────────────────────
 class _DuaCard extends StatefulWidget {
   final DuasModel dua;
   final int index;
@@ -246,7 +244,8 @@ class _DuaCardState extends State<_DuaCard> {
                       if (dua.title.isNotEmpty)
                         Text(
                           dua.title,
-                          textAlign: isRtl ? TextAlign.right : TextAlign.left,
+                          textAlign:
+                          isRtl ? TextAlign.right : TextAlign.left,
                           style: TextStyle(
                             fontSize: w * 0.032,
                             color: Colors.black54,
@@ -262,7 +261,8 @@ class _DuaCardState extends State<_DuaCard> {
                               vertical: h * 0.004,
                             ),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF0D6E6E).withOpacity(0.09),
+                              color: const Color(0xFF0D6E6E)
+                                  .withOpacity(0.09),
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: Row(

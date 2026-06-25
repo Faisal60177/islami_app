@@ -8,7 +8,6 @@ import 'package:muslim_app/settings/l10n/app_localizations.dart';
 import 'package:muslim_app/settings/cubit/settings_cubit.dart';
 import 'package:muslim_app/Duas/cubit/duas_state.dart';
 
-
 class FavoriteDuasPage extends StatefulWidget {
   final String searchQuery;
   const FavoriteDuasPage({super.key, required this.searchQuery});
@@ -131,7 +130,7 @@ class _FavoriteDuasPageState extends State<FavoriteDuasPage>
         color: const Color(0xFF0D6E6E),
         onRefresh: loadFavorites,
         child: CustomScrollView(
-          physics: const BouncingScrollPhysics(),
+          physics: const ClampingScrollPhysics(),
           slivers: [
             SliverToBoxAdapter(
               child: Padding(

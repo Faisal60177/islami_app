@@ -110,7 +110,7 @@ class _InspirationDetailPageState extends State<InspirationDetailPage> {
 }
 
 // ── Full Card Widget ────────────────────────────────────────────
-class _InspirationFullCard extends StatelessWidget {
+class _InspirationFullCard extends StatefulWidget {
   final InspirationModel inspiration;
   final List<Color> gradientColors;
 
@@ -120,7 +120,15 @@ class _InspirationFullCard extends StatelessWidget {
   });
 
   @override
+  State<_InspirationFullCard> createState() => _InspirationFullCardState();
+}
+class _InspirationFullCardState extends State<_InspirationFullCard> {
+
+  @override  // ✅ @override missing ছিল
   Widget build(BuildContext context) {
+    final inspiration = widget.inspiration;       // ✅ widget. add করো
+    final gradientColors = widget.gradientColors; // ✅ widget. add করো
+
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -233,10 +241,11 @@ class _InspirationFullCard extends StatelessWidget {
   }
 
   Widget _buildReferenceAuthor() {
+    final inspiration = widget.inspiration;
     final hasReference =
         inspiration.reference != null && inspiration.reference!.isNotEmpty;
-    final hasAuthor =
-        inspiration.author != null && inspiration.author!.isNotEmpty;
+    final hasAuthor =                                           // ✅ ADD এই line
+    inspiration.author != null && inspiration.author!.isNotEmpty;
 
     if (!hasReference && !hasAuthor) return const SizedBox.shrink();
 
@@ -272,40 +281,29 @@ class _InspirationFullCard extends StatelessWidget {
   }
 
   Widget _buildActionRow(BuildContext context) {
+    final inspiration = widget.inspiration;
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        // ── Favorite ──────────────────────────────────────
         _ActionButton(
           icon: inspiration.isFavorite
               ? Icons.favorite_rounded
               : Icons.favorite_border_rounded,
-          color: inspiration.isFavorite
-              ? Colors.redAccent
-              : Colors.white60,
+          color: inspiration.isFavorite ? Colors.redAccent : Colors.white60,
           label: 'Like',
           onTap: () {
-            context
-                .read<InspirationCubit>()
-                .toggleFavorite(inspiration);
+            setState(() => inspiration.isFavorite = !inspiration.isFavorite); // ✅
+            context.read<InspirationCubit>().toggleFavorite(inspiration);
           },
         ),
-
         const SizedBox(width: 24),
-
-        // ── Share ─────────────────────────────────────────
         _ActionButton(
           icon: Icons.ios_share_rounded,
           color: Colors.white60,
           label: 'Share',
-          onTap: () {
-            // Share.share(inspiration.quoteText);
-          },
+          onTap: () {},
         ),
-
         const SizedBox(width: 24),
-
-        // ── Bookmark ──────────────────────────────────────
         _ActionButton(
           icon: inspiration.isBookmarked
               ? Icons.bookmark_rounded
@@ -315,15 +313,15 @@ class _InspirationFullCard extends StatelessWidget {
               : Colors.white60,
           label: 'Save',
           onTap: () {
-            context
-                .read<InspirationCubit>()
-                .toggleBookmark(inspiration);
+            setState(() => inspiration.isBookmarked = !inspiration.isBookmarked); // ✅
+            context.read<InspirationCubit>().toggleBookmark(inspiration);
           },
         ),
       ],
     );
   }
 }
+
 
 // ── Action Button ───────────────────────────────────────────────
 class _ActionButton extends StatelessWidget {

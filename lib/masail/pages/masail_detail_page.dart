@@ -244,7 +244,7 @@ class _MasailDetailPageState extends State<MasailDetailPage>
           ),
         ),
         body: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
+          physics: const ClampingScrollPhysics(),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
