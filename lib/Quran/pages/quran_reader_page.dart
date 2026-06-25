@@ -30,7 +30,7 @@ class _QuranReaderPageState extends State<QuranReaderPage>
   static const int _totalImages  = 619;
   static const int _quranStart   = 2;
   static const int _quranEnd     = 619;
-  static const int _defaultTurnMs = 900;
+  static const int _defaultTurnMs = 1200;
 
   late int _currentPage;
   late int _nextPage;
@@ -177,7 +177,7 @@ class _QuranReaderPageState extends State<QuranReaderPage>
       final speed = velocity.abs().clamp(300.0, 1500.0);
       final ms    = (_defaultTurnMs - ((speed - 300) / 1200 * 300))
           .round()
-          .clamp(600, _defaultTurnMs);
+          .clamp(800, _defaultTurnMs);
       _curlCtrl.duration = Duration(milliseconds: ms);
 
       if (shouldGoPrev) {
