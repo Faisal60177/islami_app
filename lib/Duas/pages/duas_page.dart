@@ -116,7 +116,7 @@ class _DuasPageState extends State<DuasPage>
             Expanded(
               child: TabBarView(
                 controller: _tabController,
-                physics: const BouncingScrollPhysics(), // ✅ swipe re-enabled
+                physics: const BouncingScrollPhysics(),
                 children: [
                   CategoryPage(searchQuery: searchQuery),
                   AllDuasPage(searchQuery: searchQuery),

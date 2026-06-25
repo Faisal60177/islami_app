@@ -187,7 +187,7 @@ class _MonthlyCalendarPageState extends State<MonthlyCalendarPage>
                         (state is PrayerTimesLoaded ? state.prayerTimes : null);
 
                     return CustomScrollView(
-                      physics: const BouncingScrollPhysics(),
+                      physics: const ClampingScrollPhysics(),
                       slivers: [
                         SliverToBoxAdapter(
                           child: Padding(
