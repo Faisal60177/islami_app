@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:muslim_app/Duas/cubit/duas_cubit.dart';
 import 'all_duas_page.dart';
 import 'category_page.dart';
 import 'favorite_page.dart';
@@ -47,6 +48,8 @@ class _DuasPageState extends State<DuasPage>
     _searchController.addListener(() {
       setState(() => searchQuery = _searchController.text);
     });
+    context.read<DuasCubit>().loadCategoriesIfEmpty();
+
   }
 
   @override

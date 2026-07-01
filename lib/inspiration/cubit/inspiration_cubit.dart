@@ -19,38 +19,14 @@ class InspirationCubit extends Cubit<InspirationState> {
 
   Future<void> loadCategoriesIfEmpty() async {
     try {
-      final categories =
-      await repository.getAllCategories(currentLanguageCode);
-
-      if (categories.isEmpty) {
-        // ✅ Try sync only if internet available — silently skip if not
-        emit(InspirationLoading());
-        try {
-          await repository.syncCategoriesFromFirestore();
-          await repository.syncInspirationsFromFirestore();
-        } catch (_) {
-          // ✅ No internet — skip silently, show empty state
-          emit(InspirationCategoriesLoaded([]));
-          emit(InspirationLoaded([]));
-          return;
-        }
-        final refreshed =
-        await repository.getAllCategories(currentLanguageCode);
-        final inspirations = await repository.getAllInspirations(
-          languageCode: currentLanguageCode,
-          userId:       userId,
-        );
-        emit(InspirationCategoriesLoaded(refreshed));
-        emit(InspirationLoaded(inspirations));
-      } else {
-        final inspirations = await repository.getAllInspirations(
-          languageCode: currentLanguageCode,
-          userId:       userId,
-        );
-        emit(InspirationCategoriesLoaded(categories));
-        emit(InspirationLoaded(inspirations));
-        _syncSilently();
-      }
+      final categories = await repository.getAllCategories(currentLanguageCode);
+      final inspirations = await repository.getAllInspirations(
+        languageCode: currentLanguageCode,
+        userId:       userId,
+      );
+      emit(InspirationCategoriesLoaded(categories));
+      emit(InspirationLoaded(inspirations));
+      _syncSilently();
     } catch (e) {
       emit(InspirationError(e.toString()));
     }
@@ -61,9 +37,7 @@ class InspirationCubit extends Cubit<InspirationState> {
     try {
       await repository.syncCategoriesFromFirestore();
       await repository.syncInspirationsFromFirestore();
-      // Refresh data after sync — still no loading spinner
-      final categories =
-      await repository.getAllCategories(currentLanguageCode);
+      final categories = await repository.getAllCategories(currentLanguageCode);
       final inspirations = await repository.getAllInspirations(
         languageCode: currentLanguageCode,
         userId:       userId,
@@ -71,7 +45,6 @@ class InspirationCubit extends Cubit<InspirationState> {
       emit(InspirationCategoriesLoaded(categories));
       emit(InspirationLoaded(inspirations));
     } catch (_) {
-      // Silent — don't show error for background sync failures
     }
   }
 

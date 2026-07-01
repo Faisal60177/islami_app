@@ -11,23 +11,8 @@ class DuasRepository {
 
   Future<void> initDatabase() async {
     await dbHelper.initFromAssetIfNeeded();
-    // ✅ Background এ silently sync — internet না থাকলে skip
-    _syncInBackground();
   }
 
-  // ── Background sync — internet না থাকলে silently skip ────
-  void _syncInBackground() {
-    Future.microtask(() async {
-      try {
-        await syncCategoriesFromFirestore();
-        await syncDuasFromFirestore();
-        debugPrint('✅ Duas background sync complete');
-      } catch (e) {
-        // ✅ Internet নেই বা error — silently ignore
-        debugPrint('⚠️ Duas sync skipped: $e');
-      }
-    });
-  }
 
   // ── Categories ────────────────────────────────────────────
 

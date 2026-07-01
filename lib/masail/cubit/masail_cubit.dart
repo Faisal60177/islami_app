@@ -21,25 +21,35 @@ class MasailCubit extends Cubit<MasailState> {
 
   Future<void> loadCategoriesIfEmpty() async {
     try {
-      final categories =
-      await repository.getAllCategories(currentLanguageCode);
+      final categories = await repository.getAllCategories(currentLanguageCode);
+      final masail = await repository.getAllMasail(
+        languageCode: currentLanguageCode,
+        userId:       userId,
+      );
+      emit(MasailCategoriesLoaded(categories));
+      emit(MasailLoaded(masail));
 
-      if (categories.isEmpty) {
-        // SQLite তেও data নেই — try once with internet
-        emit(MasailLoading());
-        try {
-          await repository.syncCategoriesFromFirestore();
-          await repository.syncMasailFromFirestore();
-        } catch (_) {
-          // ✅ No internet — show empty gracefully
-        }
-      }
-
-      final refreshed =
-      await repository.getAllCategories(currentLanguageCode);
-      emit(MasailCategoriesLoaded(refreshed));
+      _syncSilently();
     } catch (e) {
       emit(MasailError(e.toString()));
+    }
+  }
+
+
+
+  Future<void> _syncSilently() async {
+    try {
+      await repository.syncCategoriesFromFirestore();
+      await repository.syncMasailFromFirestore();
+      final categories = await repository.getAllCategories(currentLanguageCode);
+      final masail = await repository.getAllMasail(
+        languageCode: currentLanguageCode,
+        userId:       userId,
+      );
+
+      emit(MasailCategoriesLoaded(categories));
+      emit(MasailLoaded(masail));
+    } catch (_) {
     }
   }
 

@@ -5,6 +5,7 @@ import 'package:muslim_app/settings/cubit/settings_cubit.dart';
 import 'masail_category_page.dart';
 import 'all_masail_page.dart';
 import 'bookmarked_masail_page.dart';
+import 'package:muslim_app/masail/cubit/masail_cubit.dart';
 
 class MasailPage extends StatefulWidget {
   const MasailPage({super.key});
@@ -39,6 +40,7 @@ class _MasailPageState extends State<MasailPage>
     _searchController.addListener(() {
       setState(() => searchQuery = _searchController.text);
     });
+    context.read<MasailCubit>().loadCategoriesIfEmpty();
   }
 
   @override

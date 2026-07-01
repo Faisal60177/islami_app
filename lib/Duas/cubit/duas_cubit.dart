@@ -24,14 +24,43 @@ class DuasCubit extends Cubit<DuasState> {
   void loadCategories() async {
     emit(DuaLoading());
     try {
-      final categories =
-      await repository.getAllCategories(currentLanguageCode);
+      final categories = await repository.getAllCategories(currentLanguageCode);
       emit(CategoriesLoaded(categories));
     } catch (e) {
       emit(DuaError(e.toString()));
     }
   }
 
+  Future<void> loadCategoriesIfEmpty() async {
+    try {
+      final categories = await repository.getAllCategories(currentLanguageCode);
+      final duas = await repository.getAllDuas(
+        languageCode: currentLanguageCode,
+        userId:       userId,
+      );
+      emit(CategoriesLoaded(categories));
+      emit(DuaLoaded(duas));
+
+      _syncSilently();
+    } catch (e) {
+      emit(DuaError(e.toString()));
+    }
+  }
+
+
+  Future<void> _syncSilently() async {
+    try {
+      await repository.syncCategoriesFromFirestore();
+      await repository.syncDuasFromFirestore();
+      final categories = await repository.getAllCategories(currentLanguageCode);
+      final duas = await repository.getAllDuas(
+        languageCode: currentLanguageCode,
+        userId:       userId,
+      );
+      emit(CategoriesLoaded(categories));
+      emit(DuaLoaded(duas));
+    } catch (_) {}
+  }
   // ── Duas ────────────────────────────────────────────────
 
   void loadDuasByCategory(int categoryId) async {
@@ -129,4 +158,6 @@ class DuasCubit extends Cubit<DuasState> {
       emit(DuaError(e.toString()));
     }
   }
+
+
 }

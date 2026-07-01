@@ -11,20 +11,8 @@ class InspirationRepository {
 
   Future<void> initDatabase() async {
     await dbHelper.initFromAssetIfNeeded();
-    _syncInBackground();
   }
 
-  void _syncInBackground() {
-    Future.microtask(() async {
-      try {
-        await syncCategoriesFromFirestore();
-        await syncInspirationsFromFirestore();
-        debugPrint('✅ Inspiration background sync complete');
-      } catch (e) {
-        debugPrint('⚠️ Inspiration sync skipped: $e');
-      }
-    });
-  }
 
   // ── Categories ────────────────────────────────────────────
 
