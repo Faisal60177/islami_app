@@ -36,8 +36,9 @@ class DuasSqflite {
       debugPrint('✅ duas.db copied from assets');
     }
 
-    // ✅ Always initialize connection after asset check
-    _database = await _initDB();
+    if (_database == null) {
+      _database = await _initDB();
+    }
   }
 
   Future<Database> _initDB() async {
@@ -51,7 +52,7 @@ class DuasSqflite {
       onCreate: (db, version) async {
         // ── Categories core table ──────────────────────────
         await db.execute('''
-          CREATE TABLE categories(
+          CREATE TABLE IF NOT EXISTS categories(
             category_id INTEGER PRIMARY KEY,
             category_icon TEXT
           )
@@ -60,7 +61,7 @@ class DuasSqflite {
         // ── Category translations — one row per language ───
         // Supports: en, bn, ar, ur (add more anytime — no schema change)
         await db.execute('''
-          CREATE TABLE category_translations(
+          CREATE TABLE IF NOT EXISTS category_translations(
             category_id   INTEGER NOT NULL,
             language_code TEXT    NOT NULL,
             title         TEXT    NOT NULL,
@@ -71,7 +72,7 @@ class DuasSqflite {
 
         // ── Duas core table — no translation columns here ──
         await db.execute('''
-          CREATE TABLE duas(
+          CREATE TABLE IF NOT EXISTS duas(
             id              INTEGER PRIMARY KEY,
             category_id     INTEGER NOT NULL,
             arabic          TEXT,
@@ -86,7 +87,7 @@ class DuasSqflite {
         // title, transliteration, translation, reference, description
         // description and audio_url are optional — can be null
         await db.execute('''
-          CREATE TABLE dua_translations(
+          CREATE TABLE IF NOT EXISTS dua_translations(
             dua_id            INTEGER NOT NULL,
             language_code     TEXT    NOT NULL,
             title             TEXT,
@@ -101,18 +102,18 @@ class DuasSqflite {
 
         // ── Index for fast JOIN queries ────────────────────
         await db.execute('''
-          CREATE INDEX idx_dua_translations
+          CREATE INDEX IF NOT EXISTS idx_dua_translations
           ON dua_translations(dua_id, language_code)
         ''');
 
         await db.execute('''
-          CREATE INDEX idx_cat_translations
+          CREATE INDEX IF NOT EXISTS idx_cat_translations
           ON category_translations(category_id, language_code)
         ''');
 
         // ── User interactions ──────────────────────────────
         await db.execute('''
-          CREATE TABLE user_interactions(
+          CREATE TABLE IF NOT EXISTS user_interactions(
             user_id       TEXT    NOT NULL,
             dua_id        INTEGER NOT NULL,
             is_favorite   INTEGER DEFAULT 0,
