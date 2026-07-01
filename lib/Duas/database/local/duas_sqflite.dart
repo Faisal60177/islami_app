@@ -405,4 +405,45 @@ class DuasSqflite {
         limit: 1);
     return result.isNotEmpty ? result.first : null;
   }
+  // ── Sync: Delete removed rows ───────────────────────────
+
+  Future<void> deleteRemovedCategories(List<int> firestoreIds) async {
+    final db = await database;
+    final existing = await db.query('categories', columns: ['category_id']);
+    final toDelete = existing
+        .map((r) => r['category_id'] as int)
+        .toSet()
+        .difference(firestoreIds.toSet());
+
+    for (final id in toDelete) {
+      await db.delete('category_translations',
+          where: 'category_id = ?', whereArgs: [id]);
+      await db.delete('categories',
+          where: 'category_id = ?', whereArgs: [id]);
+      debugPrint('🗑️ Duas category $id deleted from SQLite');
+    }
+  }
+
+  Future<void> deleteRemovedDuas(List<int> firestoreIds) async {
+    final db = await database;
+    final existing = await db.query('duas', columns: ['id']);
+    final toDelete = existing
+        .map((r) => r['id'] as int)
+        .toSet()
+        .difference(firestoreIds.toSet());
+
+    for (final id in toDelete) {
+      await db.delete('user_interactions',
+          where: 'dua_id = ?', whereArgs: [id]);
+      await db.delete('dua_translations',
+          where: 'dua_id = ?', whereArgs: [id]);
+      await db.delete('duas',
+          where: 'id = ?', whereArgs: [id]);
+      debugPrint('🗑️ Dua $id deleted from SQLite');
+    }
+  }
+
+
+
+
 }

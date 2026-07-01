@@ -44,12 +44,14 @@ class DuasRepository {
           .collection('categories_duas')
           .get();
       final db = await dbHelper.database;
+      final List<int> firestoreIds = [];
 
       await db.transaction((txn) async {
         for (var doc in snapshot.docs) {
           final data = doc.data();
           final int categoryId =
           ((data['id'] ?? data['ID'] ?? 0) as num).toInt();
+          firestoreIds.add(categoryId);
 
           await txn.insert(
             'categories',
@@ -79,6 +81,7 @@ class DuasRepository {
           }
         }
       });
+      await dbHelper.deleteRemovedCategories(firestoreIds);
     } catch (e) {
       debugPrint('⚠️ syncCategoriesFromFirestore skipped: $e');
       rethrow; // ✅ caller handle
@@ -115,11 +118,13 @@ class DuasRepository {
     try {
       final snapshot = await _firestore.collection('duas').get();
       final db = await dbHelper.database;
+      final List<int> firestoreIds = [];
 
       await db.transaction((txn) async {
         for (var doc in snapshot.docs) {
           final data = doc.data();
           final int duaId = data['id'] ?? int.tryParse(doc.id) ?? 0;
+          firestoreIds.add(duaId);
 
           await txn.insert(
             'duas',
@@ -156,6 +161,7 @@ class DuasRepository {
           }
         }
       });
+      await dbHelper.deleteRemovedDuas(firestoreIds);
       debugPrint('✅ Duas synced from Firestore');
     } catch (e) {
       debugPrint('⚠️ syncDuasFromFirestore skipped: $e');

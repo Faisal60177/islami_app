@@ -36,8 +36,9 @@ class MasailSqflite {
       debugPrint('✅ masail.db copied from assets');
     }
 
-    // ✅ Always initialize connection after asset check
-    _database = await _initDB();
+    if (_database == null) {
+      _database = await _initDB();
+    }
   }
 
   Future<Database> _initDB() async {
@@ -52,7 +53,7 @@ class MasailSqflite {
 
         // ── Categories core table ──────────────────────────
         await db.execute('''
-          CREATE TABLE masail_categories(
+          CREATE TABLE IF NOT EXISTS masail_categories(
             category_id   INTEGER PRIMARY KEY,
             category_icon TEXT
           )
@@ -61,7 +62,7 @@ class MasailSqflite {
         // ── Category translations — one row per language ───
         // Supports: en, bn, ar, ur (add more anytime — no schema change)
         await db.execute('''
-          CREATE TABLE masail_category_translations(
+          CREATE TABLE IF NOT EXISTS masail_category_translations(
             category_id   INTEGER NOT NULL,
             language_code TEXT    NOT NULL,
             title         TEXT    NOT NULL,
@@ -73,7 +74,7 @@ class MasailSqflite {
         // ── Masail core table — only non-translatable columns here ──
         // arabic is language-independent (always Arabic script)
         await db.execute('''
-          CREATE TABLE masail(
+          CREATE TABLE IF NOT EXISTS masail(
             id            INTEGER PRIMARY KEY,
             category_id   INTEGER NOT NULL,
             arabic        TEXT,
@@ -86,7 +87,7 @@ class MasailSqflite {
         // question, answer, reference → required per language row
         // madhab → optional — e.g. "Hanafi" / "حنفي" / "হানাফি" / "حنفی"
         await db.execute('''
-          CREATE TABLE masail_translations(
+          CREATE TABLE IF NOT EXISTS masail_translations(
             masail_id     INTEGER NOT NULL,
             language_code TEXT    NOT NULL,
             question      TEXT    NOT NULL,
@@ -100,19 +101,19 @@ class MasailSqflite {
 
         // ── Indexes for fast JOIN queries ──────────────────
         await db.execute('''
-          CREATE INDEX idx_masail_translations
+          CREATE INDEX IF NOT EXISTS idx_masail_translations
           ON masail_translations(masail_id, language_code)
         ''');
 
         await db.execute('''
-          CREATE INDEX idx_masail_cat_translations
+          CREATE INDEX IF NOT EXISTS idx_masail_cat_translations
           ON masail_category_translations(category_id, language_code)
         ''');
 
         // ── User bookmarks ─────────────────────────────────
         // Separate table so guest bookmarks migrate cleanly to real user
         await db.execute('''
-          CREATE TABLE masail_user_bookmarks(
+          CREATE TABLE IF NOT EXISTS masail_user_bookmarks(
             user_id       TEXT    NOT NULL,
             masail_id     INTEGER NOT NULL,
             is_bookmarked INTEGER DEFAULT 0,
@@ -359,5 +360,44 @@ class MasailSqflite {
         whereArgs: [userId, masailId],
         limit: 1);
     return result.isNotEmpty ? result.first : null;
+  }
+
+  // ── Sync: Delete removed rows ───────────────────────────
+
+  Future<void> deleteRemovedCategories(List<int> firestoreIds) async {
+    final db = await database;
+    final existing = await db.query('masail_categories',
+        columns: ['category_id']);
+    final toDelete = existing
+        .map((r) => r['category_id'] as int)
+        .toSet()
+        .difference(firestoreIds.toSet());
+
+    for (final id in toDelete) {
+      await db.delete('masail_category_translations',
+          where: 'category_id = ?', whereArgs: [id]);
+      await db.delete('masail_categories',
+          where: 'category_id = ?', whereArgs: [id]);
+      debugPrint('🗑️ Masail category $id deleted from SQLite');
+    }
+  }
+
+  Future<void> deleteRemovedMasail(List<int> firestoreIds) async {
+    final db = await database;
+    final existing = await db.query('masail', columns: ['id']);
+    final toDelete = existing
+        .map((r) => r['id'] as int)
+        .toSet()
+        .difference(firestoreIds.toSet());
+
+    for (final id in toDelete) {
+      await db.delete('masail_user_bookmarks',
+          where: 'masail_id = ?', whereArgs: [id]);
+      await db.delete('masail_translations',
+          where: 'masail_id = ?', whereArgs: [id]);
+      await db.delete('masail',
+          where: 'id = ?', whereArgs: [id]);
+      debugPrint('🗑️ Masail $id deleted from SQLite');
+    }
   }
 }

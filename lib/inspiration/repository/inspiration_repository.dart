@@ -39,12 +39,14 @@ try {
     final snapshot =
     await _firestore.collection('inspiration_categories').get();
     final db = await dbHelper.database;
+    final List<int> firestoreIds = [];
 
     await db.transaction((txn) async {
       for (var doc in snapshot.docs) {
         final data = doc.data();
         final int categoryId =
         ((data['id'] ?? data['ID'] ?? 0) as num).toInt();
+        firestoreIds.add(categoryId);
 
         await txn.insert(
           'inspiration_categories',
@@ -74,6 +76,7 @@ try {
         }
       }
     });
+    await dbHelper.deleteRemovedCategories(firestoreIds);
 } catch (e) {
   debugPrint('⚠️ syncCategoriesFromFirestore skipped: $e');
   rethrow;
@@ -112,12 +115,14 @@ try {
     final snapshot =
     await _firestore.collection('inspirations').get();
     final db = await dbHelper.database;
+    final List<int> firestoreIds = [];
 
     await db.transaction((txn) async {
       for (var doc in snapshot.docs) {
         final data = doc.data();
         final int inspirationId =
             data['id'] ?? int.tryParse(doc.id) ?? 0;
+        firestoreIds.add(inspirationId);
 
         // ✅ No quote_arabic — removed completely
         await txn.insert(
@@ -152,6 +157,7 @@ try {
         }
       }
     });
+    await dbHelper.deleteRemovedInspirations(firestoreIds);
 } catch (e) {
   debugPrint('⚠️ syncInspirationsFromFirestore skipped: $e');
   rethrow;

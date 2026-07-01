@@ -152,8 +152,8 @@ flutter:
     - assets/json/quran_metadata.json
     - assets/icons/AppIcon.png
     - assets/db/duas.db
-   # - assets/db/inspiration.db
-    #- assets/db/masail.db
+    - assets/db/inspiration.db
+    - assets/db/masail.db
 
   # To add json to your application, add an json section, like this:
   # json:

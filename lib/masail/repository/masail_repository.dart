@@ -37,11 +37,13 @@ Future<void> syncCategoriesFromFirestore() async {
 try {
     final snapshot = await _firestore.collection('categories_masail').get();
     final db = await dbHelper.database;
+    final List<int> firestoreIds = [];
 
     await db.transaction((txn) async {
       for (var doc in snapshot.docs) {
         final data = doc.data();
         final int categoryId = ((data['id'] ?? data['ID'] ?? 0) as num).toInt();
+        firestoreIds.add(categoryId);
 
         // Insert core category row
         await txn.insert(
@@ -73,6 +75,7 @@ try {
         }
       }
     });
+    await dbHelper.deleteRemovedCategories(firestoreIds);
 } catch (e) {
   debugPrint('⚠️ syncCategoriesFromFirestore skipped: $e');
   rethrow;
@@ -110,11 +113,13 @@ Future<void> syncMasailFromFirestore() async {
 try {
     final snapshot = await _firestore.collection('masail').get();
     final db = await dbHelper.database;
+    final List<int> firestoreIds = [];
 
     await db.transaction((txn) async {
       for (var doc in snapshot.docs) {
         final data = doc.data();
         final int masailId = data['id'] ?? int.tryParse(doc.id) ?? 0;
+        firestoreIds.add(masailId);
 
         // Step 1 — Insert core masail row
         // arabic is language-independent — stored once in core table
@@ -154,7 +159,7 @@ try {
         }
       }
     });
-
+    await dbHelper.deleteRemovedMasail(firestoreIds);
 } catch (e) {
   debugPrint('⚠️ syncMasailFromFirestore skipped: $e');
   rethrow;

@@ -37,8 +37,9 @@ class InspirationSqflite {
       debugPrint('✅ inspiration.db copied from assets');
     }
 
-    // ✅ Always initialize connection after asset check
-    _database = await _initDB();
+    if (_database == null) {
+      _database = await _initDB();
+    }
   }
 
   Future<Database> _initDB() async {
@@ -53,7 +54,7 @@ class InspirationSqflite {
 
         // ── Inspiration categories core table ──────────────
         await db.execute('''
-          CREATE TABLE inspiration_categories(
+          CREATE TABLE IF NOT EXISTS inspiration_categories(
             category_id   INTEGER PRIMARY KEY,
             category_icon TEXT
           )
@@ -61,7 +62,7 @@ class InspirationSqflite {
 
         // ── Category translations ──────────────────────────
         await db.execute('''
-          CREATE TABLE inspiration_category_translations(
+          CREATE TABLE IF NOT EXISTS inspiration_category_translations(
             category_id   INTEGER NOT NULL,
             language_code TEXT    NOT NULL,
             title         TEXT    NOT NULL,
@@ -74,7 +75,7 @@ class InspirationSqflite {
         // ── Inspirations core table ────────────────────────
         // No quote_arabic — removed completely
         await db.execute('''
-          CREATE TABLE inspirations(
+          CREATE TABLE IF NOT EXISTS inspirations(
             id            INTEGER PRIMARY KEY,
             category_id   INTEGER NOT NULL,
             is_favorite   INTEGER DEFAULT 0,
@@ -86,7 +87,7 @@ class InspirationSqflite {
 
         // ── Inspiration translations ───────────────────────
         await db.execute('''
-          CREATE TABLE inspiration_translations(
+          CREATE TABLE IF NOT EXISTS inspiration_translations(
             inspiration_id INTEGER NOT NULL,
             language_code  TEXT    NOT NULL,
             title          TEXT,
@@ -101,18 +102,18 @@ class InspirationSqflite {
 
         // ── Indexes ────────────────────────────────────────
         await db.execute('''
-          CREATE INDEX idx_inspiration_translations
+          CREATE INDEX IF NOT EXISTS idx_inspiration_translations
           ON inspiration_translations(inspiration_id, language_code)
         ''');
 
         await db.execute('''
-          CREATE INDEX idx_inspiration_cat_translations
+          CREATE INDEX IF NOT EXISTS idx_inspiration_cat_translations
           ON inspiration_category_translations(category_id, language_code)
         ''');
 
         // ── User interactions ──────────────────────────────
         await db.execute('''
-          CREATE TABLE user_inspiration_interactions(
+          CREATE TABLE IF NOT EXISTS user_inspiration_interactions(
             user_id        TEXT    NOT NULL,
             inspiration_id INTEGER NOT NULL,
             is_favorite    INTEGER DEFAULT 0,
@@ -123,7 +124,7 @@ class InspirationSqflite {
         ''');
 
         await db.execute('''
-          CREATE INDEX idx_user_inspiration_interactions
+          CREATE INDEX IF NOT EXISTS idx_user_inspiration_interactions
           ON user_inspiration_interactions(user_id, inspiration_id)
         ''');
       },
@@ -377,5 +378,44 @@ class InspirationSqflite {
       limit: 1,
     );
     return result.isNotEmpty ? result.first : null;
+  }
+
+  // ── Sync: Delete removed rows ───────────────────────────
+
+  Future<void> deleteRemovedCategories(List<int> firestoreIds) async {
+    final db = await database;
+    final existing = await db.query('inspiration_categories',
+        columns: ['category_id']);
+    final toDelete = existing
+        .map((r) => r['category_id'] as int)
+        .toSet()
+        .difference(firestoreIds.toSet());
+
+    for (final id in toDelete) {
+      await db.delete('inspiration_category_translations',
+          where: 'category_id = ?', whereArgs: [id]);
+      await db.delete('inspiration_categories',
+          where: 'category_id = ?', whereArgs: [id]);
+      debugPrint('🗑️ Inspiration category $id deleted from SQLite');
+    }
+  }
+
+  Future<void> deleteRemovedInspirations(List<int> firestoreIds) async {
+    final db = await database;
+    final existing = await db.query('inspirations', columns: ['id']);
+    final toDelete = existing
+        .map((r) => r['id'] as int)
+        .toSet()
+        .difference(firestoreIds.toSet());
+
+    for (final id in toDelete) {
+      await db.delete('user_inspiration_interactions',
+          where: 'inspiration_id = ?', whereArgs: [id]);
+      await db.delete('inspiration_translations',
+          where: 'inspiration_id = ?', whereArgs: [id]);
+      await db.delete('inspirations',
+          where: 'id = ?', whereArgs: [id]);
+      debugPrint('🗑️ Inspiration $id deleted from SQLite');
+    }
   }
 }
