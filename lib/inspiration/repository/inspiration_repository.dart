@@ -9,6 +9,23 @@ class InspirationRepository {
   final InspirationSqflite dbHelper = InspirationSqflite();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
+  Future<void> initDatabase() async {
+    await dbHelper.initFromAssetIfNeeded();
+    _syncInBackground();
+  }
+
+  void _syncInBackground() {
+    Future.microtask(() async {
+      try {
+        await syncCategoriesFromFirestore();
+        await syncInspirationsFromFirestore();
+        debugPrint('✅ Inspiration background sync complete');
+      } catch (e) {
+        debugPrint('⚠️ Inspiration sync skipped: $e');
+      }
+    });
+  }
+
   // ── Categories ────────────────────────────────────────────
 
   Future<List<InspirationCategoryModel>> getAllCategories(
@@ -17,7 +34,8 @@ class InspirationRepository {
     return data.map((e) => InspirationCategoryModel.fromMap(e)).toList();
   }
 
-  Future<void> syncCategoriesFromFirestore() async {
+Future<void> syncCategoriesFromFirestore() async {
+try {
     final snapshot =
     await _firestore.collection('inspiration_categories').get();
     final db = await dbHelper.database;
@@ -56,9 +74,12 @@ class InspirationRepository {
         }
       }
     });
+} catch (e) {
+  debugPrint('⚠️ syncCategoriesFromFirestore skipped: $e');
+  rethrow;
+}
+}
 
-    debugPrint('✅ Inspiration categories synced');
-  }
 
   // ── Inspirations ─────────────────────────────────────────
 
@@ -86,7 +107,8 @@ class InspirationRepository {
     return data.map((e) => InspirationModel.fromMap(e)).toList();
   }
 
-  Future<void> syncInspirationsFromFirestore() async {
+Future<void> syncInspirationsFromFirestore() async {
+try {
     final snapshot =
     await _firestore.collection('inspirations').get();
     final db = await dbHelper.database;
@@ -130,9 +152,13 @@ class InspirationRepository {
         }
       }
     });
+} catch (e) {
+  debugPrint('⚠️ syncInspirationsFromFirestore skipped: $e');
+  rethrow;
+}
+}
 
-    debugPrint('✅ Inspirations synced from Firestore');
-  }
+
 
   // ── Favorites & Bookmarks ─────────────────────────────────
 

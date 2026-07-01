@@ -9,6 +9,23 @@ class MasailRepository {
   final MasailSqflite dbHelper = MasailSqflite();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
+  Future<void> initDatabase() async {
+    await dbHelper.initFromAssetIfNeeded();
+    _syncInBackground();
+  }
+
+  void _syncInBackground() {
+    Future.microtask(() async {
+      try {
+        await syncCategoriesFromFirestore();
+        await syncMasailFromFirestore();
+        debugPrint('✅ Masail background sync complete');
+      } catch (e) {
+        debugPrint('⚠️ Masail sync skipped: $e');
+      }
+    });
+  }
+
   // ── Categories ────────────────────────────────────────────
 
   Future<List<MasailCategoryModel>> getAllCategories(String languageCode) async {
@@ -16,7 +33,8 @@ class MasailRepository {
     return data.map((e) => MasailCategoryModel.fromMap(e)).toList();
   }
 
-  Future<void> syncCategoriesFromFirestore() async {
+Future<void> syncCategoriesFromFirestore() async {
+try {
     final snapshot = await _firestore.collection('categories_masail').get();
     final db = await dbHelper.database;
 
@@ -55,7 +73,12 @@ class MasailRepository {
         }
       }
     });
-  }
+} catch (e) {
+  debugPrint('⚠️ syncCategoriesFromFirestore skipped: $e');
+  rethrow;
+}
+}
+
 
   // ── Masail ────────────────────────────────────────────────
 
@@ -83,7 +106,8 @@ class MasailRepository {
     return data.map((e) => MasailModel.fromMap(e)).toList();
   }
 
-  Future<void> syncMasailFromFirestore() async {
+Future<void> syncMasailFromFirestore() async {
+try {
     final snapshot = await _firestore.collection('masail').get();
     final db = await dbHelper.database;
 
@@ -131,8 +155,11 @@ class MasailRepository {
       }
     });
 
-    debugPrint('✅ Masail synced from Firestore');
-  }
+} catch (e) {
+  debugPrint('⚠️ syncMasailFromFirestore skipped: $e');
+  rethrow;
+}
+}
 
   // ── Bookmarks ─────────────────────────────────────────────
 

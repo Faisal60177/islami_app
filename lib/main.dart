@@ -49,9 +49,6 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  // ✅ Register AuthController AFTER Firebase is ready
-  // ✅ permanent: true — controller is never garbage collected
-
   // ── Load saved language BEFORE creating cubits ──────────────
   final prefs = await SharedPreferences.getInstance();
   final savedLanguage = prefs.getString('language') ?? 'en';
@@ -63,20 +60,15 @@ void main() async {
   final permissionService  = PermissionService();
   final locationRepository = LocationRepository();
 
-  // Duas Repository
-  final duasRepository = DuasRepository();
-
-  // Firestore → SQLite
-  await duasRepository.syncCategoriesFromFirestore();
-  await duasRepository.syncDuasFromFirestore();
-
+  final duasRepository        = DuasRepository();
   final inspirationRepository = InspirationRepository();
-  await inspirationRepository.syncCategoriesFromFirestore();
-  await inspirationRepository.syncInspirationsFromFirestore();
+  final masailRepository      = MasailRepository();
 
-  final masailRepository = MasailRepository();
-  await masailRepository.syncCategoriesFromFirestore();
-  await masailRepository.syncMasailFromFirestore();
+  // ✅ Pre-built SQLite copy — internet লাগে না
+  await duasRepository.initDatabase();
+  await inspirationRepository.initDatabase();
+  await masailRepository.initDatabase();
+
 
   FlutterNativeSplash.remove();
 

@@ -9,6 +9,26 @@ class DuasRepository {
   final DuasSqflite dbHelper = DuasSqflite();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
+  Future<void> initDatabase() async {
+    await dbHelper.initFromAssetIfNeeded();
+    // ✅ Background এ silently sync — internet না থাকলে skip
+    _syncInBackground();
+  }
+
+  // ── Background sync — internet না থাকলে silently skip ────
+  void _syncInBackground() {
+    Future.microtask(() async {
+      try {
+        await syncCategoriesFromFirestore();
+        await syncDuasFromFirestore();
+        debugPrint('✅ Duas background sync complete');
+      } catch (e) {
+        // ✅ Internet নেই বা error — silently ignore
+        debugPrint('⚠️ Duas sync skipped: $e');
+      }
+    });
+  }
+
   // ── Categories ────────────────────────────────────────────
 
   Future<List<CategoryModel>> getAllCategories(String languageCode) async {
@@ -16,45 +36,53 @@ class DuasRepository {
     return data.map((e) => CategoryModel.fromMap(e)).toList();
   }
 
+
+
   Future<void> syncCategoriesFromFirestore() async {
-    final snapshot = await _firestore.collection('categories_duas').get();
-    final db = await dbHelper.database;
+    try {
+      final snapshot = await _firestore
+          .collection('categories_duas')
+          .get();
+      final db = await dbHelper.database;
 
-    await db.transaction((txn) async {
-      for (var doc in snapshot.docs) {
-        final data = doc.data();
-        final int categoryId = ((data['id'] ?? data['ID'] ?? 0) as num).toInt();
+      await db.transaction((txn) async {
+        for (var doc in snapshot.docs) {
+          final data = doc.data();
+          final int categoryId =
+          ((data['id'] ?? data['ID'] ?? 0) as num).toInt();
 
-        // Insert core category row
-        await txn.insert(
-          'categories',
-          {
-            'category_id':   categoryId,
-            'category_icon': data['category_icon'] ?? '',
-          },
-          conflictAlgorithm: ConflictAlgorithm.replace,
-        );
-
-        // Fetch translations subcollection: en, bn, ar, ur
-        final transSnap = await _firestore
-            .collection('categories_duas')
-            .doc(doc.id)
-            .collection('translations')
-            .get();
-
-        for (var tDoc in transSnap.docs) {
           await txn.insert(
-            'category_translations',
+            'categories',
             {
               'category_id':   categoryId,
-              'language_code': tDoc.id,        // 'en', 'bn', 'ar', 'ur'
-              'title':         tDoc.data()['title'] ?? '',
+              'category_icon': data['category_icon'] ?? '',
             },
             conflictAlgorithm: ConflictAlgorithm.replace,
           );
+
+          final transSnap = await _firestore
+              .collection('categories_duas')
+              .doc(doc.id)
+              .collection('translations')
+              .get();
+
+          for (var tDoc in transSnap.docs) {
+            await txn.insert(
+              'category_translations',
+              {
+                'category_id':   categoryId,
+                'language_code': tDoc.id,
+                'title':         tDoc.data()['title'] ?? '',
+              },
+              conflictAlgorithm: ConflictAlgorithm.replace,
+            );
+          }
         }
-      }
-    });
+      });
+    } catch (e) {
+      debugPrint('⚠️ syncCategoriesFromFirestore skipped: $e');
+      rethrow; // ✅ caller handle
+    }
   }
 
   // ── Duas ─────────────────────────────────────────────────
@@ -84,54 +112,55 @@ class DuasRepository {
   }
 
   Future<void> syncDuasFromFirestore() async {
-    final snapshot = await _firestore.collection('duas').get();
-    final db = await dbHelper.database;
+    try {
+      final snapshot = await _firestore.collection('duas').get();
+      final db = await dbHelper.database;
 
-    await db.transaction((txn) async {
-      for (var doc in snapshot.docs) {
-        final data = doc.data();
-        final int duaId = data['id'] ?? int.tryParse(doc.id) ?? 0;
+      await db.transaction((txn) async {
+        for (var doc in snapshot.docs) {
+          final data = doc.data();
+          final int duaId = data['id'] ?? int.tryParse(doc.id) ?? 0;
 
-        // Step 1 — Insert core dua row (no translation columns)
-        await txn.insert(
-          'duas',
-          {
-            'id':          duaId,
-            'category_id': (data['category_id'] as num).toInt(),
-            'arabic':      data['arabic'] ?? '',
-            'audio_url':   data['audio_url'], // nullable — fine
-          },
-          conflictAlgorithm: ConflictAlgorithm.replace,
-        );
-
-        // Step 2 — Fetch translations subcollection
-        final transSnap = await _firestore
-            .collection('duas')
-            .doc(doc.id)
-            .collection('translations')
-            .get();
-
-        // Step 3 — Insert each language translation row
-        for (var tDoc in transSnap.docs) {
-          final t = tDoc.data();
           await txn.insert(
-            'dua_translations',
+            'duas',
             {
-              'dua_id':           duaId,
-              'language_code':    tDoc.id,  // 'en', 'bn', 'ar', 'ur'
-              'title':            t['title']           ?? '',
-              'transliteration':  t['transliteration'] ?? '',
-              'translation_text': t['translation_text'] ?? '',
-              'reference':        t['reference']       ?? '',
-              'description':      t['description'],    // nullable
+              'id':          duaId,
+              'category_id': (data['category_id'] as num).toInt(),
+              'arabic':      data['arabic'] ?? '',
+              'audio_url':   data['audio_url'],
             },
             conflictAlgorithm: ConflictAlgorithm.replace,
           );
-        }
-      }
-    });
 
-    debugPrint('✅ Duas synced from Firestore');
+          final transSnap = await _firestore
+              .collection('duas')
+              .doc(doc.id)
+              .collection('translations')
+              .get();
+
+          for (var tDoc in transSnap.docs) {
+            final t = tDoc.data();
+            await txn.insert(
+              'dua_translations',
+              {
+                'dua_id':           duaId,
+                'language_code':    tDoc.id,
+                'title':            t['title']            ?? '',
+                'transliteration':  t['transliteration']  ?? '',
+                'translation_text': t['translation_text'] ?? '',
+                'reference':        t['reference']        ?? '',
+                'description':      t['description'],
+              },
+              conflictAlgorithm: ConflictAlgorithm.replace,
+            );
+          }
+        }
+      });
+      debugPrint('✅ Duas synced from Firestore');
+    } catch (e) {
+      debugPrint('⚠️ syncDuasFromFirestore skipped: $e');
+      rethrow;
+    }
   }
 
   // ── Favorites & Bookmarks ─────────────────────────────────

@@ -17,19 +17,23 @@ class InspirationCubit extends Cubit<InspirationState> {
     currentLanguageCode = languageCode;
   }
 
-  // ── Smart load: SQLite first, Firestore silently in background ──
-  // Called once on page open. Never emits InspirationLoading if
-  // SQLite already has data — so no spinner on returning visits.
   Future<void> loadCategoriesIfEmpty() async {
     try {
       final categories =
       await repository.getAllCategories(currentLanguageCode);
 
       if (categories.isEmpty) {
-        // ── First launch: SQLite empty → must sync from Firestore ──
+        // ✅ Try sync only if internet available — silently skip if not
         emit(InspirationLoading());
-        await repository.syncCategoriesFromFirestore();
-        await repository.syncInspirationsFromFirestore();
+        try {
+          await repository.syncCategoriesFromFirestore();
+          await repository.syncInspirationsFromFirestore();
+        } catch (_) {
+          // ✅ No internet — skip silently, show empty state
+          emit(InspirationCategoriesLoaded([]));
+          emit(InspirationLoaded([]));
+          return;
+        }
         final refreshed =
         await repository.getAllCategories(currentLanguageCode);
         final inspirations = await repository.getAllInspirations(
@@ -39,15 +43,12 @@ class InspirationCubit extends Cubit<InspirationState> {
         emit(InspirationCategoriesLoaded(refreshed));
         emit(InspirationLoaded(inspirations));
       } else {
-        // ── Has data: emit instantly with no spinner ──────────────
         final inspirations = await repository.getAllInspirations(
           languageCode: currentLanguageCode,
           userId:       userId,
         );
         emit(InspirationCategoriesLoaded(categories));
         emit(InspirationLoaded(inspirations));
-
-        // ── Background sync — silent, no loading state emitted ───
         _syncSilently();
       }
     } catch (e) {

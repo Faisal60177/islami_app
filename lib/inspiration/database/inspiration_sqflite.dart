@@ -1,5 +1,8 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import 'dart:io';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 
 class InspirationSqflite {
   static final InspirationSqflite _instance =
@@ -13,6 +16,29 @@ class InspirationSqflite {
     if (_database != null) return _database!;
     _database = await _initDB();
     return _database!;
+  }
+
+  Future<void> initFromAssetIfNeeded() async {
+    final dbPath = await getDatabasesPath();
+    final path   = join(dbPath, 'inspiration.db');
+
+    final exists = await databaseExists(path);
+    if (!exists) {
+      try {
+        await Directory(dirname(path)).create(recursive: true);
+      } catch (_) {}
+
+      final data  = await rootBundle.load('assets/db/inspiration.db');
+      final bytes = data.buffer.asUint8List(
+        data.offsetInBytes,
+        data.lengthInBytes,
+      );
+      await File(path).writeAsBytes(bytes, flush: true);
+      debugPrint('✅ inspiration.db copied from assets');
+    }
+
+    // ✅ Always initialize connection after asset check
+    _database = await _initDB();
   }
 
   Future<Database> _initDB() async {

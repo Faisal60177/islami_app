@@ -1,5 +1,8 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import 'dart:io';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 
 class MasailSqflite {
   static final MasailSqflite _instance = MasailSqflite._internal();
@@ -12,6 +15,29 @@ class MasailSqflite {
     if (_database != null) return _database!;
     _database = await _initDB();
     return _database!;
+  }
+
+  Future<void> initFromAssetIfNeeded() async {
+    final dbPath = await getDatabasesPath();
+    final path   = join(dbPath, 'masail.db');
+
+    final exists = await databaseExists(path);
+    if (!exists) {
+      try {
+        await Directory(dirname(path)).create(recursive: true);
+      } catch (_) {}
+
+      final data  = await rootBundle.load('assets/db/masail.db');
+      final bytes = data.buffer.asUint8List(
+        data.offsetInBytes,
+        data.lengthInBytes,
+      );
+      await File(path).writeAsBytes(bytes, flush: true);
+      debugPrint('✅ masail.db copied from assets');
+    }
+
+    // ✅ Always initialize connection after asset check
+    _database = await _initDB();
   }
 
   Future<Database> _initDB() async {
