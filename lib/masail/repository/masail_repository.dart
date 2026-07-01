@@ -11,8 +11,21 @@ class MasailRepository {
 
   Future<void> initDatabase() async {
     await dbHelper.initFromAssetIfNeeded();
+    _syncInBackground();
   }
 
+
+  void _syncInBackground() {
+    Future.microtask(() async {
+      try {
+        await syncCategoriesFromFirestore();
+        await syncMasailFromFirestore();
+        debugPrint('✅ Masail background sync complete');
+      } catch (e) {
+        debugPrint('⚠️ Masail sync skipped: $e');
+      }
+    });
+  }
 
 
   // ── Categories ────────────────────────────────────────────

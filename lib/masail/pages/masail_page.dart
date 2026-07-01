@@ -15,7 +15,7 @@ class MasailPage extends StatefulWidget {
 }
 
 class _MasailPageState extends State<MasailPage>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late TabController _tabController;
   final TextEditingController _searchController = TextEditingController();
   String searchQuery = '';

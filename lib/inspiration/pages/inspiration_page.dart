@@ -31,7 +31,7 @@ class InspirationPage extends StatefulWidget {
 }
 
 class _InspirationPageState extends State<InspirationPage>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late TabController _tabController;
   List<InspirationCategoryModel> _categories = [];
   int _selectedCategoryId = -1; // -1 = All

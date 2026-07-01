@@ -11,6 +11,18 @@ class DuasRepository {
 
   Future<void> initDatabase() async {
     await dbHelper.initFromAssetIfNeeded();
+    _syncInBackground();
+  }
+  void _syncInBackground() {
+    Future.microtask(() async {
+      try {
+        await syncCategoriesFromFirestore();
+        await syncDuasFromFirestore();
+        debugPrint('✅ Duas background sync complete');
+      } catch (e) {
+        debugPrint('⚠️ Duas sync skipped: $e');
+      }
+    });
   }
 
 

@@ -22,7 +22,7 @@ class DuasPage extends StatefulWidget {
 }
 
 class _DuasPageState extends State<DuasPage>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late TabController _tabController;
   final TextEditingController _searchController = TextEditingController();
   String searchQuery = '';
