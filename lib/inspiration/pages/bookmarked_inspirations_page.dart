@@ -5,6 +5,9 @@ import '../cubit/inspiration_cubit.dart';
 import '../model/inspiration_model.dart';
 import 'inspiration_detail_page.dart';
 import 'inspiration_page.dart' show gradientForIndex;
+import 'package:muslim_app/settings/cubit/settings_cubit.dart';
+import 'package:muslim_app/settings/cubit/settings_state.dart';
+import 'package:muslim_app/settings/theme/app_themes.dart';
 
 class BookmarkedInspirationsPage extends StatefulWidget {
   const BookmarkedInspirationsPage({super.key});
@@ -56,76 +59,85 @@ class _BookmarkedInspirationsPageState
 
   @override
   Widget build(BuildContext context) {
+    // ✅ theme
+    final settings = context.watch<SettingsCubit>().state;
+    final theme = getThemeById(settings.themeMode);
+
     return Scaffold(
-      backgroundColor: const Color(0xFF071A15),
+      backgroundColor: theme.background,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF071A15),
+        backgroundColor: theme.surface,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded,
-              color: Colors.white, size: 18),
+          icon: Icon(Icons.arrow_back_ios_new_rounded,
+              color: theme.textHigh, size: 18),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
+        title: Text(
           'Saved',
           style: TextStyle(
-            color:      Colors.white,
+            color:      theme.textHigh,
             fontSize:   20,
             fontWeight: FontWeight.w600,
           ),
         ),
       ),
       body: _isLoading
-          ? const Center(
+          ? Center(
           child: CircularProgressIndicator(
-              color: Color(0xFF2ECC71), strokeWidth: 2))
+              color: theme.accent, strokeWidth: 2))
           : _bookmarked.isEmpty
-          ? const Center(
+          ? Center(
         child: Text(
           'No saved inspirations yet.',
           style: TextStyle(
-              color: Colors.white38, fontSize: 14),
+              color: theme.textLow, fontSize: 14),
         ),
       )
           : MasonryGridView.count(
         physics: const ClampingScrollPhysics(),
-          crossAxisCount:   2,
-          mainAxisSpacing:  10,
-          crossAxisSpacing: 10,
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
-          itemCount: _bookmarked.length,
-          itemBuilder: (context, index) {
-            final inspiration = _bookmarked[index];
-            return _BookmarkCard(
-              inspiration:    inspiration,
-              gradientColors: gradientForIndex(index),
-              onRemove: () => _removeBookmark(inspiration),
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => InspirationDetailPage(
-                    inspirations: _bookmarked,
-                    initialIndex: index,
-                  ),
+        crossAxisCount:   2,
+        mainAxisSpacing:  10,
+        crossAxisSpacing: 10,
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+        itemCount: _bookmarked.length,
+        itemBuilder: (context, index) {
+          final inspiration = _bookmarked[index];
+          return _BookmarkCard(
+            inspiration:    inspiration,
+            gradientColors: gradientForIndex(index),
+            accentColor: theme.accent,
+            onRemove: () => _removeBookmark(inspiration),
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => InspirationDetailPage(
+                  inspirations: _bookmarked,
+                  initialIndex: index,
                 ),
               ),
-            );
-          },
-        ),
+            ),
+          );
+        },
+      ),
 
     );
   }
 }
 
+// (card background is a fixed decorative gradient — text stays white
+//  for contrast, same treatment as category cards elsewhere)
 class _BookmarkCard extends StatelessWidget {
   final InspirationModel inspiration;
   final List<Color>      gradientColors;
+  final Color            accentColor;
   final VoidCallback     onRemove;
   final VoidCallback     onTap;
 
   const _BookmarkCard({
     required this.inspiration,
     required this.gradientColors,
+    required this.accentColor,
     required this.onRemove,
     required this.onTap,
   });
@@ -193,9 +205,9 @@ class _BookmarkCard extends StatelessWidget {
               alignment: Alignment.bottomRight,
               child: GestureDetector(
                 onTap: onRemove,
-                child: const Icon(
+                child: Icon(
                   Icons.bookmark_rounded,
-                  color: Color(0xFF2ECC71),
+                  color: accentColor,
                   size:  20,
                 ),
               ),

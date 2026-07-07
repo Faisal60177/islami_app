@@ -122,7 +122,7 @@ class _SurahTile extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        color: Colors.white,
+                        color: theme.textHigh,
                         fontSize: rsw * 0.036,
                         fontWeight: FontWeight.w700,
                       ),

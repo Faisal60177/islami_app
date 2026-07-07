@@ -5,6 +5,8 @@ import '../model/masail_category_model.dart';
 import 'package:muslim_app/utils/language_utils.dart';
 import 'package:muslim_app/settings/l10n/app_localizations.dart';
 import 'package:muslim_app/settings/cubit/settings_cubit.dart';
+import 'package:muslim_app/settings/cubit/settings_state.dart';
+import 'package:muslim_app/settings/theme/app_themes.dart';
 import 'category_masail_page.dart';
 
 class MasailCategoryPage extends StatefulWidget {
@@ -19,7 +21,7 @@ class _MasailCategoryPageState extends State<MasailCategoryPage> {
   List<MasailCategoryModel> _categories = [];
   bool _isLoading = true;
 
-  // ── Rich palette for category cards ──
+  // ── Rich palette for category cards (content color-coding — kept theme-independent) ──
   static const List<List<Color>> _cardGradients = [
     [Color(0xFF6B1E2E), Color(0xFF9B3040)],
     [Color(0xFF1E3A6B), Color(0xFF2E5499)],
@@ -30,11 +32,6 @@ class _MasailCategoryPageState extends State<MasailCategoryPage> {
     [Color(0xFF6B1E4A), Color(0xFF9B2E6B)],
     [Color(0xFF1E6B4A), Color(0xFF2E9B6B)],
   ];
-
-  static const Color _bg      = Color(0xFFFAF6EF);
-  static const Color _primary = Color(0xFF6B1E2E);
-  static const Color _gold    = Color(0xFFD4AF37);
-  static const Color _surface = Color(0xFFF2EBE0);
 
   @override
   void initState() {
@@ -74,17 +71,18 @@ class _MasailCategoryPageState extends State<MasailCategoryPage> {
 
   @override
   Widget build(BuildContext context) {
-    final cubit  = context.read<MasailCubit>();
-    final isRtl  = LanguageUtils.isRtl(cubit.currentLanguageCode);
-    final w      = MediaQuery.of(context).size.width;
-    final h      = MediaQuery.of(context).size.height;
+    final theme    = getThemeById(context.watch<SettingsCubit>().state.themeMode);
+    final cubit    = context.read<MasailCubit>();
+    final isRtl    = LanguageUtils.isRtl(cubit.currentLanguageCode);
+    final w        = MediaQuery.of(context).size.width;
+    final h        = MediaQuery.of(context).size.height;
     final langCode = context.read<SettingsCubit>().state.languageCode;
-    final l10n   = AppLocalizations(langCode);
+    final l10n     = AppLocalizations(langCode);
 
     if (_isLoading) {
       return Center(
         child: CircularProgressIndicator(
-          color: _primary, strokeWidth: 2.5,
+          color: theme.accent, strokeWidth: 2.5,
         ),
       );
     }
@@ -99,14 +97,14 @@ class _MasailCategoryPageState extends State<MasailCategoryPage> {
       return _EmptyState(
         icon: Icons.category_outlined,
         title: l10n.noCategoriesFound,
-        color: _primary,
+        color: theme.accent,
       );
     }
 
     return Directionality(
       textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
       child: RefreshIndicator(
-        color: _primary,
+        color: theme.accent,
         onRefresh: _loadCategories,
         child: CustomScrollView(
           physics: const ClampingScrollPhysics(),
@@ -124,7 +122,7 @@ class _MasailCategoryPageState extends State<MasailCategoryPage> {
                       width: 4,
                       height: 18,
                       decoration: BoxDecoration(
-                        color: _gold,
+                        color: theme.accent,
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
@@ -133,7 +131,7 @@ class _MasailCategoryPageState extends State<MasailCategoryPage> {
                       '${categories.length} ${l10n.categories}',
                       style: TextStyle(
                         fontSize: w * 0.038,
-                        color: const Color(0xFF5C3D44),
+                        color: theme.textHigh,
                         fontWeight: FontWeight.w600,
                       ),
                     ),

@@ -116,123 +116,123 @@ class _MonthlyCalendarPageState extends State<MonthlyCalendarPage>
     final sh = MediaQuery.of(context).size.height;
 
     return BlocBuilder<SettingsCubit, SettingsState>(
-    builder: (context, settings) {
-      final theme = getThemeById(settings.themeMode);
-      final l10n = AppLocalizations(settings.languageCode);
-      final use24h = settings.use24Hour;
+        builder: (context, settings) {
+          final theme = getThemeById(settings.themeMode);
+          final l10n = AppLocalizations(settings.languageCode);
+          final use24h = settings.use24Hour;
 
-      return Scaffold(
-        backgroundColor: const Color(0xFF080F0A),
-        body: Stack(
-          children: [
-            // ── Background glow orbs ──
-            Positioned(
-              top: -sh * 0.05,
-              right: -sw * 0.3,
-              child: Container(
-                width: sw * 0.8,
-                height: sw * 0.8,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: RadialGradient(colors: [
-                    const Color(0xFF00A86B).withOpacity(0.12),
-                    Colors.transparent,
-                  ]),
+          return Scaffold(
+            backgroundColor: theme.background,
+            body: Stack(
+              children: [
+                // ── Background glow orbs ──
+                Positioned(
+                  top: -sh * 0.05,
+                  right: -sw * 0.3,
+                  child: Container(
+                    width: sw * 0.8,
+                    height: sw * 0.8,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: RadialGradient(colors: [
+                        theme.accent.withOpacity(0.12),
+                        Colors.transparent,
+                      ]),
+                    ),
+                  ),
                 ),
-              ),
-            ),
-            Positioned(
-              bottom: sh * 0.1,
-              left: -sw * 0.3,
-              child: Container(
-                width: sw * 0.7,
-                height: sw * 0.7,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: RadialGradient(colors: [
-                    const Color(0xFF0077B6).withOpacity(0.09),
-                    Colors.transparent,
-                  ]),
+                Positioned(
+                  bottom: sh * 0.1,
+                  left: -sw * 0.3,
+                  child: Container(
+                    width: sw * 0.7,
+                    height: sw * 0.7,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: RadialGradient(colors: [
+                        theme.primary.withOpacity(0.09),
+                        Colors.transparent,
+                      ]),
+                    ),
+                  ),
                 ),
-              ),
-            ),
 
-            // ── Main Content ──
-            SafeArea(
-              child: FadeTransition(
-                opacity: _fadeAnimation,
-                child: BlocBuilder<PrayerTimesCubit, PrayerTimesState>(
-                  builder: (context, state) {
-                    if (state is PrayerTimesLoading &&
-                        _selectedDayTimes == null) {
-                      return Center(
-                        child: CircularProgressIndicator(
-                          color: const Color(0xFF00A86B),
-                          backgroundColor: Colors.white.withOpacity(0.1),
-                          strokeWidth: 3,
-                        ),
-                      );
-                    }
-                    if (state is PrayerTimesError &&
-                        _selectedDayTimes == null) {
-                      return Center(
-                        child: Text(
-                          state.message,
-                          style: const TextStyle(color: Colors.white70),
-                        ),
-                      );
-                    }
-
-                    final displayTimes = _selectedDayTimes ??
-                        (state is PrayerTimesLoaded ? state.prayerTimes : null);
-
-                    return CustomScrollView(
-                      physics: const ClampingScrollPhysics(),
-                      slivers: [
-                        SliverToBoxAdapter(
-                          child: Padding(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: sw * 0.05,
-                              vertical: sw * 0.04,
+                // ── Main Content ──
+                SafeArea(
+                  child: FadeTransition(
+                    opacity: _fadeAnimation,
+                    child: BlocBuilder<PrayerTimesCubit, PrayerTimesState>(
+                      builder: (context, state) {
+                        if (state is PrayerTimesLoading &&
+                            _selectedDayTimes == null) {
+                          return Center(
+                            child: CircularProgressIndicator(
+                              color: theme.accent,
+                              backgroundColor: theme.textLow.withOpacity(0.1),
+                              strokeWidth: 3,
                             ),
-                            child: Column(
-                              children: [
-                                _buildHeader(sw, theme, l10n),
-                                SizedBox(height: sh * 0.028),
-                                _buildCalendarCard(sw, sh, theme, l10n),
-                                SizedBox(height: sh * 0.025),
-                                if (_loadingDay)
-                                  _buildPanelLoading(sw, sh, theme, l10n)
-                                else
-                                  if (displayTimes != null)
-                                    FadeTransition(
-                                      opacity: _panelAnimation,
-                                      child: _buildPrayerPanel(
-                                          sw, sh, displayTimes, theme, l10n, use24h),
-                                    )
-                                  else
-                                    _buildNoLocation(sw, theme, l10n),
-                                SizedBox(height: sh * 0.04),
-                              ],
+                          );
+                        }
+                        if (state is PrayerTimesError &&
+                            _selectedDayTimes == null) {
+                          return Center(
+                            child: Text(
+                              state.message,
+                              style: TextStyle(color: theme.textLow),
                             ),
-                          ),
-                        ),
-                      ],
-                    );
-                  },
+                          );
+                        }
+
+                        final displayTimes = _selectedDayTimes ??
+                            (state is PrayerTimesLoaded ? state.prayerTimes : null);
+
+                        return CustomScrollView(
+                          physics: const ClampingScrollPhysics(),
+                          slivers: [
+                            SliverToBoxAdapter(
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: sw * 0.05,
+                                  vertical: sw * 0.04,
+                                ),
+                                child: Column(
+                                  children: [
+                                    _buildHeader(sw, theme, l10n),
+                                    SizedBox(height: sh * 0.028),
+                                    _buildCalendarCard(sw, sh, theme, l10n),
+                                    SizedBox(height: sh * 0.025),
+                                    if (_loadingDay)
+                                      _buildPanelLoading(sw, sh, theme, l10n)
+                                    else
+                                      if (displayTimes != null)
+                                        FadeTransition(
+                                          opacity: _panelAnimation,
+                                          child: _buildPrayerPanel(
+                                              sw, sh, displayTimes, theme, l10n, use24h),
+                                        )
+                                      else
+                                        _buildNoLocation(sw, theme, l10n),
+                                    SizedBox(height: sh * 0.04),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ),
-          ],
-        ),
-      );
-    }
+          );
+        }
     );
   }
 
   // ── header ────────────────────────────────────────────────────────────────
 
-  Widget _buildHeader(double sw, theme, l10n) {
+  Widget _buildHeader(double sw, AppThemeOption theme, AppLocalizations l10n) {
     return Row(
       children: [
         GestureDetector(
@@ -240,13 +240,13 @@ class _MonthlyCalendarPageState extends State<MonthlyCalendarPage>
           child: Container(
             padding: EdgeInsets.all(sw * 0.025),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.07),
+              color: theme.surface,
               borderRadius: BorderRadius.circular(sw * 0.03),
-              border: Border.all(color: Colors.white.withOpacity(0.1), width: 1),
+              border: Border.all(color: theme.accent.withOpacity(0.15), width: 1),
             ),
             child: Icon(
               Icons.arrow_back_ios_new_rounded,
-              color: Colors.white,
+              color: theme.textHigh,
               size: sw * 0.05,
             ),
           ),
@@ -258,7 +258,7 @@ class _MonthlyCalendarPageState extends State<MonthlyCalendarPage>
             Text(
               "Prayer Calendar",
               style: TextStyle(
-                color: Colors.white,
+                color: theme.textHigh,
                 fontSize: sw * 0.058,
                 fontWeight: FontWeight.w700,
                 letterSpacing: -0.5,
@@ -268,7 +268,7 @@ class _MonthlyCalendarPageState extends State<MonthlyCalendarPage>
             Text(
               "Monthly prayer times at a glance",
               style: TextStyle(
-                color: Colors.white.withOpacity(0.4),
+                color: theme.textLow,
                 fontSize: sw * 0.032,
                 letterSpacing: 0.2,
               ),
@@ -281,12 +281,12 @@ class _MonthlyCalendarPageState extends State<MonthlyCalendarPage>
 
   // ── calendar card ─────────────────────────────────────────────────────────
 
-  Widget _buildCalendarCard(double sw, double sh, theme, l10n) {
+  Widget _buildCalendarCard(double sw, double sh, AppThemeOption theme, AppLocalizations l10n) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.04),
+        color: theme.surface,
         borderRadius: BorderRadius.circular(sw * 0.055),
-        border: Border.all(color: Colors.white.withOpacity(0.08), width: 1),
+        border: Border.all(color: theme.accent.withOpacity(0.12), width: 1),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.35),
@@ -298,11 +298,11 @@ class _MonthlyCalendarPageState extends State<MonthlyCalendarPage>
       padding: EdgeInsets.all(sw * 0.05),
       child: Column(
         children: [
-          _buildMonthHeader(sw),
+          _buildMonthHeader(sw, theme),
           SizedBox(height: sh * 0.022),
-          _buildWeekdayRow(sw,l10n, theme),
+          _buildWeekdayRow(sw, l10n, theme),
           SizedBox(height: sh * 0.01),
-          _buildCalendarGrid(sw,l10n, theme),
+          _buildCalendarGrid(sw, l10n, theme),
         ],
       ),
     );
@@ -310,12 +310,12 @@ class _MonthlyCalendarPageState extends State<MonthlyCalendarPage>
 
   // ── month nav header ──────────────────────────────────────────────────────
 
-  Widget _buildMonthHeader(double sw,) {
+  Widget _buildMonthHeader(double sw, AppThemeOption theme) {
     final label = DateFormat('MMMM yyyy').format(_focusedMonth);
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        _navBtn(Icons.chevron_left_rounded, () {
+        _navBtn(Icons.chevron_left_rounded, theme, () {
           final prev = DateTime(_focusedMonth.year, _focusedMonth.month - 1);
           final lastDay = DateTime(prev.year, prev.month + 1, 0).day;
           final newSelected = DateTime(
@@ -327,13 +327,13 @@ class _MonthlyCalendarPageState extends State<MonthlyCalendarPage>
         Text(
           label,
           style: TextStyle(
-            color: Colors.white,
+            color: theme.textHigh,
             fontSize: sw * 0.048,
             fontWeight: FontWeight.w700,
             letterSpacing: -0.3,
           ),
         ),
-        _navBtn(Icons.chevron_right_rounded, () {
+        _navBtn(Icons.chevron_right_rounded, theme, () {
           final next = DateTime(_focusedMonth.year, _focusedMonth.month + 1);
           final lastDay = DateTime(next.year, next.month + 1, 0).day;
           final newSelected = DateTime(
@@ -346,22 +346,22 @@ class _MonthlyCalendarPageState extends State<MonthlyCalendarPage>
     );
   }
 
-  Widget _navBtn(IconData icon, VoidCallback onTap) {
+  Widget _navBtn(IconData icon, AppThemeOption theme, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
         width: 36,
         height: 36,
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFF00A86B), Color(0xFF007A4D)],
+          gradient: LinearGradient(
+            colors: [theme.accent, theme.primary],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
           borderRadius: BorderRadius.circular(10),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF00A86B).withOpacity(0.35),
+              color: theme.accent.withOpacity(0.35),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -374,7 +374,7 @@ class _MonthlyCalendarPageState extends State<MonthlyCalendarPage>
 
   // ── weekday row ───────────────────────────────────────────────────────────
 
-  Widget _buildWeekdayRow(double sw, theme, l10n) {
+  Widget _buildWeekdayRow(double sw, AppLocalizations l10n, AppThemeOption theme) {
     const dayNames = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
     return Row(
       children: dayNames
@@ -384,8 +384,8 @@ class _MonthlyCalendarPageState extends State<MonthlyCalendarPage>
           textAlign: TextAlign.center,
           style: TextStyle(
             color: n == 'Fr'
-                ? const Color(0xFF4DFFA6)
-                : Colors.white.withOpacity(0.35),
+                ? theme.accent
+                : theme.textLow,
             fontSize: sw * 0.03,
             fontWeight: FontWeight.w600,
             letterSpacing: 0.5,
@@ -398,7 +398,7 @@ class _MonthlyCalendarPageState extends State<MonthlyCalendarPage>
 
   // ── calendar grid ─────────────────────────────────────────────────────────
 
-  Widget _buildCalendarGrid(double sw, theme, l10n) {
+  Widget _buildCalendarGrid(double sw, AppLocalizations l10n, AppThemeOption theme) {
     final days = _daysInMonthGrid();
 
     return GridView.builder(
@@ -411,11 +411,11 @@ class _MonthlyCalendarPageState extends State<MonthlyCalendarPage>
         childAspectRatio: 1,
       ),
       itemCount: days.length,
-      itemBuilder: (_, i) => _buildDayCell(days[i], sw),
+      itemBuilder: (_, i) => _buildDayCell(days[i], sw, theme),
     );
   }
 
-  Widget _buildDayCell(DateTime? day, double sw) {
+  Widget _buildDayCell(DateTime? day, double sw, AppThemeOption theme) {
     if (day == null) return const SizedBox();
 
     final today = _isToday(day);
@@ -427,33 +427,33 @@ class _MonthlyCalendarPageState extends State<MonthlyCalendarPage>
         duration: const Duration(milliseconds: 200),
         decoration: BoxDecoration(
           gradient: today && selected
-              ? const LinearGradient(
-            colors: [Color(0xFF00A86B), Color(0xFF007A4D)],
+              ? LinearGradient(
+            colors: [theme.accent, theme.primary],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           )
               : selected
               ? LinearGradient(
             colors: [
-              const Color(0xFF00A86B).withOpacity(0.55),
-              const Color(0xFF005F3B).withOpacity(0.4),
+              theme.accent.withOpacity(0.55),
+              theme.primary.withOpacity(0.4),
             ],
           )
               : null,
           color: today && !selected
-              ? const Color(0xFF00A86B).withOpacity(0.18)
+              ? theme.accent.withOpacity(0.18)
               : (!today && !selected ? Colors.transparent : null),
           borderRadius: BorderRadius.circular(sw * 0.022),
           border: selected
-              ? Border.all(color: const Color(0xFF4DFFA6).withOpacity(0.5), width: 1)
+              ? Border.all(color: theme.accent.withOpacity(0.5), width: 1)
               : today
               ? Border.all(
-              color: const Color(0xFF00A86B).withOpacity(0.5), width: 1)
+              color: theme.accent.withOpacity(0.5), width: 1)
               : null,
           boxShadow: selected || today
               ? [
             BoxShadow(
-              color: const Color(0xFF00A86B).withOpacity(0.25),
+              color: theme.accent.withOpacity(0.25),
               blurRadius: 8,
               offset: const Offset(0, 3),
             ),
@@ -464,7 +464,7 @@ class _MonthlyCalendarPageState extends State<MonthlyCalendarPage>
         child: Text(
           '${day.day}',
           style: TextStyle(
-            color: selected || today ? Colors.white : Colors.white.withOpacity(0.55),
+            color: selected || today ? Colors.white : theme.textLow,
             fontSize: sw * 0.033,
             fontWeight: selected || today ? FontWeight.w700 : FontWeight.w400,
           ),
@@ -475,13 +475,13 @@ class _MonthlyCalendarPageState extends State<MonthlyCalendarPage>
 
   // ── panel loading ─────────────────────────────────────────────────────────
 
-  Widget _buildPanelLoading(double sw, double sh, theme, l10n) {
+  Widget _buildPanelLoading(double sw, double sh, AppThemeOption theme, AppLocalizations l10n) {
     return SizedBox(
       height: sh * 0.2,
       child: Center(
         child: CircularProgressIndicator(
-          color: const Color(0xFF00A86B),
-          backgroundColor: Colors.white.withOpacity(0.08),
+          color: theme.accent,
+          backgroundColor: theme.textLow.withOpacity(0.08),
           strokeWidth: 3,
         ),
       ),
@@ -490,23 +490,23 @@ class _MonthlyCalendarPageState extends State<MonthlyCalendarPage>
 
   // ── no location ───────────────────────────────────────────────────────────
 
-  Widget _buildNoLocation(double sw, theme, l10n) {
+  Widget _buildNoLocation(double sw, AppThemeOption theme, AppLocalizations l10n) {
     return Container(
       padding: EdgeInsets.all(sw * 0.08),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.04),
+        color: theme.surface,
         borderRadius: BorderRadius.circular(sw * 0.05),
-        border: Border.all(color: Colors.white.withOpacity(0.08)),
+        border: Border.all(color: theme.accent.withOpacity(0.12)),
       ),
       child: Column(
         children: [
           Icon(Icons.location_off_rounded,
-              color: Colors.white.withOpacity(0.3), size: sw * 0.12),
+              color: theme.textLow.withOpacity(0.6), size: sw * 0.12),
           SizedBox(height: sw * 0.03),
           Text(
             'Location not available',
             style: TextStyle(
-              color: Colors.white.withOpacity(0.5),
+              color: theme.textLow,
               fontSize: sw * 0.04,
             ),
           ),
@@ -540,9 +540,9 @@ class _MonthlyCalendarPageState extends State<MonthlyCalendarPage>
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.04),
+        color: theme.surface,
         borderRadius: BorderRadius.circular(sw * 0.055),
-        border: Border.all(color: Colors.white.withOpacity(0.08), width: 1),
+        border: Border.all(color: theme.accent.withOpacity(0.12), width: 1),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.3),
@@ -560,8 +560,8 @@ class _MonthlyCalendarPageState extends State<MonthlyCalendarPage>
               vertical: sw * 0.045,
             ),
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF00A86B), Color(0xFF005F3B)],
+              gradient: LinearGradient(
+                colors: [theme.accent, theme.primary],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -649,10 +649,10 @@ class _MonthlyCalendarPageState extends State<MonthlyCalendarPage>
                 final isLast = idx == prayers.length - 1;
                 return Column(
                   children: [
-                    _buildPrayerRow(sw, p),
+                    _buildPrayerRow(sw, p, theme),
                     if (!isLast)
                       Divider(
-                        color: Colors.white.withOpacity(0.06),
+                        color: theme.textLow.withOpacity(0.12),
                         height: 1,
                         thickness: 1,
                       ),
@@ -667,7 +667,7 @@ class _MonthlyCalendarPageState extends State<MonthlyCalendarPage>
     );
   }
 
-  Widget _buildPrayerRow(double sw, _PrayerEntry p ) {
+  Widget _buildPrayerRow(double sw, _PrayerEntry p, AppThemeOption theme) {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: sw * 0.032),
       child: Row(
@@ -686,7 +686,7 @@ class _MonthlyCalendarPageState extends State<MonthlyCalendarPage>
             child: Text(
               p.name,
               style: TextStyle(
-                color: Colors.white.withOpacity(0.85),
+                color: theme.textHigh.withOpacity(0.85),
                 fontSize: sw * 0.038,
                 fontWeight: FontWeight.w500,
               ),
@@ -695,7 +695,7 @@ class _MonthlyCalendarPageState extends State<MonthlyCalendarPage>
           Text(
             p.time,
             style: TextStyle(
-              color: Colors.white,
+              color: theme.textHigh,
               fontSize: sw * 0.036,
               fontWeight: FontWeight.w700,
               letterSpacing: -0.2,

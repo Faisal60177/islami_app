@@ -7,6 +7,7 @@ import 'duas_detail_page.dart';
 import 'package:muslim_app/settings/l10n/app_localizations.dart';
 import 'package:muslim_app/settings/cubit/settings_cubit.dart';
 import 'package:muslim_app/Duas/cubit/duas_state.dart';
+import 'package:muslim_app/settings/theme/app_themes.dart';
 
 class BookmarkedDuasPage extends StatefulWidget {
   final String searchQuery;
@@ -95,13 +96,14 @@ class _BookmarkedDuasPageState extends State<BookmarkedDuasPage>
     final isRtl = LanguageUtils.isRtl(cubit.currentLanguageCode);
     final w = MediaQuery.of(context).size.width;
     final h = MediaQuery.of(context).size.height;
-    final langCode = context.read<SettingsCubit>().state.languageCode;
-    final l10n = AppLocalizations(langCode);
+    final settings = context.watch<SettingsCubit>().state;
+    final l10n = AppLocalizations(settings.languageCode);
+    final theme = getThemeById(settings.themeMode);
 
     if (isLoading) {
-      return const Center(
+      return Center(
         child: CircularProgressIndicator(
-            color: Color(0xFF0D6E6E), strokeWidth: 3),
+            color: theme.accent, strokeWidth: 3),
       );
     }
 
@@ -111,6 +113,7 @@ class _BookmarkedDuasPageState extends State<BookmarkedDuasPage>
         title: l10n.noBookmarkYet,
         subtitle: l10n.noBookmarkDesc,
         iconColor: const Color(0xFF64B5F6),
+        theme: theme,
       );
     }
 
@@ -119,14 +122,15 @@ class _BookmarkedDuasPageState extends State<BookmarkedDuasPage>
         icon: Icons.search_off_rounded,
         title: l10n.noResultsFound,
         subtitle: l10n.tryDifferentSearch,
-        iconColor: Colors.grey[400]!,
+        iconColor: theme.textLow,
+        theme: theme,
       );
     }
 
     return Directionality(
       textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
       child: RefreshIndicator(
-        color: const Color(0xFF0D6E6E),
+        color: theme.accent,
         onRefresh: loadBookmarks,
         child: CustomScrollView(
           physics: const ClampingScrollPhysics(),
@@ -171,6 +175,7 @@ class _BookmarkedDuasPageState extends State<BookmarkedDuasPage>
                     return _BookmarkCard(
                       dua: dua,
                       isRtl: isRtl,
+                      theme: theme,
                       onTap: () async {
                         await Navigator.push(
                           context,
@@ -199,12 +204,14 @@ class _BookmarkedDuasPageState extends State<BookmarkedDuasPage>
 class _BookmarkCard extends StatelessWidget {
   final DuasModel dua;
   final bool isRtl;
+  final AppThemeOption theme;
   final VoidCallback onTap;
   final VoidCallback onRemoveBookmark; // ── ADD ──
 
   const _BookmarkCard({
     required this.dua,
     required this.isRtl,
+    required this.theme,
     required this.onTap,
     required this.onRemoveBookmark, // ── ADD ──
   });
@@ -222,7 +229,7 @@ class _BookmarkCard extends StatelessWidget {
     return Container(
       margin: EdgeInsets.only(bottom: h * 0.014),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
             color: const Color(0xFF64B5F6).withOpacity(0.2), width: 1),
@@ -278,7 +285,7 @@ class _BookmarkCard extends StatelessWidget {
                           style: TextStyle(
                             fontSize: w * 0.042,
                             fontWeight: FontWeight.w600,
-                            color: const Color(0xFF1A2B2B),
+                            color: theme.textHigh,
                             height: 1.4,
                             fontFamily: 'Amiri',
                           ),
@@ -291,7 +298,7 @@ class _BookmarkCard extends StatelessWidget {
                           isRtl ? TextAlign.right : TextAlign.left,
                           style: TextStyle(
                             fontSize: w * 0.032,
-                            color: Colors.black54,
+                            color: theme.textLow,
                           ),
                         ),
                       SizedBox(height: h * 0.006),
@@ -299,14 +306,14 @@ class _BookmarkCard extends StatelessWidget {
                         padding: EdgeInsets.symmetric(
                             horizontal: w * 0.025, vertical: h * 0.004),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF0D6E6E).withOpacity(0.09),
+                          color: theme.accent.withOpacity(0.09),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
                           dua.categoryTitle,
                           style: TextStyle(
                               fontSize: w * 0.03,
-                              color: const Color(0xFF0D6E6E),
+                              color: theme.accent,
                               fontWeight: FontWeight.w600),
                         ),
                       ),
@@ -315,7 +322,7 @@ class _BookmarkCard extends StatelessWidget {
                 ),
                 SizedBox(width: w * 0.02),
                 Icon(Icons.chevron_right_rounded,
-                    color: Colors.grey[350], size: w * 0.055),
+                    color: theme.textLow.withOpacity(0.5), size: w * 0.055),
               ],
             ),
           ),
@@ -335,12 +342,14 @@ class _EmptyState extends StatelessWidget {
   final String title;
   final String subtitle;
   final Color iconColor;
+  final AppThemeOption theme;
 
   const _EmptyState({
     required this.icon,
     required this.title,
     required this.subtitle,
     required this.iconColor,
+    required this.theme,
   });
 
   @override
@@ -365,13 +374,13 @@ class _EmptyState extends StatelessWidget {
                 style: TextStyle(
                     fontSize: w * 0.048,
                     fontWeight: FontWeight.w700,
-                    color: const Color(0xFF1A2B2B)),
+                    color: theme.textHigh),
                 textAlign: TextAlign.center),
             SizedBox(height: h * 0.01),
             Text(subtitle,
                 style: TextStyle(
                     fontSize: w * 0.036,
-                    color: Colors.grey[400],
+                    color: theme.textLow,
                     height: 1.5),
                 textAlign: TextAlign.center),
           ],

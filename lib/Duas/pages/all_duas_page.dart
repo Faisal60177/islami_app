@@ -8,6 +8,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:muslim_app/settings/l10n/app_localizations.dart';
 import 'package:muslim_app/settings/cubit/settings_cubit.dart';
 import 'package:muslim_app/settings/cubit/settings_state.dart';
+import 'package:muslim_app/settings/theme/app_themes.dart';
 
 class AllDuasPage extends StatefulWidget {
   final String searchQuery;
@@ -70,6 +71,10 @@ class _AllDuasPageState extends State<AllDuasPage>
     final w = MediaQuery.of(context).size.width;
     final h = MediaQuery.of(context).size.height;
 
+    // ✅ theme
+    final settings = context.watch<SettingsCubit>().state;
+    final theme = getThemeById(settings.themeMode);
+
     if (isLoading) {
       return Center(
         child: Column(
@@ -78,15 +83,15 @@ class _AllDuasPageState extends State<AllDuasPage>
             SizedBox(
               width: w * 0.12,
               height: w * 0.12,
-              child: const CircularProgressIndicator(
-                color: Color(0xFF0D6E6E),
+              child: CircularProgressIndicator(
+                color: theme.accent,
                 strokeWidth: 3,
               ),
             ),
             SizedBox(height: h * 0.02),
             Text(
               'Loading duas...',
-              style: TextStyle(color: Colors.grey[500], fontSize: w * 0.038),
+              style: TextStyle(color: theme.textLow, fontSize: w * 0.038),
             ),
           ],
         ),
@@ -99,12 +104,12 @@ class _AllDuasPageState extends State<AllDuasPage>
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(Icons.search_off_rounded,
-                size: w * 0.15, color: Colors.grey[300]),
+                size: w * 0.15, color: theme.textLow.withOpacity(0.4)),
             SizedBox(height: h * 0.02),
             Text(
               'No duas found',
               style: TextStyle(
-                color: Colors.grey[400],
+                color: theme.textLow,
                 fontSize: w * 0.045,
                 fontWeight: FontWeight.w500,
               ),
@@ -127,6 +132,7 @@ class _AllDuasPageState extends State<AllDuasPage>
             dua: dua,
             index: index,
             isRtl: isRtl,
+            theme: theme,
             onTap: () async {
               await Navigator.push(
                 context,
@@ -146,12 +152,14 @@ class _DuaCard extends StatefulWidget {
   final DuasModel dua;
   final int index;
   final bool isRtl;
+  final AppThemeOption theme;
   final VoidCallback onTap;
 
   const _DuaCard({
     required this.dua,
     required this.index,
     required this.isRtl,
+    required this.theme,
     required this.onTap,
   });
 
@@ -181,6 +189,7 @@ class _DuaCardState extends State<_DuaCard> {
     final dua   = widget.dua;
     final index = widget.index;
     final isRtl = widget.isRtl;
+    final theme = widget.theme;
     final w = MediaQuery.of(context).size.width;
     final h = MediaQuery.of(context).size.height;
 
@@ -195,11 +204,11 @@ class _DuaCardState extends State<_DuaCard> {
     return Container(
       margin: EdgeInsets.only(bottom: h * 0.014),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.055),
+            color: Colors.black.withOpacity(theme.isDark ? 0.20 : 0.055),
             blurRadius: 12,
             offset: const Offset(0, 3),
           ),
@@ -210,8 +219,8 @@ class _DuaCardState extends State<_DuaCard> {
         borderRadius: BorderRadius.circular(18),
         child: InkWell(
           borderRadius: BorderRadius.circular(18),
-          splashColor: const Color(0xFF0D6E6E).withOpacity(0.08),
-          highlightColor: const Color(0xFF0D6E6E).withOpacity(0.04),
+          splashColor: theme.accent.withOpacity(0.08),
+          highlightColor: theme.accent.withOpacity(0.04),
           onTap: widget.onTap,
           child: Padding(
             padding: EdgeInsets.symmetric(
@@ -262,7 +271,7 @@ class _DuaCardState extends State<_DuaCard> {
                           style: TextStyle(
                             fontSize: w * 0.042,
                             fontWeight: FontWeight.w600,
-                            color: const Color(0xFF1A2B2B),
+                            color: theme.textHigh,
                             height: 1.4,
                             fontFamily: 'Amiri',
                           ),
@@ -274,7 +283,7 @@ class _DuaCardState extends State<_DuaCard> {
                           textAlign: isRtl ? TextAlign.right : TextAlign.left,
                           style: TextStyle(
                             fontSize: w * 0.032,
-                            color: Colors.black54,
+                            color: theme.textLow,
                           ),
                         ),
                       SizedBox(height: h * 0.006),
@@ -287,7 +296,7 @@ class _DuaCardState extends State<_DuaCard> {
                               vertical: h * 0.004,
                             ),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF0D6E6E).withOpacity(0.09),
+                              color: theme.accent.withOpacity(0.09),
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: Row(
@@ -295,13 +304,13 @@ class _DuaCardState extends State<_DuaCard> {
                               children: [
                                 Icon(Icons.label_rounded,
                                     size: w * 0.03,
-                                    color: const Color(0xFF0D6E6E)),
+                                    color: theme.accent),
                                 SizedBox(width: w * 0.01),
                                 Text(
                                   dua.categoryTitle,
                                   style: TextStyle(
                                     fontSize: w * 0.03,
-                                    color: const Color(0xFF0D6E6E),
+                                    color: theme.accent,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
@@ -319,7 +328,7 @@ class _DuaCardState extends State<_DuaCard> {
                                       : Icons.favorite_outline_rounded,
                                   color: dua.isFavorite
                                       ? const Color(0xFFE57373)
-                                      : Colors.grey[350],
+                                      : theme.textLow.withOpacity(0.5),
                                   size: w * 0.05,
                                 ),
                               ),
@@ -332,7 +341,7 @@ class _DuaCardState extends State<_DuaCard> {
                                       : Icons.bookmark_outline_rounded,
                                   color: dua.isBookmarked
                                       ? const Color(0xFF64B5F6)
-                                      : Colors.grey[350],
+                                      : theme.textLow.withOpacity(0.5),
                                   size: w * 0.05,
                                 ),
                               ),
@@ -345,7 +354,7 @@ class _DuaCardState extends State<_DuaCard> {
                 ),
                 SizedBox(width: w * 0.02),
                 Icon(Icons.chevron_right_rounded,
-                    color: Colors.grey[350], size: w * 0.055),
+                    color: theme.textLow.withOpacity(0.5), size: w * 0.055),
               ],
             ),
           ),

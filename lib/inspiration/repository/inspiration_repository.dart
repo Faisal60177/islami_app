@@ -39,6 +39,7 @@ Future<void> syncCategoriesFromFirestore() async {
 try {
     final snapshot =
     await _firestore.collection('inspiration_categories').get();
+    if (snapshot.docs.isEmpty) return;
     final db = await dbHelper.database;
     final List<int> firestoreIds = [];
 
@@ -115,6 +116,7 @@ Future<void> syncInspirationsFromFirestore() async {
 try {
     final snapshot =
     await _firestore.collection('inspirations').get();
+    if (snapshot.docs.isEmpty) return;
     final db = await dbHelper.database;
     final List<int> firestoreIds = [];
 

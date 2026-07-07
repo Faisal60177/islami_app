@@ -38,6 +38,7 @@ class MasailRepository {
 Future<void> syncCategoriesFromFirestore() async {
 try {
     final snapshot = await _firestore.collection('categories_masail').get();
+    if (snapshot.docs.isEmpty) return;
     final db = await dbHelper.database;
     final List<int> firestoreIds = [];
 
@@ -114,6 +115,7 @@ try {
 Future<void> syncMasailFromFirestore() async {
 try {
     final snapshot = await _firestore.collection('masail').get();
+    if (snapshot.docs.isEmpty) return;
     final db = await dbHelper.database;
     final List<int> firestoreIds = [];
 

@@ -1,8 +1,12 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:vibration/vibration.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:muslim_app/settings/cubit/settings_cubit.dart';
+import 'package:muslim_app/settings/cubit/settings_state.dart';
+import 'package:muslim_app/settings/theme/app_themes.dart';
 
 // ── Models ────────────────────────────────────────────────────────────────────
 
@@ -80,14 +84,11 @@ class _TasbihPageState extends State<TasbihPage>
   List<_HistoryEntry> _history = [];
   bool _justCompleted = false;
 
-  // ── colors ─────────────────────────────────────────────────────────────────
-  static const Color _bg        = Color(0xFF013220);
-  static const Color _bgDark    = Color(0xFF012818);
-  static const Color _green     = Color(0xFF74C365);
-  static const Color _teal      = Color(0xFF9FE1CB);
-  static const Color _darkGreen = Color(0xFF1a5c35);
-  static const Color _red       = Color(0xFFE24B4A);
-  static const Color _gold      = Color(0xFFFFD700);
+  // ── theme (updated every build) ─────────────────────────────────────────────
+  // Semantic colors kept independent of app theme:
+  static const Color _red  = Color(0xFFE24B4A);
+  static const Color _gold = Color(0xFFFFD700);
+  late AppThemeOption _theme;
 
   // ── init ───────────────────────────────────────────────────────────────────
   @override
@@ -221,7 +222,7 @@ class _TasbihPageState extends State<TasbihPage>
       context: context,
       barrierColor: Colors.black54,
       builder: (_) => Dialog(
-        backgroundColor: _bgDark,
+        backgroundColor: _theme.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         child: Padding(
           padding: const EdgeInsets.all(28),
@@ -230,10 +231,10 @@ class _TasbihPageState extends State<TasbihPage>
             children: [
               const Text('🎉', style: TextStyle(fontSize: 48)),
               const SizedBox(height: 12),
-              const Text(
+              Text(
                 'Round Complete!',
                 style: TextStyle(
-                    color: Colors.white,
+                    color: _theme.textHigh,
                     fontSize: 20,
                     fontWeight: FontWeight.w700),
               ),
@@ -241,7 +242,7 @@ class _TasbihPageState extends State<TasbihPage>
               Text(
                 '$_target × $_rounds = ${_target * _rounds} ${_dhikrOptions[_dhikrIndex]}',
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: _teal, fontSize: 14),
+                style: TextStyle(color: _theme.textLow, fontSize: 14),
               ),
               const SizedBox(height: 20),
               Row(
@@ -255,13 +256,13 @@ class _TasbihPageState extends State<TasbihPage>
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         decoration: BoxDecoration(
-                          border: Border.all(color: _green),
+                          border: Border.all(color: _theme.accent),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         alignment: Alignment.center,
                         child: Text('Continue',
                             style: TextStyle(
-                                color: _green, fontWeight: FontWeight.w600)),
+                                color: _theme.accent, fontWeight: FontWeight.w600)),
                       ),
                     ),
                   ),
@@ -276,13 +277,13 @@ class _TasbihPageState extends State<TasbihPage>
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         decoration: BoxDecoration(
-                          color: _green,
+                          color: _theme.accent,
                           borderRadius: BorderRadius.circular(10),
                         ),
                         alignment: Alignment.center,
-                        child: const Text('Finish',
+                        child: Text('Finish',
                             style: TextStyle(
-                                color: _bg, fontWeight: FontWeight.w700)),
+                                color: _theme.background, fontWeight: FontWeight.w700)),
                       ),
                     ),
                   ),
@@ -377,7 +378,7 @@ class _TasbihPageState extends State<TasbihPage>
 
   Color get _modeColor {
     switch (_mode) {
-      case ClickMode.sound:   return _green;
+      case ClickMode.sound:   return _theme.accent;
       case ClickMode.vibrate: return _gold;
       case ClickMode.mute:    return _red;
     }
@@ -394,7 +395,7 @@ class _TasbihPageState extends State<TasbihPage>
 
     showModalBottomSheet(
       context: context,
-      backgroundColor: _bgDark,
+      backgroundColor: _theme.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -409,23 +410,23 @@ class _TasbihPageState extends State<TasbihPage>
               child: Container(
                 width: 36, height: 4,
                 decoration: BoxDecoration(
-                  color: _darkGreen,
+                  color: _theme.cardColor,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
             ),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               'Feedback Mode',
               style: TextStyle(
-                  color: Colors.white,
+                  color: _theme.textHigh,
                   fontSize: 16,
                   fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 4),
-            const Text(
+            Text(
               'Choose how the counter responds when you tap',
-              style: TextStyle(color: _teal, fontSize: 12),
+              style: TextStyle(color: _theme.textLow, fontSize: 12),
             ),
             const SizedBox(height: 16),
             ...modes.map((m) {
@@ -441,10 +442,10 @@ class _TasbihPageState extends State<TasbihPage>
                   padding: const EdgeInsets.symmetric(
                       horizontal: 16, vertical: 14),
                   decoration: BoxDecoration(
-                    color: active ? _darkGreen : _bg,
+                    color: active ? _theme.cardColor : _theme.background,
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: active ? _green : _darkGreen,
+                      color: active ? _theme.accent : _theme.cardColor,
                       width: active ? 1.5 : 1,
                     ),
                   ),
@@ -454,12 +455,12 @@ class _TasbihPageState extends State<TasbihPage>
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
                           color: active
-                              ? _green.withOpacity(0.2)
-                              : _darkGreen,
+                              ? _theme.accent.withOpacity(0.2)
+                              : _theme.cardColor,
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Icon(m.$2,
-                            color: active ? _green : _teal, size: 20),
+                            color: active ? _theme.accent : _theme.textLow, size: 20),
                       ),
                       const SizedBox(width: 14),
                       Expanded(
@@ -468,20 +469,20 @@ class _TasbihPageState extends State<TasbihPage>
                           children: [
                             Text(m.$3,
                                 style: TextStyle(
-                                    color: active ? Colors.white : _teal,
+                                    color: active ? _theme.textHigh : _theme.textLow,
                                     fontWeight: active
                                         ? FontWeight.w700
                                         : FontWeight.normal,
                                     fontSize: 14)),
                             Text(m.$4,
-                                style: const TextStyle(
-                                    color: _teal, fontSize: 11)),
+                                style: TextStyle(
+                                    color: _theme.textLow, fontSize: 11)),
                           ],
                         ),
                       ),
                       if (active)
                         Icon(Icons.check_circle_rounded,
-                            color: _green, size: 20),
+                            color: _theme.accent, size: 20),
                     ],
                   ),
                 ),
@@ -497,105 +498,110 @@ class _TasbihPageState extends State<TasbihPage>
 
   @override
   Widget build(BuildContext context) {
-    final sw = MediaQuery.of(context).size.width;
-    final sh = MediaQuery.of(context).size.height;
+    return BlocBuilder<SettingsCubit, SettingsState>(
+      builder: (context, settings) {
+        _theme = getThemeById(settings.themeMode);
+        final sw = MediaQuery.of(context).size.width;
+        final sh = MediaQuery.of(context).size.height;
 
-    return Scaffold(
-      backgroundColor: _bg,
-      appBar: AppBar(
-        backgroundColor: _bg,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () {
-            _persistCurrentSession();
-            Navigator.pop(context);
-          },
-        ),
-        title: const Text(
-          'Tasbih Counter',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
-        ),
-        actions: [
-          // ── Feedback mode pill (tappable) ────────────────────────────────
-          GestureDetector(
-            onTap: _showModeSheet,
-            child: Container(
-              margin: const EdgeInsets.only(right: 6),
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              decoration: BoxDecoration(
-                color: _modeColor.withOpacity(0.12),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: _modeColor.withOpacity(0.4)),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(_modeIcon, color: _modeColor, size: 15),
-                  const SizedBox(width: 5),
-                  Text(
-                    _modeLabel,
-                    style: TextStyle(
-                      color: _modeColor,
-                      fontSize: sw * 0.028,
-                      fontWeight: FontWeight.w600,
-                    ),
+        return Scaffold(
+          backgroundColor: _theme.background,
+          appBar: AppBar(
+            backgroundColor: _theme.background,
+            elevation: 0,
+            leading: IconButton(
+              icon: Icon(Icons.arrow_back, color: _theme.textHigh),
+              onPressed: () {
+                _persistCurrentSession();
+                Navigator.pop(context);
+              },
+            ),
+            title: Text(
+              'Tasbih Counter',
+              style: TextStyle(color: _theme.textHigh, fontWeight: FontWeight.w600),
+            ),
+            actions: [
+              // ── Feedback mode pill (tappable) ────────────────────────────────
+              GestureDetector(
+                onTap: _showModeSheet,
+                child: Container(
+                  margin: const EdgeInsets.only(right: 6),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: _modeColor.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: _modeColor.withOpacity(0.4)),
                   ),
-                ],
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(_modeIcon, color: _modeColor, size: 15),
+                      const SizedBox(width: 5),
+                      Text(
+                        _modeLabel,
+                        style: TextStyle(
+                          color: _modeColor,
+                          fontSize: sw * 0.028,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
+
+              // ── Grand total chip ─────────────────────────────────────────────
+              Container(
+                margin: const EdgeInsets.only(right: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: _theme.cardColor,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  'Total: $_totalEver',
+                  style: TextStyle(
+                      color: _theme.textLow,
+                      fontSize: sw * 0.028,
+                      fontWeight: FontWeight.w600),
+                ),
+              ),
+            ],
+          ),
+          body: SingleChildScrollView(
+            padding: EdgeInsets.symmetric(
+                horizontal: sw * 0.05, vertical: sw * 0.03),
+            child: Column(
+              children: [
+                // ── Dhikr selector ─────────────────────────────────────────────
+                _buildDhikrSelector(sw),
+                SizedBox(height: sh * 0.025),
+
+                // ── Progress ring ───────────────────────────────────────────────
+                _buildProgressRing(sw),
+                SizedBox(height: sh * 0.02),
+
+                // ── Stats row ───────────────────────────────────────────────────
+                _buildStatsRow(sw),
+                SizedBox(height: sh * 0.018),
+
+                // ── Target presets ──────────────────────────────────────────────
+                _buildTargetRow(sw),
+                SizedBox(height: sh * 0.018),
+
+                // ── Buttons ─────────────────────────────────────────────────────
+                _buildButtons(sw),
+                SizedBox(height: sh * 0.022),
+
+                // ── History ─────────────────────────────────────────────────────
+                if (_history.isNotEmpty) _buildHistory(sw),
+
+                SizedBox(height: sh * 0.02),
+              ],
             ),
           ),
-
-          // ── Grand total chip ─────────────────────────────────────────────
-          Container(
-            margin: const EdgeInsets.only(right: 12),
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            decoration: BoxDecoration(
-              color: _darkGreen,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Text(
-              'Total: $_totalEver',
-              style: TextStyle(
-                  color: _teal,
-                  fontSize: sw * 0.028,
-                  fontWeight: FontWeight.w600),
-            ),
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.symmetric(
-            horizontal: sw * 0.05, vertical: sw * 0.03),
-        child: Column(
-          children: [
-            // ── Dhikr selector ─────────────────────────────────────────────
-            _buildDhikrSelector(sw),
-            SizedBox(height: sh * 0.025),
-
-            // ── Progress ring ───────────────────────────────────────────────
-            _buildProgressRing(sw),
-            SizedBox(height: sh * 0.02),
-
-            // ── Stats row ───────────────────────────────────────────────────
-            _buildStatsRow(sw),
-            SizedBox(height: sh * 0.018),
-
-            // ── Target presets ──────────────────────────────────────────────
-            _buildTargetRow(sw),
-            SizedBox(height: sh * 0.018),
-
-            // ── Buttons ─────────────────────────────────────────────────────
-            _buildButtons(sw),
-            SizedBox(height: sh * 0.022),
-
-            // ── History ─────────────────────────────────────────────────────
-            if (_history.isNotEmpty) _buildHistory(sw),
-
-            SizedBox(height: sh * 0.02),
-          ],
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -625,15 +631,15 @@ class _TasbihPageState extends State<TasbihPage>
               padding: EdgeInsets.symmetric(
                   horizontal: sw * 0.04, vertical: sw * 0.018),
               decoration: BoxDecoration(
-                color: active ? _green : _bgDark,
+                color: active ? _theme.accent : _theme.surface,
                 border: Border.all(
-                    color: active ? _green : _darkGreen, width: 1.5),
+                    color: active ? _theme.accent : _theme.cardColor, width: 1.5),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
                 _dhikrOptions[i],
                 style: TextStyle(
-                  color: active ? _bg : _teal,
+                  color: active ? _theme.background : _theme.textLow,
                   fontSize: sw * 0.032,
                   fontWeight: active ? FontWeight.w700 : FontWeight.normal,
                 ),
@@ -650,7 +656,6 @@ class _TasbihPageState extends State<TasbihPage>
   Widget _buildProgressRing(double sw) {
     final size   = sw * 0.65;
     final stroke = size * 0.065;
-    final radius = (size - stroke) / 2;
 
     return GestureDetector(
       onTap: _increment,
@@ -663,7 +668,7 @@ class _TasbihPageState extends State<TasbihPage>
             height: size + 16,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              border: Border.all(color: _darkGreen, width: 1),
+              border: Border.all(color: _theme.cardColor, width: 1),
             ),
           ),
 
@@ -674,8 +679,8 @@ class _TasbihPageState extends State<TasbihPage>
             child: CustomPaint(
               painter: _RingPainter(
                 progress: _anim.value,
-                trackColor: _darkGreen,
-                progressColor: _justCompleted ? _gold : _green,
+                trackColor: _theme.cardColor,
+                progressColor: _justCompleted ? _gold : _theme.accent,
                 strokeWidth: stroke,
               ),
             ),
@@ -688,7 +693,7 @@ class _TasbihPageState extends State<TasbihPage>
               Text(
                 '$_current',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: _theme.textHigh,
                   fontSize: size * 0.26,
                   fontWeight: FontWeight.w800,
                   height: 1,
@@ -696,13 +701,13 @@ class _TasbihPageState extends State<TasbihPage>
               ),
               Text(
                 'of $_target',
-                style: TextStyle(color: _teal, fontSize: size * 0.08),
+                style: TextStyle(color: _theme.textLow, fontSize: size * 0.08),
               ),
               SizedBox(height: size * 0.02),
               Text(
                 _dhikrOptions[_dhikrIndex],
                 style: TextStyle(
-                    color: _green,
+                    color: _theme.accent,
                     fontSize: size * 0.07,
                     fontWeight: FontWeight.w500),
               ),
@@ -718,7 +723,7 @@ class _TasbihPageState extends State<TasbihPage>
                   child: Text(
                     '$_rounds× completed',
                     style: TextStyle(
-                        color: _bg,
+                        color: _theme.background,
                         fontSize: size * 0.065,
                         fontWeight: FontWeight.w700),
                   ),
@@ -733,13 +738,13 @@ class _TasbihPageState extends State<TasbihPage>
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
               decoration: BoxDecoration(
-                color: _bgDark,
+                color: _theme.surface,
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: _darkGreen),
+                border: Border.all(color: _theme.cardColor),
               ),
               child: Text(
                 'Tap ring to count',
-                style: TextStyle(color: _teal, fontSize: sw * 0.028),
+                style: TextStyle(color: _theme.textLow, fontSize: sw * 0.028),
               ),
             ),
           ),
@@ -765,23 +770,22 @@ class _TasbihPageState extends State<TasbihPage>
           padding: EdgeInsets.symmetric(
               vertical: sw * 0.03, horizontal: sw * 0.02),
           decoration: BoxDecoration(
-            color: _green,
+            color: _theme.accent,
             borderRadius: BorderRadius.circular(sw * 0.03),
           ),
           child: Column(
             children: [
               Text(
                 item.$2,
-                style: TextStyle(
+                style: const TextStyle(
                   color: Colors.white,
-                  fontSize: sw * 0.05,
-                  fontWeight: FontWeight.w700,
-                ),
+                  fontSize: 0, // overridden below
+                ).copyWith(fontSize: sw * 0.05, fontWeight: FontWeight.w700),
               ),
               Text(
                 item.$1,
                 style: TextStyle(
-                    color: const Color(0xFFd0ffd0),
+                    color: Colors.white.withOpacity(0.85),
                     fontSize: sw * 0.026),
               ),
             ],
@@ -799,13 +803,13 @@ class _TasbihPageState extends State<TasbihPage>
       padding: EdgeInsets.symmetric(
           horizontal: sw * 0.04, vertical: sw * 0.03),
       decoration: BoxDecoration(
-        color: _bgDark,
+        color: _theme.surface,
         borderRadius: BorderRadius.circular(sw * 0.03),
       ),
       child: Row(
         children: [
           Text('Target',
-              style: TextStyle(color: _teal, fontSize: sw * 0.038)),
+              style: TextStyle(color: _theme.textLow, fontSize: sw * 0.038)),
           const Spacer(),
           ..._presets.map((p) {
             final active = _target == p;
@@ -824,13 +828,13 @@ class _TasbihPageState extends State<TasbihPage>
                 padding: EdgeInsets.symmetric(
                     horizontal: sw * 0.035, vertical: sw * 0.015),
                 decoration: BoxDecoration(
-                  color: active ? _green : _darkGreen,
+                  color: active ? _theme.accent : _theme.cardColor,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
                   '$p',
                   style: TextStyle(
-                    color: active ? _bg : _teal,
+                    color: active ? _theme.background : _theme.textLow,
                     fontSize: sw * 0.032,
                     fontWeight:
                     active ? FontWeight.w700 : FontWeight.normal,
@@ -847,11 +851,11 @@ class _TasbihPageState extends State<TasbihPage>
               padding: EdgeInsets.symmetric(
                   horizontal: sw * 0.035, vertical: sw * 0.015),
               decoration: BoxDecoration(
-                color: _darkGreen,
+                color: _theme.cardColor,
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: _green.withOpacity(0.4)),
+                border: Border.all(color: _theme.accent.withOpacity(0.4)),
               ),
-              child: Icon(Icons.edit, color: _teal, size: sw * 0.04),
+              child: Icon(Icons.edit, color: _theme.textLow, size: sw * 0.04),
             ),
           ),
         ],
@@ -864,24 +868,24 @@ class _TasbihPageState extends State<TasbihPage>
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        backgroundColor: _bgDark,
+        backgroundColor: _theme.surface,
         shape:
         RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Set custom target',
-            style: TextStyle(color: Colors.white)),
+        title: Text('Set custom target',
+            style: TextStyle(color: _theme.textHigh)),
         content: TextField(
           controller: ctrl,
           keyboardType: TextInputType.number,
-          style: const TextStyle(color: Colors.white),
+          style: TextStyle(color: _theme.textHigh),
           decoration: InputDecoration(
             labelText: 'Count',
-            labelStyle: const TextStyle(color: _teal),
+            labelStyle: TextStyle(color: _theme.textLow),
             enabledBorder: OutlineInputBorder(
-              borderSide: const BorderSide(color: _darkGreen),
+              borderSide: BorderSide(color: _theme.cardColor),
               borderRadius: BorderRadius.circular(8),
             ),
             focusedBorder: OutlineInputBorder(
-              borderSide: const BorderSide(color: _green),
+              borderSide: BorderSide(color: _theme.accent),
               borderRadius: BorderRadius.circular(8),
             ),
           ),
@@ -889,10 +893,10 @@ class _TasbihPageState extends State<TasbihPage>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel', style: TextStyle(color: _teal)),
+            child: Text('Cancel', style: TextStyle(color: _theme.textLow)),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: _green),
+            style: ElevatedButton.styleFrom(backgroundColor: _theme.accent),
             onPressed: () {
               final v = int.tryParse(ctrl.text);
               if (v != null && v > 0) {
@@ -906,7 +910,7 @@ class _TasbihPageState extends State<TasbihPage>
               }
               Navigator.pop(context);
             },
-            child: const Text('Set', style: TextStyle(color: _bg)),
+            child: Text('Set', style: TextStyle(color: _theme.background)),
           ),
         ],
       ),
@@ -956,18 +960,18 @@ class _TasbihPageState extends State<TasbihPage>
             child: Container(
               padding: EdgeInsets.symmetric(vertical: sw * 0.038),
               decoration: BoxDecoration(
-                color: _green,
+                color: _theme.accent,
                 borderRadius: BorderRadius.circular(sw * 0.03),
               ),
               alignment: Alignment.center,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.add_rounded, color: _bg, size: sw * 0.06),
+                  Icon(Icons.add_rounded, color: _theme.background, size: sw * 0.06),
                   const SizedBox(width: 6),
                   Text('Count',
                       style: TextStyle(
-                          color: _bg,
+                          color: _theme.background,
                           fontSize: sw * 0.042,
                           fontWeight: FontWeight.w700)),
                 ],
@@ -985,7 +989,7 @@ class _TasbihPageState extends State<TasbihPage>
     return Container(
       padding: EdgeInsets.all(sw * 0.04),
       decoration: BoxDecoration(
-        color: _bgDark,
+        color: _theme.surface,
         borderRadius: BorderRadius.circular(sw * 0.03),
       ),
       child: Column(
@@ -995,7 +999,7 @@ class _TasbihPageState extends State<TasbihPage>
             children: [
               Text('Session history',
                   style: TextStyle(
-                      color: _teal,
+                      color: _theme.textLow,
                       fontSize: sw * 0.035,
                       fontWeight: FontWeight.w600)),
               const Spacer(),
@@ -1020,19 +1024,19 @@ class _TasbihPageState extends State<TasbihPage>
                   Container(
                     width: sw * 0.02,
                     height: sw * 0.02,
-                    decoration: const BoxDecoration(
-                        color: _green, shape: BoxShape.circle),
+                    decoration: BoxDecoration(
+                        color: _theme.accent, shape: BoxShape.circle),
                   ),
                   SizedBox(width: sw * 0.025),
                   Expanded(
                     child: Text(e.dhikr,
                         style: TextStyle(
-                            color: Colors.white, fontSize: sw * 0.033)),
+                            color: _theme.textHigh, fontSize: sw * 0.033)),
                   ),
                   Text(
                     '${e.target} × ${e.rounds} = $total',
                     style: TextStyle(
-                        color: _teal,
+                        color: _theme.textLow,
                         fontSize: sw * 0.03,
                         fontWeight: FontWeight.w600),
                   ),
@@ -1095,5 +1099,7 @@ class _RingPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_RingPainter old) =>
-      old.progress != progress || old.progressColor != progressColor;
+      old.progress != progress ||
+          old.progressColor != progressColor ||
+          old.trackColor != trackColor;
 }

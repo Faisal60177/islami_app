@@ -34,7 +34,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
         .initialize(serverClientId: _kWebClientId)
         .then((_) {
       _googleSignIn.authenticationEvents.listen((_) {}).onError((_) {});
-      _googleSignIn.attemptLightweightAuthentication();
     }).catchError((_) {});
 
     // Single source of truth — react to Firebase auth changes

@@ -4,6 +4,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../cubit/inspiration_cubit.dart';
 import '../model/inspiration_model.dart';
 import 'inspiration_page.dart' show gradientForIndex;
+import 'package:muslim_app/settings/cubit/settings_cubit.dart';
+import 'package:muslim_app/settings/cubit/settings_state.dart';
+import 'package:muslim_app/settings/theme/app_themes.dart';
 
 // ── Detail Page — Full screen PageView ─────────────────────────
 class InspirationDetailPage extends StatefulWidget {
@@ -43,8 +46,12 @@ class _InspirationDetailPageState extends State<InspirationDetailPage> {
 
   @override
   Widget build(BuildContext context) {
+    // ✅ theme
+    final settings = context.watch<SettingsCubit>().state;
+    final theme = getThemeById(settings.themeMode);
+
     return Scaffold(
-      backgroundColor: const Color(0xFF071A15),
+      backgroundColor: theme.background,
       body: Stack(
         children: [
           // ── Full screen PageView ────────────────────────
@@ -58,6 +65,7 @@ class _InspirationDetailPageState extends State<InspirationDetailPage> {
               return _InspirationFullCard(
                 inspiration: widget.inspirations[index],
                 gradientColors: gradientForIndex(index),
+                theme: theme,
               );
             },
           ),
@@ -110,13 +118,17 @@ class _InspirationDetailPageState extends State<InspirationDetailPage> {
 }
 
 // ── Full Card Widget ────────────────────────────────────────────
+// (background is a fixed decorative gradient — text stays white
+//  for contrast, same treatment as category cards elsewhere)
 class _InspirationFullCard extends StatefulWidget {
   final InspirationModel inspiration;
   final List<Color> gradientColors;
+  final AppThemeOption theme;
 
   const _InspirationFullCard({
     required this.inspiration,
     required this.gradientColors,
+    required this.theme,
   });
 
   @override
@@ -282,6 +294,7 @@ class _InspirationFullCardState extends State<_InspirationFullCard> {
 
   Widget _buildActionRow(BuildContext context) {
     final inspiration = widget.inspiration;
+    final accent = widget.theme.accent;
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -309,7 +322,7 @@ class _InspirationFullCardState extends State<_InspirationFullCard> {
               ? Icons.bookmark_rounded
               : Icons.bookmark_border_rounded,
           color: inspiration.isBookmarked
-              ? const Color(0xFF2ECC71)
+              ? accent
               : Colors.white60,
           label: 'Save',
           onTap: () {

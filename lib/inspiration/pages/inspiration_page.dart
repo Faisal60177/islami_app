@@ -7,8 +7,12 @@ import '../model/inspiration_model.dart';
 import '../model/inspiration_category_model.dart';
 import 'inspiration_detail_page.dart';
 import 'bookmarked_inspirations_page.dart';
+import 'package:muslim_app/settings/cubit/settings_cubit.dart';
+import 'package:muslim_app/settings/cubit/settings_state.dart';
+import 'package:muslim_app/settings/theme/app_themes.dart';
 
 // ── Predefined gradient colors per category index ──────────────
+// (fixed, decorative — independent of app theme, same as category cards)
 const List<List<Color>> kCategoryGradients = [
   [Color(0xFF0D3B35), Color(0xFF1A6B5A)],
   [Color(0xFF1A1A4E), Color(0xFF2D2D8F)],
@@ -67,20 +71,24 @@ class _InspirationPageState extends State<InspirationPage>
 
   @override
   Widget build(BuildContext context) {
+    // ✅ theme
+    final settings = context.watch<SettingsCubit>().state;
+    final theme = getThemeById(settings.themeMode);
+
     return Scaffold(
-      backgroundColor: const Color(0xFF071A15),
+      backgroundColor: theme.background,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF071A15),
+        backgroundColor: theme.surface,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded,
-              color: Colors.white, size: 20),
+          icon: Icon(Icons.arrow_back_ios_new_rounded,
+              color: theme.textHigh, size: 20),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
+        title: Text(
           'Inspiration',
           style: TextStyle(
-            color:      Colors.white,
+            color:      theme.textHigh,
             fontSize:   20,
             fontWeight: FontWeight.w600,
             letterSpacing: 0.3,
@@ -88,8 +96,8 @@ class _InspirationPageState extends State<InspirationPage>
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.bookmark_border_rounded,
-                color: Colors.white, size: 24),
+            icon: Icon(Icons.bookmark_border_rounded,
+                color: theme.textHigh, size: 24),
             onPressed: () {
               // ── Navigate to dedicated bookmarks page ───────────
               Navigator.push(
@@ -128,9 +136,9 @@ class _InspirationPageState extends State<InspirationPage>
         builder: (context, state) {
           return Column(
             children: [
-              _buildCategoryTabs(),
+              _buildCategoryTabs(theme),
               const SizedBox(height: 12),
-              Expanded(child: _buildBody(state)),
+              Expanded(child: _buildBody(state, theme)),
             ],
           );
         },
@@ -138,7 +146,7 @@ class _InspirationPageState extends State<InspirationPage>
     );
   }
 
-  Widget _buildCategoryTabs() {
+  Widget _buildCategoryTabs(AppThemeOption theme) {
     final allCategories = [
       InspirationCategoryModel(
           categoryId: -1, categoryTitle: 'All', categoryIcon: ''),
@@ -163,13 +171,13 @@ class _InspirationPageState extends State<InspirationPage>
                   horizontal: 20, vertical: 8),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? Colors.white
-                    : const Color(0xFF132E25),
+                    ? theme.accent
+                    : theme.cardColor,
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
                   color: isSelected
-                      ? Colors.white
-                      : const Color(0xFF1E4535),
+                      ? theme.accent
+                      : theme.accent.withOpacity(0.2),
                   width: 1,
                 ),
               ),
@@ -177,8 +185,8 @@ class _InspirationPageState extends State<InspirationPage>
                 cat.categoryTitle,
                 style: TextStyle(
                   color: isSelected
-                      ? const Color(0xFF071A15)
-                      : Colors.white70,
+                      ? Colors.white
+                      : theme.textLow,
                   fontSize:   13,
                   fontWeight: isSelected
                       ? FontWeight.w700
@@ -193,26 +201,26 @@ class _InspirationPageState extends State<InspirationPage>
     );
   }
 
-  Widget _buildBody(InspirationState state) {
+  Widget _buildBody(InspirationState state, AppThemeOption theme) {
     if (state is InspirationLoading) {
-      return const Center(
+      return Center(
         child: CircularProgressIndicator(
-            color: Color(0xFF2ECC71), strokeWidth: 2),
+            color: theme.accent, strokeWidth: 2),
       );
     }
 
     if (state is InspirationError) {
       return Center(
         child: Text(state.message,
-            style: const TextStyle(color: Colors.white54)),
+            style: TextStyle(color: theme.textLow)),
       );
     }
 
     if (state is InspirationLoaded) {
       if (state.inspirations.isEmpty) {
-        return const Center(
+        return Center(
           child: Text('No inspirations found.',
-              style: TextStyle(color: Colors.white38, fontSize: 14)),
+              style: TextStyle(color: theme.textLow, fontSize: 14)),
         );
       }
       return _buildGrid(state.inspirations);
@@ -251,6 +259,8 @@ class _InspirationPageState extends State<InspirationPage>
 }
 
 // ── Inspiration Card ────────────────────────────────────────────
+// (background is a fixed decorative gradient — text stays white
+//  for contrast, same treatment as category cards elsewhere)
 class _InspirationCard extends StatefulWidget {
   final InspirationModel inspiration;
   final List<Color>      gradientColors;

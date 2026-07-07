@@ -28,6 +28,8 @@ const _paraColors = [
   Color(0xFF90CAF9),
 ];
 
+
+
 class ParaListTab extends StatelessWidget {
   const ParaListTab({super.key});
 
@@ -154,7 +156,7 @@ class _ParaCard extends StatelessWidget {
             Text(
               'Para $paraNumber',
               style: TextStyle(
-                color: Colors.white,
+                color: theme.textHigh,
                 fontSize: rsw * 0.030,
                 fontWeight: FontWeight.w700,
               ),

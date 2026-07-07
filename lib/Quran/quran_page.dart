@@ -19,7 +19,6 @@ import 'pages/quran_download_screen.dart';
 import 'services/quran_download_service.dart';
 import 'package:muslim_app/settings/l10n/app_localizations.dart';
 
-
 class QuranPage extends StatelessWidget {
   const QuranPage({super.key});
 
@@ -385,7 +384,7 @@ class _QuickActionsRow extends StatelessWidget {
             children: [
               Text('Go to Page',
                   style: TextStyle(
-                      color: Colors.white,
+                      color: theme.textHigh,
                       fontSize: rsw * 0.040,
                       fontWeight: FontWeight.w700)),
               SizedBox(height: rsw * 0.008),
@@ -397,7 +396,7 @@ class _QuickActionsRow extends StatelessWidget {
                 controller: ctrl,
                 keyboardType: TextInputType.number,
                 autofocus: true,
-                style: TextStyle(color: Colors.white, fontSize: rsw * 0.036),
+                style: TextStyle(color: theme.textHigh, fontSize: rsw * 0.036),
                 decoration: InputDecoration(
                   hintText: 'e.g. 50',
                   hintStyle: TextStyle(color: theme.textLow),
@@ -456,7 +455,7 @@ class _QuickActionsRow extends StatelessWidget {
                   },
                   child: Text('Go',
                       style: TextStyle(
-                          color: Colors.white,
+                          color: theme.textHigh,
                           fontSize: rsw * 0.034,
                           fontWeight: FontWeight.w700)),
                 ),
@@ -506,7 +505,7 @@ class _ActionCard extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                color: Colors.white,
+                color: theme.textHigh,
                 fontSize: rsw * 0.028,
                 fontWeight: FontWeight.w600,
               ),

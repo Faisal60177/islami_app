@@ -8,14 +8,8 @@ import 'masail_detail_page.dart';
 import 'category_masail_page.dart'; // for MasailCard, _Chip
 import 'package:muslim_app/settings/l10n/app_localizations.dart';
 import 'package:muslim_app/settings/cubit/settings_cubit.dart';
-
-const Color _primary  = Color(0xFF6B1E2E);
-const Color _gold     = Color(0xFFD4AF37);
-const Color _bg       = Color(0xFFFAF6EF);
-const Color _surface  = Color(0xFFF2EBE0);
-const Color _textHi   = Color(0xFF1C0A0F);
-const Color _textMid  = Color(0xFF5C3D44);
-const Color _textLo   = Color(0xFF9C7A82);
+import 'package:muslim_app/settings/cubit/settings_state.dart';
+import 'package:muslim_app/settings/theme/app_themes.dart';
 
 class BookmarkedMasailPage extends StatefulWidget {
   final String searchQuery;
@@ -86,6 +80,7 @@ class _BookmarkedMasailPageState extends State<BookmarkedMasailPage>
   }
 
   Widget _buildBody(BuildContext context) {
+    final theme    = getThemeById(context.watch<SettingsCubit>().state.themeMode);
     final cubit    = context.read<MasailCubit>();
     final isRtl    = LanguageUtils.isRtl(cubit.currentLanguageCode);
     final w        = MediaQuery.of(context).size.width;
@@ -94,8 +89,8 @@ class _BookmarkedMasailPageState extends State<BookmarkedMasailPage>
     final l10n     = AppLocalizations(langCode);
 
     if (isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(color: _primary, strokeWidth: 2.5),
+      return Center(
+        child: CircularProgressIndicator(color: theme.accent, strokeWidth: 2.5),
       );
     }
 
@@ -107,7 +102,7 @@ class _BookmarkedMasailPageState extends State<BookmarkedMasailPage>
       return Center(
         child: Text(
           l10n.noResultsFound,
-          style: TextStyle(color: _textLo, fontSize: w * 0.04),
+          style: TextStyle(color: theme.textLow, fontSize: w * 0.04),
         ),
       );
     }
@@ -115,7 +110,7 @@ class _BookmarkedMasailPageState extends State<BookmarkedMasailPage>
     return Directionality(
       textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
       child: RefreshIndicator(
-        color:     _primary,
+        color:     theme.accent,
         onRefresh: _load,
         child: CustomScrollView(
           physics: const ClampingScrollPhysics(),
@@ -133,22 +128,22 @@ class _BookmarkedMasailPageState extends State<BookmarkedMasailPage>
                       padding: EdgeInsets.symmetric(
                           horizontal: w * 0.03, vertical: h * 0.006),
                       decoration: BoxDecoration(
-                        color:         _primary.withOpacity(0.09),
+                        color:         theme.accent.withOpacity(0.09),
                         borderRadius:  BorderRadius.circular(20),
                         border: Border.all(
-                            color: _primary.withOpacity(0.2), width: 1),
+                            color: theme.accent.withOpacity(0.2), width: 1),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(Icons.bookmark_rounded,
-                              size: w * 0.038, color: _primary),
+                              size: w * 0.038, color: theme.accent),
                           SizedBox(width: w * 0.015),
                           Text(
                             '${_filtered.length} ${l10n.saved}',
                             style: TextStyle(
                               fontSize:   w * 0.032,
-                              color:      _primary,
+                              color:      theme.accent,
                               fontWeight: FontWeight.w700,
                             ),
                           ),
@@ -217,19 +212,20 @@ class _BookmarkCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = getThemeById(context.watch<SettingsCubit>().state.themeMode);
     final w = MediaQuery.of(context).size.width;
     final h = MediaQuery.of(context).size.height;
 
     return Container(
       margin: EdgeInsets.only(bottom: h * 0.014),
       decoration: BoxDecoration(
-        color:        Colors.white,
+        color:        theme.cardColor,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
-            color: _primary.withOpacity(0.14), width: 1),
+            color: theme.accent.withOpacity(0.14), width: 1),
         boxShadow: [
           BoxShadow(
-            color:      _primary.withOpacity(0.06),
+            color:      theme.accent.withOpacity(0.06),
             blurRadius: 12,
             offset:     const Offset(0, 3),
           ),
@@ -254,15 +250,15 @@ class _BookmarkCard extends StatelessWidget {
                     width:  w * 0.12,
                     height: w * 0.12,
                     decoration: BoxDecoration(
-                      color:         _primary.withOpacity(0.09),
+                      color:         theme.accent.withOpacity(0.09),
                       borderRadius:  BorderRadius.circular(14),
                       border: Border.all(
-                          color: _primary.withOpacity(0.18), width: 1),
+                          color: theme.accent.withOpacity(0.18), width: 1),
                     ),
                     child: Center(
                       child: Icon(
                         Icons.bookmark_rounded,
-                        color: _primary,
+                        color: theme.accent,
                         size:  w * 0.052,
                       ),
                     ),
@@ -289,7 +285,7 @@ class _BookmarkCard extends StatelessWidget {
                               style: TextStyle(
                                 fontSize:   w * 0.038,
                                 fontWeight: FontWeight.w600,
-                                color:      _textHi,
+                                color:      theme.textHigh,
                                 height:     1.5,
                                 fontFamily: 'Amiri',
                               ),
@@ -303,7 +299,7 @@ class _BookmarkCard extends StatelessWidget {
                         isRtl ? TextAlign.right : TextAlign.left,
                         style: TextStyle(
                           fontSize:   w * 0.034,
-                          color:      _textMid,
+                          color:      theme.textHigh,
                           height:     1.5,
                           fontWeight: FontWeight.w500,
                         ),
@@ -317,7 +313,7 @@ class _BookmarkCard extends StatelessWidget {
                           // Category chip
                           _SmallChip(
                               label: masail.categoryTitle,
-                              color: _primary,
+                              color: theme.accent,
                               w:     w, h: h),
                           // Madhab chip — only if present
                           if (masail.madhab != null &&
@@ -325,7 +321,7 @@ class _BookmarkCard extends StatelessWidget {
                             SizedBox(width: w * 0.012),
                             _SmallChip(
                                 label: masail.madhab!,
-                                color: const Color(0xFFB8860B),
+                                color: theme.textLow,
                                 w:     w, h: h),
                           ],
                         ],
@@ -335,7 +331,7 @@ class _BookmarkCard extends StatelessWidget {
                 ),
                 SizedBox(width: w * 0.015),
                 Icon(Icons.chevron_right_rounded,
-                    color: Colors.grey[300], size: w * 0.048),
+                    color: theme.textLow.withOpacity(0.6), size: w * 0.048),
               ],
             ),
           ),
@@ -385,42 +381,45 @@ class _EmptyBookmarks extends StatelessWidget {
   const _EmptyBookmarks({required this.w, required this.h, required this.l10n});
 
   @override
-  Widget build(BuildContext context) => Center(
-    child: Padding(
-      padding: EdgeInsets.symmetric(horizontal: w * 0.1),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            padding: EdgeInsets.all(w * 0.065),
-            decoration: BoxDecoration(
-              color:  _primary.withOpacity(0.08),
-              shape:  BoxShape.circle,
+  Widget build(BuildContext context) {
+    final theme = getThemeById(context.watch<SettingsCubit>().state.themeMode);
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: w * 0.1),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: EdgeInsets.all(w * 0.065),
+              decoration: BoxDecoration(
+                color:  theme.accent.withOpacity(0.08),
+                shape:  BoxShape.circle,
+              ),
+              child: Icon(Icons.bookmark_remove_rounded,
+                  size: w * 0.14, color: theme.accent.withOpacity(0.4)),
             ),
-            child: Icon(Icons.bookmark_remove_rounded,
-                size: w * 0.14, color: _primary.withOpacity(0.4)),
-          ),
-          SizedBox(height: h * 0.025),
-          Text(
-            l10n.noBookmarkYet,
-            style: TextStyle(
-              fontSize:   w * 0.046,
-              fontWeight: FontWeight.w700,
-              color:      _textHi,
+            SizedBox(height: h * 0.025),
+            Text(
+              l10n.noBookmarkYet,
+              style: TextStyle(
+                fontSize:   w * 0.046,
+                fontWeight: FontWeight.w700,
+                color:      theme.textHigh,
+              ),
+              textAlign: TextAlign.center,
             ),
-            textAlign: TextAlign.center,
-          ),
-          SizedBox(height: h * 0.01),
-          Text(
-            l10n.noBookmarkDesc,
-            style: TextStyle(
-                fontSize: w * 0.035,
-                color:    _textLo,
-                height:   1.5),
-            textAlign: TextAlign.center,
-          ),
-        ],
+            SizedBox(height: h * 0.01),
+            Text(
+              l10n.noBookmarkDesc,
+              style: TextStyle(
+                  fontSize: w * 0.035,
+                  color:    theme.textLow,
+                  height:   1.5),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
       ),
-    ),
-  );
+    );
+  }
 }

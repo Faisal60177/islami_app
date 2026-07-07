@@ -29,7 +29,6 @@ class _SearchOverlayPageState extends State<SearchOverlayPage> {
     _ctrl.dispose();
     super.dispose();
   }
-
   @override
   Widget build(BuildContext context) {
     final sw  = MediaQuery.of(context).size.width;
@@ -75,7 +74,7 @@ class _SearchOverlayPageState extends State<SearchOverlayPage> {
                                   controller: _ctrl,
                                   autofocus: true,
                                   style: TextStyle(
-                                      color: Colors.white,
+                                      color: theme.textHigh,
                                       fontSize: rsw * 0.032),
                                   decoration: InputDecoration(
                                     hintText: 'Search surah by name or number…',
@@ -259,7 +258,7 @@ class _SearchResultTile extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      color: Colors.white,
+                      color: theme.textHigh,
                       fontSize: rsw * 0.034,
                       fontWeight: FontWeight.w700,
                     ),

@@ -255,3 +255,38 @@ class _LanguageSettingsSectionState extends State<LanguageSettingsSection> {
     );
   }
 }
+
+// ── Language Settings Page ────────────────────────────────────────────────────
+class LanguageSettingsPage extends StatelessWidget {
+  final AppThemeOption theme;
+  final AppLocalizations l10n;
+  const LanguageSettingsPage(
+      {super.key, required this.theme, required this.l10n});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<SettingsCubit, SettingsState>(
+      builder: (context, state) {
+        final thm = getThemeById(state.themeMode);
+        return Scaffold(
+          backgroundColor: thm.background,
+          appBar: AppBar(
+            backgroundColor: thm.surface,
+            elevation: 0,
+            leading: IconButton(
+              icon: Icon(Icons.arrow_back_ios_rounded, color: thm.accent),
+              onPressed: () => Navigator.pop(context),
+            ),
+            title: Text('Language',
+                style: TextStyle(
+                    color: thm.textHigh, fontWeight: FontWeight.w700)),
+          ),
+          body: SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: LanguageSettingsSection(theme: thm, l10n: l10n),
+          ),
+        );
+      },
+    );
+  }
+}

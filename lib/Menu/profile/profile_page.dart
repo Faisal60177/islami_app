@@ -1,16 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:muslim_app/settings/cubit/settings_cubit.dart';
+import 'package:muslim_app/settings/cubit/settings_state.dart';
+import 'package:muslim_app/settings/theme/app_themes.dart';
 import '../auth/auth_notifier.dart';
 import '../auth/auth_page.dart';
-
-const _bg         = Color(0xFF011A0E);
-const _surface    = Color(0xFF0D2E1C);
-const _card       = Color(0xFF122E1E);
-const _accent     = Color(0xFF4CAF82);
-const _accentSoft = Color(0xFF2E7D5A);
-const _gold       = Color(0xFFD4AF37);
-const _textHi     = Color(0xFFE8F5EC);
-const _textLo     = Color(0xFF7BAF92);
 
 class ProfilePage extends ConsumerStatefulWidget {
   const ProfilePage({super.key});
@@ -35,12 +30,12 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     super.dispose();
   }
 
-  void _snack(String msg, {bool success = false}) {
+  void _snack(String msg, AppThemeOption thm, {bool success = false}) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(msg),
-        backgroundColor: success ? _accentSoft : Colors.red[900],
+        backgroundColor: success ? thm.accent : Colors.red[900],
         behavior: SnackBarBehavior.floating,
         margin: const EdgeInsets.all(16),
         duration: Duration(seconds: success ? 2 : 4),
@@ -48,16 +43,16 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     );
   }
 
-  Future<void> _saveProfile() async {
+  Future<void> _saveProfile(AppThemeOption thm) async {
     final trimmed = _nameCtrl.text.trim();
     if (trimmed.isEmpty) return;
     final ok = await ref.read(authNotifierProvider.notifier).updateProfile(name: trimmed);
     if (!mounted) return;
     if (ok) {
       setState(() => _editing = false);
-      _snack('Profile updated successfully', success: true);
+      _snack('Profile updated successfully', thm, success: true);
     } else {
-      _snack('Could not update profile. Please try again.');
+      _snack('Could not update profile. Please try again.', thm);
     }
   }
 
@@ -66,35 +61,41 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     final auth       = ref.watch(authNotifierProvider);
     final isLoggedIn = auth.isLoggedIn;
 
-    return Scaffold(
-      backgroundColor: _bg,
-      appBar: AppBar(
-        backgroundColor: _surface,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: _accent),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        title: const Text('Profile',
-            style: TextStyle(color: _textHi, fontWeight: FontWeight.w600, fontSize: 18)),
-        centerTitle: true,
-        elevation: 0,
-        actions: isLoggedIn && !_editing
-            ? [
-          IconButton(
-            icon: const Icon(Icons.edit_outlined, color: _accent),
-            onPressed: () => setState(() {
-              _editing = true;
-              _nameCtrl.text = auth.displayName;
-            }),
+    return BlocBuilder<SettingsCubit, SettingsState>(
+      builder: (context, state) {
+        final thm = getThemeById(state.themeMode);
+
+        return Scaffold(
+          backgroundColor: thm.background,
+          appBar: AppBar(
+            backgroundColor: thm.surface,
+            leading: IconButton(
+              icon: Icon(Icons.arrow_back_ios_new, color: thm.accent),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+            title: Text('Profile',
+                style: TextStyle(color: thm.textHigh, fontWeight: FontWeight.w600, fontSize: 18)),
+            centerTitle: true,
+            elevation: 0,
+            actions: isLoggedIn && !_editing
+                ? [
+              IconButton(
+                icon: Icon(Icons.edit_outlined, color: thm.accent),
+                onPressed: () => setState(() {
+                  _editing = true;
+                  _nameCtrl.text = auth.displayName;
+                }),
+              ),
+            ]
+                : null,
           ),
-        ]
-            : null,
-      ),
-      body: isLoggedIn ? _loggedInView(auth) : _loggedOutView(),
+          body: isLoggedIn ? _loggedInView(auth, thm) : _loggedOutView(thm),
+        );
+      },
     );
   }
 
-  Widget _loggedInView(auth) {
+  Widget _loggedInView(auth, AppThemeOption thm) {
     return LayoutBuilder(builder: (context, constraints) {
       final isWide   = constraints.maxWidth > 600;
       final isTablet = constraints.maxWidth > 800;
@@ -107,16 +108,16 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
           child: SingleChildScrollView(
             child: Column(
               children: [
-                _profileHeader(auth, isWide, isTablet),
+                _profileHeader(auth, isWide, isTablet, thm),
                 SizedBox(height: isWide ? 32 : 24),
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: hPad),
                   child: Column(
                     children: [
                       const SizedBox(height: 24),
-                      _infoSection(auth),
+                      _infoSection(auth, thm),
                       const SizedBox(height: 32),
-                      _signOutBtn(),
+                      _signOutBtn(thm),
                       const SizedBox(height: 32),
                     ],
                   ),
@@ -129,16 +130,16 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     });
   }
 
-  Widget _profileHeader(auth, bool isWide, bool isTablet) {
+  Widget _profileHeader(auth, bool isWide, bool isTablet, AppThemeOption thm) {
     final avatarSize = isTablet ? 120.0 : isWide ? 110.0 : 100.0;
 
     return Container(
       width: double.infinity,
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [_surface, _bg],
+          colors: [thm.surface, thm.background],
         ),
       ),
       padding: EdgeInsets.symmetric(vertical: isWide ? 48 : 36),
@@ -152,10 +153,10 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                 height: avatarSize,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  border: Border.all(color: _gold, width: 2.5),
+                  border: Border.all(color: thm.accent, width: 2.5),
                   boxShadow: [
                     BoxShadow(
-                        color: _accent.withOpacity(0.3),
+                        color: thm.accent.withOpacity(0.3),
                         blurRadius: 20,
                         spreadRadius: 2)
                   ],
@@ -165,15 +166,15 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                   child: Image.network(
                     auth.photoUrl,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => _avatarFallback(auth.displayName),
+                    errorBuilder: (_, __, ___) => _avatarFallback(auth.displayName, thm),
                   ),
                 )
-                    : _avatarFallback(auth.displayName),
+                    : _avatarFallback(auth.displayName, thm),
               ),
               Container(
                 padding: const EdgeInsets.all(6),
-                decoration: const BoxDecoration(
-                    shape: BoxShape.circle, color: _accentSoft),
+                decoration: BoxDecoration(
+                    shape: BoxShape.circle, color: thm.accent),
                 child: const Icon(Icons.camera_alt, color: Colors.white, size: 14),
               ),
             ],
@@ -182,13 +183,13 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
           Text(
             auth.displayName.isNotEmpty ? auth.displayName : 'Muslim User',
             style: TextStyle(
-                color: _textHi,
+                color: thm.textHigh,
                 fontSize: isWide ? 26 : 22,
                 fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 4),
           Text(auth.email,
-              style: const TextStyle(color: _textLo, fontSize: 14)),
+              style: TextStyle(color: thm.textLow, fontSize: 14)),
           const SizedBox(height: 8),
           Builder(builder: (_) {
             final parts = <String>[];
@@ -199,13 +200,13 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
             return Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
               decoration: BoxDecoration(
-                color: _gold.withOpacity(0.12),
+                color: thm.accent.withOpacity(0.12),
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: _gold.withOpacity(0.3)),
+                border: Border.all(color: thm.accent.withOpacity(0.3)),
               ),
               child: Text('🔗  Signed in via $label',
-                  style: const TextStyle(
-                      color: _gold, fontSize: 12, fontWeight: FontWeight.w600)),
+                  style: TextStyle(
+                      color: thm.accent, fontSize: 12, fontWeight: FontWeight.w600)),
             );
           }),
         ],
@@ -213,9 +214,9 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     );
   }
 
-  Widget _avatarFallback(String displayName) {
+  Widget _avatarFallback(String displayName, AppThemeOption thm) {
     return CircleAvatar(
-      backgroundColor: _accentSoft,
+      backgroundColor: thm.accent,
       child: Text(
         displayName.isNotEmpty ? displayName[0].toUpperCase() : 'M',
         style: const TextStyle(
@@ -224,73 +225,73 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     );
   }
 
-  Widget _infoSection(auth) {
+  Widget _infoSection(auth, AppThemeOption thm) {
     return Container(
       decoration: BoxDecoration(
-        color: _card,
+        color: thm.cardColor,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: _accentSoft.withOpacity(0.2)),
+        border: Border.all(color: thm.accent.withOpacity(0.2)),
       ),
       child: Column(
         children: [
-          _infoTile(Icons.email_outlined, 'Email',
+          _infoTile(thm, Icons.email_outlined, 'Email',
               auth.email.isNotEmpty ? auth.email : '—'),
-          Divider(height: 1, color: _accentSoft.withOpacity(0.15)),
-          _infoTile(Icons.shield_outlined, 'Account Type', 'Standard'),
-          Divider(height: 1, color: _accentSoft.withOpacity(0.15)),
-          _infoTile(Icons.language, 'Language', 'English'),
-          Divider(height: 1, color: _accentSoft.withOpacity(0.15)),
-          _securityTile(isUpdate: auth.hasPassword),
+          Divider(height: 1, color: thm.accent.withOpacity(0.15)),
+          _infoTile(thm, Icons.shield_outlined, 'Account Type', 'Standard'),
+          Divider(height: 1, color: thm.accent.withOpacity(0.15)),
+          _infoTile(thm, Icons.language, 'Language', 'English'),
+          Divider(height: 1, color: thm.accent.withOpacity(0.15)),
+          _securityTile(thm, isUpdate: auth.hasPassword),
         ],
       ),
     );
   }
 
-  Widget _securityTile({required bool isUpdate}) {
+  Widget _securityTile(AppThemeOption thm, {required bool isUpdate}) {
     return InkWell(
-      onTap: _showSetPasswordSheet,
+      onTap: () => _showSetPasswordSheet(thm),
       borderRadius: const BorderRadius.vertical(bottom: Radius.circular(20)),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         child: Row(
           children: [
-            const Icon(Icons.lock_outline, color: _accent, size: 20),
+            Icon(Icons.lock_outline, color: thm.accent, size: 20),
             const SizedBox(width: 14),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Security',
-                      style: TextStyle(color: _textLo, fontSize: 11)),
+                  Text('Security',
+                      style: TextStyle(color: thm.textLow, fontSize: 11)),
                   const SizedBox(height: 2),
                   Text(
                     isUpdate ? 'Update Password for Login' : 'Add Password for Login',
-                    style: const TextStyle(color: _textHi, fontSize: 14),
+                    style: TextStyle(color: thm.textHigh, fontSize: 14),
                   ),
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right, color: _textLo, size: 20),
+            Icon(Icons.chevron_right, color: thm.textLow, size: 20),
           ],
         ),
       ),
     );
   }
 
-  Widget _infoTile(IconData icon, String label, String value) {
+  Widget _infoTile(AppThemeOption thm, IconData icon, String label, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       child: Row(
         children: [
-          Icon(icon, color: _accent, size: 20),
+          Icon(icon, color: thm.accent, size: 20),
           const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label, style: const TextStyle(color: _textLo, fontSize: 11)),
+                Text(label, style: TextStyle(color: thm.textLow, fontSize: 11)),
                 const SizedBox(height: 2),
-                Text(value, style: const TextStyle(color: _textHi, fontSize: 14)),
+                Text(value, style: TextStyle(color: thm.textHigh, fontSize: 14)),
               ],
             ),
           ),
@@ -299,11 +300,11 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     );
   }
 
-  Widget _signOutBtn() {
+  Widget _signOutBtn(AppThemeOption thm) {
     return SizedBox(
       width: double.infinity,
       child: OutlinedButton.icon(
-        onPressed: _confirmSignOut,
+        onPressed: () => _confirmSignOut(thm),
         style: OutlinedButton.styleFrom(
           side: const BorderSide(color: Colors.red, width: 1.2),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
@@ -319,7 +320,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     );
   }
 
-  void _showSetPasswordSheet() {
+  void _showSetPasswordSheet(AppThemeOption thm) {
     final passCtrl    = TextEditingController();
     final confirmCtrl = TextEditingController();
 
@@ -344,10 +345,10 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                 child: SingleChildScrollView(
                   child: Container(
                     padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
-                    decoration: const BoxDecoration(
-                      color: _card,
+                    decoration: BoxDecoration(
+                      color: thm.cardColor,
                       borderRadius:
-                      BorderRadius.vertical(top: Radius.circular(24)),
+                      const BorderRadius.vertical(top: Radius.circular(24)),
                     ),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
@@ -358,7 +359,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                             width: 40,
                             height: 4,
                             decoration: BoxDecoration(
-                              color: _textLo.withOpacity(0.3),
+                              color: thm.textLow.withOpacity(0.3),
                               borderRadius: BorderRadius.circular(2),
                             ),
                           ),
@@ -366,8 +367,8 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                         const SizedBox(height: 20),
                         Text(
                           isUpdate ? 'Update Password' : 'Add Password Login',
-                          style: const TextStyle(
-                              color: _textHi,
+                          style: TextStyle(
+                              color: thm.textHigh,
                               fontSize: 18,
                               fontWeight: FontWeight.w700),
                         ),
@@ -376,8 +377,8 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                           isUpdate
                               ? 'Set a new password for your account.'
                               : 'After setting a password, you can sign in with either Google or your email & password.',
-                          style: const TextStyle(
-                              color: _textLo, fontSize: 13, height: 1.5),
+                          style: TextStyle(
+                              color: thm.textLow, fontSize: 13, height: 1.5),
                         ),
                         const SizedBox(height: 24),
                         StatefulBuilder(builder: (_, ss) {
@@ -386,36 +387,36 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                               TextFormField(
                                 controller: passCtrl,
                                 obscureText: obscure1,
-                                style: const TextStyle(color: _textHi),
+                                style: TextStyle(color: thm.textHigh),
                                 decoration: InputDecoration(
                                   labelText: 'New Password',
                                   labelStyle:
-                                  const TextStyle(color: _textLo),
-                                  prefixIcon: const Icon(
+                                  TextStyle(color: thm.textLow),
+                                  prefixIcon: Icon(
                                       Icons.lock_outline,
-                                      color: _accentSoft,
+                                      color: thm.accent,
                                       size: 20),
                                   suffixIcon: IconButton(
                                     icon: Icon(
                                         obscure1
                                             ? Icons.visibility_off
                                             : Icons.visibility,
-                                        color: _textLo,
+                                        color: thm.textLow,
                                         size: 20),
                                     onPressed: () =>
                                         ss(() => obscure1 = !obscure1),
                                   ),
                                   filled: true,
-                                  fillColor: _surface,
+                                  fillColor: thm.surface,
                                   enabledBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(14),
                                     borderSide: BorderSide(
-                                        color: _accentSoft.withOpacity(0.3)),
+                                        color: thm.accent.withOpacity(0.3)),
                                   ),
                                   focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(14),
-                                    borderSide: const BorderSide(
-                                        color: _accent, width: 1.5),
+                                    borderSide: BorderSide(
+                                        color: thm.accent, width: 1.5),
                                   ),
                                 ),
                               ),
@@ -423,36 +424,36 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                               TextFormField(
                                 controller: confirmCtrl,
                                 obscureText: obscure2,
-                                style: const TextStyle(color: _textHi),
+                                style: TextStyle(color: thm.textHigh),
                                 decoration: InputDecoration(
                                   labelText: 'Confirm Password',
                                   labelStyle:
-                                  const TextStyle(color: _textLo),
-                                  prefixIcon: const Icon(
+                                  TextStyle(color: thm.textLow),
+                                  prefixIcon: Icon(
                                       Icons.lock_outline,
-                                      color: _accentSoft,
+                                      color: thm.accent,
                                       size: 20),
                                   suffixIcon: IconButton(
                                     icon: Icon(
                                         obscure2
                                             ? Icons.visibility_off
                                             : Icons.visibility,
-                                        color: _textLo,
+                                        color: thm.textLow,
                                         size: 20),
                                     onPressed: () =>
                                         ss(() => obscure2 = !obscure2),
                                   ),
                                   filled: true,
-                                  fillColor: _surface,
+                                  fillColor: thm.surface,
                                   enabledBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(14),
                                     borderSide: BorderSide(
-                                        color: _accentSoft.withOpacity(0.3)),
+                                        color: thm.accent.withOpacity(0.3)),
                                   ),
                                   focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(14),
-                                    borderSide: const BorderSide(
-                                        color: _accent, width: 1.5),
+                                    borderSide: BorderSide(
+                                        color: thm.accent, width: 1.5),
                                   ),
                                 ),
                               ),
@@ -468,11 +469,11 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                                 ? null
                                 : () async {
                               if (passCtrl.text.length < 6) {
-                                _snack('Password must be at least 6 characters.');
+                                _snack('Password must be at least 6 characters.', thm);
                                 return;
                               }
                               if (passCtrl.text != confirmCtrl.text) {
-                                _snack('Passwords do not match.');
+                                _snack('Passwords do not match.', thm);
                                 return;
                               }
                               final ok = await ref
@@ -486,6 +487,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                                   isUpdate
                                       ? 'Your password has been updated.'
                                       : 'You can now sign in with email & password too.',
+                                  thm,
                                   success: true,
                                 );
                               } else {
@@ -494,11 +496,11 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                                     .errorMessage;
                                 _snack(err.isNotEmpty
                                     ? err
-                                    : 'Failed. Please try again.');
+                                    : 'Failed. Please try again.', thm);
                               }
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: _accentSoft,
+                              backgroundColor: thm.accent,
                               shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(14)),
                             ),
@@ -530,20 +532,20 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     );
   }
 
-  void _confirmSignOut() {
+  void _confirmSignOut(AppThemeOption thm) {
     showDialog(
       context: context,
       builder: (dialogCtx) => AlertDialog(
-        backgroundColor: _card,
+        backgroundColor: thm.cardColor,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Sign Out',
-            style: TextStyle(color: _textHi, fontWeight: FontWeight.w700)),
-        content: const Text('Are you sure you want to sign out?',
-            style: TextStyle(color: _textLo)),
+        title: Text('Sign Out',
+            style: TextStyle(color: thm.textHigh, fontWeight: FontWeight.w700)),
+        content: Text('Are you sure you want to sign out?',
+            style: TextStyle(color: thm.textLow)),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogCtx).pop(),
-            child: const Text('Cancel', style: TextStyle(color: _textLo)),
+            child: Text('Cancel', style: TextStyle(color: thm.textLow)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red[800]),
@@ -555,7 +557,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                 SnackBar(
                   content: const Text(
                       'You have been signed out. See you soon! 🌙'),
-                  backgroundColor: _accentSoft,
+                  backgroundColor: thm.accent,
                   behavior: SnackBarBehavior.floating,
                   margin: const EdgeInsets.all(16),
                   duration: const Duration(seconds: 3),
@@ -570,7 +572,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     );
   }
 
-  Widget _loggedOutView() {
+  Widget _loggedOutView(AppThemeOption thm) {
     return LayoutBuilder(builder: (context, constraints) {
       final isWide = constraints.maxWidth > 600;
       final maxW   = isWide ? 480.0 : double.infinity;
@@ -585,23 +587,23 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                 Container(
                   padding: EdgeInsets.all(isWide ? 36 : 28),
                   decoration: BoxDecoration(
-                    color: _surface,
+                    color: thm.surface,
                     shape: BoxShape.circle,
-                    border: Border.all(color: _gold.withOpacity(0.3)),
+                    border: Border.all(color: thm.accent.withOpacity(0.3)),
                   ),
                   child: Icon(Icons.person_outline,
-                      color: _gold, size: isWide ? 80 : 60),
+                      color: thm.accent, size: isWide ? 80 : 60),
                 ),
                 const SizedBox(height: 24),
-                const Text('بِسْمِ اللَّهِ',
+                Text('بِسْمِ اللَّهِ',
                     style: TextStyle(
-                        color: _gold, fontSize: 24, fontFamily: 'Amiri')),
+                        color: thm.accent, fontSize: 24, fontFamily: 'Amiri')),
                 const SizedBox(height: 8),
-                const Text(
+                Text(
                   'Sign in to sync your progress,\nduas, and Quran bookmarks.',
                   textAlign: TextAlign.center,
                   style:
-                  TextStyle(color: _textLo, fontSize: 15, height: 1.6),
+                  TextStyle(color: thm.textLow, fontSize: 15, height: 1.6),
                 ),
                 const SizedBox(height: 32),
                 SizedBox(
@@ -612,7 +614,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                       MaterialPageRoute(builder: (_) => const AuthPage()),
                     ),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: _accentSoft,
+                      backgroundColor: thm.accent,
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16)),
                     ),

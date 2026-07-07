@@ -1,15 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:muslim_app/settings/cubit/settings_cubit.dart';
+import 'package:muslim_app/settings/cubit/settings_state.dart';
+import 'package:muslim_app/settings/theme/app_themes.dart';
 import 'auth_notifier.dart';
-
-const _bg         = Color(0xFF011A0E);
-const _surface    = Color(0xFF0D2E1C);
-const _card       = Color(0xFF122E1E);
-const _accent     = Color(0xFF4CAF82);
-const _accentSoft = Color(0xFF2E7D5A);
-const _gold       = Color(0xFFD4AF37);
-const _textHi     = Color(0xFFE8F5EC);
-const _textLo     = Color(0xFF7BAF92);
 
 class AuthPage extends ConsumerStatefulWidget {
   const AuthPage({super.key});
@@ -59,12 +54,12 @@ class _AuthPageState extends ConsumerState<AuthPage>
     super.dispose();
   }
 
-  void _snack(String msg, {bool success = false}) {
+  void _snack(String msg, AppThemeOption thm, {bool success = false}) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(msg),
-        backgroundColor: success ? _accentSoft : Colors.red[900],
+        backgroundColor: success ? thm.accent : Colors.red[900],
         behavior: SnackBarBehavior.floating,
         margin: const EdgeInsets.all(16),
         duration: Duration(seconds: success ? 2 : 4),
@@ -72,7 +67,7 @@ class _AuthPageState extends ConsumerState<AuthPage>
     );
   }
 
-  Future<void> _doSignIn() async {
+  Future<void> _doSignIn(AppThemeOption thm) async {
     if (!_signInForm.currentState!.validate()) return;
     final ok = await ref.read(authNotifierProvider.notifier).signInWithEmail(
       email:    _emailInCtrl.text,
@@ -81,14 +76,14 @@ class _AuthPageState extends ConsumerState<AuthPage>
     if (!mounted) return;
     if (ok) {
       Navigator.of(context).pop();
-      _snack('Welcome back! 🌙', success: true);
+      _snack('Welcome back! 🌙', thm, success: true);
     } else {
       final err = ref.read(authNotifierProvider).errorMessage;
-      _snack(err.isNotEmpty ? err : 'Sign in failed. Please try again.');
+      _snack(err.isNotEmpty ? err : 'Sign in failed. Please try again.', thm);
     }
   }
 
-  Future<void> _doSignUp() async {
+  Future<void> _doSignUp(AppThemeOption thm) async {
     if (!_signUpForm.currentState!.validate()) return;
     final ok = await ref.read(authNotifierProvider.notifier).signUpWithEmail(
       name:     _nameCtrl.text,
@@ -98,89 +93,96 @@ class _AuthPageState extends ConsumerState<AuthPage>
     if (!mounted) return;
     if (ok) {
       Navigator.of(context).pop();
-      _snack('Account created! Assalamu Alaikum 🌙', success: true);
+      _snack('Account created! Assalamu Alaikum 🌙', thm, success: true);
     } else {
       final err = ref.read(authNotifierProvider).errorMessage;
-      _snack(err.isNotEmpty ? err : 'Sign up failed. Please try again.');
+      _snack(err.isNotEmpty ? err : 'Sign up failed. Please try again.', thm);
     }
   }
 
-  Future<void> _doGoogle() async {
+  Future<void> _doGoogle(AppThemeOption thm) async {
     final ok = await ref.read(authNotifierProvider.notifier).signInWithGoogle();
     if (!mounted) return;
     if (ok) {
       Navigator.of(context).pop();
-      _snack('Signed in with Google 🌙', success: true);
+      _snack('Signed in with Google 🌙', thm, success: true);
     } else {
       final err = ref.read(authNotifierProvider).errorMessage;
-      if (err.isNotEmpty) _snack(err);
+      if (err.isNotEmpty) _snack(err, thm);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: _bg,
-      appBar: AppBar(
-        backgroundColor: _surface,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: _accent),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        title: const Text('My Account',
-            style: TextStyle(color: _textHi, fontSize: 18, fontWeight: FontWeight.w600)),
-        centerTitle: true,
-        elevation: 0,
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(50),
-          child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 6),
-            decoration: BoxDecoration(
-              color: _surface,
-              borderRadius: BorderRadius.circular(30),
+    return BlocBuilder<SettingsCubit, SettingsState>(
+      builder: (context, state) {
+        final thm = getThemeById(state.themeMode);
+
+        return Scaffold(
+          backgroundColor: thm.background,
+          appBar: AppBar(
+            backgroundColor: thm.surface,
+            leading: IconButton(
+              icon: Icon(Icons.arrow_back_ios_new, color: thm.accent),
+              onPressed: () => Navigator.of(context).pop(),
             ),
-            child: TabBar(
-              controller: _tab,
-              indicator: BoxDecoration(color: _accentSoft, borderRadius: BorderRadius.circular(30)),
-              labelColor: Colors.white,
-              unselectedLabelColor: _textLo,
-              labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
-              unselectedLabelStyle: const TextStyle(fontSize: 14),
-              tabs: const [Tab(text: 'Sign In'), Tab(text: 'Sign Up')],
+            title: Text('My Account',
+                style: TextStyle(color: thm.textHigh, fontSize: 18, fontWeight: FontWeight.w600)),
+            centerTitle: true,
+            elevation: 0,
+            bottom: PreferredSize(
+              preferredSize: const Size.fromHeight(50),
+              child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 6),
+                decoration: BoxDecoration(
+                  color: thm.surface,
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                child: TabBar(
+                  controller: _tab,
+                  indicator: BoxDecoration(color: thm.accent, borderRadius: BorderRadius.circular(30)),
+                  labelColor: Colors.white,
+                  unselectedLabelColor: thm.textLow,
+                  labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+                  unselectedLabelStyle: const TextStyle(fontSize: 14),
+                  tabs: const [Tab(text: 'Sign In'), Tab(text: 'Sign Up')],
+                ),
+              ),
             ),
           ),
-        ),
-      ),
-      body: TabBarView(
-        controller: _tab,
-        children: [_signInView(), _signUpView()],
-      ),
+          body: TabBarView(
+            controller: _tab,
+            children: [_signInView(thm), _signUpView(thm)],
+          ),
+        );
+      },
     );
   }
 
-  Widget _signInView() {
+  Widget _signInView(AppThemeOption thm) {
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
       child: Column(
         children: [
           const SizedBox(height: 16),
-          _arabicDecor(),
+          _arabicDecor(thm),
           const SizedBox(height: 32),
           Form(
             key: _signInForm,
             child: Column(
               children: [
-                _field(controller: _emailInCtrl, label: 'Email Address',
+                _field(thm: thm, controller: _emailInCtrl, label: 'Email Address',
                     icon: Icons.email_outlined,
                     keyboardType: TextInputType.emailAddress,
                     validator: _validateEmail),
                 const SizedBox(height: 16),
                 _field(
+                  thm: thm,
                   controller: _passInCtrl, label: 'Password',
                   icon: Icons.lock_outline, obscure: !_showPassIn,
                   suffix: IconButton(
                     icon: Icon(_showPassIn ? Icons.visibility_off : Icons.visibility,
-                        color: _textLo, size: 20),
+                        color: thm.textLow, size: 20),
                     onPressed: () => setState(() => _showPassIn = !_showPassIn),
                   ),
                   validator: (v) => (v == null || v.length < 6) ? 'Min 6 characters' : null,
@@ -188,32 +190,32 @@ class _AuthPageState extends ConsumerState<AuthPage>
                 Align(
                   alignment: Alignment.centerRight,
                   child: TextButton(
-                    onPressed: _showForgot,
-                    child: const Text('Forgot password?',
-                        style: TextStyle(color: _gold, fontSize: 13)),
+                    onPressed: () => _showForgot(thm),
+                    child: Text('Forgot password?',
+                        style: TextStyle(color: thm.accent, fontSize: 13)),
                   ),
                 ),
                 const SizedBox(height: 8),
                 Consumer(builder: (_, ref, __) {
                   final loading = ref.watch(authNotifierProvider).isLoading;
-                  return _primaryBtn(label: 'Sign In', loading: loading, onTap: _doSignIn);
+                  return _primaryBtn(thm: thm, label: 'Sign In', loading: loading, onTap: () => _doSignIn(thm));
                 }),
               ],
             ),
           ),
           const SizedBox(height: 24),
-          _divider(),
+          _divider(thm),
           const SizedBox(height: 24),
-          _googleBtn(),
+          _googleBtn(thm),
           const SizedBox(height: 16),
           TextButton(
             onPressed: () => _tab.animateTo(1),
             child: RichText(
-              text: const TextSpan(
+              text: TextSpan(
                 text: "Don't have an account? ",
-                style: TextStyle(color: _textLo),
+                style: TextStyle(color: thm.textLow),
                 children: [TextSpan(text: 'Sign Up',
-                    style: TextStyle(color: _accent, fontWeight: FontWeight.w700))],
+                    style: TextStyle(color: thm.accent, fontWeight: FontWeight.w700))],
               ),
             ),
           ),
@@ -222,30 +224,30 @@ class _AuthPageState extends ConsumerState<AuthPage>
     );
   }
 
-  Widget _signUpView() {
+  Widget _signUpView(AppThemeOption thm) {
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
       child: Column(
         children: [
           const SizedBox(height: 16),
-          _arabicDecor(),
+          _arabicDecor(thm),
           const SizedBox(height: 32),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             margin: const EdgeInsets.only(bottom: 20),
             decoration: BoxDecoration(
-              color: _accentSoft.withOpacity(0.15),
+              color: thm.accent.withOpacity(0.15),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: _accentSoft.withOpacity(0.4)),
+              border: Border.all(color: thm.accent.withOpacity(0.4)),
             ),
-            child: const Row(
+            child: Row(
               children: [
-                Icon(Icons.info_outline, color: _accent, size: 18),
-                SizedBox(width: 10),
+                Icon(Icons.info_outline, color: thm.accent, size: 18),
+                const SizedBox(width: 10),
                 Expanded(
                   child: Text(
                     'You can use the same email for both Google and email/password. They will be linked to one account.',
-                    style: TextStyle(color: _textLo, fontSize: 12, height: 1.5),
+                    style: TextStyle(color: thm.textLow, fontSize: 12, height: 1.5),
                   ),
                 ),
               ],
@@ -255,33 +257,35 @@ class _AuthPageState extends ConsumerState<AuthPage>
             key: _signUpForm,
             child: Column(
               children: [
-                _field(controller: _nameCtrl, label: 'Full Name',
+                _field(thm: thm, controller: _nameCtrl, label: 'Full Name',
                     icon: Icons.person_outline,
                     validator: (v) =>
                     (v == null || v.trim().isEmpty) ? 'Name required' : null),
                 const SizedBox(height: 16),
-                _field(controller: _emailUpCtrl, label: 'Email Address',
+                _field(thm: thm, controller: _emailUpCtrl, label: 'Email Address',
                     icon: Icons.email_outlined,
                     keyboardType: TextInputType.emailAddress,
                     validator: _validateEmail),
                 const SizedBox(height: 16),
                 _field(
+                  thm: thm,
                   controller: _passUpCtrl, label: 'Password',
                   icon: Icons.lock_outline, obscure: !_showPassUp,
                   suffix: IconButton(
                     icon: Icon(_showPassUp ? Icons.visibility_off : Icons.visibility,
-                        color: _textLo, size: 20),
+                        color: thm.textLow, size: 20),
                     onPressed: () => setState(() => _showPassUp = !_showPassUp),
                   ),
                   validator: (v) => (v == null || v.length < 6) ? 'Min 6 characters' : null,
                 ),
                 const SizedBox(height: 16),
                 _field(
+                  thm: thm,
                   controller: _confirmCtrl, label: 'Confirm Password',
                   icon: Icons.lock_outline, obscure: !_showConfirm,
                   suffix: IconButton(
                     icon: Icon(_showConfirm ? Icons.visibility_off : Icons.visibility,
-                        color: _textLo, size: 20),
+                        color: thm.textLow, size: 20),
                     onPressed: () => setState(() => _showConfirm = !_showConfirm),
                   ),
                   validator: (v) => v != _passUpCtrl.text ? 'Passwords do not match' : null,
@@ -289,24 +293,24 @@ class _AuthPageState extends ConsumerState<AuthPage>
                 const SizedBox(height: 24),
                 Consumer(builder: (_, ref, __) {
                   final loading = ref.watch(authNotifierProvider).isLoading;
-                  return _primaryBtn(label: 'Create Account', loading: loading, onTap: _doSignUp);
+                  return _primaryBtn(thm: thm, label: 'Create Account', loading: loading, onTap: () => _doSignUp(thm));
                 }),
               ],
             ),
           ),
           const SizedBox(height: 24),
-          _divider(),
+          _divider(thm),
           const SizedBox(height: 24),
-          _googleBtn(),
+          _googleBtn(thm),
           const SizedBox(height: 16),
           TextButton(
             onPressed: () => _tab.animateTo(0),
             child: RichText(
-              text: const TextSpan(
+              text: TextSpan(
                 text: 'Already have an account? ',
-                style: TextStyle(color: _textLo),
+                style: TextStyle(color: thm.textLow),
                 children: [TextSpan(text: 'Sign In',
-                    style: TextStyle(color: _accent, fontWeight: FontWeight.w700))],
+                    style: TextStyle(color: thm.accent, fontWeight: FontWeight.w700))],
               ),
             ),
           ),
@@ -315,22 +319,22 @@ class _AuthPageState extends ConsumerState<AuthPage>
     );
   }
 
-  void _showForgot() {
+  void _showForgot(AppThemeOption thm) {
     final ctrl = TextEditingController();
     showDialog(
       context: context,
       builder: (dialogCtx) => AlertDialog(
-        backgroundColor: _card,
+        backgroundColor: thm.cardColor,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Reset Password',
-            style: TextStyle(color: _textHi, fontWeight: FontWeight.w700)),
+        title: Text('Reset Password',
+            style: TextStyle(color: thm.textHigh, fontWeight: FontWeight.w700)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('Enter your email and we will send a reset link.',
-                style: TextStyle(color: _textLo, fontSize: 13)),
+            Text('Enter your email and we will send a reset link.',
+                style: TextStyle(color: thm.textLow, fontSize: 13)),
             const SizedBox(height: 16),
-            _field(controller: ctrl, label: 'Email Address',
+            _field(thm: thm, controller: ctrl, label: 'Email Address',
                 icon: Icons.email_outlined,
                 keyboardType: TextInputType.emailAddress),
           ],
@@ -338,12 +342,12 @@ class _AuthPageState extends ConsumerState<AuthPage>
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogCtx).pop(),
-            child: const Text('Cancel', style: TextStyle(color: _textLo)),
+            child: Text('Cancel', style: TextStyle(color: thm.textLow)),
           ),
           Consumer(builder: (_, ref, __) {
             final loading = ref.watch(authNotifierProvider).isLoading;
             return ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: _accentSoft),
+              style: ElevatedButton.styleFrom(backgroundColor: thm.accent),
               onPressed: loading ? null : () async {
                 if (ctrl.text.trim().isEmpty) return;
                 final ok = await ref.read(authNotifierProvider.notifier)
@@ -353,6 +357,7 @@ class _AuthPageState extends ConsumerState<AuthPage>
                 _snack(
                   ok ? 'Reset email sent! Check your inbox.'
                       : ref.read(authNotifierProvider).errorMessage,
+                  thm,
                   success: ok,
                 );
               },
@@ -367,28 +372,29 @@ class _AuthPageState extends ConsumerState<AuthPage>
     );
   }
 
-  Widget _arabicDecor() {
+  Widget _arabicDecor(AppThemeOption thm) {
     return Column(
       children: [
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           decoration: BoxDecoration(
-            color: _surface,
+            color: thm.surface,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: _gold.withOpacity(0.3)),
+            border: Border.all(color: thm.accent.withOpacity(0.3)),
           ),
-          child: const Text('بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ',
-              style: TextStyle(color: _gold, fontSize: 20, fontFamily: 'Amiri'),
+          child: Text('بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ',
+              style: TextStyle(color: thm.accent, fontSize: 20, fontFamily: 'Amiri'),
               textAlign: TextAlign.center),
         ),
         const SizedBox(height: 8),
-        const Text('In the name of Allah, the Most Gracious',
-            style: TextStyle(color: _textLo, fontSize: 12)),
+        Text('In the name of Allah, the Most Gracious',
+            style: TextStyle(color: thm.textLow, fontSize: 12)),
       ],
     );
   }
 
   Widget _field({
+    required AppThemeOption thm,
     required TextEditingController controller,
     required String label,
     required IconData icon,
@@ -401,23 +407,23 @@ class _AuthPageState extends ConsumerState<AuthPage>
       controller: controller,
       keyboardType: keyboardType,
       obscureText: obscure,
-      style: const TextStyle(color: _textHi),
+      style: TextStyle(color: thm.textHigh),
       validator: validator,
       autovalidateMode: AutovalidateMode.onUserInteraction,
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: const TextStyle(color: _textLo, fontSize: 14),
-        prefixIcon: Icon(icon, color: _accentSoft, size: 20),
+        labelStyle: TextStyle(color: thm.textLow, fontSize: 14),
+        prefixIcon: Icon(icon, color: thm.accent, size: 20),
         suffixIcon: suffix,
         filled: true,
-        fillColor: _surface,
+        fillColor: thm.surface,
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: _accentSoft.withOpacity(0.3)),
+          borderSide: BorderSide(color: thm.accent.withOpacity(0.3)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: _accent, width: 1.5),
+          borderSide: BorderSide(color: thm.accent, width: 1.5),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
@@ -433,6 +439,7 @@ class _AuthPageState extends ConsumerState<AuthPage>
   }
 
   Widget _primaryBtn({
+    required AppThemeOption thm,
     required String label,
     required bool loading,
     required VoidCallback onTap,
@@ -442,7 +449,7 @@ class _AuthPageState extends ConsumerState<AuthPage>
       child: ElevatedButton(
         onPressed: loading ? null : onTap,
         style: ElevatedButton.styleFrom(
-          backgroundColor: _accentSoft,
+          backgroundColor: thm.accent,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         ),
         child: loading
@@ -454,31 +461,31 @@ class _AuthPageState extends ConsumerState<AuthPage>
     );
   }
 
-  Widget _divider() {
+  Widget _divider(AppThemeOption thm) {
     return Row(
       children: [
-        Expanded(child: Divider(color: _textLo.withOpacity(0.3))),
+        Expanded(child: Divider(color: thm.textLow.withOpacity(0.3))),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12),
           child: Text('or continue with',
-              style: TextStyle(color: _textLo.withOpacity(0.7), fontSize: 12)),
+              style: TextStyle(color: thm.textLow.withOpacity(0.7), fontSize: 12)),
         ),
-        Expanded(child: Divider(color: _textLo.withOpacity(0.3))),
+        Expanded(child: Divider(color: thm.textLow.withOpacity(0.3))),
       ],
     );
   }
 
-  Widget _googleBtn() {
+  Widget _googleBtn(AppThemeOption thm) {
     return Consumer(builder: (_, ref, __) {
       final loading = ref.watch(authNotifierProvider).isLoading;
       return SizedBox(
         width: double.infinity, height: 54,
         child: OutlinedButton(
-          onPressed: loading ? null : _doGoogle,
+          onPressed: loading ? null : () => _doGoogle(thm),
           style: OutlinedButton.styleFrom(
-            side: BorderSide(color: _textLo.withOpacity(0.4)),
+            side: BorderSide(color: thm.textLow.withOpacity(0.4)),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            backgroundColor: _surface,
+            backgroundColor: thm.surface,
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -493,8 +500,8 @@ class _AuthPageState extends ConsumerState<AuthPage>
                 ),
               ),
               const SizedBox(width: 12),
-              const Text('Continue with Google',
-                  style: TextStyle(color: _textHi, fontWeight: FontWeight.w600)),
+              Text('Continue with Google',
+                  style: TextStyle(color: thm.textHigh, fontWeight: FontWeight.w600)),
             ],
           ),
         ),

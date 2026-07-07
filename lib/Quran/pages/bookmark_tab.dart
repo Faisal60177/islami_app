@@ -9,6 +9,7 @@ import '../models/bookmark_model.dart';
 import '../models/surah_model.dart';
 import 'quran_reader_page.dart';
 
+
 class BookmarkTab extends StatelessWidget {
   const BookmarkTab({super.key});
 
@@ -122,7 +123,7 @@ class _BookmarkTile extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        color: Colors.white,
+                        color: theme.textHigh,
                         fontSize: rsw * 0.034,
                         fontWeight: FontWeight.w700,
                       ),
@@ -195,7 +196,7 @@ class _EmptyBookmarks extends StatelessWidget {
           Text(
             'No bookmarks yet',
             style: TextStyle(
-              color: Colors.white,
+              color: theme.textHigh,
               fontSize: rsw * 0.040,
               fontWeight: FontWeight.w700,
             ),

@@ -40,6 +40,8 @@ class DuasRepository {
       final snapshot = await _firestore
           .collection('categories_duas')
           .get();
+
+      if (snapshot.docs.isEmpty) return;
       final db = await dbHelper.database;
       final List<int> firestoreIds = [];
 
@@ -114,6 +116,8 @@ class DuasRepository {
   Future<void> syncDuasFromFirestore() async {
     try {
       final snapshot = await _firestore.collection('duas').get();
+
+      if (snapshot.docs.isEmpty) return;
       final db = await dbHelper.database;
       final List<int> firestoreIds = [];
 

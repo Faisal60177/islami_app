@@ -85,7 +85,7 @@ class _DuasPageState extends State<DuasPage>
     return Directionality(
       textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
       child: Scaffold(
-        backgroundColor: const Color(0xFFF2F4F3),
+        backgroundColor: theme.background,
         // ── Bottom navigation — same as PrayerTimesPage ──────────────────
         bottomNavigationBar: _buildNav(
           context: context,
@@ -102,6 +102,7 @@ class _DuasPageState extends State<DuasPage>
               rsh: rsh,
               isRtl: isRtl,
               l10n: l10n,
+              theme: theme,
               statusBarH: mq.padding.top,
               searchController: _searchController,
               searchQuery: searchQuery,
@@ -113,6 +114,7 @@ class _DuasPageState extends State<DuasPage>
               tabs: tabs,
               rsw: rsw,
               tabBarH: tabBarH,
+              theme: theme,
             ),
 
             // ── Tab content — swipe restored ─────────────────────────────
@@ -245,6 +247,7 @@ class _DuasHeader extends StatelessWidget {
   final double rsw, rsh, statusBarH;
   final bool isRtl;
   final AppLocalizations l10n;
+  final AppThemeOption theme;
   final TextEditingController searchController;
   final String searchQuery;
 
@@ -253,6 +256,7 @@ class _DuasHeader extends StatelessWidget {
     required this.rsh,
     required this.isRtl,
     required this.l10n,
+    required this.theme,
     required this.statusBarH,
     required this.searchController,
     required this.searchQuery,
@@ -262,10 +266,14 @@ class _DuasHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final searchBarH = rsh * 0.060;
 
+    // header gradient built from the current theme's surface/accent
+    final headerStart = Color.lerp(theme.surface, theme.accent, 0.28)!;
+    final headerEnd    = Color.lerp(theme.surface, theme.accent, 0.55)!;
+
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [Color(0xFF0A5C5C), Color(0xFF0E8080)],
+          colors: [headerStart, headerEnd],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -301,17 +309,17 @@ class _DuasHeader extends StatelessWidget {
             ),
           ),
 
-          // ── Gold top accent line ──────────────────────────────────────
+          // ── Accent top line ───────────────────────────────────────────
           Positioned(
             top: 0, left: 0, right: 0,
             child: Container(
               height: 3,
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    Color(0xFFD4AF37),
-                    Color(0xFFF5D76E),
-                    Color(0xFFD4AF37),
+                    theme.accent,
+                    theme.accent.withOpacity(0.6),
+                    theme.accent,
                   ],
                 ),
               ),
@@ -349,7 +357,7 @@ class _DuasHeader extends StatelessWidget {
                       ),
                       child: Icon(
                         Icons.menu_book_rounded,
-                        color: const Color(0xFFD4AF37),
+                        color: theme.accent,
                         size: rsw * 0.056,
                       ),
                     ),
@@ -373,7 +381,7 @@ class _DuasHeader extends StatelessWidget {
                           Text(
                             'الأدعية والأذكار',
                             style: TextStyle(
-                              color:      const Color(0xFFD4AF37),
+                              color:      theme.accent,
                               fontSize:   rsw * 0.034,
                               fontWeight: FontWeight.w500,
                               height: 1.3,
@@ -417,7 +425,7 @@ class _DuasHeader extends StatelessWidget {
                             horizontal: rsw * 0.030),
                         child: Icon(
                           Icons.search_rounded,
-                          color: const Color(0xFF0D6E6E),
+                          color: theme.accent,
                           size:  rsw * 0.050,
                         ),
                       ),
@@ -465,21 +473,25 @@ class _DuasTabBar extends StatelessWidget {
   final TabController controller;
   final List<Map<String, dynamic>> tabs;
   final double rsw, tabBarH;
+  final AppThemeOption theme;
 
   const _DuasTabBar({
     required this.controller,
     required this.tabs,
     required this.rsw,
     required this.tabBarH,
+    required this.theme,
   });
 
   @override
   Widget build(BuildContext context) {
+    final barColor = Color.lerp(theme.surface, theme.accent, 0.18)!;
+
     return Container(
       height: tabBarH,
-      decoration: const BoxDecoration(
-        color: Color(0xFF0B6464),
-        boxShadow: [
+      decoration: BoxDecoration(
+        color: barColor,
+        boxShadow: const [
           BoxShadow(
             color: Colors.black26,
             blurRadius: 6,
@@ -489,7 +501,7 @@ class _DuasTabBar extends StatelessWidget {
       ),
       child: TabBar(
         controller: controller,
-        indicatorColor: const Color(0xFFD4AF37),
+        indicatorColor: theme.accent,
         indicatorWeight: 2.5,
         indicatorSize: TabBarIndicatorSize.label,
         isScrollable: false,
@@ -511,7 +523,7 @@ class _DuasTabBar extends StatelessWidget {
                       tabs[index]['icon'] as IconData,
                       size: rsw * 0.046,
                       color: isSelected
-                          ? const Color(0xFFD4AF37)
+                          ? theme.accent
                           : Colors.white.withOpacity(0.50),
                     ),
                     SizedBox(height: rsw * 0.007),
@@ -519,7 +531,7 @@ class _DuasTabBar extends StatelessWidget {
                       duration: const Duration(milliseconds: 200),
                       style: TextStyle(
                         color: isSelected
-                            ? const Color(0xFFD4AF37)
+                            ? theme.accent
                             : Colors.white.withOpacity(0.50),
                         fontSize:   rsw * 0.027,
                         fontWeight: isSelected

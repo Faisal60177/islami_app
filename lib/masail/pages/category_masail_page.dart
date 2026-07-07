@@ -7,18 +7,8 @@ import 'package:muslim_app/utils/language_utils.dart';
 import 'masail_detail_page.dart';
 import 'package:muslim_app/settings/l10n/app_localizations.dart';
 import 'package:muslim_app/settings/cubit/settings_cubit.dart';
-
-// ── Shared palette ────────────────────────────────────────────────────────────
-const Color _primary   = Color(0xFF6B1E2E);
-const Color _primaryDk = Color(0xFF4A1220);
-const Color _gold      = Color(0xFFD4AF37);
-const Color _goldDk    = Color(0xFFB8860B);
-const Color _bg        = Color(0xFFFAF6EF);
-const Color _surface   = Color(0xFFF2EBE0);
-const Color _textHi    = Color(0xFF1C0A0F);
-const Color _textMid   = Color(0xFF5C3D44);
-const Color _textLo    = Color(0xFF9C7A82);
-const Color _bookmark  = Color(0xFF6B1E2E);
+import 'package:muslim_app/settings/cubit/settings_state.dart';
+import 'package:muslim_app/settings/theme/app_themes.dart';
 
 class CategoryMasailPage extends StatefulWidget {
   final MasailCategoryModel category;
@@ -56,6 +46,7 @@ class _CategoryMasailPageState extends State<CategoryMasailPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = getThemeById(context.watch<SettingsCubit>().state.themeMode);
     final cubit = context.read<MasailCubit>();
     final isRtl = LanguageUtils.isRtl(cubit.currentLanguageCode);
     final w = MediaQuery.of(context).size.width;
@@ -64,7 +55,7 @@ class _CategoryMasailPageState extends State<CategoryMasailPage> {
     return Directionality(
       textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
       child: Scaffold(
-        backgroundColor: _bg,
+        backgroundColor: theme.background,
         appBar: _MasailAppBar(
           title:    widget.category.categoryTitle,
           subtitle: 'Masail', // l10n
@@ -72,13 +63,13 @@ class _CategoryMasailPageState extends State<CategoryMasailPage> {
           w:        w,
         ),
         body: isLoading
-            ? const Center(
+            ? Center(
             child: CircularProgressIndicator(
-                color: _primary, strokeWidth: 2.5))
+                color: theme.accent, strokeWidth: 2.5))
             : masail.isEmpty
             ? _EmptyMasail(w: w, h: h)
             : RefreshIndicator(
-          color: _primary,
+          color: theme.accent,
           onRefresh: _load,
           child: ListView.builder(
             padding: EdgeInsets.fromLTRB(
@@ -153,6 +144,7 @@ class _AllMasailPageState extends State<AllMasailPage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    final theme = getThemeById(context.watch<SettingsCubit>().state.themeMode);
     final cubit = context.read<MasailCubit>();
     final isRtl = LanguageUtils.isRtl(cubit.currentLanguageCode);
     final w = MediaQuery.of(context).size.width;
@@ -160,7 +152,7 @@ class _AllMasailPageState extends State<AllMasailPage>
 
     if (isLoading) {
       return Center(
-        child: CircularProgressIndicator(color: _primary, strokeWidth: 2.5),
+        child: CircularProgressIndicator(color: theme.accent, strokeWidth: 2.5),
       );
     }
 
@@ -223,7 +215,7 @@ class _MasailCardState extends State<MasailCard> {
     context.read<MasailCubit>().toggleBookmark(widget.masail);
   }
 
-  // Soft color palette for the number badge
+  // Soft color palette for the number badge (content color-coding — kept theme-independent)
   static const List<Color> _badgeColors = [
     Color(0xFF6B1E2E),
     Color(0xFF1E3A6B),
@@ -233,6 +225,7 @@ class _MasailCardState extends State<MasailCard> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = getThemeById(context.watch<SettingsCubit>().state.themeMode);
     final m     = widget.masail;
     final w     = MediaQuery.of(context).size.width;
     final h     = MediaQuery.of(context).size.height;
@@ -241,12 +234,12 @@ class _MasailCardState extends State<MasailCard> {
     return Container(
       margin: EdgeInsets.only(bottom: h * 0.014),
       decoration: BoxDecoration(
-        color:         Colors.white,
+        color:         theme.cardColor,
         borderRadius:  BorderRadius.circular(18),
-        border: Border.all(color: _surface, width: 1.2),
+        border: Border.all(color: theme.surface, width: 1.2),
         boxShadow: [
           BoxShadow(
-            color:      _primary.withOpacity(0.06),
+            color:      theme.accent.withOpacity(0.06),
             blurRadius: 12,
             offset:     const Offset(0, 3),
           ),
@@ -257,8 +250,8 @@ class _MasailCardState extends State<MasailCard> {
         borderRadius:  BorderRadius.circular(18),
         child: InkWell(
           borderRadius:   BorderRadius.circular(18),
-          splashColor:    _primary.withOpacity(0.06),
-          highlightColor: _primary.withOpacity(0.03),
+          splashColor:    theme.accent.withOpacity(0.06),
+          highlightColor: theme.accent.withOpacity(0.03),
           onTap: widget.onTap,
           child: Padding(
             padding: EdgeInsets.symmetric(
@@ -316,7 +309,7 @@ class _MasailCardState extends State<MasailCard> {
                               style: TextStyle(
                                 fontSize:   w * 0.04,
                                 fontWeight: FontWeight.w600,
-                                color:      _textHi,
+                                color:      theme.textHigh,
                                 height:     1.55,
                                 fontFamily: 'Amiri',
                               ),
@@ -330,7 +323,7 @@ class _MasailCardState extends State<MasailCard> {
                         widget.isRtl ? TextAlign.right : TextAlign.left,
                         style: TextStyle(
                           fontSize:   w * 0.034,
-                          color:      _textMid,
+                          color:      theme.textHigh,
                           height:     1.5,
                           fontWeight: FontWeight.w500,
                         ),
@@ -346,7 +339,7 @@ class _MasailCardState extends State<MasailCard> {
                               _Chip(
                                 label: m.categoryTitle,
                                 icon:  Icons.folder_outlined,
-                                color: _primary,
+                                color: theme.accent,
                                 w:     w, h: h,
                               ),
                               // Madhab chip — only if present
@@ -356,7 +349,7 @@ class _MasailCardState extends State<MasailCard> {
                                 _Chip(
                                   label: m.madhab!,
                                   icon:  Icons.school_outlined,
-                                  color: _goldDk,
+                                  color: theme.textLow,
                                   w:     w, h: h,
                                 ),
                               ],
@@ -370,8 +363,8 @@ class _MasailCardState extends State<MasailCard> {
                                   ? Icons.bookmark_rounded
                                   : Icons.bookmark_outline_rounded,
                               color: m.isBookmarked
-                                  ? _primary
-                                  : Colors.grey[350],
+                                  ? theme.accent
+                                  : theme.textLow.withOpacity(0.5),
                               size: w * 0.052,
                             ),
                           ),
@@ -382,7 +375,7 @@ class _MasailCardState extends State<MasailCard> {
                 ),
                 SizedBox(width: w * 0.015),
                 Icon(Icons.chevron_right_rounded,
-                    color: Colors.grey[300], size: w * 0.05),
+                    color: theme.textLow.withOpacity(0.6), size: w * 0.05),
               ],
             ),
           ),
@@ -452,48 +445,51 @@ class _MasailAppBar extends StatelessWidget implements PreferredSizeWidget {
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 
   @override
-  Widget build(BuildContext context) => AppBar(
-    backgroundColor: const Color(0xFF4A1220),
-    elevation:       0,
-    leading: IconButton(
-      icon: Icon(
-        isRtl
-            ? Icons.arrow_forward_ios_rounded
-            : Icons.arrow_back_ios_new_rounded,
-        color: Colors.white,
-        size:  18,
+  Widget build(BuildContext context) {
+    final theme = getThemeById(context.watch<SettingsCubit>().state.themeMode);
+    return AppBar(
+      backgroundColor: theme.surface,
+      elevation:       0,
+      leading: IconButton(
+        icon: Icon(
+          isRtl
+              ? Icons.arrow_forward_ios_rounded
+              : Icons.arrow_back_ios_new_rounded,
+          color: theme.accent,
+          size:  18,
+        ),
+        onPressed: () => Navigator.pop(context),
       ),
-      onPressed: () => Navigator.pop(context),
-    ),
-    titleSpacing: 0,
-    title: Column(
-      crossAxisAlignment:
-      isRtl ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: TextStyle(
-            color:      Colors.white,
-            fontSize:   w * 0.043,
-            fontWeight: FontWeight.w700,
+      titleSpacing: 0,
+      title: Column(
+        crossAxisAlignment:
+        isRtl ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: TextStyle(
+              color:      theme.textHigh,
+              fontSize:   w * 0.043,
+              fontWeight: FontWeight.w700,
+            ),
+            maxLines:  1,
+            overflow:  TextOverflow.ellipsis,
           ),
-          maxLines:  1,
-          overflow:  TextOverflow.ellipsis,
-        ),
-        Text(
-          subtitle,
-          style: TextStyle(
-              color: const Color(0xFFD4AF37), fontSize: w * 0.028),
-        ),
-      ],
-    ),
-    bottom: PreferredSize(
-      preferredSize: const Size.fromHeight(1),
-      child: Container(
-          height: 1,
-          color: const Color(0xFFD4AF37).withOpacity(0.2)),
-    ),
-  );
+          Text(
+            subtitle,
+            style: TextStyle(
+                color: theme.accent, fontSize: w * 0.028),
+          ),
+        ],
+      ),
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(1),
+        child: Container(
+            height: 1,
+            color: theme.accent.withOpacity(0.2)),
+      ),
+    );
+  }
 }
 
 
@@ -503,30 +499,33 @@ class _EmptyMasail extends StatelessWidget {
   const _EmptyMasail({required this.w, required this.h});
 
   @override
-  Widget build(BuildContext context) => Center(
-    child: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Container(
-          padding: EdgeInsets.all(w * 0.06),
-          decoration: const BoxDecoration(
-            color:  Color(0x146B1E2E),
-            shape:  BoxShape.circle,
+  Widget build(BuildContext context) {
+    final theme = getThemeById(context.watch<SettingsCubit>().state.themeMode);
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: EdgeInsets.all(w * 0.06),
+            decoration: BoxDecoration(
+              color:  theme.accent.withOpacity(0.08),
+              shape:  BoxShape.circle,
+            ),
+            child: Icon(Icons.menu_book_rounded,
+                size:  w * 0.14,
+                color: theme.accent.withOpacity(0.4)),
           ),
-          child: Icon(Icons.menu_book_rounded,
-              size:  w * 0.14,
-              color: const Color(0xFF6B1E2E).withOpacity(0.4)),
-        ),
-        SizedBox(height: h * 0.02),
-        Text(
-          'No Masail found',
-          style: TextStyle(
-            color:      const Color(0xFF9C7A82),
-            fontSize:   w * 0.042,
-            fontWeight: FontWeight.w600,
+          SizedBox(height: h * 0.02),
+          Text(
+            'No Masail found',
+            style: TextStyle(
+              color:      theme.textLow,
+              fontSize:   w * 0.042,
+              fontWeight: FontWeight.w600,
+            ),
           ),
-        ),
-      ],
-    ),
-  );
+        ],
+      ),
+    );
+  }
 }

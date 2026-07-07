@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:muslim_app/settings/l10n/app_localizations.dart';
 import 'package:muslim_app/settings/cubit/settings_cubit.dart';
+import 'package:muslim_app/settings/cubit/settings_state.dart';
+import 'package:muslim_app/settings/theme/app_themes.dart';
 import 'masail_category_page.dart';
 import 'all_masail_page.dart';
 import 'bookmarked_masail_page.dart';
@@ -19,16 +21,6 @@ class _MasailPageState extends State<MasailPage>
   late TabController _tabController;
   final TextEditingController _searchController = TextEditingController();
   String searchQuery = '';
-
-  // ── Masail color palette (warm parchment / manuscript) ──
-  static const Color _bg         = Color(0xFFFAF6EF);
-  static const Color _primary    = Color(0xFF6B1E2E); // deep burgundy
-  static const Color _primaryDk  = Color(0xFF4A1220);
-  static const Color _gold       = Color(0xFFB8860B);
-  static const Color _goldLight  = Color(0xFFD4AF37);
-  static const Color _surface    = Color(0xFFF2EBE0);
-  static const Color _textHi     = Color(0xFF1C0A0F);
-  static const Color _textMid    = Color(0xFF5C3D44);
 
   @override
   void initState() {
@@ -52,6 +44,7 @@ class _MasailPageState extends State<MasailPage>
 
   @override
   Widget build(BuildContext context) {
+    final theme    = getThemeById(context.watch<SettingsCubit>().state.themeMode);
     final langCode = context.watch<SettingsCubit>().state.languageCode;
     final l10n     = AppLocalizations(langCode);
     final isRtl    = l10n.isRtl;
@@ -69,7 +62,7 @@ class _MasailPageState extends State<MasailPage>
     return Directionality(
       textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
       child: Scaffold(
-        backgroundColor: _bg,
+        backgroundColor: theme.background,
         body: NestedScrollView(
           physics: const ClampingScrollPhysics(),
           headerSliverBuilder: (context, innerBoxIsScrolled) => [
@@ -79,12 +72,12 @@ class _MasailPageState extends State<MasailPage>
               floating: false,
               pinned: true,
               elevation: 0,
-              backgroundColor: _primaryDk,
+              backgroundColor: theme.surface,
               flexibleSpace: FlexibleSpaceBar(
                 background: Container(
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [Color(0xFF4A1220), Color(0xFF7B2235)],
+                      colors: [theme.primary, theme.accent],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
@@ -100,28 +93,28 @@ class _MasailPageState extends State<MasailPage>
                           ),
                         ),
                       ),
-                      // ── Gold top border ──
+                      // ── Top border ──
                       Positioned(
                         top: 0, left: 0, right: 0,
                         child: Container(
                           height: 3,
-                          decoration: const BoxDecoration(
+                          decoration: BoxDecoration(
                             gradient: LinearGradient(
                               colors: [
-                                Color(0xFFB8860B),
-                                Color(0xFFD4AF37),
-                                Color(0xFFB8860B),
+                                theme.accent.withOpacity(0.7),
+                                theme.accent,
+                                theme.accent.withOpacity(0.7),
                               ],
                             ),
                           ),
                         ),
                       ),
-                      // ── Gold bottom border ──
+                      // ── Bottom border ──
                       Positioned(
                         bottom: sh * 0.065, left: 0, right: 0,
                         child: Container(
                           height: 1,
-                          color: _goldLight.withOpacity(0.25),
+                          color: Colors.white.withOpacity(0.25),
                         ),
                       ),
                       // ── Decorative arch circles ──
@@ -134,7 +127,7 @@ class _MasailPageState extends State<MasailPage>
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             border: Border.all(
-                              color: _goldLight.withOpacity(0.1),
+                              color: Colors.white.withOpacity(0.1),
                               width: 1.5,
                             ),
                           ),
@@ -150,7 +143,7 @@ class _MasailPageState extends State<MasailPage>
                             shape: BoxShape.circle,
                             color: Colors.white.withOpacity(0.03),
                             border: Border.all(
-                              color: _goldLight.withOpacity(0.08),
+                              color: Colors.white.withOpacity(0.08),
                               width: 1,
                             ),
                           ),
@@ -177,16 +170,16 @@ class _MasailPageState extends State<MasailPage>
                                 Container(
                                   padding: const EdgeInsets.all(9),
                                   decoration: BoxDecoration(
-                                    color: _goldLight.withOpacity(0.15),
+                                    color: Colors.white.withOpacity(0.15),
                                     borderRadius: BorderRadius.circular(14),
                                     border: Border.all(
-                                      color: _goldLight.withOpacity(0.3),
+                                      color: Colors.white.withOpacity(0.3),
                                       width: 1,
                                     ),
                                   ),
                                   child: Icon(
                                     Icons.auto_stories_rounded,
-                                    color: _goldLight,
+                                    color: Colors.white,
                                     size: sw * 0.06,
                                   ),
                                 ),
@@ -208,7 +201,7 @@ class _MasailPageState extends State<MasailPage>
                                     Text(
                                       'مسائل فقہیہ', // always Arabic
                                       style: TextStyle(
-                                        color: _goldLight,
+                                        color: Colors.white.withOpacity(0.85),
                                         fontSize: sw * 0.038,
                                         fontWeight: FontWeight.w400,
                                         fontFamily: 'Amiri',
@@ -226,7 +219,7 @@ class _MasailPageState extends State<MasailPage>
                                 color: Colors.white.withOpacity(0.12),
                                 borderRadius: BorderRadius.circular(14),
                                 border: Border.all(
-                                  color: _goldLight.withOpacity(0.25),
+                                  color: Colors.white.withOpacity(0.25),
                                   width: 1,
                                 ),
                               ),
@@ -247,13 +240,12 @@ class _MasailPageState extends State<MasailPage>
                                   ),
                                   prefixIcon: Icon(
                                     Icons.search_rounded,
-                                    color: _goldLight,
+                                    color: Colors.white.withOpacity(0.85),
                                     size: sw * 0.05,
                                   ),
                                   suffixIcon: searchQuery.isNotEmpty
                                       ? IconButton(
-                                    icon: Icon(Icons.close_rounded,
-                                        size: sw * 0.042,
+                                    icon: const Icon(Icons.close_rounded,
                                         color: Colors.white54),
                                     onPressed: () =>
                                         _searchController.clear(),
@@ -275,10 +267,10 @@ class _MasailPageState extends State<MasailPage>
               bottom: PreferredSize(
                 preferredSize: Size.fromHeight(sh * 0.062),
                 child: Container(
-                  color: _primaryDk,
+                  color: theme.surface,
                   child: TabBar(
                     controller: _tabController,
-                    indicatorColor: _goldLight,
+                    indicatorColor: theme.accent,
                     indicatorWeight: 2.5,
                     indicatorSize: TabBarIndicatorSize.label,
                     isScrollable: false,
@@ -297,16 +289,16 @@ class _MasailPageState extends State<MasailPage>
                                 tabs[i]['icon'] as IconData,
                                 size: sw * 0.046,
                                 color: isSelected
-                                    ? _goldLight
-                                    : Colors.white.withOpacity(0.45),
+                                    ? theme.accent
+                                    : theme.textLow,
                               ),
                               const SizedBox(height: 2),
                               Text(
                                 tabs[i]['label'] as String,
                                 style: TextStyle(
                                   color: isSelected
-                                      ? _goldLight
-                                      : Colors.white.withOpacity(0.45),
+                                      ? theme.accent
+                                      : theme.textLow,
                                   fontSize: sw * 0.027,
                                   fontWeight: isSelected
                                       ? FontWeight.w700

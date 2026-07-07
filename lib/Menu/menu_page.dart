@@ -5,6 +5,8 @@ import 'auth/auth_notifier.dart';
 import 'package:muslim_app/settings/l10n/app_localizations.dart';
 import 'package:muslim_app/settings/cubit/settings_cubit.dart';
 import 'package:muslim_app/settings/cubit/settings_state.dart';
+import 'package:muslim_app/settings/theme/app_themes.dart';
+import 'package:muslim_app/settings/pages/sections/theme_settings_section.dart';
 import 'profile/profile_page.dart';
 import 'package:muslim_app/settings/pages/settings_page.dart';
 import 'contact/contact_page.dart';
@@ -12,21 +14,10 @@ import 'share/share_page.dart';
 import 'rate/rate_page.dart';
 import 'about/about_page.dart';
 import 'auth/sign_out_page.dart';
-import 'auth/auth_notifier.dart';
 import 'package:muslim_app/home/home_page.dart';
 import 'package:muslim_app/tools/tools_page.dart';
 import 'package:muslim_app/Quran/quran_page.dart';
 import 'package:muslim_app/Duas/pages/duas_page.dart';
-
-// ─── Palette ─────────────────────────────────────────────────────────────────
-const _bg         = Color(0xFF011A0E);
-const _surface    = Color(0xFF0D2E1C);
-const _card       = Color(0xFF122E1E);
-const _accent     = Color(0xFF4CAF82);
-const _accentSoft = Color(0xFF2E7D5A);
-const _gold       = Color(0xFFD4AF37);
-const _textHi     = Color(0xFFE8F5EC);
-const _textLo     = Color(0xFF7BAF92);
 
 // ─── MenuPage ────────────────────────────────────────────────────────────────
 class MenuPage extends StatelessWidget {
@@ -42,43 +33,44 @@ class MenuPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // ✅ Single BlocBuilder at the top — l10n flows down to every child
+    // ✅ Single BlocBuilder at the top — l10n + theme flow down to every child
     return BlocBuilder<SettingsCubit, SettingsState>(
       builder: (context, state) {
         final l10n = AppLocalizations(state.languageCode);
+        final thm  = getThemeById(state.themeMode);
 
         return Scaffold(
-          backgroundColor: _bg,
-          appBar: _buildAppBar(context, l10n),
-          body: _buildBody(context, l10n),
-          bottomNavigationBar: _buildNav(context, l10n),
+          backgroundColor: thm.background,
+          appBar: _buildAppBar(context, l10n, thm),
+          body: _buildBody(context, l10n, thm),
+          bottomNavigationBar: _buildNav(context, l10n, thm),
         );
       },
     );
   }
 
   // ── AppBar ──────────────────────────────────────────────────────────────
-  PreferredSizeWidget _buildAppBar(BuildContext context, AppLocalizations l10n) {
+  PreferredSizeWidget _buildAppBar(
+      BuildContext context, AppLocalizations l10n, AppThemeOption thm) {
     return AppBar(
       automaticallyImplyLeading: false,
-      backgroundColor: _surface,
+      backgroundColor: thm.surface,
       elevation: 0,
       title: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: _accentSoft.withOpacity(0.2),
+              color: thm.accent.withOpacity(0.2),
               borderRadius: BorderRadius.circular(10),
             ),
             child: const Text('🕌', style: TextStyle(fontSize: 18)),
           ),
           const SizedBox(width: 12),
-          // ✅ l10n.menuTitle instead of hardcoded 'Menu'
           Text(
             l10n.menuTitle,
-            style: const TextStyle(
-              color: _textHi,
+            style: TextStyle(
+              color: thm.textHigh,
               fontSize: 20,
               fontWeight: FontWeight.w800,
               letterSpacing: 0.3,
@@ -100,8 +92,8 @@ class MenuPage extends StatelessWidget {
               height: 38,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: _accentSoft,
-                border: Border.all(color: _gold.withOpacity(0.5)),
+                color: thm.accent.withOpacity(0.6),
+                border: Border.all(color: thm.accent.withOpacity(0.5)),
               ),
               child: auth.photoUrl.isNotEmpty
                   ? ClipOval(
@@ -134,7 +126,8 @@ class MenuPage extends StatelessWidget {
   }
 
   // ── Body ────────────────────────────────────────────────────────────────
-  Widget _buildBody(BuildContext context, AppLocalizations l10n) {
+  Widget _buildBody(
+      BuildContext context, AppLocalizations l10n, AppThemeOption thm) {
     return LayoutBuilder(
       builder: (context, constraints) {
         final horizontal = constraints.maxWidth > 600 ? 24.0 : 16.0;
@@ -142,8 +135,7 @@ class MenuPage extends StatelessWidget {
         return SingleChildScrollView(
           child: Column(
             children: [
-              // ✅ Pass l10n down to greeting card
-              _UserGreetingCard(l10n: l10n),
+              _UserGreetingCard(l10n: l10n, thm: thm),
               Padding(
                 padding: EdgeInsets.fromLTRB(horizontal, 0, horizontal, 24),
                 child: Column(
@@ -151,77 +143,85 @@ class MenuPage extends StatelessWidget {
                   children: [
 
                     // ── Account section ──────────────────────────────────
-                    _sectionLabel(l10n.account),
+                    _sectionLabel(l10n.account, thm),
                     const SizedBox(height: 10),
-                    _MenuSection(items: [
-                      _MenuItem(
-                        icon: Icons.person_rounded,
-                        iconColor: const Color(0xFF4CAF82),
-                        // ✅ l10n strings
-                        title: l10n.profile,
-                        subtitle: l10n.profileSubtitle,
-                        page: const ProfilePage(),
-                      ),
-                      _MenuItem(
-                        icon: Icons.settings_rounded,
-                        iconColor: const Color(0xFF9E9E9E),
-                        title: l10n.settings,
-                        subtitle: l10n.settingsSubtitle,
-                        page: const SettingsPage(),
-                      ),
-                    ]),
+                    _MenuSection(
+                      thm: thm,
+                      items: [
+                        _MenuItem(
+                          icon: Icons.person_rounded,
+                          iconColor: const Color(0xFF4CAF82),
+                          title: l10n.profile,
+                          subtitle: l10n.profileSubtitle,
+                          page: const ProfilePage(),
+                        ),
+                        _MenuItem(
+                          icon: Icons.settings_rounded,
+                          iconColor: const Color(0xFF9E9E9E),
+                          title: l10n.settings,
+                          subtitle: l10n.settingsSubtitle,
+                          page: const SettingsPage(),
+                        ),
+
+                      ],
+                    ),
                     const SizedBox(height: 24),
 
                     // ── Support section ──────────────────────────────────
-                    _sectionLabel(l10n.support),
+                    _sectionLabel(l10n.support, thm),
                     const SizedBox(height: 10),
-                    _MenuSection(items: [
-                      _MenuItem(
-                        icon: Icons.headset_mic_outlined,
-                        iconColor: const Color(0xFF2196F3),
-                        title: l10n.contactUs,
-                        subtitle: l10n.contactSubtitle,
-                        page: const ContactPage(),
-                      ),
-                      _MenuItem(
-                        icon: Icons.share_rounded,
-                        iconColor: const Color(0xFF25D366),
-                        title: l10n.shareApp,
-                        subtitle: l10n.shareSubtitle,
-                        page: const SharePage(),
-                      ),
-                      _MenuItem(
-                        icon: Icons.star_rounded,
-                        iconColor: _gold,
-                        title: l10n.rateUs,
-                        subtitle: l10n.rateSubtitle,
-                        page: const RatePage(),
-                        badge: '⭐',
-                      ),
-                    ]),
+                    _MenuSection(
+                      thm: thm,
+                      items: [
+                        _MenuItem(
+                          icon: Icons.headset_mic_outlined,
+                          iconColor: const Color(0xFF2196F3),
+                          title: l10n.contactUs,
+                          subtitle: l10n.contactSubtitle,
+                          page: const ContactPage(),
+                        ),
+                        _MenuItem(
+                          icon: Icons.share_rounded,
+                          iconColor: const Color(0xFF25D366),
+                          title: l10n.shareApp,
+                          subtitle: l10n.shareSubtitle,
+                          page: const SharePage(),
+                        ),
+                        _MenuItem(
+                          icon: Icons.star_rounded,
+                          iconColor: thm.accent,
+                          title: l10n.rateUs,
+                          subtitle: l10n.rateSubtitle,
+                          page: const RatePage(),
+                          badge: '⭐',
+                        ),
+                      ],
+                    ),
                     const SizedBox(height: 24),
 
                     // ── Info section ─────────────────────────────────────
-                    _sectionLabel(l10n.info),
+                    _sectionLabel(l10n.info, thm),
                     const SizedBox(height: 10),
-                    _MenuSection(items: [
-                      _MenuItem(
-                        icon: Icons.info_outline_rounded,
-                        iconColor: const Color(0xFFFF9800),
-                        title: l10n.aboutApp,
-                        subtitle: l10n.aboutSubtitle,
-                        page: const AboutPage(),
-                      ),
-                    ]),
+                    _MenuSection(
+                      thm: thm,
+                      items: [
+                        _MenuItem(
+                          icon: Icons.info_outline_rounded,
+                          iconColor: const Color(0xFFFF9800),
+                          title: l10n.aboutApp,
+                          subtitle: l10n.aboutSubtitle,
+                          page: const AboutPage(),
+                        ),
+                      ],
+                    ),
                     const SizedBox(height: 24),
 
                     // ── Session section ──────────────────────────────────
-                    _sectionLabel(l10n.sessionLabel),
+                    _sectionLabel(l10n.sessionLabel, thm),
                     const SizedBox(height: 10),
-                    // ✅ Pass l10n to sign-out tile
-                    _SignOutTile(l10n: l10n),
+                    _SignOutTile(l10n: l10n, thm: thm),
                     const SizedBox(height: 32),
-                    _bottomQuote(l10n),
+                    _bottomQuote(l10n, thm),
                   ],
                 ),
               ),
@@ -233,14 +233,13 @@ class MenuPage extends StatelessWidget {
   }
 
   // ── Section label ────────────────────────────────────────────────────────
-  Widget _sectionLabel(String text) {
+  Widget _sectionLabel(String text, AppThemeOption thm) {
     return Padding(
       padding: const EdgeInsets.only(left: 4),
       child: Text(
-        // toUpperCase() works fine on already-uppercase scripts too
         text.toUpperCase(),
-        style: const TextStyle(
-          color: _textLo,
+        style: TextStyle(
+          color: thm.textLow,
           fontSize: 11,
           fontWeight: FontWeight.w700,
           letterSpacing: 1.5,
@@ -250,29 +249,28 @@ class MenuPage extends StatelessWidget {
   }
 
   // ── Bottom quote ─────────────────────────────────────────────────────────
-  Widget _bottomQuote(AppLocalizations l10n) {
+  Widget _bottomQuote(AppLocalizations l10n, AppThemeOption thm) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            _accentSoft.withOpacity(0.1),
-            _gold.withOpacity(0.05),
+            thm.accent.withOpacity(0.1),
+            thm.accent.withOpacity(0.05),
           ],
         ),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: _gold.withOpacity(0.2)),
+        border: Border.all(color: thm.accent.withOpacity(0.2)),
       ),
       child: Column(
         children: [
           const Text('🌙', style: TextStyle(fontSize: 32)),
           const SizedBox(height: 10),
-          // ✅ Localized quote
           Text(
             l10n.quoteHardship,
             textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: _gold,
+            style: TextStyle(
+              color: thm.accent,
               fontSize: 14,
               fontStyle: FontStyle.italic,
             ),
@@ -280,7 +278,7 @@ class MenuPage extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             l10n.quoteHardshipRef,
-            style: const TextStyle(color: _textLo, fontSize: 12),
+            style: TextStyle(color: thm.textLow, fontSize: 12),
           ),
         ],
       ),
@@ -288,8 +286,8 @@ class MenuPage extends StatelessWidget {
   }
 
   // ── Bottom Nav ───────────────────────────────────────────────────────────
-  Widget _buildNav(BuildContext context, AppLocalizations l10n) {
-    // ✅ Nav labels now use l10n
+  Widget _buildNav(
+      BuildContext context, AppLocalizations l10n, AppThemeOption thm) {
     final items = [
       (l10n.today,  'assets/icons/today.png'),
       (l10n.tools,  'assets/icons/tools.png'),
@@ -300,9 +298,9 @@ class MenuPage extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: _surface,
+        color: thm.surface,
         border: Border(
-          top: BorderSide(color: _accentSoft.withOpacity(0.25), width: 1),
+          top: BorderSide(color: thm.accent.withOpacity(0.25), width: 1),
         ),
         boxShadow: const [
           BoxShadow(color: Colors.black54, blurRadius: 20),
@@ -341,7 +339,7 @@ class MenuPage extends StatelessWidget {
                   ),
                   decoration: BoxDecoration(
                     color: active
-                        ? _accentSoft.withOpacity(0.22)
+                        ? thm.accent.withOpacity(0.22)
                         : Colors.transparent,
                     borderRadius: BorderRadius.circular(16),
                   ),
@@ -356,7 +354,7 @@ class MenuPage extends StatelessWidget {
                           fontSize: 10,
                           fontWeight:
                           active ? FontWeight.w700 : FontWeight.w400,
-                          color: active ? _accent : _textLo,
+                          color: active ? thm.accent : thm.textLow,
                         ),
                       ),
                     ],
@@ -372,10 +370,10 @@ class MenuPage extends StatelessWidget {
 }
 
 // ─── User Greeting Card ───────────────────────────────────────────────────────
-// ✅ Now accepts l10n as a required parameter
 class _UserGreetingCard extends ConsumerWidget {
   final AppLocalizations l10n;
-  const _UserGreetingCard({required this.l10n});
+  final AppThemeOption thm;
+  const _UserGreetingCard({required this.l10n, required this.thm});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -385,16 +383,16 @@ class _UserGreetingCard extends ConsumerWidget {
       margin: const EdgeInsets.all(16),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF0D2E1C), Color(0xFF122E1E)],
+        gradient: LinearGradient(
+          colors: [thm.surface, thm.cardColor],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: _gold.withOpacity(0.2)),
+        border: Border.all(color: thm.accent.withOpacity(0.2)),
         boxShadow: [
           BoxShadow(
-              color: Colors.black.withOpacity(0.3),
+              color: Colors.black.withOpacity(thm.isDark ? 0.3 : 0.08),
               blurRadius: 12,
               offset: const Offset(0, 4)),
         ],
@@ -410,8 +408,8 @@ class _UserGreetingCard extends ConsumerWidget {
               width: 60, height: 60,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: _accentSoft,
-                border: Border.all(color: _gold.withOpacity(0.5), width: 2),
+                color: thm.accent.withOpacity(0.6),
+                border: Border.all(color: thm.accent.withOpacity(0.5), width: 2),
               ),
               child: auth.isLoggedIn && auth.photoUrl.isNotEmpty
                   ? ClipOval(
@@ -438,7 +436,7 @@ class _UserGreetingCard extends ConsumerWidget {
               children: [
                 Text(
                   auth.isLoggedIn ? l10n.assalamuAlaikum : l10n.welcome,
-                  style: const TextStyle(color: _textLo, fontSize: 12),
+                  style: TextStyle(color: thm.textLow, fontSize: 12),
                 ),
                 const SizedBox(height: 2),
                 Text(
@@ -447,8 +445,8 @@ class _UserGreetingCard extends ConsumerWidget {
                       ? auth.displayName
                       : l10n.muslimUser)
                       : l10n.signInSubtitle,
-                  style: const TextStyle(
-                      color: _textHi,
+                  style: TextStyle(
+                      color: thm.textHigh,
                       fontWeight: FontWeight.w700,
                       fontSize: 17),
                   overflow: TextOverflow.ellipsis,
@@ -463,7 +461,7 @@ class _UserGreetingCard extends ConsumerWidget {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
-                          color: _accentSoft,
+                          color: thm.accent.withOpacity(0.6),
                           borderRadius: BorderRadius.circular(8)),
                       child: Text(l10n.signIn,
                           style: const TextStyle(
@@ -482,16 +480,16 @@ class _UserGreetingCard extends ConsumerWidget {
               padding:
               const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               decoration: BoxDecoration(
-                color: _gold.withOpacity(0.1),
+                color: thm.accent.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: _gold.withOpacity(0.3)),
+                border: Border.all(color: thm.accent.withOpacity(0.3)),
               ),
               child: Column(
                 children: [
                   const Text('🌙', style: TextStyle(fontSize: 16)),
                   Text(l10n.activeBadge,
-                      style: const TextStyle(
-                          color: _gold,
+                      style: TextStyle(
+                          color: thm.accent,
                           fontSize: 10,
                           fontWeight: FontWeight.w700)),
                 ],
@@ -504,21 +502,21 @@ class _UserGreetingCard extends ConsumerWidget {
 }
 
 // ─── Menu Section ─────────────────────────────────────────────────────────────
-// (no text inside — no l10n needed here)
 class _MenuSection extends StatelessWidget {
   final List<_MenuItem> items;
-  const _MenuSection({required this.items});
+  final AppThemeOption thm;
+  const _MenuSection({required this.items, required this.thm});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: _card,
+        color: thm.cardColor,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: _accentSoft.withOpacity(0.2)),
+        border: Border.all(color: thm.accent.withOpacity(0.2)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.black.withOpacity(thm.isDark ? 0.2 : 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -531,11 +529,11 @@ class _MenuSection extends StatelessWidget {
           final isLast = i == items.length - 1;
           return Column(
             children: [
-              _MenuTile(item: item),
+              _MenuTile(item: item, thm: thm),
               if (!isLast)
                 Divider(
                   height: 1,
-                  color: _accentSoft.withOpacity(0.15),
+                  color: thm.accent.withOpacity(0.15),
                   indent: 58,
                 ),
             ],
@@ -547,10 +545,10 @@ class _MenuSection extends StatelessWidget {
 }
 
 // ─── Menu Tile ────────────────────────────────────────────────────────────────
-// (title/subtitle already come in as translated strings via _MenuItem)
 class _MenuTile extends StatelessWidget {
   final _MenuItem item;
-  const _MenuTile({required this.item});
+  final AppThemeOption thm;
+  const _MenuTile({required this.item, required this.thm});
 
   @override
   Widget build(BuildContext context) {
@@ -561,10 +559,10 @@ class _MenuTile extends StatelessWidget {
         onTap: () => Navigator.push(
           context,
           PageRouteBuilder(
-            pageBuilder: (_, __, ___) => item.page,                    // = () => item.page
-            transitionDuration: const Duration(milliseconds: 280),     // = duration: 280ms
+            pageBuilder: (_, __, ___) => item.page,
+            transitionDuration: const Duration(milliseconds: 280),
             reverseTransitionDuration: const Duration(milliseconds: 280),
-            transitionsBuilder: (_, animation, __, child) {             // = transition: Transition.rightToLeft
+            transitionsBuilder: (_, animation, __, child) {
               return SlideTransition(
                 position: Tween<Offset>(
                   begin: const Offset(1, 0),
@@ -575,7 +573,7 @@ class _MenuTile extends StatelessWidget {
             },
           ),
         ),
-        splashColor: _accentSoft.withOpacity(0.1),
+        splashColor: thm.accent.withOpacity(0.1),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           child: Row(
@@ -598,8 +596,8 @@ class _MenuTile extends StatelessWidget {
                       children: [
                         Text(
                           item.title,
-                          style: const TextStyle(
-                            color: _textHi,
+                          style: TextStyle(
+                            color: thm.textHigh,
                             fontWeight: FontWeight.w600,
                             fontSize: 15,
                           ),
@@ -617,8 +615,8 @@ class _MenuTile extends StatelessWidget {
                       const SizedBox(height: 2),
                       Text(
                         item.subtitle!,
-                        style: const TextStyle(
-                          color: _textLo,
+                        style: TextStyle(
+                          color: thm.textLow,
                           fontSize: 12,
                         ),
                       ),
@@ -626,9 +624,9 @@ class _MenuTile extends StatelessWidget {
                   ],
                 ),
               ),
-              const Icon(
+              Icon(
                 Icons.arrow_forward_ios_rounded,
-                color: _textLo,
+                color: thm.textLow,
                 size: 14,
               ),
             ],
@@ -659,16 +657,16 @@ class _MenuItem {
 }
 
 // ─── Sign Out Tile ────────────────────────────────────────────────────────────
-// ✅ Now accepts l10n
 class _SignOutTile extends StatelessWidget {
   final AppLocalizations l10n;
-  const _SignOutTile({required this.l10n});
+  final AppThemeOption thm;
+  const _SignOutTile({required this.l10n, required this.thm});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: _card,
+        color: thm.cardColor,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(color: Colors.red.withOpacity(0.2)),
       ),
@@ -717,7 +715,6 @@ class _SignOutTile extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        // ✅ Localized
                         l10n.signOut,
                         style: const TextStyle(
                           color: Colors.redAccent,
@@ -727,19 +724,18 @@ class _SignOutTile extends StatelessWidget {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        // ✅ Localized
                         l10n.signOutSubtitle,
-                        style: const TextStyle(
-                          color: _textLo,
+                        style: TextStyle(
+                          color: thm.textLow,
                           fontSize: 12,
                         ),
                       ),
                     ],
                   ),
                 ),
-                const Icon(
+                Icon(
                   Icons.arrow_forward_ios_rounded,
-                  color: _textLo,
+                  color: thm.textLow,
                   size: 14,
                 ),
               ],

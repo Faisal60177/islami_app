@@ -6,20 +6,8 @@ import '../model/masail_model.dart';
 import 'package:muslim_app/utils/language_utils.dart';
 import 'package:muslim_app/settings/l10n/app_localizations.dart';
 import 'package:muslim_app/settings/cubit/settings_cubit.dart';
-
-// ── Palette ────────────────────────────────────────────────────────────────────
-const Color _bg        = Color(0xFFFAF6EF);
-const Color _primary   = Color(0xFF6B1E2E);
-const Color _primaryDk = Color(0xFF4A1220);
-const Color _primaryLt = Color(0xFF8B2E42);
-const Color _gold      = Color(0xFFD4AF37);
-const Color _goldDk    = Color(0xFFB8860B);
-const Color _surface   = Color(0xFFF2EBE0);
-const Color _card      = Color(0xFFF7F1E8);
-const Color _textHi    = Color(0xFF1C0A0F);
-const Color _textMid   = Color(0xFF5C3D44);
-const Color _textLo    = Color(0xFF9C7A82);
-const Color _divider   = Color(0x1A6B1E2E);
+import 'package:muslim_app/settings/cubit/settings_state.dart';
+import 'package:muslim_app/settings/theme/app_themes.dart';
 
 class MasailDetailPage extends StatefulWidget {
   final MasailModel masail;
@@ -83,13 +71,14 @@ class _MasailDetailPageState extends State<MasailDetailPage>
     HapticFeedback.lightImpact();
     setState(() => _masail.isBookmarked = !_masail.isBookmarked);
     _bkmCtrl.forward(from: 0);
+    final theme = getThemeById(context.read<SettingsCubit>().state.themeMode);
     final l10n = AppLocalizations(
         context.read<SettingsCubit>().state.languageCode);
     _toast(
       _masail.isBookmarked
           ? l10n.addedToBookmarked
           : l10n.removedFromBookmark,
-      _masail.isBookmarked ? _primary : _textLo,
+      _masail.isBookmarked ? theme.accent : theme.textLow,
     );
     context.read<MasailCubit>().toggleBookmark(_masail);
   }
@@ -112,17 +101,19 @@ class _MasailDetailPageState extends State<MasailDetailPage>
       buf.writeln('Madhab: ${_masail.madhab}');
     }
     Clipboard.setData(ClipboardData(text: buf.toString()));
+    final theme = getThemeById(context.read<SettingsCubit>().state.themeMode);
     final l10n = AppLocalizations(
         context.read<SettingsCubit>().state.languageCode);
-    _toast(l10n.copiedToClipboard, _primary);
+    _toast(l10n.copiedToClipboard, theme.accent);
   }
 
   void _toast(String msg, Color color) {
+    final theme = getThemeById(context.read<SettingsCubit>().state.themeMode);
     ScaffoldMessenger.of(context)
       ..clearSnackBars()
       ..showSnackBar(SnackBar(
         behavior:        SnackBarBehavior.floating,
-        backgroundColor: _card,
+        backgroundColor: theme.cardColor,
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14)),
         margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
@@ -136,14 +127,15 @@ class _MasailDetailPageState extends State<MasailDetailPage>
           ),
           const SizedBox(width: 12),
           Text(msg,
-              style: const TextStyle(
-                  color: _textHi, fontSize: 13, fontWeight: FontWeight.w500)),
+              style: TextStyle(
+                  color: theme.textHigh, fontSize: 13, fontWeight: FontWeight.w500)),
         ]),
       ));
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = getThemeById(context.watch<SettingsCubit>().state.themeMode);
     final sw = MediaQuery.of(context).size.width;
     final l10n = AppLocalizations(
         context.read<SettingsCubit>().state.languageCode);
@@ -151,16 +143,16 @@ class _MasailDetailPageState extends State<MasailDetailPage>
     return Directionality(
       textDirection: _isRtl ? TextDirection.rtl : TextDirection.ltr,
       child: Scaffold(
-        backgroundColor: _bg,
+        backgroundColor: theme.background,
         appBar: AppBar(
-          backgroundColor: _primaryDk,
+          backgroundColor: theme.surface,
           elevation:       0,
           leading: IconButton(
             icon: Icon(
               _isRtl
                   ? Icons.arrow_forward_ios_rounded
                   : Icons.arrow_back_ios_new_rounded,
-              color: Colors.white,
+              color: theme.accent,
               size:  17,
             ),
             onPressed: () => Navigator.pop(context),
@@ -174,7 +166,7 @@ class _MasailDetailPageState extends State<MasailDetailPage>
               Text(
                 _masail.categoryTitle,
                 style: TextStyle(
-                  color:      Colors.white,
+                  color:      theme.textHigh,
                   fontSize:   sw * 0.042,
                   fontWeight: FontWeight.w700,
                 ),
@@ -184,19 +176,19 @@ class _MasailDetailPageState extends State<MasailDetailPage>
               Text(
                 'Mas\'ala #${_masail.id}',
                 style: TextStyle(
-                    color: _gold, fontSize: sw * 0.028),
+                    color: theme.accent, fontSize: sw * 0.028),
               ),
             ],
           ),
           actions: [
             if (!_interactionLoaded)
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Center(
                   child: SizedBox(
                     width: 18, height: 18,
                     child: CircularProgressIndicator(
-                        color: Colors.white54, strokeWidth: 2),
+                        color: theme.textLow, strokeWidth: 2),
                   ),
                 ),
               )
@@ -210,15 +202,15 @@ class _MasailDetailPageState extends State<MasailDetailPage>
                     _masail.isBookmarked
                         ? Icons.bookmark_rounded
                         : Icons.bookmark_outline_rounded,
-                    color: _masail.isBookmarked ? _gold : Colors.white54,
+                    color: _masail.isBookmarked ? theme.accent : theme.textLow,
                     size:  sw * 0.058,
                   ),
                 ),
               ),
             PopupMenuButton<String>(
               icon: Icon(Icons.more_vert_rounded,
-                  color: Colors.white54, size: sw * 0.055),
-              color: _card,
+                  color: theme.textLow, size: sw * 0.055),
+              color: theme.cardColor,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14)),
               onSelected: (v) {
@@ -228,10 +220,10 @@ class _MasailDetailPageState extends State<MasailDetailPage>
                 PopupMenuItem(
                   value: 'copy',
                   child: Row(children: [
-                    const Icon(Icons.copy_rounded, color: _textLo, size: 18),
+                    Icon(Icons.copy_rounded, color: theme.textLow, size: 18),
                     const SizedBox(width: 12),
                     Text(l10n.copy,
-                        style: const TextStyle(color: _textHi, fontSize: 14)),
+                        style: TextStyle(color: theme.textHigh, fontSize: 14)),
                   ]),
                 ),
               ],
@@ -240,7 +232,7 @@ class _MasailDetailPageState extends State<MasailDetailPage>
           ],
           bottom: PreferredSize(
             preferredSize: const Size.fromHeight(1),
-            child: Container(height: 1, color: _gold.withOpacity(0.2)),
+            child: Container(height: 1, color: theme.accent.withOpacity(0.2)),
           ),
         ),
         body: SingleChildScrollView(
@@ -270,24 +262,22 @@ class _MasailDetailPageState extends State<MasailDetailPage>
                           padding: const EdgeInsets.symmetric(
                               horizontal: 14, vertical: 6),
                           decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFFF5E6C0), Color(0xFFEDD898)],
-                            ),
+                            color: theme.accent.withOpacity(0.12),
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(
-                                color: _goldDk.withOpacity(0.4), width: 1),
+                                color: theme.accent.withOpacity(0.4), width: 1),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(Icons.school_rounded,
-                                  size: sw * 0.035, color: _goldDk),
+                                  size: sw * 0.035, color: theme.accent),
                               SizedBox(width: sw * 0.015),
                               Text(
                                 _masail.madhab!,
                                 style: TextStyle(
                                   fontSize:   sw * 0.032,
-                                  color:      _goldDk,
+                                  color:      theme.accent,
                                   fontWeight: FontWeight.w700,
                                 ),
                               ),
@@ -300,7 +290,7 @@ class _MasailDetailPageState extends State<MasailDetailPage>
                     _SectionHeader(
                         label: 'Question', // l10n.question
                         icon: Icons.help_outline_rounded,
-                        color: _primary,
+                        color: theme.accent,
                         sw: sw,
                         isRtl: _isRtl),
                     SizedBox(height: sw * 0.03),
@@ -308,16 +298,17 @@ class _MasailDetailPageState extends State<MasailDetailPage>
                       width: double.infinity,
                       padding: EdgeInsets.all(sw * 0.045),
                       decoration: BoxDecoration(
-                        color:         _card,
+                        color:         theme.cardColor,
                         borderRadius:  BorderRadius.circular(16),
-                        border: Border.all(color: _divider, width: 1),
+                        border: Border.all(
+                            color: theme.textLow.withOpacity(0.12), width: 1),
                       ),
                       child: Text(
                         _masail.question,
                         textAlign: _isRtl ? TextAlign.right : TextAlign.left,
                         style: TextStyle(
                           fontSize:   sw * 0.038,
-                          color:      _textHi,
+                          color:      theme.textHigh,
                           height:     1.75,
                           fontWeight: FontWeight.w500,
                         ),
@@ -339,7 +330,7 @@ class _MasailDetailPageState extends State<MasailDetailPage>
                           _SectionHeader(
                             label: 'Answer', // l10n.answer
                             icon:  Icons.lightbulb_outline_rounded,
-                            color: const Color(0xFF1E6B2A),
+                            color: theme.accent,
                             sw:    sw,
                             isRtl: _isRtl,
                           ),
@@ -348,7 +339,7 @@ class _MasailDetailPageState extends State<MasailDetailPage>
                             duration: const Duration(milliseconds: 250),
                             child: Icon(
                               Icons.keyboard_arrow_down_rounded,
-                              color: _textLo,
+                              color: theme.textLow,
                               size:  sw * 0.055,
                             ),
                           ),
@@ -366,10 +357,10 @@ class _MasailDetailPageState extends State<MasailDetailPage>
                           width: double.infinity,
                           padding: EdgeInsets.all(sw * 0.045),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFEDF7EE),
+                            color: theme.cardColor,
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(
-                              color: const Color(0xFF2D6B1E).withOpacity(0.18),
+                              color: theme.accent.withOpacity(0.18),
                               width: 1,
                             ),
                           ),
@@ -380,7 +371,7 @@ class _MasailDetailPageState extends State<MasailDetailPage>
                                 : TextAlign.left,
                             style: TextStyle(
                               fontSize:   sw * 0.038,
-                              color:      const Color(0xFF1C3A1E),
+                              color:      theme.textHigh,
                               height:     1.8,
                             ),
                           ),
@@ -419,53 +410,56 @@ class _ArabicHero extends StatelessWidget {
   final double sw;
   const _ArabicHero({required this.arabic, required this.sw});
 
-  Widget _ornament() => Row(children: [
-    Expanded(child: Container(height: 1, color: _gold.withOpacity(0.3))),
+  Widget _ornament(AppThemeOption theme) => Row(children: [
+    Expanded(child: Container(height: 1, color: theme.accent.withOpacity(0.3))),
     Container(
       margin: EdgeInsets.symmetric(horizontal: sw * 0.04),
       width: 6, height: 6,
       decoration: BoxDecoration(
-          color: _gold.withOpacity(0.55), shape: BoxShape.circle),
+          color: theme.accent.withOpacity(0.55), shape: BoxShape.circle),
     ),
     Container(
       margin: EdgeInsets.symmetric(horizontal: sw * 0.01),
       width: 4, height: 4,
       decoration: BoxDecoration(
-          color: _gold.withOpacity(0.35), shape: BoxShape.circle),
+          color: theme.accent.withOpacity(0.35), shape: BoxShape.circle),
     ),
     Container(
       margin: EdgeInsets.symmetric(horizontal: sw * 0.04),
       width: 6, height: 6,
       decoration: BoxDecoration(
-          color: _gold.withOpacity(0.55), shape: BoxShape.circle),
+          color: theme.accent.withOpacity(0.55), shape: BoxShape.circle),
     ),
-    Expanded(child: Container(height: 1, color: _gold.withOpacity(0.3))),
+    Expanded(child: Container(height: 1, color: theme.accent.withOpacity(0.3))),
   ]);
 
   @override
-  Widget build(BuildContext context) => Container(
-    width:   double.infinity,
-    color:   const Color(0xFFF7F1E8),
-    padding: EdgeInsets.fromLTRB(
-        sw * 0.06, sw * 0.085, sw * 0.06, sw * 0.085),
-    child: Column(children: [
-      _ornament(),
-      SizedBox(height: sw * 0.07),
-      Text(
-        arabic,
-        textAlign:     TextAlign.center,
-        textDirection: TextDirection.rtl,
-        style: TextStyle(
-          fontFamily: 'Amiri',
-          fontSize:   sw * 0.072,
-          color:      _textHi,
-          height:     2.0,
+  Widget build(BuildContext context) {
+    final theme = getThemeById(context.watch<SettingsCubit>().state.themeMode);
+    return Container(
+      width:   double.infinity,
+      color:   theme.cardColor,
+      padding: EdgeInsets.fromLTRB(
+          sw * 0.06, sw * 0.085, sw * 0.06, sw * 0.085),
+      child: Column(children: [
+        _ornament(theme),
+        SizedBox(height: sw * 0.07),
+        Text(
+          arabic,
+          textAlign:     TextAlign.center,
+          textDirection: TextDirection.rtl,
+          style: TextStyle(
+            fontFamily: 'Amiri',
+            fontSize:   sw * 0.072,
+            color:      theme.textHigh,
+            height:     2.0,
+          ),
         ),
-      ),
-      SizedBox(height: sw * 0.07),
-      _ornament(),
-    ]),
-  );
+        SizedBox(height: sw * 0.07),
+        _ornament(theme),
+      ]),
+    );
+  }
 }
 
 
@@ -518,16 +512,19 @@ class _DividerLine extends StatelessWidget {
   const _DividerLine({required this.sw});
 
   @override
-  Widget build(BuildContext context) => Row(children: [
-    Expanded(child: Container(height: 1, color: _divider)),
-    Container(
-      margin: EdgeInsets.symmetric(horizontal: sw * 0.03),
-      width: 4, height: 4,
-      decoration: BoxDecoration(
-          color: _gold.withOpacity(0.4), shape: BoxShape.circle),
-    ),
-    Expanded(child: Container(height: 1, color: _divider)),
-  ]);
+  Widget build(BuildContext context) {
+    final theme = getThemeById(context.watch<SettingsCubit>().state.themeMode);
+    return Row(children: [
+      Expanded(child: Container(height: 1, color: theme.textLow.withOpacity(0.12))),
+      Container(
+        margin: EdgeInsets.symmetric(horizontal: sw * 0.03),
+        width: 4, height: 4,
+        decoration: BoxDecoration(
+            color: theme.accent.withOpacity(0.4), shape: BoxShape.circle),
+      ),
+      Expanded(child: Container(height: 1, color: theme.textLow.withOpacity(0.12))),
+    ]);
+  }
 }
 
 
@@ -543,49 +540,52 @@ class _ReferenceBlock extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) => Row(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
-    children: [
-      Container(
-        padding: const EdgeInsets.all(7),
-        decoration: BoxDecoration(
-          color:         _goldDk.withOpacity(0.1),
-          borderRadius:  BorderRadius.circular(10),
+  Widget build(BuildContext context) {
+    final theme = getThemeById(context.watch<SettingsCubit>().state.themeMode);
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(7),
+          decoration: BoxDecoration(
+            color:         theme.accent.withOpacity(0.1),
+            borderRadius:  BorderRadius.circular(10),
+          ),
+          child: Icon(Icons.import_contacts_rounded,
+              color: theme.accent, size: sw * 0.04),
         ),
-        child: Icon(Icons.import_contacts_rounded,
-            color: _goldDk, size: sw * 0.04),
-      ),
-      SizedBox(width: sw * 0.03),
-      Expanded(
-        child: Column(
-          crossAxisAlignment: isRtl
-              ? CrossAxisAlignment.end
-              : CrossAxisAlignment.start,
-          children: [
-            Text(
-              'REFERENCE',
-              textAlign: isRtl ? TextAlign.right : TextAlign.left,
-              style: TextStyle(
-                fontSize:      sw * 0.026,
-                fontWeight:    FontWeight.w800,
-                color:         _goldDk,
-                letterSpacing: 1.4,
+        SizedBox(width: sw * 0.03),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: isRtl
+                ? CrossAxisAlignment.end
+                : CrossAxisAlignment.start,
+            children: [
+              Text(
+                'REFERENCE',
+                textAlign: isRtl ? TextAlign.right : TextAlign.left,
+                style: TextStyle(
+                  fontSize:      sw * 0.026,
+                  fontWeight:    FontWeight.w800,
+                  color:         theme.accent,
+                  letterSpacing: 1.4,
+                ),
               ),
-            ),
-            SizedBox(height: sw * 0.015),
-            Text(
-              reference,
-              textAlign: isRtl ? TextAlign.right : TextAlign.left,
-              style: TextStyle(
-                fontSize: sw * 0.036,
-                color:    _textLo,
-                height:   1.6,
+              SizedBox(height: sw * 0.015),
+              Text(
+                reference,
+                textAlign: isRtl ? TextAlign.right : TextAlign.left,
+                style: TextStyle(
+                  fontSize: sw * 0.036,
+                  color:    theme.textLow,
+                  height:   1.6,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
-    ],
-  );
+      ],
+    );
+  }
 }

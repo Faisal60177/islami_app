@@ -16,16 +16,6 @@ import 'package:muslim_app/settings/theme/app_themes.dart';
 
 import '../masail/pages/masail_page.dart';
 
-// ─── Palette ────────────────────────────────────────────────────────────────
-const _bg        = Color(0xFF021A10);   // near-black deep forest
-const _surface   = Color(0xFF0D2E1C);   // card base
-const _card      = Color(0xFF143324);   // elevated card
-const _accent    = Color(0xFF4CAF82);   // vibrant jade
-const _accentSoft= Color(0xFF2E7D5A);   // muted jade
-const _gold      = Color(0xFFD4A847);   // warm gold highlight
-const _textHi    = Color(0xFFE8F5EE);   // near-white
-const _textLo    = Color(0xFF7BAF92);   // muted sage
-
 // ─── Section model ──────────────────────────────────────────────────────────
 class _Section {
   final String title;
@@ -80,169 +70,175 @@ class _ToolsPageState extends State<ToolsPage>
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<SettingsCubit, SettingsState>(
-    builder: (context, settings) {
-      final theme = getThemeById(settings.themeMode);
-      final l10n = AppLocalizations(settings.languageCode);
-      final hijriOff = settings.hijriOffset;
-      final use24h = settings.use24Hour;
+        builder: (context, settings) {
+          final theme = getThemeById(settings.themeMode);
+          final l10n = AppLocalizations(settings.languageCode);
+          final hijriOff = settings.hijriOffset;
+          final use24h = settings.use24Hour;
 
-      final bgDeep     = Color.lerp(theme.background, Colors.black,
-          theme.isDark ? 0.30 : 0.0)!;
-      final bgBase     = theme.background;
-      final surface    = theme.surface;
-      final accent     = theme.accent;
-      final accentSoft = theme.primary.withOpacity(0.55);
-      final textLo     = theme.textLow;
+          final bgDeep     = Color.lerp(theme.background, Colors.black,
+              theme.isDark ? 0.30 : 0.0)!;
+          final bgBase     = theme.background;
+          final surface    = theme.surface;
+          final cardColor  = theme.cardColor;
+          final accent     = theme.accent;
+          final accentSoft = theme.primary.withOpacity(0.55);
+          final textHi     = theme.textHigh;
+          final textLo     = theme.textLow;
 
-      final sw = MediaQuery.of(context).size.width;
-      final sh = MediaQuery.of(context).size.height;
+          final sw = MediaQuery.of(context).size.width;
+          final sh = MediaQuery.of(context).size.height;
 
-      final rsw = sw.clamp(320.0, 420.0);
+          final rsw = sw.clamp(320.0, 420.0);
 
-      // Responsive grid columns
-      final cols = sw > 900 ? 5 : sw > 600 ? 4 : 3;
+          // Responsive grid columns
+          final cols = sw > 900 ? 5 : sw > 600 ? 4 : 3;
 
-      // Sections data (lambdas capture context lazily – safe)
-      final sections = [
-        _Section(l10n.knowledge, l10n.learnExplore, _accent, [
-          _Tool(l10n.quran,       'assets/icons/quran.png',
-                  () => _push(QuranPage())),
-          _Tool(l10n.duas,        'assets/icons/duas.png',
-                  () => _push(DuasPage())),
-          _Tool(l10n.masail,      'assets/icons/masail.png',
-                  () => _push(MasailPage())),
-        ]),
-        _Section(l10n.amal, l10n.worshipReflect, _gold, [
-          _Tool(l10n.tasbih,      'assets/icons/tasbih.png',
-                  () => _push(TasbihPage())),
-          _Tool(l10n.prayerTimes,'assets/icons/prayer_time.png',
-                  () => _push(PrayerTimesPage())),
-          _Tool(l10n.inspiration, 'assets/icons/inspiration.png',
-                  () => _push(InspirationPage())),
-        ]),
-        _Section(l10n.tools, l10n.utilities, const Color(0xFF64B5F6), [
-          _Tool(l10n.qibla,       'assets/icons/qibla.png',
-                  () => _push(QiblaPage())),
-          _Tool(l10n.calendar,    'assets/icons/calendar.png',
-                  () => _push(MonthlyCalendarPage())),
-          _Tool(l10n.notification,'assets/icons/notification.png',
-                  () => _push(NotificationPage())),
-          _Tool(l10n.menu,        'assets/icons/menu.png',
-                  () => _push(MenuPage())),
-        ]),
-      ];
+          // Sections data (lambdas capture context lazily – safe)
+          final sections = [
+            _Section(l10n.knowledge, l10n.learnExplore, accent, [
+              _Tool(l10n.quran,       'assets/icons/quran.png',
+                      () => _push(QuranPage())),
+              _Tool(l10n.duas,        'assets/icons/duas.png',
+                      () => _push(DuasPage())),
+              _Tool(l10n.masail,      'assets/icons/masail.png',
+                      () => _push(MasailPage())),
+            ]),
+            _Section(l10n.amal, l10n.worshipReflect, accent, [
+              _Tool(l10n.tasbih,      'assets/icons/tasbih.png',
+                      () => _push(TasbihPage())),
+              _Tool(l10n.prayerTimes,'assets/icons/prayer_time.png',
+                      () => _push(PrayerTimesPage())),
+              _Tool(l10n.inspiration, 'assets/icons/inspiration.png',
+                      () => _push(InspirationPage())),
+            ]),
+            _Section(l10n.tools, l10n.utilities, const Color(0xFF64B5F6), [
+              _Tool(l10n.qibla,       'assets/icons/qibla.png',
+                      () => _push(QiblaPage())),
+              _Tool(l10n.calendar,    'assets/icons/calendar.png',
+                      () => _push(MonthlyCalendarPage())),
+              _Tool(l10n.notification,'assets/icons/notification.png',
+                      () => _push(NotificationPage())),
+              _Tool(l10n.menu,        'assets/icons/menu.png',
+                      () => _push(MenuPage())),
+            ]),
+          ];
 
 
-      return Scaffold(
-        backgroundColor: _bg,
-        extendBodyBehindAppBar: true,
-        appBar: _buildAppBar(l10n),
-        body: Stack(
-          children: [
-            // ── Decorative top radial glow ──
-            Positioned(
-              top: -80, left: -60,
-              child: Container(
-                width: sw * 0.7, height: sw * 0.7,
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: RadialGradient(colors: [
-                    Color(0x25388E3C), Color(0x00000000),
-                  ]),
-                ),
-              ),
-            ),
-
-            SafeArea(
-              child: CustomScrollView(
-                physics: const ClampingScrollPhysics(),
-                slivers: [
-                  // ── Header greeting ──
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: EdgeInsets.fromLTRB(sw * 0.05, 20, sw * 0.05, 4),
-                      child: _FadeSlide(
-                        delay: 0,
-                        controller: _ctrl,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('بِسْمِ اللهِ الرَّحْمَٰنِ الرَّحِيْمِ',
-                                style: TextStyle(
-                                  fontFamily: 'Amiri',
-                                  fontSize: sw * 0.07,
-                                  color: _gold.withOpacity(0.85),
-                                  letterSpacing: 1.5,
-                                )),
-                            const SizedBox(height: 2),
-                            Text(l10n.yourToolkit,
-                                style: TextStyle(
-                                  fontSize: sw * 0.038,
-                                  color: _textLo,
-                                  fontWeight: FontWeight.w400,
-                                  letterSpacing: 0.4,
-                                )),
-                          ],
-                        ),
-                      ),
+          return Scaffold(
+            backgroundColor: bgBase,
+            extendBodyBehindAppBar: true,
+            appBar: _buildAppBar(l10n, theme),
+            body: Stack(
+              children: [
+                // ── Decorative top radial glow ──
+                Positioned(
+                  top: -80, left: -60,
+                  child: Container(
+                    width: sw * 0.7, height: sw * 0.7,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: RadialGradient(colors: [
+                        accent.withOpacity(0.15),
+                        Colors.transparent,
+                      ]),
                     ),
                   ),
+                ),
 
-                  // Thin gold divider
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(
-                          horizontal: sw * 0.05, vertical: 14),
-                      child: _FadeSlide(
-                        delay: 0.05,
-                        controller: _ctrl,
-                        child: Container(
-                          height: 1,
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(colors: [
-                              Colors.transparent,
-                              _gold.withOpacity(0.4),
-                              Colors.transparent,
-                            ]),
+                SafeArea(
+                  child: CustomScrollView(
+                    physics: const ClampingScrollPhysics(),
+                    slivers: [
+                      // ── Header greeting ──
+                      SliverToBoxAdapter(
+                        child: Padding(
+                          padding: EdgeInsets.fromLTRB(sw * 0.05, 20, sw * 0.05, 4),
+                          child: _FadeSlide(
+                            delay: 0,
+                            controller: _ctrl,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('بِسْمِ اللهِ الرَّحْمَٰنِ الرَّحِيْمِ',
+                                    style: TextStyle(
+                                      fontFamily: 'Amiri',
+                                      fontSize: sw * 0.07,
+                                      color: accent.withOpacity(0.85),
+                                      letterSpacing: 1.5,
+                                    )),
+                                const SizedBox(height: 2),
+                                Text(l10n.yourToolkit,
+                                    style: TextStyle(
+                                      fontSize: sw * 0.038,
+                                      color: textLo,
+                                      fontWeight: FontWeight.w400,
+                                      letterSpacing: 0.4,
+                                    )),
+                              ],
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ),
 
-                  // ── Sections ──
-                  ...sections
-                      .asMap()
-                      .entries
-                      .map((e) {
-                    final idx = e.key;
-                    final sec = e.value;
-                    return SliverToBoxAdapter(
-                      child: _FadeSlide(
-                        delay: 0.1 + idx * 0.15,
-                        controller: _ctrl,
-                        child: _SectionBlock(
-                          section: sec,
-                          cols: cols,
-                          sw: sw,
+                      // Thin accent divider
+                      SliverToBoxAdapter(
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: sw * 0.05, vertical: 14),
+                          child: _FadeSlide(
+                            delay: 0.05,
+                            controller: _ctrl,
+                            child: Container(
+                              height: 1,
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(colors: [
+                                  Colors.transparent,
+                                  accent.withOpacity(0.4),
+                                  Colors.transparent,
+                                ]),
+                              ),
+                            ),
+                          ),
                         ),
                       ),
-                    );
-                  }),
 
-                  const SliverToBoxAdapter(child: SizedBox(height: 24)),
-                ],
-              ),
+                      // ── Sections ──
+                      ...sections
+                          .asMap()
+                          .entries
+                          .map((e) {
+                        final idx = e.key;
+                        final sec = e.value;
+                        return SliverToBoxAdapter(
+                          child: _FadeSlide(
+                            delay: 0.1 + idx * 0.15,
+                            controller: _ctrl,
+                            child: _SectionBlock(
+                              section: sec,
+                              cols: cols,
+                              sw: sw,
+                              textHi: textHi,
+                              textLo: textLo,
+                              cardColor: cardColor,
+                            ),
+                          ),
+                        );
+                      }),
+
+                      const SliverToBoxAdapter(child: SizedBox(height: 24)),
+                    ],
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-        bottomNavigationBar: _buildNav(
-          sw: sw, rsw: rsw,
-          surface: surface, accentSoft: accentSoft,
-          accent: accent, textLo: textLo, l10n: l10n,
-        ),
-      );
-    }
+            bottomNavigationBar: _buildNav(
+              sw: sw, rsw: rsw,
+              surface: surface, accentSoft: accentSoft,
+              accent: accent, textLo: textLo, l10n: l10n,
+            ),
+          );
+        }
     );
   }
 
@@ -257,7 +253,7 @@ class _ToolsPageState extends State<ToolsPage>
   );
 
   // ── AppBar ──────────────────────────────────────────────────────────────
-  PreferredSizeWidget _buildAppBar(AppLocalizations l10n) => AppBar(
+  PreferredSizeWidget _buildAppBar(AppLocalizations l10n, AppThemeOption theme) => AppBar(
     backgroundColor: Colors.transparent,
     elevation: 0,
     centerTitle: true,
@@ -267,7 +263,7 @@ class _ToolsPageState extends State<ToolsPage>
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [_surface, _bg.withOpacity(0)],
+          colors: [theme.surface, theme.background.withOpacity(0)],
         ),
       ),
     ),
@@ -277,8 +273,8 @@ class _ToolsPageState extends State<ToolsPage>
         Container(
           width: 6, height: 6,
           decoration: BoxDecoration(
-            color: _gold, shape: BoxShape.circle,
-            boxShadow: [BoxShadow(color: _gold.withOpacity(0.5), blurRadius: 6)],
+            color: theme.accent, shape: BoxShape.circle,
+            boxShadow: [BoxShadow(color: theme.accent.withOpacity(0.5), blurRadius: 6)],
           ),
         ),
         const SizedBox(width: 10),
@@ -287,7 +283,7 @@ class _ToolsPageState extends State<ToolsPage>
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.w700,
-            color: _textHi,
+            color: theme.textHigh,
             letterSpacing: 1.2,
           ),
         ),
@@ -295,8 +291,8 @@ class _ToolsPageState extends State<ToolsPage>
         Container(
           width: 6, height: 6,
           decoration: BoxDecoration(
-            color: _gold, shape: BoxShape.circle,
-            boxShadow: [BoxShadow(color: _gold.withOpacity(0.5), blurRadius: 6)],
+            color: theme.accent, shape: BoxShape.circle,
+            boxShadow: [BoxShadow(color: theme.accent.withOpacity(0.5), blurRadius: 6)],
           ),
         ),
       ],
@@ -400,11 +396,17 @@ class _SectionBlock extends StatelessWidget {
   final _Section section;
   final int cols;
   final double sw;
+  final Color textHi;
+  final Color textLo;
+  final Color cardColor;
 
   const _SectionBlock({
     required this.section,
     required this.cols,
     required this.sw,
+    required this.textHi,
+    required this.textLo,
+    required this.cardColor,
   });
 
   @override
@@ -439,13 +441,13 @@ class _SectionBlock extends StatelessWidget {
                       style: TextStyle(
                         fontSize: sw * 0.045,
                         fontWeight: FontWeight.w700,
-                        color: _textHi,
+                        color: textHi,
                         letterSpacing: 0.5,
                       )),
                   Text(section.subtitle,
                       style: TextStyle(
                         fontSize: sw * 0.03,
-                        color: _textLo,
+                        color: textLo,
                       )),
                 ],
               ),
@@ -469,6 +471,8 @@ class _SectionBlock extends StatelessWidget {
               tool: section.tools[i],
               accent: section.accentColor,
               sw: sw,
+              textHi: textHi,
+              cardColor: cardColor,
             ),
           ),
 
@@ -484,11 +488,15 @@ class _ToolCard extends StatefulWidget {
   final _Tool tool;
   final Color accent;
   final double sw;
+  final Color textHi;
+  final Color cardColor;
 
   const _ToolCard({
     required this.tool,
     required this.accent,
     required this.sw,
+    required this.textHi,
+    required this.cardColor,
   });
 
   @override
@@ -512,7 +520,9 @@ class _ToolCardState extends State<_ToolCard>
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 130),
           decoration: BoxDecoration(
-            color: _pressed ? _card.withOpacity(0.7) : _card,
+            color: _pressed
+                ? widget.cardColor.withOpacity(0.7)
+                : widget.cardColor,
             borderRadius: BorderRadius.circular(18),
             border: Border.all(
               color: _pressed
@@ -571,7 +581,7 @@ class _ToolCardState extends State<_ToolCard>
                       style: TextStyle(
                         fontSize: widget.sw * 0.031,
                         fontWeight: FontWeight.w600,
-                        color: _textHi,
+                        color: widget.textHi,
                         height: 1.2,
                         letterSpacing: 0.2,
                       ),

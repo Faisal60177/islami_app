@@ -8,6 +8,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:muslim_app/settings/l10n/app_localizations.dart';
 import 'package:muslim_app/settings/cubit/settings_cubit.dart';
 import 'package:muslim_app/settings/cubit/settings_state.dart';
+import 'package:muslim_app/settings/theme/app_themes.dart';
 
 class CategoryPage extends StatefulWidget {
   final String searchQuery;
@@ -77,13 +78,15 @@ class _CategoryPageState extends State<CategoryPage> {
     final w = MediaQuery.of(context).size.width;
     final h = MediaQuery.of(context).size.height;
 
-    final langCode = context.read<SettingsCubit>().state.languageCode;
-    final l10n = AppLocalizations(langCode);
+    // ✅ theme
+    final settings = context.watch<SettingsCubit>().state;
+    final l10n = AppLocalizations(settings.languageCode);
+    final theme = getThemeById(settings.themeMode);
 
     if (_isLoading) {
-      return const Center(
+      return Center(
         child: CircularProgressIndicator(
-          color: Color(0xFF0D6E6E),
+          color: theme.accent,
           strokeWidth: 3,
         ),
       );
@@ -101,12 +104,12 @@ class _CategoryPageState extends State<CategoryPage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(Icons.category_outlined,
-                size: w * 0.15, color: Colors.grey[300]),
+                size: w * 0.15, color: theme.textLow.withOpacity(0.4)),
             SizedBox(height: h * 0.02),
             Text(
               l10n.noCategoriesFound,
               style: TextStyle(
-                color: Colors.grey[400],
+                color: theme.textLow,
                 fontSize: w * 0.045,
                 fontWeight: FontWeight.w500,
               ),
@@ -120,6 +123,7 @@ class _CategoryPageState extends State<CategoryPage> {
     return Directionality(
       textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
       child: RefreshIndicator(
+        color: theme.accent,
         onRefresh: _loadCategories,
         child: CustomScrollView(
           physics: const BouncingScrollPhysics(),
@@ -133,7 +137,7 @@ class _CategoryPageState extends State<CategoryPage> {
                   textAlign: isRtl ? TextAlign.right : TextAlign.left,
                   style: TextStyle(
                     fontSize: w * 0.038,
-                    color: Colors.grey[500],
+                    color: theme.textLow,
                     fontWeight: FontWeight.w500,
                   ),
                 ),

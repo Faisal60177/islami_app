@@ -7,6 +7,9 @@ import 'package:flutter_compass/flutter_compass.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../../../location/cubit/location_cubit.dart';
 import '../../../location/cubit/location_state.dart';
+import 'package:muslim_app/settings/cubit/settings_cubit.dart';
+import 'package:muslim_app/settings/cubit/settings_state.dart';
+import 'package:muslim_app/settings/theme/app_themes.dart';
 
 class QiblaPage extends StatefulWidget {
   const QiblaPage({super.key});
@@ -177,16 +180,16 @@ class _QiblaPageState extends State<QiblaPage>
     return '${buf.toString()} km';
   }
 
-  void _calibrate() {
+  void _calibrate(AppThemeOption theme) {
     setState(() => _calibrating = true);
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text(
+      SnackBar(
+        content: const Text(
           'Move your phone in a figure-8 pattern to calibrate the compass.',
           style: TextStyle(color: Colors.white),
         ),
-        backgroundColor: Color(0xFF74C365),
-        duration: Duration(seconds: 4),
+        backgroundColor: theme.accent,
+        duration: const Duration(seconds: 4),
       ),
     );
     Future.delayed(const Duration(seconds: 4), () {
@@ -201,76 +204,80 @@ class _QiblaPageState extends State<QiblaPage>
     final sw = MediaQuery.of(context).size.width;
     final sh = MediaQuery.of(context).size.height;
 
-    return Scaffold(
-      backgroundColor: const Color(0xFF013220),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF013220),
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          'Qibla Direction',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
-        ),
-      ),
-      body: BlocBuilder<LocationCubit, LocationState>(
-        builder: (context, locState) {
+    return BlocBuilder<SettingsCubit, SettingsState>(
+      builder: (context, settings) {
+        final theme = getThemeById(settings.themeMode);
 
-          // ── Compute Qibla angle from GPS every time location updates ─────
-          // This is the ONLY place _qiblaAngle is set.
-          // We call _updateQiblaFromLocation which calls setState internally,
-          // so BlocBuilder rebuilding here doesn't cause a stale value.
-          if (locState is LocationLoaded) {
-            _updateQiblaFromLocation(
-              locState.location.latitude,
-              locState.location.longitude,
-            );
-          }
-
-          // ── Guard screens ────────────────────────────────────────────────
-          if (!_permissionGranted) return _buildPermissionDenied(sw);
-
-          if (locState is LocationLoading) {
-            return const Center(
-              child: CircularProgressIndicator(color: Color(0xFF4CAF50)),
-            );
-          }
-
-          if (locState is LocationPermissionDenied ||
-              locState is LocationInitial) {
-            return _buildNoLocation(sw);
-          }
-
-          // Wait for both: GPS location AND first compass reading
-          if (!_headingReceived) return _buildCalibrating(sw);
-
-          // If location still loading even after permission granted
-          if (_qiblaAngle == null) return _buildWaitingLocation(sw);
-
-          return SingleChildScrollView(
-            padding: EdgeInsets.symmetric(
-                horizontal: sw * 0.05, vertical: sw * 0.04),
-            child: Column(
-              children: [
-                _buildLocationRow(locState, sw),
-                SizedBox(height: sh * 0.015),
-                _buildDistanceBadge(sw),
-                SizedBox(height: sh * 0.025),
-                _buildCompass(sw),
-                SizedBox(height: sh * 0.03),
-                _buildQiblaBadge(sw),
-                SizedBox(height: sh * 0.018),
-                _buildInfoGrid(locState, sw),
-                SizedBox(height: sh * 0.02),
-                _buildCalibrateBtn(sw),
-                SizedBox(height: sh * 0.02),
-              ],
+        return Scaffold(
+          backgroundColor: theme.background,
+          appBar: AppBar(
+            backgroundColor: theme.background,
+            elevation: 0,
+            leading: IconButton(
+              icon: Icon(Icons.arrow_back, color: theme.textHigh),
+              onPressed: () => Navigator.pop(context),
             ),
-          );
-        },
-      ),
+            title: Text(
+              'Qibla Direction',
+              style: TextStyle(color: theme.textHigh, fontWeight: FontWeight.w600),
+            ),
+          ),
+          body: BlocBuilder<LocationCubit, LocationState>(
+            builder: (context, locState) {
+
+              // ── Compute Qibla angle from GPS every time location updates ─────
+              // This is the ONLY place _qiblaAngle is set.
+              if (locState is LocationLoaded) {
+                _updateQiblaFromLocation(
+                  locState.location.latitude,
+                  locState.location.longitude,
+                );
+              }
+
+              // ── Guard screens ────────────────────────────────────────────────
+              if (!_permissionGranted) return _buildPermissionDenied(sw, theme);
+
+              if (locState is LocationLoading) {
+                return Center(
+                  child: CircularProgressIndicator(color: theme.accent),
+                );
+              }
+
+              if (locState is LocationPermissionDenied ||
+                  locState is LocationInitial) {
+                return _buildNoLocation(sw, theme);
+              }
+
+              // Wait for both: GPS location AND first compass reading
+              if (!_headingReceived) return _buildCalibrating(sw, theme);
+
+              // If location still loading even after permission granted
+              if (_qiblaAngle == null) return _buildWaitingLocation(sw, theme);
+
+              return SingleChildScrollView(
+                padding: EdgeInsets.symmetric(
+                    horizontal: sw * 0.05, vertical: sw * 0.04),
+                child: Column(
+                  children: [
+                    _buildLocationRow(locState, sw, theme),
+                    SizedBox(height: sh * 0.015),
+                    _buildDistanceBadge(sw, theme),
+                    SizedBox(height: sh * 0.025),
+                    _buildCompass(sw, theme),
+                    SizedBox(height: sh * 0.03),
+                    _buildQiblaBadge(sw, theme),
+                    SizedBox(height: sh * 0.018),
+                    _buildInfoGrid(locState, sw, theme),
+                    SizedBox(height: sh * 0.02),
+                    _buildCalibrateBtn(sw, theme),
+                    SizedBox(height: sh * 0.02),
+                  ],
+                ),
+              );
+            },
+          ),
+        );
+      },
     );
   }
 
@@ -283,7 +290,7 @@ class _QiblaPageState extends State<QiblaPage>
   //   • When the phone points exactly at Mecca → diff = 0 → arrow points UP
   //   • When the phone points away             → diff ≠ 0 → arrow rotates
   //
-  Widget _buildCompass(double sw) {
+  Widget _buildCompass(double sw, AppThemeOption theme) {
     final size    = sw * 0.78;
     final heading = _compassHeading;           // live, always non-null here
     final qibla   = _qiblaAngle!;              // non-null — guarded above
@@ -306,6 +313,7 @@ class _QiblaPageState extends State<QiblaPage>
                   heading:    heading,
                   qiblaAngle: qibla,
                   aligned:    aligned,
+                  theme:      theme,
                 ),
               ),
             );
@@ -322,7 +330,7 @@ class _QiblaPageState extends State<QiblaPage>
             child: Text(
               'Facing Qibla ✦',
               style: TextStyle(
-                color: const Color(0xFF013220),
+                color: theme.background,
                 fontSize: sw * 0.034,
                 fontWeight: FontWeight.w700,
               ),
@@ -335,20 +343,20 @@ class _QiblaPageState extends State<QiblaPage>
 
   // ── Widgets ───────────────────────────────────────────────────────────────
 
-  Widget _buildLocationRow(LocationState state, double sw) {
+  Widget _buildLocationRow(LocationState state, double sw, AppThemeOption theme) {
     String city = '';
     if (state is LocationLoaded) {
       city = '${state.location.city}, ${state.location.country}';
     }
     return Row(
       children: [
-        const Icon(Icons.location_on, color: Color(0xFF4CAF50), size: 18),
+        Icon(Icons.location_on, color: theme.accent, size: 18),
         const SizedBox(width: 6),
         Expanded(
           child: Text(
             city.isEmpty ? 'Detecting location...' : city,
             style: TextStyle(
-              color: Colors.grey[300],
+              color: theme.textLow,
               fontSize: sw * 0.038,
               fontWeight: FontWeight.w500,
             ),
@@ -359,14 +367,14 @@ class _QiblaPageState extends State<QiblaPage>
     );
   }
 
-  Widget _buildDistanceBadge(double sw) {
+  Widget _buildDistanceBadge(double sw, AppThemeOption theme) {
     final dist = _distanceKm != null ? _formatDistance(_distanceKm!) : '— km';
     return Column(
       children: [
         Text(
           dist,
           style: TextStyle(
-            color: Colors.white,
+            color: theme.textHigh,
             fontSize: sw * 0.07,
             fontWeight: FontWeight.w700,
             letterSpacing: -0.5,
@@ -375,19 +383,19 @@ class _QiblaPageState extends State<QiblaPage>
         Text(
           'distance to Makkah al-Mukarramah',
           style: TextStyle(
-              color: const Color(0xFF9FE1CB), fontSize: sw * 0.033),
+              color: theme.textLow, fontSize: sw * 0.033),
         ),
       ],
     );
   }
 
-  Widget _buildQiblaBadge(double sw) {
+  Widget _buildQiblaBadge(double sw, AppThemeOption theme) {
     final deg = '${_qiblaAngle!.toStringAsFixed(1)}° from North';
     return Container(
       padding: EdgeInsets.symmetric(
           horizontal: sw * 0.05, vertical: sw * 0.035),
       decoration: BoxDecoration(
-        color: const Color(0xFF74C365),
+        color: theme.accent,
         borderRadius: BorderRadius.circular(sw * 0.035),
       ),
       child: Row(
@@ -396,10 +404,10 @@ class _QiblaPageState extends State<QiblaPage>
             width: sw * 0.09,
             height: sw * 0.09,
             decoration: BoxDecoration(
-              color: const Color(0xFF013220),
+              color: theme.background,
               borderRadius: BorderRadius.circular(6),
             ),
-            child: CustomPaint(painter: _KaabaPainter()),
+            child: CustomPaint(painter: _KaabaPainter(theme: theme)),
           ),
           SizedBox(width: sw * 0.04),
           Column(
@@ -412,7 +420,7 @@ class _QiblaPageState extends State<QiblaPage>
                       fontWeight: FontWeight.w700)),
               Text(deg,
                   style: TextStyle(
-                      color: const Color(0xFFd0ffd0),
+                      color: Colors.white.withOpacity(0.85),
                       fontSize: sw * 0.032)),
             ],
           ),
@@ -421,14 +429,13 @@ class _QiblaPageState extends State<QiblaPage>
             children: [
               Text(
                 '${_compassHeading.toStringAsFixed(0)}°',
-                style: TextStyle(
+                style: const TextStyle(
                     color: Colors.white,
-                    fontSize: sw * 0.042,
-                    fontWeight: FontWeight.w700),
+                    fontWeight: FontWeight.w700).copyWith(fontSize: sw * 0.042),
               ),
               Text('heading',
                   style: TextStyle(
-                      color: const Color(0xFFd0ffd0),
+                      color: Colors.white.withOpacity(0.85),
                       fontSize: sw * 0.028)),
             ],
           ),
@@ -437,7 +444,7 @@ class _QiblaPageState extends State<QiblaPage>
     );
   }
 
-  Widget _buildInfoGrid(LocationState state, double sw) {
+  Widget _buildInfoGrid(LocationState state, double sw, AppThemeOption theme) {
     String latStr = '—', lngStr = '—';
     if (state is LocationLoaded) {
       latStr = '${state.location.latitude.toStringAsFixed(4)}° N';
@@ -463,7 +470,7 @@ class _QiblaPageState extends State<QiblaPage>
       children: items.map((item) {
         return Container(
           decoration: BoxDecoration(
-            color: const Color(0xFF74C365),
+            color: theme.accent,
             borderRadius: BorderRadius.circular(sw * 0.03),
           ),
           padding: EdgeInsets.symmetric(
@@ -474,13 +481,12 @@ class _QiblaPageState extends State<QiblaPage>
             children: [
               Text(item.$1,
                   style: TextStyle(
-                      color: const Color(0xFFd0ffd0),
+                      color: Colors.white.withOpacity(0.85),
                       fontSize: sw * 0.028)),
               Text(item.$2,
-                  style: TextStyle(
+                  style: const TextStyle(
                       color: Colors.white,
-                      fontSize: sw * 0.038,
-                      fontWeight: FontWeight.w700)),
+                      fontWeight: FontWeight.w700).copyWith(fontSize: sw * 0.038)),
             ],
           ),
         );
@@ -488,14 +494,14 @@ class _QiblaPageState extends State<QiblaPage>
     );
   }
 
-  Widget _buildCalibrateBtn(double sw) {
+  Widget _buildCalibrateBtn(double sw, AppThemeOption theme) {
     return GestureDetector(
-      onTap: _calibrate,
+      onTap: () => _calibrate(theme),
       child: Container(
         width: double.infinity,
         padding: EdgeInsets.symmetric(vertical: sw * 0.038),
         decoration: BoxDecoration(
-          border: Border.all(color: const Color(0xFF74C365), width: 1.5),
+          border: Border.all(color: theme.accent, width: 1.5),
           borderRadius: BorderRadius.circular(sw * 0.03),
         ),
         alignment: Alignment.center,
@@ -503,12 +509,12 @@ class _QiblaPageState extends State<QiblaPage>
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(Icons.screen_rotation,
-                color: const Color(0xFF74C365), size: sw * 0.05),
+                color: theme.accent, size: sw * 0.05),
             SizedBox(width: sw * 0.02),
             Text(
               _calibrating ? 'Calibrating...' : 'Calibrate compass',
               style: TextStyle(
-                  color: const Color(0xFF74C365),
+                  color: theme.accent,
                   fontSize: sw * 0.038,
                   fontWeight: FontWeight.w600),
             ),
@@ -519,18 +525,18 @@ class _QiblaPageState extends State<QiblaPage>
   }
 
   // Shown while waiting for first compass reading
-  Widget _buildCalibrating(double sw) {
+  Widget _buildCalibrating(double sw, AppThemeOption theme) {
     return Center(
       child: Padding(
         padding: EdgeInsets.all(sw * 0.08),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const CircularProgressIndicator(color: Color(0xFF74C365)),
+            CircularProgressIndicator(color: theme.accent),
             SizedBox(height: sw * 0.06),
             Text('Initialising compass...',
                 style: TextStyle(
-                    color: Colors.white,
+                    color: theme.textHigh,
                     fontSize: sw * 0.045,
                     fontWeight: FontWeight.w600)),
             SizedBox(height: sw * 0.03),
@@ -538,7 +544,7 @@ class _QiblaPageState extends State<QiblaPage>
               'Move your phone in a figure-8 pattern if this takes too long.',
               textAlign: TextAlign.center,
               style: TextStyle(
-                  color: Colors.grey[400], fontSize: sw * 0.038),
+                  color: theme.textLow, fontSize: sw * 0.038),
             ),
           ],
         ),
@@ -547,18 +553,18 @@ class _QiblaPageState extends State<QiblaPage>
   }
 
   // Shown while compass works but GPS not yet resolved
-  Widget _buildWaitingLocation(double sw) {
+  Widget _buildWaitingLocation(double sw, AppThemeOption theme) {
     return Center(
       child: Padding(
         padding: EdgeInsets.all(sw * 0.08),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const CircularProgressIndicator(color: Color(0xFF4CAF50)),
+            CircularProgressIndicator(color: theme.accent),
             SizedBox(height: sw * 0.06),
             Text('Getting your location...',
                 style: TextStyle(
-                    color: Colors.white,
+                    color: theme.textHigh,
                     fontSize: sw * 0.045,
                     fontWeight: FontWeight.w600)),
             SizedBox(height: sw * 0.03),
@@ -566,7 +572,7 @@ class _QiblaPageState extends State<QiblaPage>
               'Make sure GPS is enabled and you have a clear sky view.',
               textAlign: TextAlign.center,
               style: TextStyle(
-                  color: Colors.grey[400], fontSize: sw * 0.038),
+                  color: theme.textLow, fontSize: sw * 0.038),
             ),
           ],
         ),
@@ -574,7 +580,7 @@ class _QiblaPageState extends State<QiblaPage>
     );
   }
 
-  Widget _buildPermissionDenied(double sw) {
+  Widget _buildPermissionDenied(double sw, AppThemeOption theme) {
     return Center(
       child: Padding(
         padding: EdgeInsets.all(sw * 0.08),
@@ -582,12 +588,12 @@ class _QiblaPageState extends State<QiblaPage>
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(Icons.sensors_off,
-                color: Colors.grey[600], size: sw * 0.18),
+                color: theme.textLow, size: sw * 0.18),
             SizedBox(height: sw * 0.05),
             Text('Location permission required',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                    color: Colors.white,
+                    color: theme.textHigh,
                     fontSize: sw * 0.045,
                     fontWeight: FontWeight.w600)),
             SizedBox(height: sw * 0.03),
@@ -595,7 +601,7 @@ class _QiblaPageState extends State<QiblaPage>
               'Please grant location access to calculate the Qibla direction.',
               textAlign: TextAlign.center,
               style: TextStyle(
-                  color: Colors.grey[400], fontSize: sw * 0.038),
+                  color: theme.textLow, fontSize: sw * 0.038),
             ),
             SizedBox(height: sw * 0.06),
             GestureDetector(
@@ -604,7 +610,7 @@ class _QiblaPageState extends State<QiblaPage>
                 padding: EdgeInsets.symmetric(
                     horizontal: sw * 0.08, vertical: sw * 0.04),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF74C365),
+                  color: theme.accent,
                   borderRadius: BorderRadius.circular(sw * 0.03),
                 ),
                 child: Text('Open settings',
@@ -620,7 +626,7 @@ class _QiblaPageState extends State<QiblaPage>
     );
   }
 
-  Widget _buildNoLocation(double sw) {
+  Widget _buildNoLocation(double sw, AppThemeOption theme) {
     return Center(
       child: Padding(
         padding: EdgeInsets.all(sw * 0.08),
@@ -628,11 +634,11 @@ class _QiblaPageState extends State<QiblaPage>
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(Icons.location_off,
-                color: Colors.grey[600], size: sw * 0.18),
+                color: theme.textLow, size: sw * 0.18),
             SizedBox(height: sw * 0.05),
             Text('Location not available',
                 style: TextStyle(
-                    color: Colors.white,
+                    color: theme.textHigh,
                     fontSize: sw * 0.045,
                     fontWeight: FontWeight.w600)),
             SizedBox(height: sw * 0.03),
@@ -640,7 +646,7 @@ class _QiblaPageState extends State<QiblaPage>
               'Enable location from the Today screen and try again.',
               textAlign: TextAlign.center,
               style: TextStyle(
-                  color: Colors.grey[400], fontSize: sw * 0.038),
+                  color: theme.textLow, fontSize: sw * 0.038),
             ),
           ],
         ),
@@ -664,16 +670,22 @@ class _QiblaPageState extends State<QiblaPage>
 //
 // shouldRepaint fires on every setState from the compass listener,
 // which happens multiple times per second — keeping the canvas live.
+//
+// Colors: needle (red N / grey S), Qibla arrow (gold/amber) stay semantic —
+// they carry fixed meaning independent of the app skin. The dial face,
+// border, and tick marks now follow the active theme.
 // ══════════════════════════════════════════════════════════════════════════════
 class _CompassPainter extends CustomPainter {
   final double heading;
   final double qiblaAngle;
   final bool aligned;
+  final AppThemeOption theme;
 
   const _CompassPainter({
     required this.heading,
     required this.qiblaAngle,
     required this.aligned,
+    required this.theme,
   });
 
   @override
@@ -682,7 +694,8 @@ class _CompassPainter extends CustomPainter {
     // but also doesn't spam the GPU with sub-pixel redraws
     return (old.heading - heading).abs() > 0.1 ||
         (old.qiblaAngle - qiblaAngle).abs() > 0.01 ||
-        old.aligned != aligned;
+        old.aligned != aligned ||
+        old.theme != theme;
   }
 
   @override
@@ -694,14 +707,14 @@ class _CompassPainter extends CustomPainter {
     // ── 1. Background ─────────────────────────────────────────────────────
     canvas.drawCircle(
       Offset(cx, cy), radius,
-      Paint()..color = const Color(0xFF012818),
+      Paint()..color = theme.surface,
     );
 
-    // Border — amber when aligned, green otherwise
+    // Border — amber when aligned, accent otherwise
     canvas.drawCircle(
       Offset(cx, cy), radius,
       Paint()
-        ..color       = aligned ? Colors.amber : const Color(0xFF74C365)
+        ..color       = aligned ? Colors.amber : theme.accent
         ..style       = PaintingStyle.stroke
         ..strokeWidth = aligned ? 3.5 : 2.5,
     );
@@ -729,8 +742,8 @@ class _CompassPainter extends CustomPainter {
         Offset(0, -tickInner),
         Paint()
           ..color       = isMajor
-              ? const Color(0xFF74C365)
-              : const Color(0xFF1a5c35)
+              ? theme.accent
+              : theme.cardColor
           ..strokeWidth = isMajor ? 1.5 : 0.8
           ..strokeCap   = StrokeCap.round,
       );
@@ -740,13 +753,13 @@ class _CompassPainter extends CustomPainter {
     // Cardinal labels — drawn in the rotating frame but text is
     // counter-rotated so letters stay upright for the user
     _cardinal(canvas, 'N', 0,            radius, const Color(0xFFE24B4A), bold: true);
-    _cardinal(canvas, 'S', math.pi,       radius, const Color(0xFF9FE1CB));
-    _cardinal(canvas, 'E', math.pi / 2,   radius, const Color(0xFF9FE1CB));
-    _cardinal(canvas, 'W', -math.pi / 2,  radius, const Color(0xFF9FE1CB));
+    _cardinal(canvas, 'S', math.pi,       radius, theme.textLow);
+    _cardinal(canvas, 'E', math.pi / 2,   radius, theme.textLow);
+    _cardinal(canvas, 'W', -math.pi / 2,  radius, theme.textLow);
 
     canvas.restore(); // ← end rotating dial
 
-    // ── 3. Compass needle (red N / grey S) ───────────────────────────────
+    // ── 3. Compass needle (red N / grey S) — kept semantic ────────────────
     // Shares the same -heading rotation as the dial
     canvas.save();
     canvas.translate(cx, cy);
@@ -766,7 +779,7 @@ class _CompassPainter extends CustomPainter {
 
     canvas.restore(); // ← end needle
 
-    // ── 4. Qibla arrow ────────────────────────────────────────────────────
+    // ── 4. Qibla arrow — kept semantic (gold/amber) ────────────────────────
     //
     // Completely independent rotation block.
     // qiblaScreen = qiblaAngle - heading (screen-space angle to Mecca)
@@ -809,7 +822,7 @@ class _CompassPainter extends CustomPainter {
         Rect.fromCenter(center: Offset(0, -aLen + 8), width: 10, height: 10),
         const Radius.circular(2),
       ),
-      Paint()..color = const Color(0xFF013220),
+      Paint()..color = theme.background,
     );
 
     canvas.restore(); // ← end Qibla arrow
@@ -822,7 +835,7 @@ class _CompassPainter extends CustomPainter {
     canvas.drawCircle(
       Offset(cx, cy), radius * 0.04,
       Paint()
-        ..color       = const Color(0xFF74C365)
+        ..color       = theme.accent
         ..style       = PaintingStyle.stroke
         ..strokeWidth = 1.5,
     );
@@ -866,6 +879,9 @@ class _CompassPainter extends CustomPainter {
 // _KaabaPainter  (badge icon only)
 // ══════════════════════════════════════════════════════════════════════════════
 class _KaabaPainter extends CustomPainter {
+  final AppThemeOption theme;
+  const _KaabaPainter({required this.theme});
+
   @override
   void paint(Canvas canvas, Size size) {
     final w = size.width;
@@ -876,18 +892,18 @@ class _KaabaPainter extends CustomPainter {
         Rect.fromLTWH(w * 0.1, h * 0.25, w * 0.8, h * 0.65),
         const Radius.circular(2),
       ),
-      Paint()..color = const Color(0xFF74C365),
+      Paint()..color = theme.accent,
     );
     canvas.drawRect(
       Rect.fromLTWH(w * 0.38, h * 0.52, w * 0.24, h * 0.38),
-      Paint()..color = const Color(0xFF013220),
+      Paint()..color = theme.background,
     );
     canvas.drawRect(
       Rect.fromLTWH(w * 0.08, h * 0.2, w * 0.84, h * 0.1),
-      Paint()..color = const Color(0xFF9FE1CB),
+      Paint()..color = theme.textLow,
     );
   }
 
   @override
-  bool shouldRepaint(_KaabaPainter old) => false;
+  bool shouldRepaint(_KaabaPainter old) => old.theme != theme;
 }
