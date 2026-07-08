@@ -116,7 +116,7 @@ class _RatePageState extends State<RatePage> with SingleTickerProviderStateMixin
                   _appIcon(thm, isWide),
                   const SizedBox(height: 24),
                   Text(
-                    'Enjoying Islamic App?',
+                    'Enjoying Muslim Life App?',
                     style: TextStyle(
                         color: thm.textHigh,
                         fontSize: isWide ? 28 : 24,
@@ -179,7 +179,17 @@ class _RatePageState extends State<RatePage> with SingleTickerProviderStateMixin
           BoxShadow(color: thm.accent.withOpacity(0.3), blurRadius: 30, spreadRadius: 2)
         ],
       ),
-      child: Center(child: Text('🕌', style: TextStyle(fontSize: isWide ? 56 : 48))),
+      child: Center(
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(isWide ? 22 : 18),
+          child: Image.asset(
+            'assets/icons/AppIcon.png',
+            width: isWide ? 78 : 66,
+            height: isWide ? 78 : 66,
+            fit: BoxFit.cover,
+          ),
+        ),
+      ),
     );
   }
 

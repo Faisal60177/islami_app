@@ -18,6 +18,7 @@ import 'package:muslim_app/home/home_page.dart';
 import 'package:muslim_app/tools/tools_page.dart';
 import 'package:muslim_app/Quran/quran_page.dart';
 import 'package:muslim_app/Duas/pages/duas_page.dart';
+import 'package:muslim_app/core/app_info.dart';
 
 // ─── MenuPage ────────────────────────────────────────────────────────────────
 class MenuPage extends StatelessWidget {
@@ -64,7 +65,15 @@ class MenuPage extends StatelessWidget {
               color: thm.accent.withOpacity(0.2),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: const Text('🕌', style: TextStyle(fontSize: 18)),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(6),
+              child: Image.asset(
+                'assets/icons/AppIcon.png',
+                width: 22,
+                height: 22,
+                fit: BoxFit.cover,
+              ),
+            ),
           ),
           const SizedBox(width: 12),
           Text(
@@ -209,7 +218,7 @@ class MenuPage extends StatelessWidget {
                           icon: Icons.info_outline_rounded,
                           iconColor: const Color(0xFFFF9800),
                           title: l10n.aboutApp,
-                          subtitle: l10n.aboutSubtitle,
+                          subtitle: '${l10n.aboutSubtitle} • v${AppInfo.version}',
                           page: const AboutPage(),
                         ),
                       ],

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
 import '../cubit/settings_cubit.dart';
 import '../cubit/settings_state.dart';
 import '../l10n/app_localizations.dart';
@@ -13,6 +12,7 @@ import 'sections/display_settings_section.dart';
 import 'sections/session_settings_section.dart';
 import 'package:muslim_app/settings/l10n/app_localizations.dart';
 import 'sections/notification_settings_section.dart';
+import '../../core/app_info.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -264,16 +264,23 @@ class _SettingsPageState extends State<SettingsPage>
       ),
       child: Column(
         children: [
-          Text('🕌',
-              style: TextStyle(fontSize: (rsw * 0.070).clamp(24.0, 34.0))),
+          ClipRRect(
+            borderRadius: BorderRadius.circular((rsw * 0.020).clamp(8.0, 12.0)),
+            child: Image.asset(
+              'assets/icons/AppIcon.png',
+              width: (rsw * 0.090).clamp(32.0, 46.0),
+              height: (rsw * 0.090).clamp(32.0, 46.0),
+              fit: BoxFit.cover,
+            ),
+          ),
           SizedBox(height: rsw * 0.020),
-          Text('Islamic App',
+          Text('Muslim Life',
               style: TextStyle(
                   color: theme.textHigh,
                   fontSize: (rsw * 0.040).clamp(14.0, 18.0),
                   fontWeight: FontWeight.w700)),
           SizedBox(height: rsw * 0.010),
-          Text('Version 2.5.0',
+          Text('Version ${AppInfo.version} (Build ${AppInfo.buildNumber})',
               style: TextStyle(
                   color: theme.textLow,
                   fontSize: (rsw * 0.030).clamp(10.0, 13.0))),

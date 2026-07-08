@@ -26,6 +26,7 @@ import 'package:muslim_app/masail/cubit/masail_cubit.dart';
 import 'package:muslim_app/masail/repository/masail_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:muslim_app/core/app_info.dart';
 
 
 
@@ -48,6 +49,9 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  // ── Load app version/build info ONCE, before anything else needs it ──
+  await AppInfo.init();
 
   // ── Load saved language BEFORE creating cubits ──────────────
   final prefs = await SharedPreferences.getInstance();

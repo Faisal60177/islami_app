@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:muslim_app/settings/cubit/settings_cubit.dart';
 import 'package:muslim_app/settings/cubit/settings_state.dart';
 import 'package:muslim_app/settings/theme/app_themes.dart';
+import 'package:muslim_app/core/app_info.dart';
+
 
 class AboutPage extends StatelessWidget {
   const AboutPage({super.key});
@@ -55,7 +57,7 @@ class AboutPage extends StatelessWidget {
                               const SizedBox(height: 12),
                               _aqeedahFiqhCard(thm),
                               const SizedBox(height: 28),
-                              _sectionLabel(thm, 'What\'s New — v2.5.0'),
+                              _sectionLabel(thm, 'What\'s New — v${AppInfo.version}'),
                               const SizedBox(height: 12),
                               _changelogCard(thm),
                               const SizedBox(height: 12),
@@ -110,12 +112,20 @@ class AboutPage extends StatelessWidget {
               ],
             ),
             child: Center(
-              child: Text('🕌', style: TextStyle(fontSize: isWide ? 60 : 50)),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(isWide ? 24 : 20),
+                child: Image.asset(
+                  'assets/icons/AppIcon.png',
+                  width: isWide ? 84 : 70,
+                  height: isWide ? 84 : 70,
+                  fit: BoxFit.cover,
+                ),
+              ),
             ),
           ),
           const SizedBox(height: 16),
           Text(
-            'Islamic App',
+            'Muslim Life',
             style: TextStyle(
               color: thm.textHigh,
               fontSize: isWide ? 32 : 26,
@@ -124,7 +134,7 @@ class AboutPage extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 4),
-          Text('Version 2.5.0 (Build 250)',
+          Text('Version ${AppInfo.version} (Build ${AppInfo.buildNumber})',
               style: TextStyle(color: thm.textLow, fontSize: 13)),
           const SizedBox(height: 10),
           Container(
@@ -328,8 +338,8 @@ class AboutPage extends StatelessWidget {
   // Landscape/wide: 2-column grid
   Widget _infoCardWide(AppThemeOption thm) {
     final info = [
-      ('Version', '2.5.0'),
-      ('Build', '250'),
+      ('Version', AppInfo.version),
+      ('Build', AppInfo.buildNumber),
       ('Released', 'April 2026'),
       ('Platform', 'iOS & Android'),
       ('Developer', 'Islamic App Team'),
@@ -410,7 +420,7 @@ class AboutPage extends StatelessWidget {
           Divider(color: thm.accent.withOpacity(0.13)),
           const SizedBox(height: 12),
           Text(
-            '© 2026 Islamic App — All rights reserved.\nMade with ❤️ for the Ummah.',
+            '© 2026 Muslim Life — All rights reserved.\nMade with ❤️ for the Ummah.',
             textAlign: TextAlign.center,
             style: TextStyle(color: thm.textLow, fontSize: 12, height: 1.6),
           ),

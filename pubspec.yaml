@@ -80,6 +80,7 @@ dependencies:
   flutter_native_splash: ^2.4.8
   flutter_riverpod: ^2.6.1
   riverpod_annotation: ^2.6.1
+  package_info_plus: ^8.0.0
 
 
 
