@@ -51,7 +51,7 @@ class ParaListTab extends StatelessWidget {
 
             return GridView.builder(
               padding: EdgeInsets.all(rsw * 0.028),
-              physics: const BouncingScrollPhysics(),
+              physics: const ClampingScrollPhysics(),
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
                 mainAxisSpacing: rsw * 0.028,

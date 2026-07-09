@@ -35,7 +35,7 @@ class SurahListTab extends StatelessWidget {
             return ListView.builder(
               padding: EdgeInsets.symmetric(
                   horizontal: rsw * 0.030, vertical: rsw * 0.018),
-              physics: const BouncingScrollPhysics(),
+              physics: const ClampingScrollPhysics(),
               itemCount: surahs.length,
               itemBuilder: (_, i) =>
                   _SurahTile(surah: surahs[i], theme: theme, rsw: rsw),

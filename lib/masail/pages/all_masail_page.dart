@@ -68,10 +68,7 @@ class _AllMasailPageState extends State<AllMasailPage>
 
     return Directionality(
       textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
-      child: RefreshIndicator(
-        color: _primary,
-        onRefresh: _load,
-        child: ListView.builder(
+      child: ListView.builder(
           physics: const ClampingScrollPhysics(),
           padding: EdgeInsets.fromLTRB(w * 0.04, h * 0.018, w * 0.04, h * 0.04),
           itemCount: _filtered.length,
@@ -89,7 +86,6 @@ class _AllMasailPageState extends State<AllMasailPage>
             },
           ),
         ),
-      ),
     );
   }
 }

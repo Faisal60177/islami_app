@@ -5,7 +5,9 @@ import 'package:muslim_app/location/cubit/location_state.dart';
 import 'package:muslim_app/location/model/location_model.dart';
 
 import '../../settings/cubit/settings_cubit.dart';
+import '../../settings/cubit/settings_state.dart';
 import '../../settings/l10n/app_localizations.dart';
+import '../../settings/theme/app_themes.dart';
 
 class LocationPage extends StatefulWidget {
   const LocationPage({Key? key}) : super(key: key);
@@ -61,141 +63,146 @@ class _LocationPageState extends State<LocationPage>
   Widget build(BuildContext context) {
     final sw = MediaQuery.of(context).size.width;
     final sh = MediaQuery.of(context).size.height;
-    final l10n = AppLocalizations(context.watch<SettingsCubit>().state.languageCode);
 
+    return BlocBuilder<SettingsCubit, SettingsState>(
+      builder: (context, settings) {
+        final theme = getThemeById(settings.themeMode);
+        final l10n = AppLocalizations(settings.languageCode);
 
-    return Scaffold(
-      backgroundColor: const Color(0xFF0A1F14),
-      body: Stack(
-        children: [
-          // ── Background decorative circles ──
-          Positioned(
-            top: -sh * 0.12,
-            right: -sw * 0.2,
-            child: Container(
-              width: sw * 0.75,
-              height: sw * 0.75,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [
-                    const Color(0xFF00A86B).withOpacity(0.18),
-                    Colors.transparent,
-                  ],
-                ),
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: -sh * 0.08,
-            left: -sw * 0.25,
-            child: Container(
-              width: sw * 0.7,
-              height: sw * 0.7,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [
-                    const Color(0xFF0077B6).withOpacity(0.14),
-                    Colors.transparent,
-                  ],
-                ),
-              ),
-            ),
-          ),
-
-          // ── Crescent moon decorative top-left ──
-          Positioned(
-            top: sh * 0.06,
-            left: sw * 0.04,
-            child: Opacity(
-              opacity: 0.07,
-              child: Icon(
-                Icons.nightlight_round,
-                size: sw * 0.32,
-                color: Colors.white,
-              ),
-            ),
-          ),
-
-          // ── Main Content ──
-          SafeArea(
-            child: BlocBuilder<LocationCubit, LocationState>(
-              builder: (context, state) {
-                return FadeTransition(
-                  opacity: _fadeAnimation,
-                  child: SlideTransition(
-                    position: _slideAnimation,
-                    child: Column(
-                      children: [
-                        // ── All scrollable content ──
-                        Expanded(
-                          child: SingleChildScrollView(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: sw * 0.05,
-                              vertical: sh * 0.015,
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                _buildHeader(sw, l10n),
-                                SizedBox(height: sh * 0.035),
-                                _buildSearchBar(context, sw, sh, l10n),
-                                SizedBox(height: sh * 0.025),
-
-                                if (state is LocationLoaded) ...[
-                                  _buildLocationCard(state.location, sw, sh, l10n),
-                                  SizedBox(height: sh * 0.02),
-                                  _buildGPSButton(context, state, sw, sh, l10n),
-                                ],
-
-                                if (state is LocationLoading)
-                                  _buildLoadingState(sw, sh, l10n),
-
-                                if (state is LocationPermissionDenied)
-                                  _buildPermissionDenied(sw, l10n),
-
-                                if (state is LocationSearchResults)
-                                  _buildSearchResults(context, state, sw, sh, l10n),
-                              ],
-                            ),
-                          ),
-                        ),
-
-                        // ── Pinned Save button at bottom ──
-                        if (state is LocationLoaded)
-                          Container(
-                            padding: EdgeInsets.fromLTRB(
-                              sw * 0.05,
-                              sw * 0.025,
-                              sw * 0.05,
-                              sw * 0.035,
-                            ),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF0A1F14),
-                              border: Border(
-                                top: BorderSide(
-                                  color: Colors.white.withOpacity(0.08),
-                                  width: 0.8,
-                                ),
-                              ),
-                            ),
-                            child: _buildSaveButton(context, state, sw, sh, l10n),
-                          ),
+        return Scaffold(
+          backgroundColor: theme.background,
+          body: Stack(
+            children: [
+              // ── Background decorative circles ──
+              Positioned(
+                top: -sh * 0.12,
+                right: -sw * 0.2,
+                child: Container(
+                  width: sw * 0.75,
+                  height: sw * 0.75,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: RadialGradient(
+                      colors: [
+                        theme.accent.withOpacity(0.18),
+                        Colors.transparent,
                       ],
                     ),
                   ),
-                );
-              },
-            ),
+                ),
+              ),
+              Positioned(
+                bottom: -sh * 0.08,
+                left: -sw * 0.25,
+                child: Container(
+                  width: sw * 0.7,
+                  height: sw * 0.7,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: RadialGradient(
+                      colors: [
+                        theme.primary.withOpacity(0.14),
+                        Colors.transparent,
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+              // ── Crescent moon decorative top-left ──
+              Positioned(
+                top: sh * 0.06,
+                left: sw * 0.04,
+                child: Opacity(
+                  opacity: 0.07,
+                  child: Icon(
+                    Icons.nightlight_round,
+                    size: sw * 0.32,
+                    color: theme.textHigh,
+                  ),
+                ),
+              ),
+
+              // ── Main Content ──
+              SafeArea(
+                child: BlocBuilder<LocationCubit, LocationState>(
+                  builder: (context, state) {
+                    return FadeTransition(
+                      opacity: _fadeAnimation,
+                      child: SlideTransition(
+                        position: _slideAnimation,
+                        child: Column(
+                          children: [
+                            // ── All scrollable content ──
+                            Expanded(
+                              child: SingleChildScrollView(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: sw * 0.05,
+                                  vertical: sh * 0.015,
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    _buildHeader(sw, l10n, theme),
+                                    SizedBox(height: sh * 0.035),
+                                    _buildSearchBar(context, sw, sh, l10n, theme),
+                                    SizedBox(height: sh * 0.025),
+
+                                    if (state is LocationLoaded) ...[
+                                      _buildLocationCard(state.location, sw, sh, l10n, theme),
+                                      SizedBox(height: sh * 0.02),
+                                      _buildGPSButton(context, state, sw, sh, l10n, theme),
+                                    ],
+
+                                    if (state is LocationLoading)
+                                      _buildLoadingState(sw, sh, l10n, theme),
+
+                                    if (state is LocationPermissionDenied)
+                                      _buildPermissionDenied(sw, l10n, theme),
+
+                                    if (state is LocationSearchResults)
+                                      _buildSearchResults(context, state, sw, sh, l10n, theme),
+                                  ],
+                                ),
+                              ),
+                            ),
+
+                            // ── Pinned Save button at bottom ──
+                            if (state is LocationLoaded)
+                              Container(
+                                padding: EdgeInsets.fromLTRB(
+                                  sw * 0.05,
+                                  sw * 0.025,
+                                  sw * 0.05,
+                                  sw * 0.035,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: theme.background,
+                                  border: Border(
+                                    top: BorderSide(
+                                      color: theme.textLow.withOpacity(0.12),
+                                      width: 0.8,
+                                    ),
+                                  ),
+                                ),
+                                child: _buildSaveButton(context, state, sw, sh, l10n, theme),
+                              ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
   // ────────────────────────────────────────────────
-  Widget _buildHeader(double sw, AppLocalizations l10n) {
+  Widget _buildHeader(double sw, AppLocalizations l10n, AppThemeOption theme) {
     return Row(
       children: [
         GestureDetector(
@@ -203,16 +210,16 @@ class _LocationPageState extends State<LocationPage>
           child: Container(
             padding: EdgeInsets.all(sw * 0.025),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.08),
+              color: theme.surface,
               borderRadius: BorderRadius.circular(sw * 0.03),
               border: Border.all(
-                color: Colors.white.withOpacity(0.12),
+                color: theme.accent.withOpacity(0.15),
                 width: 1,
               ),
             ),
             child: Icon(
               Icons.arrow_back_ios_new_rounded,
-              color: Colors.white,
+              color: theme.textHigh,
               size: sw * 0.055,
             ),
           ),
@@ -224,7 +231,7 @@ class _LocationPageState extends State<LocationPage>
             Text(
               l10n.setUpLocation,
               style: TextStyle(
-                color: Colors.white,
+                color: theme.textHigh,
                 fontSize: sw * 0.065,
                 fontWeight: FontWeight.w700,
                 letterSpacing: -0.5,
@@ -234,7 +241,7 @@ class _LocationPageState extends State<LocationPage>
             Text(
               l10n.findCityForPrayerTimes,
               style: TextStyle(
-                color: Colors.white.withOpacity(0.45),
+                color: theme.textLow,
                 fontSize: sw * 0.035,
                 fontWeight: FontWeight.w400,
                 letterSpacing: 0.2,
@@ -247,7 +254,7 @@ class _LocationPageState extends State<LocationPage>
   }
 
   // ────────────────────────────────────────────────
-  Widget _buildSearchBar(BuildContext context, double sw, double sh, AppLocalizations l10n) {
+  Widget _buildSearchBar(BuildContext context, double sw, double sh, AppLocalizations l10n, AppThemeOption theme) {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(sw * 0.04),
@@ -264,10 +271,10 @@ class _LocationPageState extends State<LocationPage>
           Expanded(
             child: Container(
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.07),
+                color: theme.surface,
                 borderRadius: BorderRadius.circular(sw * 0.04),
                 border: Border.all(
-                  color: Colors.white.withOpacity(0.12),
+                  color: theme.accent.withOpacity(0.15),
                   width: 1,
                 ),
               ),
@@ -276,21 +283,21 @@ class _LocationPageState extends State<LocationPage>
                 onSubmitted: (value) =>
                     context.read<LocationCubit>().searchLocation(value),
                 style: TextStyle(
-                  color: Colors.white,
+                  color: theme.textHigh,
                   fontSize: sw * 0.042,
                   fontWeight: FontWeight.w400,
                 ),
                 decoration: InputDecoration(
                   hintText: l10n.searchYourCity,
                   hintStyle: TextStyle(
-                    color: Colors.white.withOpacity(0.35),
+                    color: theme.textLow,
                     fontSize: sw * 0.042,
                   ),
                   prefixIcon: Padding(
                     padding: EdgeInsets.only(left: sw * 0.04, right: sw * 0.02),
                     child: Icon(
                       Icons.search_rounded,
-                      color: const Color(0xFF00A86B),
+                      color: theme.accent,
                       size: sw * 0.055,
                     ),
                   ),
@@ -314,15 +321,15 @@ class _LocationPageState extends State<LocationPage>
                 horizontal: sw * 0.05,
               ),
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF00A86B), Color(0xFF007A4D)],
+                gradient: LinearGradient(
+                  colors: [theme.accent, theme.primary],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(sw * 0.04),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF00A86B).withOpacity(0.4),
+                    color: theme.accent.withOpacity(0.4),
                     blurRadius: 16,
                     offset: const Offset(0, 6),
                   ),
@@ -345,7 +352,7 @@ class _LocationPageState extends State<LocationPage>
   }
 
   // ────────────────────────────────────────────────
-  Widget _buildLocationCard(LocationModel location, double sw, double sh, AppLocalizations l10n) {
+  Widget _buildLocationCard(LocationModel location, double sw, double sh, AppLocalizations l10n, AppThemeOption theme) {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.symmetric(
@@ -355,20 +362,20 @@ class _LocationPageState extends State<LocationPage>
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            const Color(0xFF00A86B).withOpacity(0.22),
-            const Color(0xFF005F3B).withOpacity(0.18),
+            theme.accent.withOpacity(0.22),
+            theme.primary.withOpacity(0.18),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(sw * 0.05),
         border: Border.all(
-          color: const Color(0xFF00A86B).withOpacity(0.3),
+          color: theme.accent.withOpacity(0.3),
           width: 1.2,
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF00A86B).withOpacity(0.12),
+            color: theme.accent.withOpacity(0.12),
             blurRadius: 24,
             offset: const Offset(0, 8),
           ),
@@ -380,16 +387,16 @@ class _LocationPageState extends State<LocationPage>
             width: sw * 0.12,
             height: sw * 0.12,
             decoration: BoxDecoration(
-              color: const Color(0xFF00A86B).withOpacity(0.2),
+              color: theme.accent.withOpacity(0.2),
               shape: BoxShape.circle,
               border: Border.all(
-                color: const Color(0xFF00A86B).withOpacity(0.4),
+                color: theme.accent.withOpacity(0.4),
                 width: 1.5,
               ),
             ),
             child: Icon(
               Icons.location_on_rounded,
-              color: const Color(0xFF4DFFA6),
+              color: theme.accent,
               size: sw * 0.06,
             ),
           ),
@@ -401,7 +408,7 @@ class _LocationPageState extends State<LocationPage>
                 Text(
                   l10n.currentLocation,
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.5),
+                    color: theme.textLow,
                     fontSize: sw * 0.032,
                     fontWeight: FontWeight.w500,
                     letterSpacing: 0.5,
@@ -413,7 +420,7 @@ class _LocationPageState extends State<LocationPage>
                   maxLines: 3,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    color: Colors.white,
+                    color: theme.textHigh,
                     fontSize: sw * 0.052,
                     fontWeight: FontWeight.w700,
                     letterSpacing: -0.3,
@@ -428,13 +435,13 @@ class _LocationPageState extends State<LocationPage>
               vertical: sw * 0.015,
             ),
             decoration: BoxDecoration(
-              color: const Color(0xFF00A86B).withOpacity(0.2),
+              color: theme.accent.withOpacity(0.2),
               borderRadius: BorderRadius.circular(sw * 0.02),
             ),
             child: Text(
               l10n.activeBadge,
               style: TextStyle(
-                color: const Color(0xFF4DFFA6),
+                color: theme.accent,
                 fontSize: sw * 0.03,
                 fontWeight: FontWeight.w600,
                 letterSpacing: 0.4,
@@ -448,7 +455,7 @@ class _LocationPageState extends State<LocationPage>
 
   // ────────────────────────────────────────────────
   Widget _buildGPSButton(
-      BuildContext context, LocationState state, double sw, double sh, AppLocalizations l10n) {
+      BuildContext context, LocationState state, double sw, double sh, AppLocalizations l10n, AppThemeOption theme) {
     final isLoading = state is LocationLoading;
     return SizedBox(
       width: double.infinity,
@@ -459,15 +466,15 @@ class _LocationPageState extends State<LocationPage>
         child: Container(
           padding: EdgeInsets.symmetric(vertical: sh * 0.02),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.05),
+            color: theme.surface,
             borderRadius: BorderRadius.circular(sw * 0.04),
             border: Border.all(
-              color: Colors.tealAccent.withOpacity(0.25),
+              color: theme.accent.withOpacity(0.30),
               width: 1.2,
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.teal.withOpacity(0.1),
+                color: theme.accent.withOpacity(0.1),
                 blurRadius: 16,
                 offset: const Offset(0, 4),
               ),
@@ -480,15 +487,15 @@ class _LocationPageState extends State<LocationPage>
                 SizedBox(
                   width: sw * 0.055,
                   height: sw * 0.055,
-                  child: const CircularProgressIndicator(
-                    color: Colors.tealAccent,
+                  child: CircularProgressIndicator(
+                    color: theme.accent,
                     strokeWidth: 2,
                   ),
                 )
               else
                 Icon(
                   Icons.gps_fixed_rounded,
-                  color: Colors.tealAccent,
+                  color: theme.accent,
                   size: sw * 0.055,
                 ),
               SizedBox(width: sw * 0.03),
@@ -496,8 +503,8 @@ class _LocationPageState extends State<LocationPage>
                 isLoading ? l10n.loading : l10n.useCurrentLocationGps,
                 style: TextStyle(
                   color: isLoading
-                      ? Colors.white.withOpacity(0.5)
-                      : Colors.tealAccent,
+                      ? theme.textLow
+                      : theme.accent,
                   fontSize: sw * 0.042,
                   fontWeight: FontWeight.w600,
                   letterSpacing: 0.2,
@@ -511,7 +518,7 @@ class _LocationPageState extends State<LocationPage>
   }
 
   // ────────────────────────────────────────────────
-  Widget _buildLoadingState(double sw, double sh, AppLocalizations l10n) {
+  Widget _buildLoadingState(double sw, double sh, AppLocalizations l10n, AppThemeOption theme) {
     return SizedBox(
       height: sh * 0.5,
       child: Center(
@@ -522,16 +529,16 @@ class _LocationPageState extends State<LocationPage>
               width: sw * 0.14,
               height: sw * 0.14,
               child: CircularProgressIndicator(
-                color: const Color(0xFF00A86B),
+                color: theme.accent,
                 strokeWidth: 3,
-                backgroundColor: Colors.white.withOpacity(0.1),
+                backgroundColor: theme.textLow.withOpacity(0.1),
               ),
             ),
             SizedBox(height: sh * 0.025),
             Text(
               l10n.detectingYourLocation,
               style: TextStyle(
-                color: Colors.white.withOpacity(0.6),
+                color: theme.textLow,
                 fontSize: sw * 0.04,
                 fontWeight: FontWeight.w400,
               ),
@@ -543,7 +550,7 @@ class _LocationPageState extends State<LocationPage>
   }
 
   // ────────────────────────────────────────────────
-  Widget _buildPermissionDenied(double sw, AppLocalizations l10n) {
+  Widget _buildPermissionDenied(double sw, AppLocalizations l10n, AppThemeOption theme) {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.all(sw * 0.06),
@@ -566,7 +573,7 @@ class _LocationPageState extends State<LocationPage>
           Text(
             l10n.locationPermissionDeniedTitle,
             style: TextStyle(
-              color: Colors.white,
+              color: theme.textHigh,
               fontSize: sw * 0.045,
               fontWeight: FontWeight.w700,
             ),
@@ -576,7 +583,7 @@ class _LocationPageState extends State<LocationPage>
           Text(
             l10n.enableGpsPermissionDesc,
             style: TextStyle(
-              color: Colors.white.withOpacity(0.5),
+              color: theme.textLow,
               fontSize: sw * 0.037,
             ),
             textAlign: TextAlign.center,
@@ -587,7 +594,7 @@ class _LocationPageState extends State<LocationPage>
   }
 
 
-  Widget _buildSaveButton(BuildContext context, LocationState state, double sw, double sh, AppLocalizations l10n) {
+  Widget _buildSaveButton(BuildContext context, LocationState state, double sw, double sh, AppLocalizations l10n, AppThemeOption theme) {
     if (state is! LocationLoaded) return const SizedBox.shrink();
 
     return SizedBox(
@@ -599,7 +606,7 @@ class _LocationPageState extends State<LocationPage>
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(l10n.locationSavedSuccessfully),
-              backgroundColor: const Color(0xFF00A86B),
+              backgroundColor: theme.accent,
               behavior: SnackBarBehavior.floating,
               duration: const Duration(seconds: 2),
             ),
@@ -608,15 +615,15 @@ class _LocationPageState extends State<LocationPage>
         child: Container(
           padding: EdgeInsets.symmetric(vertical: sh * 0.02),
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Color(0xFF00A86B), Color(0xFF007A4D)],
+            gradient: LinearGradient(
+              colors: [theme.accent, theme.primary],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             borderRadius: BorderRadius.circular(sw * 0.04),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF00A86B).withOpacity(0.4),
+                color: theme.accent.withOpacity(0.4),
                 blurRadius: 16,
                 offset: const Offset(0, 6),
               ),
@@ -641,83 +648,83 @@ class _LocationPageState extends State<LocationPage>
 
   // ────────────────────────────────────────────────
   Widget _buildSearchResults(
-      BuildContext context, LocationSearchResults state, double sw, double sh, AppLocalizations l10n) {
+      BuildContext context, LocationSearchResults state, double sw, double sh, AppLocalizations l10n, AppThemeOption theme) {
     return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-    Padding(
-    padding: EdgeInsets.only(bottom: sh * 0.015, left: sw * 0.01),
-    child: Text(
-    "${state.results.length} ${l10n.result}${state.results.length != 1 ? 's' : ''} ${l10n.found}",
-    style: TextStyle(
-    color: Colors.white.withOpacity(0.45),
-    fontSize: sw * 0.035,
-    fontWeight: FontWeight.w500,
-    letterSpacing: 0.3,
-    ),
-    ),
-    ),
-    ListView.separated(
-    shrinkWrap: true,
-    physics: const NeverScrollableScrollPhysics(),
-    itemCount: state.results.length,
-    separatorBuilder: (_, __) => SizedBox(height: sh * 0.012),
-    itemBuilder: (context, index) {
-                final LocationModel loc = state.results[index];
-                return GestureDetector(
-                  onTap: () =>
-                      context.read<LocationCubit>().selectLocation(loc),
-                  child: Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: sw * 0.045,
-                      vertical: sh * 0.018,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.05),
-                      borderRadius: BorderRadius.circular(sw * 0.04),
-                      border: Border.all(
-                        color: Colors.white.withOpacity(0.08),
-                        width: 1,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: EdgeInsets.only(bottom: sh * 0.015, left: sw * 0.01),
+          child: Text(
+            "${state.results.length} ${l10n.result}${state.results.length != 1 ? 's' : ''} ${l10n.found}",
+            style: TextStyle(
+              color: theme.textLow,
+              fontSize: sw * 0.035,
+              fontWeight: FontWeight.w500,
+              letterSpacing: 0.3,
+            ),
+          ),
+        ),
+        ListView.separated(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: state.results.length,
+          separatorBuilder: (_, __) => SizedBox(height: sh * 0.012),
+          itemBuilder: (context, index) {
+            final LocationModel loc = state.results[index];
+            return GestureDetector(
+              onTap: () =>
+                  context.read<LocationCubit>().selectLocation(loc),
+              child: Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: sw * 0.045,
+                  vertical: sh * 0.018,
+                ),
+                decoration: BoxDecoration(
+                  color: theme.surface,
+                  borderRadius: BorderRadius.circular(sw * 0.04),
+                  border: Border.all(
+                    color: theme.accent.withOpacity(0.10),
+                    width: 1,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: sw * 0.1,
+                      height: sw * 0.1,
+                      decoration: BoxDecoration(
+                        color: theme.accent.withOpacity(0.15),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.place_rounded,
+                        color: theme.accent,
+                        size: sw * 0.05,
                       ),
                     ),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: sw * 0.1,
-                          height: sw * 0.1,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF00A86B).withOpacity(0.15),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            Icons.place_rounded,
-                            color: const Color(0xFF00A86B),
-                            size: sw * 0.05,
-                          ),
+                    SizedBox(width: sw * 0.04),
+                    Expanded(
+                      child: Text(
+                        loc.city,
+                        style: TextStyle(
+                          color: theme.textHigh,
+                          fontSize: sw * 0.043,
+                          fontWeight: FontWeight.w500,
                         ),
-                        SizedBox(width: sw * 0.04),
-                        Expanded(
-                          child: Text(
-                            loc.city,
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: sw * 0.043,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                        Icon(
-                          Icons.chevron_right_rounded,
-                          color: Colors.white.withOpacity(0.3),
-                          size: sw * 0.055,
-                        ),
-                      ],
+                      ),
                     ),
-                  ),
-                );
-              },
-            ),
-        ],
+                    Icon(
+                      Icons.chevron_right_rounded,
+                      color: theme.textLow.withOpacity(0.6),
+                      size: sw * 0.055,
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+      ],
     );
   }
 }

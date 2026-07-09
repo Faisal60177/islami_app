@@ -103,10 +103,7 @@ class _MasailCategoryPageState extends State<MasailCategoryPage> {
 
     return Directionality(
       textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
-      child: RefreshIndicator(
-        color: theme.accent,
-        onRefresh: _loadCategories,
-        child: CustomScrollView(
+      child: CustomScrollView(
           physics: const ClampingScrollPhysics(),
           slivers: [
             // ── Section header ──
@@ -178,7 +175,6 @@ class _MasailCategoryPageState extends State<MasailCategoryPage> {
             ),
           ],
         ),
-      ),
     );
   }
 }

@@ -122,11 +122,8 @@ class _CategoryPageState extends State<CategoryPage> {
     // ✅ Directionality wraps entire category grid
     return Directionality(
       textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
-      child: RefreshIndicator(
-        color: theme.accent,
-        onRefresh: _loadCategories,
-        child: CustomScrollView(
-          physics: const BouncingScrollPhysics(),
+      child: CustomScrollView(
+          physics: const ClampingScrollPhysics(),
           slivers: [
             SliverToBoxAdapter(
               child: Padding(
@@ -180,7 +177,6 @@ class _CategoryPageState extends State<CategoryPage> {
             ),
           ],
         ),
-      ),
     );
   }
 }

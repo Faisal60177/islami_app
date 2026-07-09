@@ -683,9 +683,7 @@ class _BottomBar extends StatelessWidget {
               borderRadius: BorderRadius.circular(rsw * 0.025),
               border: Border.all(color: Colors.white24, width: 0.5),
             ),
-            child: Text('Image $currentPage / 619',
-                style: TextStyle(
-                    color: Colors.white38, fontSize: rsw * 0.022)),
+
           ),
         ],
       ),

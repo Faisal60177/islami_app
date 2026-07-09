@@ -68,10 +68,7 @@ class _CategoryMasailPageState extends State<CategoryMasailPage> {
                 color: theme.accent, strokeWidth: 2.5))
             : masail.isEmpty
             ? _EmptyMasail(w: w, h: h)
-            : RefreshIndicator(
-          color: theme.accent,
-          onRefresh: _load,
-          child: ListView.builder(
+            : ListView.builder(
             padding: EdgeInsets.fromLTRB(
                 w * 0.04, h * 0.018, w * 0.04, h * 0.04),
             itemCount: masail.length,
@@ -91,7 +88,6 @@ class _CategoryMasailPageState extends State<CategoryMasailPage> {
             ),
           ),
         ),
-      ),
     );
   }
 }

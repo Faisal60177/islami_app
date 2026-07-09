@@ -117,23 +117,13 @@ class _QuranPageBodyState extends State<_QuranPageBody>
                   onSearchTap: () => _openSearch(context),
                 ),
 
+                _QuickActionsRow(theme: theme, rsw: rsw),
+                SizedBox(height: rsw * 0.030),
+
+                _QuranTabBar(ctrl: _tabCtrl, theme: theme, rsw: rsw),
+
                 // ── Scrollable content ───────────────────────────────
                 Expanded(
-                  child: SingleChildScrollView(
-                    physics: const ClampingScrollPhysics(),
-                    child: Column(
-                      children: [
-                        // Quick action cards
-                        _QuickActionsRow(theme: theme, rsw: rsw),
-
-                        SizedBox(height: rsw * 0.030),
-
-                        // Tab bar
-                        _QuranTabBar(ctrl: _tabCtrl, theme: theme, rsw: rsw),
-
-                        // Tab content
-                        SizedBox(
-                          height: mq.size.height * 0.62,
                           child: TabBarView(
                             controller: _tabCtrl,
                             children: const [
@@ -146,10 +136,6 @@ class _QuranPageBodyState extends State<_QuranPageBody>
                       ],
                     ),
                   ),
-                ),
-              ],
-            ),
-          ),
           bottomNavigationBar: _buildNav(context, theme, rsw, sw, l10n),
         );
       },

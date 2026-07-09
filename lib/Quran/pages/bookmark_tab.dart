@@ -33,7 +33,7 @@ class BookmarkTab extends StatelessWidget {
             }
             return ListView.builder(
               padding: EdgeInsets.all(rsw * 0.030),
-              physics: const BouncingScrollPhysics(),
+              physics: const ClampingScrollPhysics(),
               itemCount: bookmarks.length,
               itemBuilder: (_, i) => _BookmarkTile(
                 bm: bookmarks[i],

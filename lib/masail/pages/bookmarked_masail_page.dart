@@ -109,10 +109,7 @@ class _BookmarkedMasailPageState extends State<BookmarkedMasailPage>
 
     return Directionality(
       textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
-      child: RefreshIndicator(
-        color:     theme.accent,
-        onRefresh: _load,
-        child: CustomScrollView(
+      child: CustomScrollView(
           physics: const ClampingScrollPhysics(),
           slivers: [
             // ── Saved count header ──
@@ -185,7 +182,6 @@ class _BookmarkedMasailPageState extends State<BookmarkedMasailPage>
             ),
           ],
         ),
-      ),
     );
   }
 }

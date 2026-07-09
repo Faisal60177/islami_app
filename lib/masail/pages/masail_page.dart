@@ -54,277 +54,263 @@ class _MasailPageState extends State<MasailPage>
     final sh   = size.height;
 
     final tabs = [
-      {'label': l10n.category,  'icon': Icons.grid_view_rounded},
-      {'label': l10n.all,       'icon': Icons.menu_book_rounded},
-      {'label': l10n.bookmark,  'icon': Icons.bookmark_rounded},
+      {'label': l10n.category, 'icon': Icons.grid_view_rounded},
+      {'label': l10n.all,      'icon': Icons.menu_book_rounded},
+      {'label': l10n.bookmark, 'icon': Icons.bookmark_rounded},
     ];
 
     return Directionality(
       textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
       child: Scaffold(
         backgroundColor: theme.background,
-        body: NestedScrollView(
-          physics: const ClampingScrollPhysics(),
-          headerSliverBuilder: (context, innerBoxIsScrolled) => [
-            SliverAppBar(
-              automaticallyImplyLeading: false,
-              expandedHeight: sh * 0.24,
-              floating: false,
-              pinned: true,
-              elevation: 0,
-              backgroundColor: theme.surface,
-              flexibleSpace: FlexibleSpaceBar(
-                background: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [theme.primary, theme.accent],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
+        body: Column(
+          children: [
+            // ── Pinned Header ──────────────────────────────────────────
+            _MasailHeader(
+              sw: sw, sh: sh,
+              isRtl: isRtl,
+              theme: theme,
+              searchController: _searchController,
+              searchQuery: searchQuery,
+            ),
+
+            // ── Pinned Tab Bar ─────────────────────────────────────────
+            Container(
+              color: theme.surface,
+              child: TabBar(
+                controller: _tabController,
+                indicatorColor: theme.accent,
+                indicatorWeight: 2.5,
+                indicatorSize: TabBarIndicatorSize.label,
+                isScrollable: false,
+                labelPadding: EdgeInsets.zero,
+                dividerColor: Colors.transparent,
+                tabs: List.generate(tabs.length, (i) {
+                  final isSelected = _tabController.index == i;
+                  return SizedBox(
+                    height: sh * 0.062,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          tabs[i]['icon'] as IconData,
+                          size: sw * 0.046,
+                          color: isSelected ? theme.accent : theme.textLow,
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          tabs[i]['label'] as String,
+                          style: TextStyle(
+                            color: isSelected ? theme.accent : theme.textLow,
+                            fontSize: sw * 0.027,
+                            fontWeight: isSelected
+                                ? FontWeight.w700
+                                : FontWeight.w400,
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                  child: Stack(
-                    children: [
-                      // ── Islamic geometric pattern overlay ──
-                      Positioned.fill(
-                        child: Opacity(
-                          opacity: 0.06,
-                          child: CustomPaint(
-                            painter: _GeometricPatternPainter(),
-                          ),
-                        ),
-                      ),
-                      // ── Top border ──
-                      Positioned(
-                        top: 0, left: 0, right: 0,
-                        child: Container(
-                          height: 3,
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                theme.accent.withOpacity(0.7),
-                                theme.accent,
-                                theme.accent.withOpacity(0.7),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                      // ── Bottom border ──
-                      Positioned(
-                        bottom: sh * 0.065, left: 0, right: 0,
-                        child: Container(
-                          height: 1,
-                          color: Colors.white.withOpacity(0.25),
-                        ),
-                      ),
-                      // ── Decorative arch circles ──
-                      Positioned(
-                        top: -sw * 0.15,
-                        right: isRtl ? null : -sw * 0.1,
-                        left:  isRtl ? -sw * 0.1 : null,
-                        child: Container(
-                          width: sw * 0.5, height: sw * 0.5,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: Colors.white.withOpacity(0.1),
-                              width: 1.5,
-                            ),
-                          ),
-                        ),
-                      ),
-                      Positioned(
-                        bottom: sh * 0.07,
-                        left: isRtl ? null : -sw * 0.08,
-                        right: isRtl ? -sw * 0.08 : null,
-                        child: Container(
-                          width: sw * 0.32, height: sw * 0.32,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.white.withOpacity(0.03),
-                            border: Border.all(
-                              color: Colors.white.withOpacity(0.08),
-                              width: 1,
-                            ),
-                          ),
-                        ),
-                      ),
-                      // ── Header content ──
-                      Padding(
-                        padding: EdgeInsets.only(
-                          top: MediaQuery.of(context).padding.top + sh * 0.015,
-                          left: sw * 0.05,
-                          right: sw * 0.05,
-                        ),
-                        child: Column(
-                          crossAxisAlignment: isRtl
-                              ? CrossAxisAlignment.end
-                              : CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              textDirection: isRtl
-                                  ? TextDirection.rtl
-                                  : TextDirection.ltr,
-                              children: [
-                                // ── Ornamental icon box ──
-                                Container(
-                                  padding: const EdgeInsets.all(9),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.15),
-                                    borderRadius: BorderRadius.circular(14),
-                                    border: Border.all(
-                                      color: Colors.white.withOpacity(0.3),
-                                      width: 1,
-                                    ),
-                                  ),
-                                  child: Icon(
-                                    Icons.auto_stories_rounded,
-                                    color: Colors.white,
-                                    size: sw * 0.06,
-                                  ),
-                                ),
-                                SizedBox(width: sw * 0.03),
-                                Column(
-                                  crossAxisAlignment: isRtl
-                                      ? CrossAxisAlignment.end
-                                      : CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Masail', // replace with l10n.masail
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: sw * 0.058,
-                                        fontWeight: FontWeight.w800,
-                                        letterSpacing: 0.5,
-                                      ),
-                                    ),
-                                    Text(
-                                      'مسائل فقہیہ', // always Arabic
-                                      style: TextStyle(
-                                        color: Colors.white.withOpacity(0.85),
-                                        fontSize: sw * 0.038,
-                                        fontWeight: FontWeight.w400,
-                                        fontFamily: 'Amiri',
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: sh * 0.018),
-                            // ── Search bar ──
-                            Container(
-                              height: sh * 0.052,
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.12),
-                                borderRadius: BorderRadius.circular(14),
-                                border: Border.all(
-                                  color: Colors.white.withOpacity(0.25),
-                                  width: 1,
-                                ),
-                              ),
-                              child: TextField(
-                                controller: _searchController,
-                                textDirection: isRtl
-                                    ? TextDirection.rtl
-                                    : TextDirection.ltr,
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: sw * 0.036,
-                                ),
-                                decoration: InputDecoration(
-                                  hintText: 'Search masail...', // l10n
-                                  hintStyle: TextStyle(
-                                    color: Colors.white.withOpacity(0.45),
-                                    fontSize: sw * 0.035,
-                                  ),
-                                  prefixIcon: Icon(
-                                    Icons.search_rounded,
-                                    color: Colors.white.withOpacity(0.85),
-                                    size: sw * 0.05,
-                                  ),
-                                  suffixIcon: searchQuery.isNotEmpty
-                                      ? IconButton(
-                                    icon: const Icon(Icons.close_rounded,
-                                        color: Colors.white54),
-                                    onPressed: () =>
-                                        _searchController.clear(),
-                                  )
-                                      : null,
-                                  border: InputBorder.none,
-                                  contentPadding: EdgeInsets.symmetric(
-                                      vertical: sh * 0.012),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                  );
+                }),
               ),
-              bottom: PreferredSize(
-                preferredSize: Size.fromHeight(sh * 0.062),
-                child: Container(
-                  color: theme.surface,
-                  child: TabBar(
-                    controller: _tabController,
-                    indicatorColor: theme.accent,
-                    indicatorWeight: 2.5,
-                    indicatorSize: TabBarIndicatorSize.label,
-                    isScrollable: false,
-                    labelPadding: EdgeInsets.zero,
-                    tabs: List.generate(tabs.length, (i) {
-                      final isSelected = _tabController.index == i;
-                      return Tab(
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 200),
-                          padding: EdgeInsets.symmetric(
-                              horizontal: sw * 0.015),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                tabs[i]['icon'] as IconData,
-                                size: sw * 0.046,
-                                color: isSelected
-                                    ? theme.accent
-                                    : theme.textLow,
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                tabs[i]['label'] as String,
-                                style: TextStyle(
-                                  color: isSelected
-                                      ? theme.accent
-                                      : theme.textLow,
-                                  fontSize: sw * 0.027,
-                                  fontWeight: isSelected
-                                      ? FontWeight.w700
-                                      : FontWeight.w400,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    }),
-                  ),
-                ),
+            ),
+
+            // ── Tab Content — no bounce ────────────────────────────────
+            Expanded(
+              child: TabBarView(
+                controller: _tabController,
+                physics: const ClampingScrollPhysics(), // ✅ no bounce
+                children: [
+                  MasailCategoryPage(searchQuery: searchQuery),
+                  AllMasailPage(searchQuery: searchQuery),
+                  BookmarkedMasailPage(searchQuery: searchQuery),
+                ],
               ),
             ),
           ],
-          body: TabBarView(
-            controller: _tabController,
-            physics: const ClampingScrollPhysics(),
-            children: [
-              MasailCategoryPage(searchQuery: searchQuery),
-              AllMasailPage(searchQuery: searchQuery),
-              BookmarkedMasailPage(searchQuery: searchQuery),
-            ],
-          ),
         ),
+      ),
+    );
+  }
+}
+
+// ── Pinned Header ─────────────────────────────────────────────────────────────
+class _MasailHeader extends StatelessWidget {
+  final double sw, sh;
+  final bool isRtl;
+  final AppThemeOption theme;
+  final TextEditingController searchController;
+  final String searchQuery;
+
+  const _MasailHeader({
+    required this.sw,
+    required this.sh,
+    required this.isRtl,
+    required this.theme,
+    required this.searchController,
+    required this.searchQuery,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [theme.primary, theme.accent],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: Stack(
+        children: [
+          // ── Islamic geometric pattern overlay ──
+          Positioned.fill(
+            child: Opacity(
+              opacity: 0.06,
+              child: CustomPaint(painter: _GeometricPatternPainter()),
+            ),
+          ),
+          // ── Top border ──
+          Positioned(
+            top: 0, left: 0, right: 0,
+            child: Container(
+              height: 3,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    theme.accent.withOpacity(0.7),
+                    theme.accent,
+                    theme.accent.withOpacity(0.7),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          // ── Decorative circles ──
+          Positioned(
+            top: -sw * 0.15,
+            right: isRtl ? null : -sw * 0.1,
+            left:  isRtl ? -sw * 0.1 : null,
+            child: Container(
+              width: sw * 0.5, height: sw * 0.5,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                    color: Colors.white.withOpacity(0.1), width: 1.5),
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: sw * 0.04,
+            left: isRtl ? null : -sw * 0.08,
+            right: isRtl ? -sw * 0.08 : null,
+            child: Container(
+              width: sw * 0.32, height: sw * 0.32,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withOpacity(0.03),
+                border: Border.all(
+                    color: Colors.white.withOpacity(0.08), width: 1),
+              ),
+            ),
+          ),
+          // ── Content ──
+          SafeArea(
+            bottom: false,
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(
+                  sw * 0.05, sh * 0.015, sw * 0.05, sw * 0.04),
+              child: Column(
+                crossAxisAlignment: isRtl
+                    ? CrossAxisAlignment.end
+                    : CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    textDirection:
+                    isRtl ? TextDirection.rtl : TextDirection.ltr,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(9),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                              color: Colors.white.withOpacity(0.3), width: 1),
+                        ),
+                        child: Icon(Icons.auto_stories_rounded,
+                            color: Colors.white, size: sw * 0.06),
+                      ),
+                      SizedBox(width: sw * 0.03),
+                      Column(
+                        crossAxisAlignment: isRtl
+                            ? CrossAxisAlignment.end
+                            : CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Masail',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: sw * 0.058,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                          Text(
+                            'مسائل فقہیہ',
+                            style: TextStyle(
+                              color: Colors.white.withOpacity(0.85),
+                              fontSize: sw * 0.038,
+                              fontWeight: FontWeight.w400,
+                              fontFamily: 'Amiri',
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: sh * 0.018),
+                  // ── Search bar ──
+                  Container(
+                    height: sh * 0.052,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                          color: Colors.white.withOpacity(0.25), width: 1),
+                    ),
+                    child: TextField(
+                      controller: searchController,
+                      textDirection:
+                      isRtl ? TextDirection.rtl : TextDirection.ltr,
+                      style: TextStyle(
+                          color: Colors.white, fontSize: sw * 0.036),
+                      decoration: InputDecoration(
+                        hintText: 'Search masail...',
+                        hintStyle: TextStyle(
+                            color: Colors.white.withOpacity(0.45),
+                            fontSize: sw * 0.035),
+                        prefixIcon: Icon(Icons.search_rounded,
+                            color: Colors.white.withOpacity(0.85),
+                            size: sw * 0.05),
+                        suffixIcon: searchQuery.isNotEmpty
+                            ? IconButton(
+                          icon: const Icon(Icons.close_rounded,
+                              color: Colors.white54),
+                          onPressed: () => searchController.clear(),
+                        )
+                            : null,
+                        border: InputBorder.none,
+                        contentPadding:
+                        EdgeInsets.symmetric(vertical: sh * 0.012),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -343,7 +329,6 @@ class _GeometricPatternPainter extends CustomPainter {
     for (double x = 0; x < size.width + step; x += step) {
       for (double y = 0; y < size.height + step; y += step) {
         final cx = x + (y / step % 2 == 0 ? 0 : step / 2);
-        // Draw small 8-point star
         final path = Path();
         for (int k = 0; k < 8; k++) {
           final angle = k * 3.14159 / 4;

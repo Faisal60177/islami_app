@@ -67,7 +67,7 @@ class _SettingsPageState extends State<SettingsPage>
             child: SlideTransition(
               position: _slideAnim,
               child: CustomScrollView(
-                physics: const BouncingScrollPhysics(),
+                physics: const ClampingScrollPhysics(),
                 slivers: [
                   _buildSliverAppBar(context, theme, l10n, rsw),
                   SliverPadding(
@@ -160,6 +160,8 @@ class _SettingsPageState extends State<SettingsPage>
                         SizedBox(height: rsw * 0.050),
 
                         _buildAppInfo(theme, rsw),
+                        SizedBox(height: rsw * 0.020),
+
                       ]),
                     ),
                   ),

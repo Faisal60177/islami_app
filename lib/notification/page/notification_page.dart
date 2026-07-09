@@ -7,14 +7,9 @@ import '../model/notification_model.dart';
 import '../widgets/notification_tile.dart';
 import '../widgets/empty_state.dart';
 import 'notification_detail_page.dart';
-
-// ── Palette (matches PrayerTimesPage exactly) ─────────────────────────────────
-const _bgDeep    = Color(0xFF011A0D);
-const _bgBase    = Color(0xFF013220);
-const _surface   = Color(0xFF0D2E1C);
-const _accent    = Color(0xFF4CAF82);
-const _accentSoft= Color(0xFF2E7D5A);
-const _textLo    = Color(0xFF7BAF92);
+import 'package:muslim_app/settings/cubit/settings_cubit.dart';
+import 'package:muslim_app/settings/cubit/settings_state.dart';
+import 'package:muslim_app/settings/theme/app_themes.dart';
 
 class NotificationPage extends StatelessWidget {
   const NotificationPage({super.key});
@@ -42,28 +37,33 @@ class _View extends StatelessWidget {
     final sw = MediaQuery.of(context).size.width;
     final px = sw * 0.042;
 
-    return Scaffold(
-      backgroundColor: _bgBase,
-      body: Column(
-        children: [
-          _header(context, sw, px),
-          _filterRow(context, sw),
-          Expanded(child: _list(context, sw, px)),
-        ],
-      ),
+    return BlocBuilder<SettingsCubit, SettingsState>(
+      builder: (context, settings) {
+        final theme = getThemeById(settings.themeMode);
+        return Scaffold(
+          backgroundColor: theme.background,
+          body: Column(
+            children: [
+              _header(context, sw, px, theme),
+              _filterRow(context, sw, theme),
+              Expanded(child: _list(context, sw, px, theme)),
+            ],
+          ),
+        );
+      },
     );
   }
 
   // ── Header ──────────────────────────────────────────────────────────────────
-  Widget _header(BuildContext context, double sw, double px) {
+  Widget _header(BuildContext context, double sw, double px, AppThemeOption theme) {
     final top = MediaQuery.of(context).padding.top;
     return Container(
       padding: EdgeInsets.only(
           top: top + sw * 0.030, left: px, right: px, bottom: sw * 0.028),
       decoration: BoxDecoration(
-        color: _bgDeep,
+        color: theme.surface,
         border: Border(
-            bottom: BorderSide(color: _accentSoft.withOpacity(0.20))),
+            bottom: BorderSide(color: theme.accent.withOpacity(0.20))),
       ),
       child: Row(
         children: [
@@ -73,11 +73,11 @@ class _View extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: _accent.withOpacity(0.12),
+                color: theme.accent.withOpacity(0.12),
                 shape: BoxShape.circle,
               ),
               child: Icon(Icons.arrow_back_ios_new_rounded,
-                  color: _accent, size: sw * 0.045),
+                  color: theme.accent, size: sw * 0.045),
             ),
           ),
           SizedBox(width: sw * 0.028),
@@ -89,7 +89,7 @@ class _View extends StatelessWidget {
               children: [
                 Text('Notifications',
                     style: TextStyle(
-                        color: Colors.white,
+                        color: theme.textHigh,
                         fontSize: sw * 0.052,
                         fontWeight: FontWeight.w700)),
                 BlocBuilder<NotificationCubit, NotificationState>(
@@ -99,7 +99,7 @@ class _View extends StatelessWidget {
                     if (count == 0) return const SizedBox.shrink();
                     return Text('$count unread',
                         style: TextStyle(
-                            color: _accent, fontSize: sw * 0.030));
+                            color: theme.accent, fontSize: sw * 0.030));
                   },
                 ),
               ],
@@ -121,14 +121,14 @@ class _View extends StatelessWidget {
                   padding: EdgeInsets.symmetric(
                       horizontal: sw * 0.028, vertical: sw * 0.013),
                   decoration: BoxDecoration(
-                    color: _accent.withOpacity(0.12),
+                    color: theme.accent.withOpacity(0.12),
                     borderRadius: BorderRadius.circular(sw * 0.04),
                     border: Border.all(
-                        color: _accent.withOpacity(0.28), width: 0.8),
+                        color: theme.accent.withOpacity(0.28), width: 0.8),
                   ),
                   child: Text('Mark all read',
                       style: TextStyle(
-                          color: _accent,
+                          color: theme.accent,
                           fontSize: sw * 0.028,
                           fontWeight: FontWeight.w600)),
                 ),
@@ -141,14 +141,14 @@ class _View extends StatelessWidget {
   }
 
   // ── Horizontal filter tabs ───────────────────────────────────────────────────
-  Widget _filterRow(BuildContext context, double sw) {
+  Widget _filterRow(BuildContext context, double sw, AppThemeOption theme) {
     return BlocBuilder<NotificationCubit, NotificationState>(
       builder: (context, state) {
         final active = state is NotificationLoaded
             ? state.activeFilter : null;
         return Container(
           height: sw * 0.12,
-          color: _bgDeep,
+          color: theme.surface,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             padding: EdgeInsets.symmetric(
@@ -169,20 +169,20 @@ class _View extends StatelessWidget {
                   EdgeInsets.symmetric(horizontal: sw * 0.038),
                   decoration: BoxDecoration(
                     color: isActive
-                        ? _accent.withOpacity(0.16)
-                        : _surface.withOpacity(0.55),
+                        ? theme.accent.withOpacity(0.16)
+                        : theme.cardColor.withOpacity(0.55),
                     borderRadius: BorderRadius.circular(sw * 0.040),
                     border: Border.all(
                       color: isActive
-                          ? _accent.withOpacity(0.45)
-                          : Colors.white.withOpacity(0.07),
+                          ? theme.accent.withOpacity(0.45)
+                          : theme.textLow.withOpacity(0.15),
                       width: isActive ? 1.0 : 0.5,
                     ),
                   ),
                   child: Center(
                     child: Text(label,
                         style: TextStyle(
-                          color: isActive ? _accent : Colors.white38,
+                          color: isActive ? theme.accent : theme.textLow,
                           fontSize: sw * 0.032,
                           fontWeight: isActive
                               ? FontWeight.w700
@@ -199,12 +199,12 @@ class _View extends StatelessWidget {
   }
 
   // ── Notification list ────────────────────────────────────────────────────────
-  Widget _list(BuildContext context, double sw, double px) {
+  Widget _list(BuildContext context, double sw, double px, AppThemeOption theme) {
     return BlocBuilder<NotificationCubit, NotificationState>(
       builder: (context, state) {
         if (state is NotificationLoading) {
-          return const Center(
-              child: CircularProgressIndicator(color: _accent));
+          return Center(
+              child: CircularProgressIndicator(color: theme.accent));
         }
         if (state is NotificationError) {
           return Center(
