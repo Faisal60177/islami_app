@@ -12,7 +12,6 @@ import 'home/services/prayer_times_storage.dart';
 import 'Duas/cubit/duas_cubit.dart';
 import 'package:muslim_app/Duas/repository/duas_repository.dart';
 import 'package:flutter/services.dart';
-import 'package:muslim_app/Menu/auth/auth_notifier.dart';
 import 'firebase_options.dart';
 import 'package:muslim_app/notification/cubit/notification_cubit.dart';
 import 'package:muslim_app/notification/repository/notification_repository.dart';
@@ -26,8 +25,10 @@ import 'package:muslim_app/masail/cubit/masail_cubit.dart';
 import 'package:muslim_app/masail/repository/masail_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'alarm/cubit/alarm_cubit.dart';
 import 'package:muslim_app/core/app_info.dart';
-
+import 'package:muslim_app/alarm/services/notification_service.dart';
+import 'home/cubit/prayer_times_state.dart';
 
 
 
@@ -41,6 +42,9 @@ void main() async {
     DeviceOrientation.portraitDown,
   ]);
   await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+
+  await NotificationService.instance.init();
+  await NotificationService.instance.requestPermissions();
 
   // Initialize timezone package
   tz.initializeTimeZones();
@@ -113,6 +117,7 @@ void main() async {
           create: (_) => MasailCubit(masailRepository)
             ..updateLanguage(savedLanguage),
         ),
+        BlocProvider(create: (_) => AlarmCubit()..load()),
       ],
       child: const MyApp(),
     ),
@@ -148,7 +153,14 @@ class MyApp extends StatelessWidget {
 
             ),
 
-          home: const PrayerTimesPage(),
+          home: BlocListener<PrayerTimesCubit, PrayerTimesState>(
+            listener: (context, state) {
+              if (state is PrayerTimesLoaded) {
+                context.read<AlarmCubit>().onPrayerTimesUpdated(state.prayerTimes);
+              }
+            },
+            child: const PrayerTimesPage(),
+          ),
         );
       },
     );

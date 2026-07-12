@@ -155,6 +155,7 @@ flutter:
     - assets/db/duas.db
     - assets/db/inspiration.db
     - assets/db/masail.db
+    - assets/sounds/adhan.mp3
 
   # To add json to your application, add an json section, like this:
   # json:

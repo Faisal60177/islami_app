@@ -12,6 +12,7 @@ class AppThemeOption {
   final Color textHigh;
   final Color textLow;
   final Color cardColor;
+  final Color danger;
   final bool isDark;
 
   const AppThemeOption({
@@ -25,6 +26,7 @@ class AppThemeOption {
     required this.textHigh,
     required this.textLow,
     required this.cardColor,
+    required this.danger,
     required this.isDark,
   });
 }
@@ -42,6 +44,7 @@ const List<AppThemeOption> appThemes = [
     textHigh:   Color(0xFFE8F5EC),
     textLow:    Color(0xFF7BAF92),
     cardColor:  Color(0xFF0A3D25),
+    danger:     Color(0xFFE0715A),
     isDark: true,
   ),
 
@@ -57,6 +60,7 @@ const List<AppThemeOption> appThemes = [
     textHigh:   Color(0xFFE8EFF8),
     textLow:    Color(0xFF7BA0C0),
     cardColor:  Color(0xFF0A213A),
+    danger:     Color(0xFFEF5350),
     isDark: true,
   ),
 
@@ -72,6 +76,7 @@ const List<AppThemeOption> appThemes = [
     textHigh:   Color(0xFFF5EDD4),
     textLow:    Color(0xFFB8A060),
     cardColor:  Color(0xFF221900),
+    danger:     Color(0xFFD9663B),
     isDark: true,
   ),
 
@@ -87,6 +92,7 @@ const List<AppThemeOption> appThemes = [
     textHigh:   Color(0xFFF5E0E7),
     textLow:    Color(0xFFB07080),
     cardColor:  Color(0xFF240D18),
+    danger:     Color(0xFFE04B5C),
     isDark: true,
   ),
 
@@ -102,6 +108,7 @@ const List<AppThemeOption> appThemes = [
     textHigh:   Color(0xFF1A2D22),
     textLow:    Color(0xFF5A7A66),
     cardColor:  Color(0xFFEEF5F0),
+    danger:     Color(0xFFC0392B),
     isDark: false,
   ),
 
@@ -117,6 +124,7 @@ const List<AppThemeOption> appThemes = [
     textHigh:   Color(0xFFDDF5F8),
     textLow:    Color(0xFF60A0B0),
     cardColor:  Color(0xFF0A2535),
+    danger:     Color(0xFFE0645A),
     isDark: true,
   ),
 ];
@@ -137,7 +145,7 @@ ThemeData buildThemeData(AppThemeOption theme) {
       onPrimary:  Colors.white,
       secondary:  theme.accent,
       onSecondary:Colors.white,
-      error:      Colors.red,
+      error:      theme.danger,
       onError:    Colors.white,
       background: theme.background,
       onBackground: theme.textHigh,

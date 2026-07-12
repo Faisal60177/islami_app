@@ -50,7 +50,6 @@ class _MosquePainter extends CustomPainter {
     final w = size.width;
     final h = size.height;
 
-    // Sky
     canvas.drawRect(
       Rect.fromLTWH(0, 0, w, h),
       Paint()
@@ -61,7 +60,8 @@ class _MosquePainter extends CustomPainter {
         ).createShader(Rect.fromLTWH(0, 0, w, h)),
     );
 
-    // Stars
+    // NOTE: anchors moved from h*0.13 -> h*0.17 so moon/sun clear the
+    // status bar area (hero sits behind AppBar via extendBodyBehindAppBar).
     if (prayer == 'Isha' || prayer == 'Fajr' || prayer == '') {
       final rng = math.Random(99);
       for (int i = 0; i < 60; i++) {
@@ -71,17 +71,15 @@ class _MosquePainter extends CustomPainter {
           Paint()..color = Colors.white.withOpacity(rng.nextDouble() * 0.5 + 0.3),
         );
       }
-      // Crescent moon — top left like reference image
-      _drawCrescent(canvas, Offset(w * 0.18, h * 0.13), h * 0.062, skyColors[1]);
+      _drawCrescent(canvas, Offset(w * 0.10, h * 0.25), h * 0.056, skyColors[1]);
     } else if (prayer == 'Dhuhr') {
-      _drawGlowingSun(canvas, Offset(w * 0.82, h * 0.13), h * 0.058, bright: true);
+      _drawGlowingSun(canvas, Offset(w * 0.90, h * 0.25), h * 0.052, bright: true);
     } else if (prayer == 'Asr') {
       _drawGlowingSun(canvas, Offset(w * 0.76, h * 0.52), h * 0.090, bright: false);
     } else if (prayer == 'Maghrib') {
       _drawGlowingSun(canvas, Offset(w * 0.72, h * 0.58), h * 0.085, bright: false);
     }
 
-    // 3 hill layers for depth (matching reference layered mountains)
     _hillLayer(canvas, w, h, h * 0.56, skyColors.last.withOpacity(0.30),
         [0.0, 0.15, 0.32, 0.50, 0.68, 0.85, 1.0],
         [0.02, 0.07, 0.03, 0.08, 0.04, 0.09, 0.02]);
@@ -92,10 +90,8 @@ class _MosquePainter extends CustomPainter {
         [0.0, 0.10, 0.25, 0.45, 0.62, 0.80, 1.0],
         [0.04, 0.08, 0.03, 0.09, 0.04, 0.10, 0.04]);
 
-    // Mosque
     _drawMosque(canvas, size);
 
-    // Bottom fade into dark so cards overlap cleanly
     canvas.drawRect(
       Rect.fromLTWH(0, 0, w, h),
       Paint()
@@ -118,7 +114,6 @@ class _MosquePainter extends CustomPainter {
   }
 
   void _drawGlowingSun(Canvas canvas, Offset c, double r, {required bool bright}) {
-    // Glow rings
     for (int i = 4; i >= 1; i--) {
       canvas.drawCircle(c, r * (1 + i * 0.38),
           Paint()..color = (bright ? Colors.white : const Color(0xFFFFD54F)).withOpacity(0.035 * i));
@@ -159,16 +154,13 @@ class _MosquePainter extends CustomPainter {
     final baseY   = h * 0.68;
     final cx      = w * 0.50;
 
-    // ── Main central body ────────────────────────────────────────────────────
     final mw = w * 0.30;
     final mh = h * 0.23;
     path.addRect(Rect.fromLTWH(cx - mw / 2, baseY, mw, mh));
 
-    // ── Central ogival dome ──────────────────────────────────────────────────
     _ogivalDome(path, cx, baseY, mw * 0.36, h * 0.155);
     _finial(path, cx, baseY - h * 0.155, h * 0.048, w * 0.010);
 
-    // ── Left wing ────────────────────────────────────────────────────────────
     final lwW = w * 0.115; final lwH = h * 0.115;
     final lwX = cx - mw / 2 - lwW;
     final lwY = baseY + mh - lwH;
@@ -176,31 +168,28 @@ class _MosquePainter extends CustomPainter {
     _ogivalDome(path, lwX + lwW / 2, lwY, lwW * 0.42, lwH * 0.68);
     _finial(path, lwX + lwW / 2, lwY - lwH * 0.68, h * 0.026, w * 0.007);
 
-    // ── Right wing ───────────────────────────────────────────────────────────
     final rwX = cx + mw / 2;
     path.addRect(Rect.fromLTWH(rwX, lwY, lwW, lwH));
     _ogivalDome(path, rwX + lwW / 2, lwY, lwW * 0.42, lwH * 0.68);
     _finial(path, rwX + lwW / 2, lwY - lwH * 0.68, h * 0.026, w * 0.007);
 
-    // ── Outer tall minarets (the two large ones in the reference) ────────────
+    // Outer minarets shortened + moved down slightly so their shafts/finials
+    // stay clear of the ring above and the status bar at the very top.
     final lmCX = cx - mw / 2 - lwW - w * 0.075;
-    _minaret(path, lmCX, h * 0.26, h * 0.65, w * 0.021, groundY);
+    _minaret(path, lmCX, h * 0.32, h * 0.55, w * 0.021, groundY);
     final rmCX = cx + mw / 2 + lwW + w * 0.075;
-    _minaret(path, rmCX, h * 0.26, h * 0.65, w * 0.021, groundY);
+    _minaret(path, rmCX, h * 0.32, h * 0.55, w * 0.021, groundY);
 
-    // ── Inner medium minarets flanking central dome ───────────────────────────
     final liCX = cx - mw * 0.48;
     _minaret(path, liCX, h * 0.38, h * 0.53, w * 0.014, groundY);
     final riCX = cx + mw * 0.48;
     _minaret(path, riCX, h * 0.38, h * 0.53, w * 0.014, groundY);
 
-    // ── Small flanking buildings for city silhouette depth ───────────────────
     _building(path, w * 0.03,  h * 0.73, w * 0.065, groundY);
     _building(path, w * 0.115, h * 0.76, w * 0.050, groundY);
     _building(path, w * 0.845, h * 0.75, w * 0.055, groundY);
     _building(path, w * 0.910, h * 0.72, w * 0.070, groundY);
 
-    // ── Ground ───────────────────────────────────────────────────────────────
     path.addRect(Rect.fromLTWH(0, groundY, w, h - groundY));
 
     canvas.drawPath(path, paint);
@@ -230,15 +219,10 @@ class _MosquePainter extends CustomPainter {
   void _minaret(Path path, double cx, double topY, double totalH,
       double hw, double groundY) {
     final shaftH = totalH * 0.76;
-    // shaft
     path.addRect(Rect.fromLTWH(cx - hw, topY, hw * 2, shaftH));
-    // upper balcony
     path.addRect(Rect.fromLTWH(cx - hw * 1.85, topY + shaftH * 0.58, hw * 3.70, hw * 0.75));
-    // lower balcony
     path.addRect(Rect.fromLTWH(cx - hw * 1.55, topY + shaftH * 0.76, hw * 3.10, hw * 0.55));
-    // ogival cap
     _ogivalDome(path, cx, topY, hw * 1.25, totalH * 0.24);
-    // crescent finial
     path.addOval(Rect.fromCircle(
       center: Offset(cx, topY - totalH * 0.24 - hw * 0.9),
       radius: hw * 0.75,
@@ -247,7 +231,6 @@ class _MosquePainter extends CustomPainter {
 
   void _building(Path path, double x, double y, double bw, double groundY) {
     path.addRect(Rect.fromLTWH(x, y, bw, groundY - y));
-    // tiny dome
     path.addOval(Rect.fromCircle(center: Offset(x + bw / 2, y), radius: bw * 0.32));
   }
 

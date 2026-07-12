@@ -1,18 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:muslim_app/home/model/prayer_times_models.dart';
 import 'package:intl/intl.dart';
+import 'package:muslim_app/home/model/prayer_times_models.dart';
 import 'package:muslim_app/settings/l10n/app_localizations.dart';
+import 'package:muslim_app/settings/theme/app_themes.dart';
 
 class PrayerTimesCard extends StatelessWidget {
   final PrayerTimesModel prayerTimes;
   final bool use24h;
   final AppLocalizations l10n;
+  final AppThemeOption theme;
+  final VoidCallback? onAlarmTap;
 
   const PrayerTimesCard({
     super.key,
     required this.prayerTimes,
     required this.l10n,
+    required this.theme,
     this.use24h = true,
+    this.onAlarmTap,
   });
 
   String _fmt(DateTime dt) {
@@ -36,7 +41,6 @@ class PrayerTimesCard extends StatelessWidget {
     if (now_.isAfter(prayerTimes.ishaStart) || now_.isBefore(prayerTimes.fajrStart)) {
       return 'Isha';
     }
-
     return null;
   }
 
@@ -57,68 +61,99 @@ class PrayerTimesCard extends StatelessWidget {
 
     return Column(
       children: [
-        // ── Salat times ──────────────────────────────────────────────────────
-        _SectionCard(
-          dotColor:    const Color(0xFF7B5EA7),
-          title:       l10n.salatPrayers,
-          titleColor:  const Color(0xFFB39DDB),
-          bgColor:     const Color(0xFF151D2E),
-          accentColor: const Color(0xFF7B5EA7),
+        // ── Salat times — one unified list ──────────────────────────────────
+        _ListCard(
+          theme: theme,
+          title: l10n.salatPrayers,
+          trailing: onAlarmTap == null
+              ? null
+              : GestureDetector(
+            onTap: onAlarmTap,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: theme.accent.withOpacity(0.14),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.notifications_active_outlined,
+                      color: theme.accent, size: 16),
+                  const SizedBox(width: 6),
+                  Text(
+                    'Alarm',
+                    style: TextStyle(
+                      color: theme.accent,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
           children: [
-            _SalatRow(name: l10n.fajr,    icon: Icons.wb_twilight,       time: _range(prayerTimes.fajrStart,    prayerTimes.fajrEnd),    isActive: activeSalat == 'Fajr', l10n: l10n),
-            _SalatRow(name: l10n.dhuhr,   icon: Icons.wb_sunny_outlined, time: _range(prayerTimes.dhuhrStart,   prayerTimes.dhuhrEnd),   isActive: activeSalat == 'Dhuhr', l10n: l10n),
-            _SalatRow(name: l10n.asr,     icon: Icons.cloud_outlined,    time: _range(prayerTimes.asrStart,     prayerTimes.asrEnd),     isActive: activeSalat == 'Asr', l10n: l10n),
-            _SalatRow(name: l10n.maghrib, icon: Icons.nights_stay,       time: _range(prayerTimes.maghribStart, prayerTimes.maghribEnd), isActive: activeSalat == 'Maghrib', l10n: l10n),
-            _SalatRow(name: l10n.isha,    icon: Icons.dark_mode_outlined,time: _range(prayerTimes.ishaStart,    prayerTimes.ishaEnd),    isActive: activeSalat == 'Isha', isLast: true, l10n: l10n),
+            _Row(theme: theme, name: l10n.fajr,    icon: Icons.wb_twilight_outlined,
+                time: _range(prayerTimes.fajrStart, prayerTimes.fajrEnd),
+                isActive: activeSalat == 'Fajr', activeLabel: l10n.active),
+            _Row(theme: theme, name: l10n.dhuhr,   icon: Icons.wb_sunny_outlined,
+                time: _range(prayerTimes.dhuhrStart, prayerTimes.dhuhrEnd),
+                isActive: activeSalat == 'Dhuhr', activeLabel: l10n.active),
+            _Row(theme: theme, name: l10n.asr,     icon: Icons.cloud_outlined,
+                time: _range(prayerTimes.asrStart, prayerTimes.asrEnd),
+                isActive: activeSalat == 'Asr', activeLabel: l10n.active),
+            _Row(theme: theme, name: l10n.maghrib, icon: Icons.nightlight_outlined,
+                time: _range(prayerTimes.maghribStart, prayerTimes.maghribEnd),
+                isActive: activeSalat == 'Maghrib', activeLabel: l10n.active),
+            _Row(theme: theme, name: l10n.isha,    icon: Icons.dark_mode_outlined,
+                time: _range(prayerTimes.ishaStart, prayerTimes.ishaEnd),
+                isActive: activeSalat == 'Isha', activeLabel: l10n.active, isLast: true),
           ],
         ),
 
         const SizedBox(height: 12),
 
-        // ── Prohibited times ─────────────────────────────────────────────────
-        _SectionCard(
-          dotColor:    const Color(0xFFB71C1C),
-          title:       l10n.prohibitedTimes,
-          titleColor:  const Color(0xFFEF9A9A),
-          bgColor:     const Color(0xFF1E1212),
-          accentColor: Colors.red,
-          children: [
-            _ProhibitedRow(name: l10n.sunrise, icon: Icons.wb_twilight,    time: _range(prayerTimes.sunRiseStart, prayerTimes.sunRiseEnd), isActive: activeProhibited == 'Sunrise', l10n: l10n),
-            _ProhibitedRow(name: l10n.noon,    icon: Icons.wb_sunny,       time: _range(prayerTimes.noonStart,    prayerTimes.noonEnd),    isActive: activeProhibited == 'Noon', l10n: l10n),
-            _ProhibitedRow(name: l10n.sunset,  icon: Icons.wb_cloudy,      time: _range(prayerTimes.sunSetStart,  prayerTimes.sunSetEnd),  isActive: activeProhibited == 'Sunset', isLast: true, l10n: l10n),
+        // ── Prohibited times — compact 3-segment strip ──────────────────────
+        _SegmentStrip(
+          theme: theme,
+          caption: l10n.prohibitedTimes,
+          segments: [
+            _Segment(label: l10n.sunrise, time: _range(prayerTimes.sunRiseStart, prayerTimes.sunRiseEnd), isActive: activeProhibited == 'Sunrise'),
+            _Segment(label: l10n.noon,    time: _range(prayerTimes.noonStart, prayerTimes.noonEnd),       isActive: activeProhibited == 'Noon'),
+            _Segment(label: l10n.sunset,  time: _range(prayerTimes.sunSetStart, prayerTimes.sunSetEnd),   isActive: activeProhibited == 'Sunset'),
           ],
         ),
 
         const SizedBox(height: 12),
 
-        // ── Sawm times ───────────────────────────────────────────────────────
-        _SectionCard(
-          dotColor:    const Color(0xFF1565C0),
-          title:       l10n.sawmTimes,
-          titleColor:  const Color(0xFF90CAF9),
-          bgColor:     const Color(0xFF151D2E),
-          accentColor: const Color(0xFF1565C0),
-          children: [
-            _SimpleRow(name: l10n.iftar,      icon: Icons.wb_sunny_outlined, time: _fmt(prayerTimes.iftarTime)),
-            _SimpleRow(name: l10n.sahri, icon: Icons.bedtime_outlined,  time: _fmt(prayerTimes.sahriEnd), isLast: true),
+        // ── Sawm times — compact 2-segment strip ─────────────────────────────
+        _SegmentStrip(
+          theme: theme,
+          caption: l10n.sawmTimes,
+          segments: [
+            _Segment(label: l10n.iftar, time: _fmt(prayerTimes.iftarTime)),
+            _Segment(label: l10n.sahri, time: _fmt(prayerTimes.sahriEnd)),
           ],
         ),
-
         const SizedBox(height: 12),
 
-        // ── Nafal prayers ────────────────────────────────────────────────────
-        _SectionCard(
-          dotColor:    const Color(0xFF6A1B9A),
-          title:       l10n.nafalPrayers,
-          titleColor:  const Color(0xFFCE93D8),
-          bgColor:     const Color(0xFF151D2E),
-          accentColor: const Color(0xFF6A1B9A),
+        // ── Nafal prayers — secondary list, lighter weight ───────────────────
+        _ListCard(
+          theme: theme,
+          title: l10n.nafalPrayers,
+          secondary: true,
           children: [
-            _SimpleRow(name: l10n.tahajjud, icon: Icons.bedtime,              time: _range(prayerTimes.tahajjudStart, prayerTimes.tahajjudEnd)),
-            _SimpleRow(name: l10n.ishraq,   icon: Icons.wb_twilight,          time: _range(prayerTimes.ishraqStart,   prayerTimes.ishraqEnd)),
-            _SimpleRow(name: l10n.chasht,   icon: Icons.wb_sunny_outlined,    time: _range(prayerTimes.chashtStart,   prayerTimes.chashtEnd)),
-            _SimpleRow(name: l10n.zawal,    icon: Icons.do_not_disturb_on,    time: _fmt(prayerTimes.zawalStart)),
-            _SimpleRow(name: l10n.awabin,   icon: Icons.nights_stay_outlined, time: _range(prayerTimes.awabinStart,   prayerTimes.awabinEnd), isLast: true),
+            _Row(theme: theme, name: l10n.tahajjud, icon: Icons.bedtime_outlined,
+                time: _range(prayerTimes.tahajjudStart, prayerTimes.tahajjudEnd), secondary: true),
+            _Row(theme: theme, name: l10n.ishraq,   icon: Icons.wb_twilight_outlined,
+                time: _range(prayerTimes.ishraqStart, prayerTimes.ishraqEnd), secondary: true),
+            _Row(theme: theme, name: l10n.chasht,   icon: Icons.wb_sunny_outlined,
+                time: _range(prayerTimes.chashtStart, prayerTimes.chashtEnd), secondary: true),
+            _Row(theme: theme, name: l10n.zawal,    icon: Icons.remove_circle_outline,
+                time: _fmt(prayerTimes.zawalStart), secondary: true),
+            _Row(theme: theme, name: l10n.awabin,   icon: Icons.nightlight_outlined,
+                time: _range(prayerTimes.awabinStart, prayerTimes.awabinEnd), secondary: true, isLast: true),
           ],
         ),
       ],
@@ -126,68 +161,58 @@ class PrayerTimesCard extends StatelessWidget {
   }
 }
 
-// ── Section wrapper card ──────────────────────────────────────────────────────
-class _SectionCard extends StatelessWidget {
-  final Color  dotColor;
+// ── Unified list card ──────────────────────────────────────────────────────
+class _ListCard extends StatelessWidget {
+  final AppThemeOption theme;
   final String title;
-  final Color  titleColor;
-  final Color  bgColor;
-  final Color  accentColor;
   final List<Widget> children;
+  final bool secondary;
+  final Widget? trailing;
 
-  const _SectionCard({
-    required this.dotColor,
+  const _ListCard({
+    required this.theme,
     required this.title,
-    required this.titleColor,
-    required this.bgColor,
-    required this.accentColor,
     required this.children,
+    this.secondary = false,
+    this.trailing,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color:        bgColor,
+        color:        theme.cardColor,
         borderRadius: BorderRadius.circular(14),
-        border:       Border.all(color: const Color(0xFF1E2A40), width: 1),
+        border:       Border.all(color: theme.textLow.withOpacity(0.16), width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Accent top shimmer bar
-          Container(
-            height: 2,
-            decoration: BoxDecoration(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(14)),
-              gradient: LinearGradient(colors: [
-                accentColor.withOpacity(0.0),
-                accentColor.withOpacity(0.6),
-                accentColor.withOpacity(0.0),
-              ]),
-            ),
-          ),
-          // Header
           Padding(
-            padding: const EdgeInsets.fromLTRB(14, 12, 14, 10),
+            padding: const EdgeInsets.fromLTRB(14, 12, 14, 8),
             child: Row(
               children: [
                 Container(
-                  width: 8, height: 8,
-                  decoration: BoxDecoration(color: dotColor, shape: BoxShape.circle),
+                  width: 6, height: 6,
+                  decoration: BoxDecoration(
+                    color: secondary ? theme.textLow : theme.accent,
+                    shape: BoxShape.circle,
+                  ),
                 ),
                 const SizedBox(width: 8),
-                Text(title,
-                    style: TextStyle(
-                      color:         titleColor,
-                      fontSize:      14,
-                      fontWeight:    FontWeight.w700,
-                      letterSpacing: 0.3,
-                    )),
+                Expanded(
+                  child: Text(title,
+                      style: TextStyle(
+                        color:         secondary ? theme.textLow : theme.textHigh,
+                        fontSize:      13,
+                        fontWeight:    FontWeight.w600,
+                        letterSpacing: 0.2,
+                      )),
+                ),
+                if (trailing != null) trailing!,
               ],
             ),
           ),
-          // Rows
           ...children,
         ],
       ),
@@ -195,65 +220,66 @@ class _SectionCard extends StatelessWidget {
   }
 }
 
-// ── Salat row ─────────────────────────────────────────────────────────────────
-class _SalatRow extends StatelessWidget {
+// ── Row (Salat + Nafal) ─────────────────────────────────────────────────────
+class _Row extends StatelessWidget {
+  final AppThemeOption theme;
   final String   name;
   final String   time;
-  final IconData icon;      // ← add
+  final IconData icon;
   final bool     isActive;
   final bool     isLast;
-  final AppLocalizations l10n;
+  final bool     secondary;
+  final String?  activeLabel;
 
-  const _SalatRow({
+  const _Row({
+    required this.theme,
     required this.name,
     required this.time,
     required this.icon,
-    required this.l10n,
-    this.isActive = false,
-    this.isLast   = false,
+    this.isActive   = false,
+    this.isLast     = false,
+    this.secondary  = false,
+    this.activeLabel,
   });
 
   @override
   Widget build(BuildContext context) {
-    const activeColor = Color(0xFFCE93D8);
-    const activeBg    = Color(0xFF1A1535);
+    final rowColor  = isActive ? theme.accent : (secondary ? theme.textLow : theme.textHigh);
+    final iconColor = isActive ? theme.accent : theme.textLow;
 
     return Column(
       children: [
         Container(
-          color:   isActive ? activeBg : Colors.transparent,
+          color: isActive ? theme.accent.withOpacity(0.10) : Colors.transparent,
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
           child: Row(
             children: [
-              Icon(icon,                                      // ← add
-                size:  16,
-                color: isActive ? activeColor : const Color(0xFF8899AA),
-              ),
-              const SizedBox(width: 10),                     // ← add
+              Icon(icon, size: 16, color: iconColor),
+              const SizedBox(width: 10),
               Expanded(
                 child: Text(name,
                     style: TextStyle(
-                      color:      isActive ? activeColor : Colors.white,
-                      fontSize:   14,
+                      color:      rowColor,
+                      fontSize:   secondary ? 13 : 14,
                       fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
                     )),
               ),
-              if (isActive) ...[
+              if (isActive && activeLabel != null) ...[
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
                   decoration: BoxDecoration(
-                    color:        const Color(0xFF7B5EA7),
+                    color:        theme.accent,
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child:  Text(l10n.active,
-                      style: TextStyle(
+                  child: Text(activeLabel!,
+                      style: const TextStyle(
                           color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600)),
                 ),
                 const SizedBox(width: 10),
               ],
               Text(time,
                   style: TextStyle(
-                    color:      isActive ? activeColor : const Color(0xFF8899AA),
+                    color:      isActive ? theme.accent : theme.textLow,
                     fontSize:   13,
                     fontWeight: isActive ? FontWeight.w700 : FontWeight.w400,
                   )),
@@ -261,110 +287,96 @@ class _SalatRow extends StatelessWidget {
           ),
         ),
         if (!isLast)
-          const Divider(height: 1, thickness: 1, color: Color(0xFF1A2438), indent: 14, endIndent: 14),
+          Divider(height: 1, thickness: 1, color: theme.textLow.withOpacity(0.14), indent: 14, endIndent: 14),
       ],
     );
   }
 }
 
-// ── Prohibited row ────────────────────────────────────────────────────────────
-class _ProhibitedRow extends StatelessWidget {
-  final String   name;
-  final String   time;
-  final IconData icon;      // ← add
-  final bool     isActive;
-  final bool     isLast;
-  final AppLocalizations l10n;
-
-  const _ProhibitedRow({
-    required this.name,
-    required this.time,
-    required this.icon,
-    required this.l10n,
-    this.isActive = false,
-    this.isLast   = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
-          child: Row(
-            children: [
-              Icon(icon, size: 16, color: const Color(0xFFEF5350)),   // ← add
-              const SizedBox(width: 10),                               // ← add
-              Expanded(
-                child: Text(name,
-                    style: const TextStyle(
-                      color:      Color(0xFFEF5350),
-                      fontSize:   14,
-                      fontWeight: FontWeight.w600,
-                    )),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-                decoration: BoxDecoration(
-                  color:        const Color(0xFF7F1D1D),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  isActive ? l10n.now : l10n.prohibited,
-                  style: const TextStyle(
-                      color: Color(0xFFFFCDD2), fontSize: 11, fontWeight: FontWeight.w600),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Text(time,
-                  style: const TextStyle(color: Color(0xFFE57373), fontSize: 13)),
-            ],
-          ),
-        ),
-        if (!isLast)
-          const Divider(height: 1, thickness: 1, color: Color(0xFF2C1A1A), indent: 14, endIndent: 14),
-      ],
-    );
-  }
+// ── Segment strip (Prohibited + Sawm) ───────────────────────────────────────
+class _Segment {
+  final String label;
+  final String time;
+  final bool   isActive;
+  _Segment({required this.label, required this.time, this.isActive = false});
 }
 
-// ── Simple row (Sawm + Nafal) ─────────────────────────────────────────────────
-class _SimpleRow extends StatelessWidget {
-  final String   name;
-  final String   time;
-  final IconData icon;      // ← add
-  final bool     isLast;
+class _SegmentStrip extends StatelessWidget {
+  final AppThemeOption theme;
+  final String caption;
+  final List<_Segment> segments;
 
-  const _SimpleRow({
-    required this.name,
-    required this.time,
-    required this.icon,     // ← add
-    this.isLast = false,
+  const _SegmentStrip({
+    required this.theme,
+    required this.caption,
+    required this.segments,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
-          child: Row(
-            children: [
-              Icon(icon, size: 16, color: const Color(0xFF8899AA)),   // ← add
-              const SizedBox(width: 10),                               // ← add
-              Expanded(
-                child: Text(name,
-                    style: const TextStyle(
-                        color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500)),
-              ),
-              Text(time,
-                  style: const TextStyle(color: Color(0xFF8899AA), fontSize: 13)),
-            ],
+    return Container(
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
+      decoration: BoxDecoration(
+        color:        theme.cardColor,
+        borderRadius: BorderRadius.circular(14),
+        border:       Border.all(color: theme.textLow.withOpacity(0.16), width: 1),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(caption,
+              style: TextStyle(
+                color:      theme.textLow,
+                fontSize:   12,
+                fontWeight: FontWeight.w600,
+              )),
+          const SizedBox(height: 10),
+          IntrinsicHeight(
+            child: Row(
+              children: [
+                for (int i = 0; i < segments.length; i++) ...[
+                  if (i != 0)
+                    VerticalDivider(
+                      color: theme.textLow.withOpacity(0.35),
+                      width: 20,
+                      thickness: 1.2,
+                      indent: 2,
+                      endIndent: 2,
+                    ),
+                  Expanded(
+                    child: Column(
+                      children: [
+                        Text(segments[i].label,
+                            style: TextStyle(
+                              color:      segments[i].isActive ? theme.danger : theme.textLow,
+                              fontSize:   12,
+                              fontWeight: FontWeight.w500,
+                            )),
+                        const SizedBox(height: 4),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 2),
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              segments[i].time.isEmpty ? '--:--' : segments[i].time,
+                              maxLines: 1,
+                              style: TextStyle(
+                                color:      segments[i].isActive ? theme.danger : theme.textHigh,
+                                fontSize:   14,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ],
+            ),
           ),
-        ),
-        if (!isLast)
-          const Divider(height: 1, thickness: 1, color: Color(0xFF1A2438), indent: 14, endIndent: 14),
-      ],
+        ],
+      ),
     );
   }
 }
