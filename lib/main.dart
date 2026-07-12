@@ -29,40 +29,57 @@ import 'alarm/cubit/alarm_cubit.dart';
 import 'package:muslim_app/core/app_info.dart';
 import 'package:muslim_app/alarm/services/notification_service.dart';
 import 'home/cubit/prayer_times_state.dart';
-
-
+import 'package:muslim_app/alarm/services/adhan_alarm_service.dart';
+import 'package:muslim_app/alarm/services/background_scheduler.dart';
 
 void main() async {
+  // ── 1. Flutter binding — must always be first ──────────────────────────
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
-  // Lock orientation to portrait only
+  // ── 2. UI setup — no dependencies, safe to run early ────────────────────
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
   await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 
-  await NotificationService.instance.init();
-  await NotificationService.instance.requestPermissions();
+  // ── 3. Alarm/notification system — strict order required ───────────────
+  // AndroidAlarmManager must init first (plugin requirement: as early as
+  // possible, right after the Flutter binding is ready).
+  await AdhanAlarmService.initialize();
 
-  // Initialize timezone package
+  // Timezone data must be loaded before NotificationService.init() runs,
+  // since that call sets tz.local using this data.
   tz.initializeTimeZones();
 
-  // ✅ Always pass DefaultFirebaseOptions — prevents silent auth failures
+  // Creates notification channels and sets the local timezone location.
+  await NotificationService.instance.init();
+
+  // Must come after init() — requesting permission before channels exist
+  // is safe but pointless; keeping it after init() avoids any ordering risk.
+  await NotificationService.instance.requestPermissions();
+
+  // Registers the daily WorkManager task. Must come AFTER notifications
+  // are initialized and permitted — the background task calls
+  // NotificationService.instance.init() again internally (safe, it's
+  // idempotent) but scheduling before permissions exist would risk the
+  // first background run silently failing to post anything.
+  await BackgroundScheduler.initializeAndSchedule();
+
+  // ── 4. Firebase ──────────────────────────────────────────────────────────
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  // ── Load app version/build info ONCE, before anything else needs it ──
+  // ── 5. App metadata ──────────────────────────────────────────────────────
   await AppInfo.init();
 
-  // ── Load saved language BEFORE creating cubits ──────────────
+  // ── 6. Saved language, needed before creating language-aware cubits ─────
   final prefs = await SharedPreferences.getInstance();
   final savedLanguage = prefs.getString('language') ?? 'en';
 
-
-  // Initialize storage classes
+  // ── 7. Storage / repository instances ─────────────────────────────────────
   final locationStorage    = LocationStorage();
   final prayerTimesStorage = PrayerTimesStorage();
   final permissionService  = PermissionService();
@@ -72,56 +89,54 @@ void main() async {
   final inspirationRepository = InspirationRepository();
   final masailRepository      = MasailRepository();
 
-  // ✅ Pre-built SQLite copy — internet লাগে না
+  // ── 8. Pre-built SQLite copies — no internet required ────────────────────
   await duasRepository.initDatabase();
   await inspirationRepository.initDatabase();
   await masailRepository.initDatabase();
 
-
+  // ── 9. Splash removed only once everything above is ready ────────────────
   FlutterNativeSplash.remove();
 
   runApp(
-      ProviderScope(child:
-    MultiBlocProvider(
-      providers: [
-        // ── Settings (must be first — theme/language wraps the whole app) ──
-        BlocProvider<SettingsCubit>(
-          create: (_) => SettingsCubit(),
-        ),
+    ProviderScope(
+      child: MultiBlocProvider(
+        providers: [
+          // Settings first — theme/language wraps the whole app.
+          BlocProvider<SettingsCubit>(create: (_) => SettingsCubit()),
 
-        BlocProvider(
-          create: (_) => LocationCubit(
-            locationRepository,
-            locationStorage,
-            permissionService,
-          )..loadSavedLocation(),
-        ),
-        BlocProvider(
-          create: (context) => PrayerTimesCubit(
-            locationCubit: context.read<LocationCubit>(),
-            storage: prayerTimesStorage,
+          BlocProvider(
+            create: (_) => LocationCubit(
+              locationRepository,
+              locationStorage,
+              permissionService,
+            )..loadSavedLocation(),
           ),
-        ),
-        BlocProvider(
-          create: (_) => NotificationCubit(NotificationRepository()),
-        ),
-        BlocProvider(
-          create: (_) => DuasCubit(duasRepository)
-            ..updateLanguage(savedLanguage),
-        ),
-        BlocProvider(
-          create: (_) => InspirationCubit(inspirationRepository)
-            ..updateLanguage(savedLanguage),
-        ),
-        BlocProvider(
-          create: (_) => MasailCubit(masailRepository)
-            ..updateLanguage(savedLanguage),
-        ),
-        BlocProvider(create: (_) => AlarmCubit()..load()),
-      ],
-      child: const MyApp(),
+          BlocProvider(
+            create: (context) => PrayerTimesCubit(
+              locationCubit: context.read<LocationCubit>(),
+              storage: prayerTimesStorage,
+            ),
+          ),
+          BlocProvider(
+            create: (_) => NotificationCubit(NotificationRepository()),
+          ),
+          BlocProvider(
+            create: (_) => DuasCubit(duasRepository)
+              ..updateLanguage(savedLanguage),
+          ),
+          BlocProvider(
+            create: (_) => InspirationCubit(inspirationRepository)
+              ..updateLanguage(savedLanguage),
+          ),
+          BlocProvider(
+            create: (_) => MasailCubit(masailRepository)
+              ..updateLanguage(savedLanguage),
+          ),
+          BlocProvider(create: (_) => AlarmCubit()..load()),
+        ],
+        child: const MyApp(),
+      ),
     ),
-  )
   );
 }
 
@@ -145,13 +160,10 @@ class MyApp extends StatelessWidget {
           theme: buildThemeData(appTheme),
 
           // ── RTL / LTR support ─────────────────────────────────────────
-          builder: (context, child)
-            => Directionality(
-              textDirection:
-              isRtl ? TextDirection.rtl : TextDirection.ltr,
-              child: child!,
-
-            ),
+          builder: (context, child) => Directionality(
+            textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
+            child: child!,
+          ),
 
           home: BlocListener<PrayerTimesCubit, PrayerTimesState>(
             listener: (context, state) {

@@ -189,7 +189,7 @@ class _AlarmDetailPageState extends State<AlarmDetailPage> {
                 ),
                 Slider(
                   value: _draft.offsetMinutes.toDouble(),
-                  min: -30, max: 30, divisions: 60,
+                  min: -70, max: 70, divisions: 140,
                   activeColor: theme.accent,
                   inactiveColor: theme.textLow.withOpacity(0.25),
                   onChanged: (v) => setState(() => _draft = _draft.copyWith(offsetMinutes: v.round())),
@@ -197,10 +197,10 @@ class _AlarmDetailPageState extends State<AlarmDetailPage> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('-30 min', style: TextStyle(color: theme.textLow, fontSize: 11)),
+                    Text('-70 min', style: TextStyle(color: theme.textLow, fontSize: 11)),
                     Text(_offsetLabel(_draft.offsetMinutes),
                         style: TextStyle(color: theme.accent, fontSize: 12, fontWeight: FontWeight.w600)),
-                    Text('+30 min', style: TextStyle(color: theme.textLow, fontSize: 11)),
+                    Text('+70 min', style: TextStyle(color: theme.textLow, fontSize: 11)),
                   ],
                 ),
               ],

@@ -425,7 +425,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                         return const SizedBox();
                       },
                     ),
-                    SizedBox(height: MediaQuery.of(context).padding.bottom + 80),
+                    SizedBox(height: MediaQuery.of(context).padding.bottom + 60),
 
                   ],
                 ),
