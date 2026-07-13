@@ -2,6 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:timezone/data/latest.dart' as tz;
+import 'alarm/pages/alarm_launch_gate.dart';
 import 'location/cubit/location_cubit.dart';
 import 'location/services/location_storage.dart';
 import 'location/services/permission_service.dart';
@@ -29,7 +30,7 @@ import 'alarm/cubit/alarm_cubit.dart';
 import 'package:muslim_app/core/app_info.dart';
 import 'package:muslim_app/alarm/services/notification_service.dart';
 import 'home/cubit/prayer_times_state.dart';
-import 'package:muslim_app/alarm/services/adhan_alarm_service.dart';
+import 'package:muslim_app/alarm/services/alarm_ring_service.dart';
 import 'package:muslim_app/alarm/services/background_scheduler.dart';
 
 void main() async {
@@ -47,7 +48,8 @@ void main() async {
   // ── 3. Alarm/notification system — strict order required ───────────────
   // AndroidAlarmManager must init first (plugin requirement: as early as
   // possible, right after the Flutter binding is ready).
-  await AdhanAlarmService.initialize();
+  await AlarmRingService.initialize();
+
 
   // Timezone data must be loaded before NotificationService.init() runs,
   // since that call sets tz.local using this data.
@@ -165,13 +167,15 @@ class MyApp extends StatelessWidget {
             child: child!,
           ),
 
-          home: BlocListener<PrayerTimesCubit, PrayerTimesState>(
-            listener: (context, state) {
-              if (state is PrayerTimesLoaded) {
-                context.read<AlarmCubit>().onPrayerTimesUpdated(state.prayerTimes);
-              }
-            },
-            child: const PrayerTimesPage(),
+          home: AlarmLaunchGate(
+            child: BlocListener<PrayerTimesCubit, PrayerTimesState>(
+              listener: (context, state) {
+                if (state is PrayerTimesLoaded) {
+                  context.read<AlarmCubit>().onPrayerTimesUpdated(state.prayerTimes);
+                }
+              },
+              child: const PrayerTimesPage(),
+            ),
           ),
         );
       },

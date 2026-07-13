@@ -55,9 +55,6 @@ class PrayerNotificationScheduler {
 
       if (!setting.isActiveOn(weekday)) continue;
 
-      // Only schedule for times still ahead of now — a time already passed
-      // today should not immediately fire, it will be picked up correctly
-      // tomorrow when this method re-runs with tomorrow's prayer times.
       final alarmTime = baseTime.add(Duration(minutes: setting.offsetMinutes));
       if (setting.enabled && alarmTime.isAfter(now)) {
         await _notif.scheduleAlarm(
@@ -67,7 +64,11 @@ class PrayerNotificationScheduler {
               ? '${_labelFor(prayerId)} time has arrived'
               : '${_labelFor(prayerId)} in ${setting.offsetMinutes.abs()} min',
           scheduledDate: _toTz(alarmTime),
-          useAdhanSound: setting.soundType == AlarmSoundType.adhan,
+          // FIX: NotificationService.scheduleAlarm now takes the full
+          // AlarmSoundType (silent/beep/adhan), not a single useAdhanSound
+          // bool — passing setting.soundType directly lets it correctly
+          // branch to the silent-notification path or the ring-service path.
+          soundType: setting.soundType,
           vibrate: setting.vibrationEnabled,
         );
       }

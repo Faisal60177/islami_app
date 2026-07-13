@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-enum AlarmSoundType { silent, systemDefault, adhan }
+enum AlarmSoundType { silent, beep, adhan }
 enum RepeatMode { everyday, customDays }
 
 class PrayerAlarmSetting {
@@ -10,8 +10,8 @@ class PrayerAlarmSetting {
   final AlarmSoundType soundType;
   final bool vibrationEnabled;
   final RepeatMode repeatMode;
-  final Set<int> customWeekdays; // 1=Mon .. 7=Sun, used when repeatMode == customDays
-  final bool waqtStartNotificationEnabled; // passive "prayer started" ping
+  final Set<int> customWeekdays;
+  final bool waqtStartNotificationEnabled;
 
   const PrayerAlarmSetting({
     required this.prayerId,
@@ -66,8 +66,14 @@ class PrayerAlarmSetting {
       prayerId: prayerId,
       enabled: map['enabled'] as bool? ?? true,
       offsetMinutes: map['offsetMinutes'] as int? ?? 0,
-      soundType: AlarmSoundType.values[
-      (map['soundType'] as int?) ?? AlarmSoundType.adhan.index],
+      // Old saved data may have soundType.index == 1 for the removed
+      // systemDefault; fall back safely to beep if the index is out of range.
+      soundType: () {
+        final idx = (map['soundType'] as int?) ?? AlarmSoundType.adhan.index;
+        return idx < AlarmSoundType.values.length
+            ? AlarmSoundType.values[idx]
+            : AlarmSoundType.adhan;
+      }(),
       vibrationEnabled: map['vibrationEnabled'] as bool? ?? true,
       repeatMode: RepeatMode.values[
       (map['repeatMode'] as int?) ?? RepeatMode.everyday.index],
@@ -87,12 +93,9 @@ class PrayerAlarmSetting {
   }
 }
 
-// ── Prayer groupings ─────────────────────────────────────────────────────────
 const List<String> farzPrayerIds  = ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'];
 const List<String> nafalPrayerIds = ['chasht', 'tahajjud'];
 
-// ── Notification ID scheme (used by the scheduler) ──────────────────────────
-// Alarm ids: 100-106, Waqt-ping ids: 200-206, mapped by index in this order.
 const List<String> allSchedulablePrayerIds = [
   'fajr', 'dhuhr', 'asr', 'maghrib', 'isha', 'chasht', 'tahajjud',
 ];

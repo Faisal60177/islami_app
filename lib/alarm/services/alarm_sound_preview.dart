@@ -1,5 +1,4 @@
 import 'package:audioplayers/audioplayers.dart';
-import 'package:flutter/services.dart';
 import '../model/alarm_settings_model.dart';
 
 class AlarmSoundPreview {
@@ -10,10 +9,8 @@ class AlarmSoundPreview {
     switch (type) {
       case AlarmSoundType.silent:
         break;
-      case AlarmSoundType.systemDefault:
-      // Placeholder preview — a real device-ringtone picker needs
-      // native platform channels, not available from pure Dart plugins.
-        SystemSound.play(SystemSoundType.alert);
+      case AlarmSoundType.beep:
+        await _player.play(AssetSource('sounds/beep.mp3'));
         break;
       case AlarmSoundType.adhan:
         await _player.play(AssetSource('sounds/adhan.mp3'));

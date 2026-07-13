@@ -6,12 +6,13 @@ import 'package:timezone/timezone.dart' as tz;
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
-import 'adhan_alarm_service.dart';
+import '../model/alarm_settings_model.dart';
+import 'alarm_ring_service.dart';
 
 @pragma('vm:entry-point')
 void notificationTapBackgroundHandler(NotificationResponse response) {
   if (response.actionId == 'stop_alarm') {
-    NotificationService.instance.stopRingingAlarm(response.id ?? 0);
+    AlarmRingService.requestStop(response.id ?? 0);
   }
 }
 
@@ -47,7 +48,7 @@ class NotificationService {
       settings: const InitializationSettings(android: androidInit, iOS: iosInit),
       onDidReceiveNotificationResponse: (response) {
         if (response.actionId == 'stop_alarm') {
-          stopRingingAlarm(response.id ?? 0);
+          AlarmRingService.requestStop(response.id ?? 0);
         }
       },
       onDidReceiveBackgroundNotificationResponse: notificationTapBackgroundHandler,
@@ -60,9 +61,9 @@ class NotificationService {
       const AndroidNotificationChannel(
         alarmChannelId,
         'Prayer alarms',
-        description: 'Alarm reminders for prayer times (default/silent sound)',
+        description: 'Silent alarm reminders for prayer times',
         importance: Importance.max,
-        playSound: true,
+        playSound: false,
         enableVibration: true,
       ),
     );
@@ -80,8 +81,8 @@ class NotificationService {
     await androidPlugin?.createNotificationChannel(
       const AndroidNotificationChannel(
         ringingChannelId,
-        'Adhan playing',
-        description: 'Shown while the full adhan is playing',
+        'Prayer alarm ringing',
+        description: 'Shown while the adhan or beep alarm is playing',
         importance: Importance.max,
         playSound: false,
       ),
@@ -106,50 +107,25 @@ class NotificationService {
     return await Permission.scheduleExactAlarm.isGranted;
   }
 
+  /// All sound types (silent, beep, adhan) route through AlarmRingService's
+  /// background isolate, so every alarm type shows the same ringing UI
+  /// and responds to Stop the same way — no separate plain-notification
+  /// path for silent anymore.
   Future<void> scheduleAlarm({
     required int id,
     required String title,
     required String body,
     required tz.TZDateTime scheduledDate,
-    required bool useAdhanSound,
+    required AlarmSoundType soundType,
     required bool vibrate,
   }) async {
-    if (useAdhanSound) {
-      await AdhanAlarmService.scheduleAdhanAlarm(
-        id: id,
-        scheduledTime: scheduledDate.toLocal(),
-        prayerLabel: title,
-        vibrate: vibrate,
-      );
-      return;
-    }
-
-    try {
-      await _plugin.zonedSchedule(
-        id: id,
-        title: title,
-        body: body,
-        scheduledDate: scheduledDate,
-        notificationDetails: NotificationDetails(
-          android: AndroidNotificationDetails(
-            alarmChannelId,
-            'Prayer alarms',
-            channelDescription: 'Alarm reminders for prayer times',
-            importance: Importance.max,
-            priority: Priority.high,
-            fullScreenIntent: true,
-            category: AndroidNotificationCategory.alarm,
-            playSound: true,
-            enableVibration: vibrate,
-            ongoing: false,
-            autoCancel: true,
-          ),
-        ),
-        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      );
-    } catch (e, st) {
-      debugPrint('Failed to schedule alarm id=$id: $e\n$st');
-    }
+    await AlarmRingService.scheduleRingAlarm(
+      id: id,
+      scheduledTime: scheduledDate.toLocal(),
+      prayerLabel: title,
+      soundType: soundType,
+      vibrate: vibrate,
+    );
   }
 
   Future<void> scheduleWaqtPing({
@@ -183,6 +159,9 @@ class NotificationService {
     }
   }
 
+  /// Called from the background isolate (alarm_ring_service.dart) the
+  /// moment ringing starts, so the user sees an ongoing notification with
+  /// a Stop button while the adhan/beep/vibration is running.
   Future<void> showRingingNotification({
     required int id,
     required String title,
@@ -195,13 +174,15 @@ class NotificationService {
       notificationDetails: const NotificationDetails(
         android: AndroidNotificationDetails(
           ringingChannelId,
-          'Adhan playing',
-          channelDescription: 'Shown while the full adhan is playing',
+          'Prayer alarm ringing',
+          channelDescription: 'Shown while the adhan or beep alarm is playing',
           importance: Importance.max,
           priority: Priority.high,
           playSound: false,
           ongoing: true,
           autoCancel: false,
+          fullScreenIntent: true,
+          category: AndroidNotificationCategory.alarm,
           actions: [
             AndroidNotificationAction('stop_alarm', 'Stop', cancelNotification: true),
           ],
@@ -217,12 +198,8 @@ class NotificationService {
     for (int idx = 0; idx < ids.length; idx++) {
       await _plugin.cancel(id: 100 + idx);
       await _plugin.cancel(id: 200 + idx);
-      await AdhanAlarmService.cancel(100 + idx);
+      await AlarmRingService.cancel(100 + idx);
     }
-  }
-
-  Future<void> stopRingingAlarm(int id) async {
-    await _plugin.cancel(id: id);
   }
 
   Future<void> playPreview(String assetPath) async {
