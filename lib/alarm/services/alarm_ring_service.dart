@@ -3,10 +3,9 @@ import 'dart:convert';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:flutter/widgets.dart';
+import 'package:muslim_app/alarm/services/ringer_mode_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vibration/vibration.dart';
-import 'package:sound_mode/sound_mode.dart';
-import 'package:sound_mode/utils/ringer_mode_statuses.dart';
 import '../model/alarm_settings_model.dart';
 import 'notification_service.dart';
 
@@ -26,19 +25,19 @@ String _assetFor(AlarmSoundType type) {
 // FIX: checks the phone's physical ringer switch before vibrating.
 // Silent mode → stay fully silent, no vibration at all.
 // Vibrate or Normal/Ring mode → vibrate as before.
+
 Future<bool> _shouldVibrate(bool vibrateWanted) async {
   if (!vibrateWanted) return false;
   final hasVibrator = await Vibration.hasVibrator() ?? false;
   if (!hasVibrator) return false;
 
-  RingerModeStatus mode = RingerModeStatus.unknown;
+  RingerMode mode = RingerMode.unknown;
   try {
-    mode = await SoundMode.ringerModeStatus;
+    mode = await RingerModeService.getCurrentMode();
   } catch (_) {
-
-    mode = RingerModeStatus.normal;
+    mode = RingerMode.normal;
   }
-  return mode != RingerModeStatus.silent;
+  return mode != RingerMode.silent;
 }
 
 @pragma('vm:entry-point')
