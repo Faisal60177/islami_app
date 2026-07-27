@@ -5,6 +5,8 @@ import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:flutter/widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vibration/vibration.dart';
+import 'package:sound_mode/sound_mode.dart';
+import 'package:sound_mode/utils/ringer_mode_statuses.dart';
 import '../model/alarm_settings_model.dart';
 import 'notification_service.dart';
 
@@ -19,6 +21,24 @@ String _assetFor(AlarmSoundType type) {
     case AlarmSoundType.beep:  return 'sounds/beep.mp3';
     case AlarmSoundType.silent: return '';
   }
+}
+
+// FIX: checks the phone's physical ringer switch before vibrating.
+// Silent mode → stay fully silent, no vibration at all.
+// Vibrate or Normal/Ring mode → vibrate as before.
+Future<bool> _shouldVibrate(bool vibrateWanted) async {
+  if (!vibrateWanted) return false;
+  final hasVibrator = await Vibration.hasVibrator() ?? false;
+  if (!hasVibrator) return false;
+
+  RingerModeStatus mode = RingerModeStatus.unknown;
+  try {
+    mode = await SoundMode.ringerModeStatus;
+  } catch (_) {
+
+    mode = RingerModeStatus.normal;
+  }
+  return mode != RingerModeStatus.silent;
 }
 
 @pragma('vm:entry-point')
@@ -66,10 +86,6 @@ Future<void> alarmRingCallback(int id, Map<String, dynamic> params) async {
     await prefs.remove(_stopSignalKey(id));
   }
 
-  // FIX: must call prefs.reload() before every check — SharedPreferences
-  // caches its values in memory per-isolate, so without reload() this
-  // isolate would never see the stop flag written by the main app isolate
-  // when the user taps Stop. This was the actual reason Stop wasn't working.
   stopPoll = Timer.periodic(const Duration(milliseconds: 300), (_) async {
     await prefs.reload();
     final stopRequested = prefs.getBool(_stopSignalKey(id)) ?? false;
@@ -104,7 +120,7 @@ Future<void> alarmRingCallback(int id, Map<String, dynamic> params) async {
       break;
 
     case AlarmSoundType.silent:
-      if (vibrate && (await Vibration.hasVibrator() ?? false)) {
+      if (await _shouldVibrate(vibrate)) {
         Vibration.vibrate(pattern: [500, 1000], repeat: 0);
       }
       maxDurationTimer = Timer(_maxRingDuration, stopEverything);
@@ -155,10 +171,6 @@ class AlarmRingService {
     }
   }
 
-  // FIX: same reload() fix — without this, the app's UI-side check for a
-  // pending alarm could read a stale (empty) cache and never show the
-  // ringing page at all, even though the background isolate had already
-  // written the flag.
   static Future<Map<String, dynamic>?> getPendingAlarm() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.reload();

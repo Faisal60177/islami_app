@@ -4,6 +4,7 @@ import 'package:muslim_app/location/cubit/location_cubit.dart';
 import 'package:muslim_app/location/cubit/location_state.dart';
 import 'package:muslim_app/location/model/location_model.dart';
 
+import '../../alarm/cubit/alarm_cubit.dart';
 import '../../settings/cubit/settings_cubit.dart';
 import '../../settings/cubit/settings_state.dart';
 import '../../settings/l10n/app_localizations.dart';
@@ -601,8 +602,16 @@ class _LocationPageState extends State<LocationPage>
       width: double.infinity,
       child: GestureDetector(
         onTap: () async {
+          final location = state.location;
           await context.read<LocationCubit>().saveCurrentLocation();
           if (!context.mounted) return;
+          await context.read<AlarmCubit>().onLocationUpdated(
+            location: location,
+            timeZoneName: location.timeZone,
+          );
+
+          if (!context.mounted) return;
+
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(l10n.locationSavedSuccessfully),

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'alarm/pages/alarm_launch_gate.dart';
+import 'alarm/services/daily_refill_service.dart';
 import 'location/cubit/location_cubit.dart';
 import 'location/services/location_storage.dart';
 import 'location/services/permission_service.dart';
@@ -29,9 +30,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'alarm/cubit/alarm_cubit.dart';
 import 'package:muslim_app/core/app_info.dart';
 import 'package:muslim_app/alarm/services/notification_service.dart';
-import 'home/cubit/prayer_times_state.dart';
 import 'package:muslim_app/alarm/services/alarm_ring_service.dart';
-import 'package:muslim_app/alarm/services/background_scheduler.dart';
 
 void main() async {
   // ── 1. Flutter binding — must always be first ──────────────────────────
@@ -67,7 +66,7 @@ void main() async {
   // NotificationService.instance.init() again internally (safe, it's
   // idempotent) but scheduling before permissions exist would risk the
   // first background run silently failing to post anything.
-  await BackgroundScheduler.initializeAndSchedule();
+  await DailyRefillService.ensureChainStarted();
 
   // ── 4. Firebase ──────────────────────────────────────────────────────────
   await Firebase.initializeApp(
@@ -168,15 +167,8 @@ class MyApp extends StatelessWidget {
           ),
 
           home: AlarmLaunchGate(
-            child: BlocListener<PrayerTimesCubit, PrayerTimesState>(
-              listener: (context, state) {
-                if (state is PrayerTimesLoaded) {
-                  context.read<AlarmCubit>().onPrayerTimesUpdated(state.prayerTimes);
-                }
-              },
               child: const PrayerTimesPage(),
             ),
-          ),
         );
       },
     );

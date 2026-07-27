@@ -66,8 +66,6 @@ class PrayerAlarmSetting {
       prayerId: prayerId,
       enabled: map['enabled'] as bool? ?? true,
       offsetMinutes: map['offsetMinutes'] as int? ?? 0,
-      // Old saved data may have soundType.index == 1 for the removed
-      // systemDefault; fall back safely to beep if the index is out of range.
       soundType: () {
         final idx = (map['soundType'] as int?) ?? AlarmSoundType.adhan.index;
         return idx < AlarmSoundType.values.length
@@ -100,8 +98,12 @@ const List<String> allSchedulablePrayerIds = [
   'fajr', 'dhuhr', 'asr', 'maghrib', 'isha', 'chasht', 'tahajjud',
 ];
 
-int alarmNotificationId(String prayerId) =>
-    100 + allSchedulablePrayerIds.indexOf(prayerId);
 
-int waqtNotificationId(String prayerId) =>
-    200 + allSchedulablePrayerIds.indexOf(prayerId);
+const int scheduleDaysAhead = 30;
+
+
+int alarmNotificationId(String prayerId, [int dayOffset = 0]) =>
+    1000 + (dayOffset * 100) + allSchedulablePrayerIds.indexOf(prayerId);
+
+int waqtNotificationId(String prayerId, [int dayOffset = 0]) =>
+    5000 + (dayOffset * 100) + allSchedulablePrayerIds.indexOf(prayerId);

@@ -54,7 +54,7 @@ class _AlarmDetailPageState extends State<AlarmDetailPage> {
   }
 
   String _offsetLabel(int minutes) {
-    if (minutes == 0) return widget.l10n.translate('exact_time');
+    if (minutes == 0) return widget.l10n.translate('Exact Time');
     final sign = minutes > 0 ? '+' : '';
     return '$sign$minutes min';
   }
@@ -96,14 +96,14 @@ class _AlarmDetailPageState extends State<AlarmDetailPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(l10n.translate('prayer_alarm'),
+                      Text(l10n.translate('Prayer Alarm'),
                           style: TextStyle(
                               color: theme.textHigh, fontSize: 15, fontWeight: FontWeight.w600)),
                       const SizedBox(height: 2),
                       Text(
                         _draft.enabled
-                            ? l10n.translate('alarm_on')
-                            : l10n.translate('alarm_off'),
+                            ? l10n.translate('Alarm On')
+                            : l10n.translate('Alarm Off'),
                         style: TextStyle(color: theme.textLow, fontSize: 12),
                       ),
                     ],
@@ -138,10 +138,10 @@ class _AlarmDetailPageState extends State<AlarmDetailPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(l10n.translate('waqt_started_notice'),
+                      Text(l10n.translate('Waqt Started Notice'),
                           style: TextStyle(
                               color: theme.textHigh, fontSize: 14, fontWeight: FontWeight.w600)),
-                      Text(l10n.translate('waqt_started_notice_desc'),
+                      Text(l10n.translate('Waqt Started Notice Desc'),
                           style: TextStyle(color: theme.textLow, fontSize: 12)),
                     ],
                   ),
@@ -166,7 +166,7 @@ class _AlarmDetailPageState extends State<AlarmDetailPage> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(l10n.translate('time_adjustment'),
+                    Text(l10n.translate('Time Adjustment'),
                         style: TextStyle(
                             color: theme.textHigh, fontSize: 14, fontWeight: FontWeight.w600)),
                     Container(
@@ -189,7 +189,7 @@ class _AlarmDetailPageState extends State<AlarmDetailPage> {
                 ),
                 Slider(
                   value: _draft.offsetMinutes.toDouble(),
-                  min: -70, max: 70, divisions: 140,
+                  min: -120, max: 120, divisions: 240,
                   activeColor: theme.accent,
                   inactiveColor: theme.textLow.withOpacity(0.25),
                   onChanged: (v) => setState(() => _draft = _draft.copyWith(offsetMinutes: v.round())),
@@ -197,10 +197,10 @@ class _AlarmDetailPageState extends State<AlarmDetailPage> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('-70 min', style: TextStyle(color: theme.textLow, fontSize: 11)),
+                    Text('-120 min', style: TextStyle(color: theme.textLow, fontSize: 11)),
                     Text(_offsetLabel(_draft.offsetMinutes),
                         style: TextStyle(color: theme.accent, fontSize: 12, fontWeight: FontWeight.w600)),
-                    Text('+70 min', style: TextStyle(color: theme.textLow, fontSize: 11)),
+                    Text('+120 min', style: TextStyle(color: theme.textLow, fontSize: 11)),
                   ],
                 ),
               ],
@@ -215,20 +215,20 @@ class _AlarmDetailPageState extends State<AlarmDetailPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(l10n.translate('repeat'),
+                Text(l10n.translate('Repeat'),
                     style: TextStyle(color: theme.textHigh, fontSize: 14, fontWeight: FontWeight.w600)),
                 const SizedBox(height: 10),
                 Row(
                   children: [
                     Expanded(
                       child: _repeatOption(
-                        theme, RepeatMode.everyday, l10n.translate('everyday'),
+                        theme, RepeatMode.everyday, l10n.translate('Everyday'),
                       ),
                     ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: _repeatOption(
-                        theme, RepeatMode.customDays, l10n.translate('custom_days'),
+                        theme, RepeatMode.customDays, l10n.translate('Custom days'),
                       ),
                     ),
                   ],
@@ -282,10 +282,10 @@ class _AlarmDetailPageState extends State<AlarmDetailPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(l10n.translate('alarm_sound'),
+                Text(l10n.translate('Alarm Sound'),
                     style: TextStyle(color: theme.textHigh, fontSize: 14, fontWeight: FontWeight.w600)),
                 const SizedBox(height: 10),
-                _soundOption(theme, AlarmSoundType.silent, l10n.translate('silent_vibrate'), canPreview: false),
+                _soundOption(theme, AlarmSoundType.silent, l10n.translate('Silent/vibrate'), canPreview: false),
                 const SizedBox(height: 8),
                 _soundOption(theme, AlarmSoundType.beep, l10n.translate('Long Beep')),
                 const SizedBox(height: 8),
@@ -316,7 +316,7 @@ class _AlarmDetailPageState extends State<AlarmDetailPage> {
                       Text(l10n.translate('vibration'),
                           style: TextStyle(
                               color: theme.textHigh, fontSize: 14, fontWeight: FontWeight.w600)),
-                      Text(l10n.translate('vibrate_with_alarm'),
+                      Text(l10n.translate('Vibrate with Alarm'),
                           style: TextStyle(color: theme.textLow, fontSize: 12)),
                     ],
                   ),
@@ -357,6 +357,8 @@ class _AlarmDetailPageState extends State<AlarmDetailPage> {
                   style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w700)),
             ),
           ),
+          const SizedBox(height: 16),
+
         ],
       ),
     );

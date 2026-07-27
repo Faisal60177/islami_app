@@ -49,7 +49,7 @@ class AlarmListPage extends StatelessWidget {
           icon: Icon(Icons.arrow_back_ios_rounded, color: theme.accent),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Text(l10n.translate('set_alarm'),
+        title: Text(l10n.translate('Set Alarm'),
             style: TextStyle(color: theme.textHigh, fontWeight: FontWeight.w700)),
       ),
       body: BlocBuilder<AlarmCubit, AlarmState>(
@@ -60,10 +60,10 @@ class AlarmListPage extends StatelessWidget {
           return ListView(
             padding: const EdgeInsets.all(16),
             children: [
-              _sectionLabel(l10n.translate('farz_prayers')),
+              _sectionLabel(l10n.translate('Farz Prayers')),
               _card(context, farzPrayerIds),
               const SizedBox(height: 20),
-              _sectionLabel(l10n.translate('nafal_prayers')),
+              _sectionLabel(l10n.translate('Nafal Prayers')),
               _card(context, nafalPrayerIds),
             ],
           );
@@ -96,43 +96,46 @@ class AlarmListPage extends StatelessWidget {
           final setting = context.watch<AlarmCubit>().settingFor(id);
           return Column(
             children: [
-              ListTile(
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => AlarmDetailPage(
-                      theme: theme,
-                      l10n: l10n,
-                      prayerId: id,
-                    ),
-                  ),
-                ),
-                leading: Icon(_iconFor(id), color: theme.textLow, size: 20),
-                title: Text(_nameFor(id),
-                    style: TextStyle(
-                        color: theme.textHigh, fontSize: 14, fontWeight: FontWeight.w500)),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      setting.enabled
-                          ? l10n.translate('alarm_on')
-                          : l10n.translate('alarm_off'),
-                      style: TextStyle(
-                        color: setting.enabled ? theme.accent : theme.textLow,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
+              Material(
+                color: Colors.transparent,
+                child: ListTile(
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => AlarmDetailPage(
+                        theme: theme,
+                        l10n: l10n,
+                        prayerId: id,
                       ),
                     ),
-                    const SizedBox(width: 6),
-                    Icon(
-                      setting.enabled
-                          ? Icons.notifications_active_outlined
-                          : Icons.notifications_off_outlined,
-                      color: setting.enabled ? theme.accent : theme.textLow,
-                      size: 18,
-                    ),
-                  ],
+                  ),
+                  leading: Icon(_iconFor(id), color: theme.textLow, size: 20),
+                  title: Text(_nameFor(id),
+                      style: TextStyle(
+                          color: theme.textHigh, fontSize: 14, fontWeight: FontWeight.w500)),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        setting.enabled
+                            ? l10n.translate('Alarm On')
+                            : l10n.translate('Alarm Off'),
+                        style: TextStyle(
+                          color: setting.enabled ? theme.accent : theme.textLow,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Icon(
+                        setting.enabled
+                            ? Icons.notifications_active_outlined
+                            : Icons.notifications_off_outlined,
+                        color: setting.enabled ? theme.accent : theme.textLow,
+                        size: 18,
+                      ),
+                    ],
+                  ),
                 ),
               ),
               if (!isLast)

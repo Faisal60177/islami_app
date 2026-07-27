@@ -12,7 +12,7 @@ const _appLink =
 
 const _shareMessage =
     '🕌 Assalamu Alaikum!\n\n'
-    'I\'ve been using Islamic App — it\'s amazing for Quran, Duas, Prayer Times & more!\n\n'
+    'I\'ve been using Muslim Life App — it\'s amazing for Quran, Duas, Prayer Times & more!\n\n'
     '📲 Download it here:\n$_appLink\n\n'
     '#Islam #Quran #MuslimApp';
 
@@ -65,9 +65,7 @@ class SharePage extends StatelessWidget {
                         _linkCard(context, thm),
                         const SizedBox(height: 28),
                         _generalShareBtn(thm),
-                        const SizedBox(height: 28),
-                        _statsRow(thm, isWide),
-                        const SizedBox(height: 32),
+                        const SizedBox(height: 20)
                       ],
                     ),
                   ),
@@ -250,17 +248,6 @@ class SharePage extends StatelessWidget {
     );
   }
 
-  Widget _statsRow(AppThemeOption thm, bool isWide) {
-    return Row(
-      children: [
-        _statChip(thm, '50K+', 'Downloads'),
-        const SizedBox(width: 12),
-        _statChip(thm, '4.8★', 'Rating'),
-        const SizedBox(width: 12),
-        _statChip(thm, '120+', 'Countries'),
-      ],
-    );
-  }
 
   Widget _statChip(AppThemeOption thm, String value, String label) {
     return Expanded(
@@ -285,7 +272,7 @@ class SharePage extends StatelessWidget {
 
 // ── Share Handlers ─────────────────────────────────────────────────────────
   Future<void> _shareGeneral() async =>
-      await Share.share(_shareMessage, subject: 'Islamic App');
+      await Share.share(_shareMessage, subject: 'Muslim Life');
 
   Future<void> _shareToWhatsApp() async {
 // Modern universal HTTPS formats reliably wake up the installed application

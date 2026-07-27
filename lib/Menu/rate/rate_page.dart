@@ -152,8 +152,7 @@ class _RatePageState extends State<RatePage> with SingleTickerProviderStateMixin
                   _submitBtn(thm),
                   const SizedBox(height: 24),
                   _storeButtons(thm),
-                  const SizedBox(height: 28),
-                  _reviewStats(thm, isWide),
+                  const SizedBox(height: 15),
                 ],
               ),
             ),
@@ -310,55 +309,6 @@ class _RatePageState extends State<RatePage> with SingleTickerProviderStateMixin
     );
   }
 
-  Widget _reviewStats(AppThemeOption thm, bool isWide) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: thm.cardColor,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: thm.accent.withOpacity(0.2)),
-      ),
-      child: Column(
-        children: [
-          Text('Community Reviews',
-              style: TextStyle(color: thm.textHigh, fontWeight: FontWeight.w700, fontSize: 15)),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Column(
-                children: [
-                  Text('4.8',
-                      style: TextStyle(
-                          color: thm.accent,
-                          fontSize: isWide ? 52 : 42,
-                          fontWeight: FontWeight.w900)),
-                  Row(
-                    children: List.generate(
-                        5, (_) => Icon(Icons.star_rounded, color: thm.accent, size: 14)),
-                  ),
-                  const SizedBox(height: 4),
-                  Text('12,400+ reviews',
-                      style: TextStyle(color: thm.textLow, fontSize: 11)),
-                ],
-              ),
-              const SizedBox(width: 20),
-              Expanded(
-                child: Column(
-                  children: [
-                    _ratingBar(thm, 5, 0.78),
-                    _ratingBar(thm, 4, 0.14),
-                    _ratingBar(thm, 3, 0.05),
-                    _ratingBar(thm, 2, 0.02),
-                    _ratingBar(thm, 1, 0.01),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _ratingBar(AppThemeOption thm, int star, double fraction) {
     return Padding(

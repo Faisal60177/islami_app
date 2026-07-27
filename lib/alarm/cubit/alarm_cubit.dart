@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:muslim_app/home/model/prayer_times_models.dart';
+import 'package:muslim_app/location/model/location_model.dart';
+import 'package:muslim_app/location/services/location_storage.dart';
 import '../model/alarm_settings_model.dart';
 import '../repository/alarm_repository.dart';
 import '../services/prayer_notification_scheduler.dart';
@@ -8,16 +9,34 @@ import 'alarm_state.dart';
 class AlarmCubit extends Cubit<AlarmState> {
   final AlarmRepository _repo;
   final PrayerNotificationScheduler _scheduler;
-  PrayerTimesModel? _latestPrayerTimes;
+  final LocationStorage _locationStorage;
+  LocationModel? _latestLocation;
+  String? _latestTimeZone;
 
-  AlarmCubit({AlarmRepository? repository, PrayerNotificationScheduler? scheduler})
-      : _repo = repository ?? AlarmRepository(),
+  bool _isRescheduling = false;
+  bool _rescheduleQueued = false;
+
+  AlarmCubit({
+    AlarmRepository? repository,
+    PrayerNotificationScheduler? scheduler,
+    LocationStorage? locationStorage,
+  })  : _repo = repository ?? AlarmRepository(),
         _scheduler = scheduler ?? PrayerNotificationScheduler(),
+        _locationStorage = locationStorage ?? LocationStorage(),
         super(const AlarmState());
 
+  /// App startup — reads whatever location is already saved in storage
+  /// (GPS-derived, searched, or default), exactly once. Never touches
+  /// LocationCubit or its stream/emission history — completely decoupled.
   Future<void> load() async {
     final settings = await _repo.loadAll();
     emit(state.copyWith(settings: settings, isLoading: false));
+
+    final savedLocation = await _locationStorage.getSavedLocation();
+    if (savedLocation != null) {
+      _latestLocation = savedLocation;
+      _latestTimeZone = savedLocation.timeZone;
+    }
   }
 
   PrayerAlarmSetting settingFor(String prayerId) =>
@@ -31,16 +50,39 @@ class AlarmCubit extends Cubit<AlarmState> {
     await _rescheduleIfPossible();
   }
 
-  /// Called by PrayerTimesCubit's listener whenever prayer times refresh
-  /// (new day or new location) — see the wiring note below.
-  Future<void> onPrayerTimesUpdated(PrayerTimesModel prayerTimes) async {
-    _latestPrayerTimes = prayerTimes;
+  /// Called EXACTLY ONCE, only from the explicit "Save" action in
+  /// LocationPage — never from a listener, never reactively.
+  Future<void> onLocationUpdated({
+    required LocationModel location,
+    required String timeZoneName,
+  }) async {
+    _latestLocation = location;
+    _latestTimeZone = timeZoneName;
     await _rescheduleIfPossible();
   }
 
   Future<void> _rescheduleIfPossible() async {
-    final times = _latestPrayerTimes;
-    if (times == null) return;
-    await _scheduler.rescheduleAll(prayerTimes: times, settings: state.settings);
+    final location = _latestLocation;
+    final timeZoneName = _latestTimeZone;
+    if (location == null || timeZoneName == null) return;
+
+    if (_isRescheduling) {
+      _rescheduleQueued = true;
+      return;
+    }
+    _isRescheduling = true;
+    try {
+      await _scheduler.rescheduleAll(
+        location: location,
+        timeZoneName: timeZoneName,
+        settings: state.settings,
+      );
+    } finally {
+      _isRescheduling = false;
+      if (_rescheduleQueued) {
+        _rescheduleQueued = false;
+        await _rescheduleIfPossible();
+      }
+    }
   }
 }

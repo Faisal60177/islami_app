@@ -53,13 +53,9 @@ class AboutPage extends StatelessWidget {
                               const SizedBox(height: 12),
                               _aboutText(thm),
                               const SizedBox(height: 28),
-                              _sectionLabel(thm, 'Our Aqeedah & Fiqh / আমাদের আক্বিদা ও ফিকহ'),
+                              _sectionLabel(thm, 'আমাদের আক্বিদা ও ফিকহ'),
                               const SizedBox(height: 12),
                               _aqeedahFiqhCard(thm),
-                              const SizedBox(height: 28),
-                              _sectionLabel(thm, 'What\'s New — v${AppInfo.version}'),
-                              const SizedBox(height: 12),
-                              _changelogCard(thm),
                               const SizedBox(height: 12),
                               if (isWide) ...[
                                 _infoCardWide(thm),
@@ -157,7 +153,7 @@ class AboutPage extends StatelessWidget {
   Widget _featureGrid(AppThemeOption thm, double width) {
     final features = [
       _FeatureItem('🕐', 'Prayer Times', 'GPS-accurate Adhan'),
-      _FeatureItem('📖', 'Holy Quran', '114 Surah + Audio'),
+      _FeatureItem('📖', 'Holy Quran', '114 Surah'),
       _FeatureItem('🤲', 'Daily Duas', '200+ authentic Duas'),
       _FeatureItem('🧭', 'Qibla', 'Real-time compass'),
       _FeatureItem('📿', 'Tasbeeh', 'Digital counter'),
@@ -255,31 +251,6 @@ class AboutPage extends StatelessWidget {
             style: TextStyle(color: thm.textLow, fontSize: 13, height: 1.6),
           ),
 
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            child: Divider(color: thm.textLow.withOpacity(0.1), height: 1),
-          ),
-
-          // ENGLISH SECTION
-          Text(
-            'Our Aqeedah',
-            style: TextStyle(color: thm.accent, fontWeight: FontWeight.bold, fontSize: 14),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            'We hold the Aqeedah (creed) of Ahlus Sunnah wal Jama\'ah. We strive to follow the Sunnah of the Prophet (ﷺ), and the practices and teachings of the Companions (Sahabah), the Tabi\'un, and the Atba\' al-Tabi\'un. We sincerely endeavor to stay away from all forms of Shirk (polytheism) and Bid\'ah (innovation), which is strictly reflected throughout this app.',
-            style: TextStyle(color: thm.textLow, fontSize: 13, height: 1.6),
-          ),
-          const SizedBox(height: 14),
-          Text(
-            'Fiqh School of Thought',
-            style: TextStyle(color: thm.accent, fontWeight: FontWeight.bold, fontSize: 14),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            'We strictly follow the Hanafi Fiqh (Hanafi Madhhab). Since the vast majority of Muslims in our region follow the Hanafi school of thought, all the default settings, prayer time calculations, and Islamic rulings (Mas\'alah) provided in this app are completely based on the Hanafi Fiqh.',
-            style: TextStyle(color: thm.textLow, fontSize: 13, height: 1.6),
-          ),
         ],
       ),
     );
@@ -307,33 +278,6 @@ class AboutPage extends StatelessWidget {
     );
   }
 
-  Widget _changelogCard(AppThemeOption thm) {
-    final changes = [
-      '✨ New: Enhanced Quran audio player with repeat mode',
-      '🐛 Fixed: Prayer time calculation for high-latitude cities',
-      '🎨 Improved: Beautiful new Ramadan theme',
-      '⚡ Faster: App launch speed improved by 40%',
-      '🌍 Added: 15 new UI languages including Bangla',
-      '🔔 Fixed: Adhan notification reliability',
-    ];
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: thm.cardColor,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: thm.accent.withOpacity(0.2)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: changes
-            .map((c) => Padding(
-          padding: const EdgeInsets.symmetric(vertical: 5),
-          child: Text(c, style: TextStyle(color: thm.textLow, fontSize: 13, height: 1.5)),
-        ))
-            .toList(),
-      ),
-    );
-  }
 
   // Landscape/wide: 2-column grid
   Widget _infoCardWide(AppThemeOption thm) {
