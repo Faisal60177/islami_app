@@ -16,8 +16,8 @@ import 'about/about_page.dart';
 import 'auth/sign_out_page.dart';
 import 'package:muslim_app/home/home_page.dart';
 import 'package:muslim_app/tools/tools_page.dart';
-import 'package:muslim_app/Quran/quran_page.dart';
-import 'package:muslim_app/Duas/pages/duas_page.dart';
+import 'package:muslim_app/Quran/pages/quran_page.dart';
+import 'package:muslim_app/duas/pages/duas_page.dart';
 import 'package:muslim_app/core/app_info.dart';
 
 // ─── MenuPage ────────────────────────────────────────────────────────────────

@@ -154,7 +154,7 @@ class AboutPage extends StatelessWidget {
     final features = [
       _FeatureItem('🕐', 'Prayer Times', 'GPS-accurate Adhan'),
       _FeatureItem('📖', 'Holy Quran', '114 Surah'),
-      _FeatureItem('🤲', 'Daily Duas', '200+ authentic Duas'),
+      _FeatureItem('🤲', 'Daily duas', '200+ authentic duas'),
       _FeatureItem('🧭', 'Qibla', 'Real-time compass'),
       _FeatureItem('📿', 'Tasbeeh', 'Digital counter'),
       _FeatureItem('📅', 'Hijri Cal', 'Islamic dates'),
@@ -269,7 +269,7 @@ class AboutPage extends StatelessWidget {
             'help Muslims around the world strengthen their faith and daily practice. '
             'Built with love by a team of dedicated Muslim developers, this app '
             'provides accurate prayer times based on your GPS location, complete '
-            'Quran with translations and audio recitations, authentic Duas & Adhkar, '
+            'Quran with translations and audio recitations, authentic duas & Adhkar, '
             'Qibla direction, and much more.\n\n'
             'Our mission is simple: to make Islamic knowledge accessible to every '
             'Muslim, wherever they are in the world — InshaAllah.',

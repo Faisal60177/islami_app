@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:muslim_app/Quran/quran_page.dart';
+import 'package:muslim_app/Quran/pages/quran_page.dart';
 import 'package:muslim_app/location/home/location_page.dart';
 import 'package:muslim_app/tools/tools_page.dart';
 import '../../../location/cubit/location_cubit.dart';
@@ -8,7 +8,7 @@ import '../../../location/cubit/location_state.dart';
 import 'package:muslim_app/home/cubit/prayer_times_cubit.dart';
 import 'package:muslim_app/home/cubit/prayer_times_state.dart';
 import '../../../home/model/prayer_times_models.dart';
-import 'package:muslim_app/Duas/pages/duas_page.dart';
+import 'package:muslim_app/duas/pages/duas_page.dart';
 import 'package:muslim_app/Menu/menu_page.dart';
 import 'package:muslim_app/notification/page/notification_page.dart';
 import 'package:hijri/hijri_calendar.dart';
@@ -23,7 +23,6 @@ import 'widgets/prayer_times_card.dart';
 import 'widgets/mosque.dart';
 import 'widgets/ring_animation.dart';
 import 'package:flutter/services.dart';
-import 'package:muslim_app/alarm/cubit/alarm_cubit.dart';
 import 'package:muslim_app/alarm/pages/alarm_list_page.dart';
 
 class PrayerTimesPage extends StatefulWidget {

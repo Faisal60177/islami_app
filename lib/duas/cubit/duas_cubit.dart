@@ -61,7 +61,7 @@ class DuasCubit extends Cubit<DuasState> {
       emit(DuaLoaded(duas));
     } catch (_) {}
   }
-  // ── Duas ────────────────────────────────────────────────
+  // ── duas ────────────────────────────────────────────────
 
   void loadDuasByCategory(int categoryId) async {
     emit(DuaLoading());

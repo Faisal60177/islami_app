@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:muslim_app/Menu/menu_page.dart';
-import 'package:muslim_app/Quran/quran_page.dart';
+import 'package:muslim_app/Quran/pages/quran_page.dart';
 import 'package:muslim_app/home/home_page.dart';
-import 'package:muslim_app/Duas/pages/duas_page.dart';
+import 'package:muslim_app/duas/pages/duas_page.dart';
 import 'package:muslim_app/tasbih/tasbih_page.dart';
 import 'package:muslim_app/inspiration/pages/inspiration_page.dart';
 import 'package:muslim_app/notification/page/notification_page.dart';
@@ -13,8 +13,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:muslim_app/settings/cubit/settings_state.dart';
 import 'package:muslim_app/settings/l10n/app_localizations.dart';
 import 'package:muslim_app/settings/theme/app_themes.dart';
-
+import '../alarm/pages/alarm_list_page.dart';
 import '../masail/pages/masail_page.dart';
+import '../quran_tafsir/presentation/pages/quran_tafsir_page.dart';
 
 // ─── Section model ──────────────────────────────────────────────────────────
 class _Section {
@@ -73,8 +74,6 @@ class _ToolsPageState extends State<ToolsPage>
         builder: (context, settings) {
           final theme = getThemeById(settings.themeMode);
           final l10n = AppLocalizations(settings.languageCode);
-          final hijriOff = settings.hijriOffset;
-          final use24h = settings.use24Hour;
 
           final bgDeep     = Color.lerp(theme.background, Colors.black,
               theme.isDark ? 0.30 : 0.0)!;
@@ -99,6 +98,8 @@ class _ToolsPageState extends State<ToolsPage>
             _Section(l10n.knowledge, l10n.learnExplore, accent, [
               _Tool(l10n.quran,       'assets/icons/quran.png',
                       () => _push(QuranPage())),
+              _Tool(l10n.quran,       'assets/icons/quran.png',
+                      () => _push(QuranTafsirPage())),
               _Tool(l10n.duas,        'assets/icons/duas.png',
                       () => _push(DuasPage())),
               _Tool(l10n.masail,      'assets/icons/masail.png',
@@ -109,6 +110,8 @@ class _ToolsPageState extends State<ToolsPage>
                       () => _push(TasbihPage())),
               _Tool(l10n.prayerTimes,'assets/icons/prayer_time.png',
                       () => _push(PrayerTimesPage())),
+              _Tool(l10n.prayerTimes,'assets/icons/prayer_time.png',
+                      () => _push(AlarmListPage(theme: theme, l10n: l10n,))),
               _Tool(l10n.inspiration, 'assets/icons/inspiration.png',
                       () => _push(InspirationPage())),
             ]),

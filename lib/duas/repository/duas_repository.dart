@@ -18,9 +18,9 @@ class DuasRepository {
       try {
         await syncCategoriesFromFirestore();
         await syncDuasFromFirestore();
-        debugPrint('✅ Duas background sync complete');
+        debugPrint('✅ duas background sync complete');
       } catch (e) {
-        debugPrint('⚠️ Duas sync skipped: $e');
+        debugPrint('⚠️ duas sync skipped: $e');
       }
     });
   }
@@ -87,7 +87,7 @@ class DuasRepository {
     }
   }
 
-  // ── Duas ─────────────────────────────────────────────────
+  // ── duas ─────────────────────────────────────────────────
 
   Future<List<DuasModel>> getDuasByCategory({
     required int categoryId,
@@ -163,7 +163,7 @@ class DuasRepository {
         }
       });
       await dbHelper.deleteRemovedDuas(firestoreIds);
-      debugPrint('✅ Duas synced from Firestore');
+      debugPrint('✅ duas synced from Firestore');
     } catch (e) {
       debugPrint('⚠️ syncDuasFromFirestore skipped: $e');
       rethrow;

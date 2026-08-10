@@ -39,7 +39,7 @@ const Map<String, Map<String, String>> _translations = {
     'ishraq': 'Ishraq',    'chasht': 'Chasht',      'zawal': 'Zawal',
     'awabin': 'Awabin',    'iftar': 'Iftar',        'sahri': 'Sahri End',
     'today': 'Today',      'tools': 'Tools',        'quran': 'Quran',
-    'duas': 'Duas',        'menu': 'Menu',          'settings': 'Settings',
+    'duas': 'duas',        'menu': 'Menu',          'settings': 'Settings',
     'profile': 'Profile',  'logout': 'Sign Out',    'prayer_times': 'Prayer Times',
     'salat_prayers': 'Salat Prayers',
     'prohibited_times': 'Prohibited Times',
@@ -92,7 +92,7 @@ const Map<String, Map<String, String>> _translations = {
     'no_favorites_desc': 'Tap the heart on any dua to save it here',
     'loading_duas': 'Loading duas...',
     'no_duas_found': 'No duas found',
-    'no_duas_in_category': 'No Duas in this category',
+    'no_duas_in_category': 'No duas in this category',
     'no_categories_found': 'No categories found',
     'categories': 'Categories',
     'view_all': 'View all',
@@ -115,7 +115,7 @@ const Map<String, Map<String, String>> _translations = {
     'reference_label': 'REFERENCE',
     'playing_recitation': 'Playing recitation…',
     'listen_to_recitation': 'Listen to recitation',
-    'duas_adhkar': 'Duas & Adhkar',
+    'duas_adhkar': 'duas & Adhkar',
     'saved': 'Saved',
     'search_duas_hint': 'Search duas...',
 
@@ -1443,7 +1443,7 @@ const Map<String, Map<String, String>> _translations = {
     'ishraq': 'Ishraq',    'chasht': 'Duha',         'zawal': 'Zawal',
     'awabin': 'Awabin',    'iftar': 'Iftar',         'sahri': 'Sahri-Ende',
     'today': 'Heute',      'tools': 'Werkzeuge',     'quran': 'Koran',
-    'duas': 'Duas',        'menu': 'Menü',           'settings': 'Einstellungen',
+    'duas': 'duas',        'menu': 'Menü',           'settings': 'Einstellungen',
     'profile': 'Profil',   'logout': 'Abmelden',     'prayer_times': 'Gebetszeiten',
     'salat_prayers': 'Pflichtgebete',
     'prohibited_times': 'Verbotene Zeiten',
@@ -1558,7 +1558,7 @@ const Map<String, Map<String, String>> _translations = {
     'listen_to_recitation': 'Écouter la récitation',
     'duas_adhkar': 'Douas & Adhkâr',
     'saved': 'Enregistré',
-    'search_duas_hint': 'Duas suchen...',
+    'search_duas_hint': 'duas suchen...',
 
 
     // Weekdays
@@ -1923,7 +1923,7 @@ class AppLocalizations {
   String get eight => translate('8');
   String get nine => translate('9');
 
-  // ── Duas Page ──────────────────────────────────────────────────────────────
+  // ── duas Page ──────────────────────────────────────────────────────────────
   String get category              => translate('category');
   String get all                   => translate('all');
   String get favorite              => translate('favorite');

@@ -70,7 +70,7 @@ class DuasSqflite {
           )
         ''');
 
-        // ── Duas core table — no translation columns here ──
+        // ── duas core table — no translation columns here ──
         await db.execute('''
           CREATE TABLE IF NOT EXISTS duas(
             id              INTEGER PRIMARY KEY,
@@ -173,7 +173,7 @@ class DuasSqflite {
     ''', [languageCode]);
   }
 
-  // ── Duas ────────────────────────────────────────────────
+  // ── duas ────────────────────────────────────────────────
 
   Future<void> insertDua(Map<String, dynamic> data) async {
     final db = await database;
@@ -420,7 +420,7 @@ class DuasSqflite {
           where: 'category_id = ?', whereArgs: [id]);
       await db.delete('categories',
           where: 'category_id = ?', whereArgs: [id]);
-      debugPrint('🗑️ Duas category $id deleted from SQLite');
+      debugPrint('🗑️ duas category $id deleted from SQLite');
     }
   }
 

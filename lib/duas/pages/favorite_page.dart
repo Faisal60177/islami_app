@@ -6,20 +6,21 @@ import 'package:muslim_app/utils/language_utils.dart';
 import 'duas_detail_page.dart';
 import 'package:muslim_app/settings/l10n/app_localizations.dart';
 import 'package:muslim_app/settings/cubit/settings_cubit.dart';
-import 'package:muslim_app/Duas/cubit/duas_state.dart';
+import 'package:muslim_app/duas/cubit/duas_state.dart';
 import 'package:muslim_app/settings/theme/app_themes.dart';
 
-class BookmarkedDuasPage extends StatefulWidget {
+class FavoriteDuasPage extends StatefulWidget {
   final String searchQuery;
-  const BookmarkedDuasPage({super.key, required this.searchQuery});
+  const FavoriteDuasPage({super.key, required this.searchQuery});
 
   @override
-  State<BookmarkedDuasPage> createState() => _BookmarkedDuasPageState();
+  State<FavoriteDuasPage> createState() => _FavoriteDuasPageState();
 }
 
-class _BookmarkedDuasPageState extends State<BookmarkedDuasPage>
+
+class _FavoriteDuasPageState extends State<FavoriteDuasPage>
     with AutomaticKeepAliveClientMixin {
-  List<DuasModel> bookmarkDuas = [];
+  List<DuasModel> favoriteDuas = [];
   bool isLoading = true;
 
   @override
@@ -28,10 +29,10 @@ class _BookmarkedDuasPageState extends State<BookmarkedDuasPage>
   @override
   void initState() {
     super.initState();
-    loadBookmarks();
+    loadFavorites();
   }
 
-  Future<void> loadBookmarks() async {
+  Future<void> loadFavorites() async {
     if (!mounted) return;
     setState(() => isLoading = true);
     final cubit = context.read<DuasCubit>();
@@ -41,34 +42,34 @@ class _BookmarkedDuasPageState extends State<BookmarkedDuasPage>
       await cubit.repository.syncUserInteractionsFromFirestore(userId);
     }
 
-    final data = await cubit.repository.getBookmarkedForUser(
+    final data = await cubit.repository.getFavoritesForUser(
       userId:       userId,
       languageCode: cubit.currentLanguageCode,
     );
 
     if (!mounted) return;
     setState(() {
-      bookmarkDuas = data;
+      favoriteDuas = data;
       isLoading = false;
     });
   }
 
   // ── ADD: toggle favorite directly and update local list ──
-  Future<void> _toggleBookmark(DuasModel dua) async {
-    context.read<DuasCubit>().toggleBookmark(dua);
-    if (!dua.isBookmarked) {
+  Future<void> _toggleFavorite(DuasModel dua) async {
+    context.read<DuasCubit>().toggleFavorite(dua);
+    if (!dua.isFavorite) {
       // was just unfavorited — remove from list immediately
-      setState(() => bookmarkDuas.removeWhere((d) => d.id == dua.id));
+      setState(() => favoriteDuas.removeWhere((d) => d.id == dua.id));
     } else {
       // was just favorited — reload to get it
-      await loadBookmarks();
+      await loadFavorites();
     }
   }
 
   List<DuasModel> get filteredDuas {
-    if (widget.searchQuery.isEmpty) return bookmarkDuas;
+    if (widget.searchQuery.isEmpty) return favoriteDuas;
     final query = widget.searchQuery.toLowerCase();
-    return bookmarkDuas
+    return favoriteDuas
         .where((dua) =>
     dua.arabic.toLowerCase().contains(query) ||
         dua.title.toLowerCase().contains(query) ||
@@ -85,7 +86,7 @@ class _BookmarkedDuasPageState extends State<BookmarkedDuasPage>
       listener: (context, state) {
         // reload favorites whenever cubit emits a new state
         // (triggered by toggleFavorite re-emit in DuasCubit)
-        loadBookmarks();
+        loadFavorites();
       },
       child: _buildBody(context),
     );
@@ -107,12 +108,12 @@ class _BookmarkedDuasPageState extends State<BookmarkedDuasPage>
       );
     }
 
-    if (bookmarkDuas.isEmpty) {
+    if (favoriteDuas.isEmpty) {
       return _EmptyState(
-        icon: Icons.bookmark_remove_rounded,
-        title: l10n.noBookmarkYet,
-        subtitle: l10n.noBookmarkDesc,
-        iconColor: const Color(0xFF64B5F6),
+        icon: Icons.favorite_border_rounded,
+        title: l10n.noFavoritesYet,
+        subtitle: l10n.noFavoritesDesc,
+        iconColor: const Color(0xFFE57373),
         theme: theme,
       );
     }
@@ -130,8 +131,8 @@ class _BookmarkedDuasPageState extends State<BookmarkedDuasPage>
     return Directionality(
       textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
       child: RefreshIndicator(
-        color: theme.accent,
-        onRefresh: loadBookmarks,
+        color: const Color(0xFFE57373),
+        onRefresh: loadFavorites,
         child: CustomScrollView(
           physics: const ClampingScrollPhysics(),
           slivers: [
@@ -143,20 +144,20 @@ class _BookmarkedDuasPageState extends State<BookmarkedDuasPage>
                   padding: EdgeInsets.symmetric(
                       horizontal: w * 0.03, vertical: h * 0.007),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF64B5F6).withOpacity(0.12),
+                    color: const Color(0xFFE57373).withOpacity(0.12),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.bookmark_rounded,
-                          size: w * 0.04, color: const Color(0xFF64B5F6)),
+                      Icon(Icons.favorite_rounded,
+                          size: w * 0.04, color: const Color(0xFFE57373)),
                       SizedBox(width: w * 0.015),
                       Text(
                         '${filteredDuas.length} ${l10n.saved}',
                         style: TextStyle(
                           fontSize: w * 0.034,
-                          color: const Color(0xFF64B5F6),
+                          color: const Color(0xFFE57373),
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -172,7 +173,7 @@ class _BookmarkedDuasPageState extends State<BookmarkedDuasPage>
                 delegate: SliverChildBuilderDelegate(
                       (context, index) {
                     final dua = filteredDuas[index];
-                    return _BookmarkCard(
+                    return _FavoriteCard(
                       dua: dua,
                       isRtl: isRtl,
                       theme: theme,
@@ -182,10 +183,10 @@ class _BookmarkedDuasPageState extends State<BookmarkedDuasPage>
                           MaterialPageRoute(
                               builder: (_) => DuasDetailPage(dua: dua)),
                         );
-                        loadBookmarks(); // ← reload after returning
+                        loadFavorites(); // ← reload after returning
                       },
                       // ── ADD: unfavorite directly from card ──
-                      onRemoveBookmark: () => _toggleBookmark(dua),
+                      onUnfavorite: () => _toggleFavorite(dua),
                     );
                   },
                   childCount: filteredDuas.length,
@@ -199,21 +200,19 @@ class _BookmarkedDuasPageState extends State<BookmarkedDuasPage>
   }
 }
 
-
-
-class _BookmarkCard extends StatelessWidget {
+class _FavoriteCard extends StatelessWidget {
   final DuasModel dua;
   final bool isRtl;
   final AppThemeOption theme;
   final VoidCallback onTap;
-  final VoidCallback onRemoveBookmark; // ── ADD ──
+  final VoidCallback onUnfavorite; // ── ADD ──
 
-  const _BookmarkCard({
+  const _FavoriteCard({
     required this.dua,
     required this.isRtl,
     required this.theme,
     required this.onTap,
-    required this.onRemoveBookmark, // ── ADD ──
+    required this.onUnfavorite, // ── ADD ──
   });
 
   String getShortText(String text, [int limit = 50]) {
@@ -232,10 +231,10 @@ class _BookmarkCard extends StatelessWidget {
         color: theme.cardColor,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
-            color: const Color(0xFF64B5F6).withOpacity(0.2), width: 1),
+            color: const Color(0xFFE57373).withOpacity(0.2), width: 1),
         boxShadow: [
           BoxShadow(
-              color: const Color(0xFF64B5F6).withOpacity(0.07),
+              color: const Color(0xFFE57373).withOpacity(0.07),
               blurRadius: 12,
               offset: const Offset(0, 3)),
         ],
@@ -253,20 +252,20 @@ class _BookmarkCard extends StatelessWidget {
               children: [
                 // ── CHANGED: tap icon to unfavorite ──
                 GestureDetector(
-                  onTap: onRemoveBookmark,
+                  onTap: onUnfavorite,
                   child: Container(
                     width: w * 0.12,
                     height: w * 0.12,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF64B5F6).withOpacity(0.12),
+                      color: const Color(0xFFE57373).withOpacity(0.12),
                       borderRadius: BorderRadius.circular(14),
                     ),
                     child: Center(
                       child: Icon(
                         dua.isFavorite
-                            ? Icons.bookmark_rounded          // ← filled
-                            : Icons.bookmark_remove_rounded,  // ← empty
-                        color: const Color(0xFF64B5F6),
+                            ? Icons.favorite_rounded          // ← filled
+                            : Icons.favorite_border_rounded,  // ← empty
+                        color: const Color(0xFFE57373),
                         size: w * 0.055,
                       ),
                     ),
@@ -331,11 +330,6 @@ class _BookmarkCard extends StatelessWidget {
     );
   }
 }
-
-
-
-
-
 
 class _EmptyState extends StatelessWidget {
   final IconData icon;

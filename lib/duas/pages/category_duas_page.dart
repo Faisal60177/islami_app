@@ -85,7 +85,7 @@ class _CategoryDuasPageState extends State<CategoryDuasPage> {
                   size: w * 0.15, color: theme.textLow.withOpacity(0.4)),
               SizedBox(height: h * 0.02),
               Text(
-                'No Duas in this category',
+                'No duas in this category',
                 style: TextStyle(
                   color: theme.textLow,
                   fontSize: w * 0.045,

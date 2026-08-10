@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:muslim_app/Duas/cubit/duas_cubit.dart';
+import 'package:muslim_app/duas/cubit/duas_cubit.dart';
 import 'all_duas_page.dart';
 import 'category_page.dart';
 import 'favorite_page.dart';
@@ -11,7 +11,7 @@ import 'package:muslim_app/settings/cubit/settings_state.dart';
 import 'package:muslim_app/settings/theme/app_themes.dart';
 import 'package:muslim_app/home/home_page.dart';
 import 'package:muslim_app/tools/tools_page.dart';
-import 'package:muslim_app/Quran/quran_page.dart';
+import 'package:muslim_app/Quran/pages/quran_page.dart';
 import 'package:muslim_app/Menu/menu_page.dart';
 
 class DuasPage extends StatefulWidget {
@@ -27,7 +27,7 @@ class _DuasPageState extends State<DuasPage>
   final TextEditingController _searchController = TextEditingController();
   String searchQuery = '';
 
-  // Active index = 3 (Duas is 4th in the nav)
+  // Active index = 3 (duas is 4th in the nav)
   static const int _activeNavIndex = 3;
 
   static const List<Widget> _navPages = [
@@ -136,7 +136,7 @@ class _DuasPageState extends State<DuasPage>
     );
   }
 
-  // ── Bottom nav (matches PrayerTimesPage exactly, active = Duas) ───────────
+  // ── Bottom nav (matches PrayerTimesPage exactly, active = duas) ───────────
   Widget _buildNav({
     required BuildContext context,
     required double sw,

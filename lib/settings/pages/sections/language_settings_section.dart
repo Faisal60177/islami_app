@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:muslim_app/Duas/cubit/duas_cubit.dart';
+import 'package:muslim_app/duas/cubit/duas_cubit.dart';
 import 'package:muslim_app/inspiration/cubit/inspiration_cubit.dart';
 import 'package:muslim_app/masail/cubit/masail_cubit.dart';
 import '../../cubit/settings_cubit.dart';

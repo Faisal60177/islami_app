@@ -12,7 +12,7 @@ const _appLink =
 
 const _shareMessage =
     '🕌 Assalamu Alaikum!\n\n'
-    'I\'ve been using Muslim Life App — it\'s amazing for Quran, Duas, Prayer Times & more!\n\n'
+    'I\'ve been using Muslim Life App — it\'s amazing for Quran, duas, Prayer Times & more!\n\n'
     '📲 Download it here:\n$_appLink\n\n'
     '#Islam #Quran #MuslimApp';
 
