@@ -84,7 +84,6 @@ dependencies:
   workmanager: ^0.9.0+3
   android_alarm_manager_plus: ^4.0.4
   just_audio: ^0.9.42
-  bloc: ^9.1.1
 
 
 
