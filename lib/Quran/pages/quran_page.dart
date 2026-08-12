@@ -13,7 +13,7 @@ import 'search_tab.dart';
 import 'quran_reader_page.dart';
 import 'package:muslim_app/home/home_page.dart';
 import 'package:muslim_app/tools/tools_page.dart';
-import 'package:muslim_app/Duas/pages/duas_page.dart';
+import 'package:muslim_app/duas/pages/duas_page.dart';
 import 'package:muslim_app/Menu/menu_page.dart';
 import 'quran_download_screen.dart';
 import '../services/quran_download_service.dart';

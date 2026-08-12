@@ -4,10 +4,8 @@ import '../cubit/duas_cubit.dart';
 import '../model/category_model.dart';
 import 'package:muslim_app/utils/language_utils.dart';
 import 'category_duas_page.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:muslim_app/settings/l10n/app_localizations.dart';
 import 'package:muslim_app/settings/cubit/settings_cubit.dart';
-import 'package:muslim_app/settings/cubit/settings_state.dart';
 import 'package:muslim_app/settings/theme/app_themes.dart';
 
 class CategoryPage extends StatefulWidget {

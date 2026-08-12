@@ -92,6 +92,21 @@ class QuranRemoteDataSource {
 
 
   Exception _mapDioError(DioException e, {required String context}) {
+    print('=== QURAN API ERROR ($context) ===');
+    // ignore: avoid_print
+    print('Type: ${e.type}');
+    // ignore: avoid_print
+    print('Message: ${e.message}');
+    // ignore: avoid_print
+    print('Status Code: ${e.response?.statusCode}');
+    // ignore: avoid_print
+    print('Response Data: ${e.response?.data}');
+
+    print('Underlying Error: ${e.error}');
+    print('Underlying Error Type: ${e.error.runtimeType}');
+    // ignore: avoid_print
+    print('===================================');
+
     if (e.type == DioExceptionType.connectionTimeout ||
         e.type == DioExceptionType.receiveTimeout ||
         e.type == DioExceptionType.connectionError) {
@@ -106,6 +121,7 @@ class QuranRemoteDataSource {
     }
     return QuranNetworkException('$context এ সমস্যা হয়েছে: ${e.message}');
   }
+
 }
 
 
