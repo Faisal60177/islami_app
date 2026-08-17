@@ -1,4 +1,3 @@
-
 import '../../domain/entities/juz.dart';
 
 class JuzModel extends Juz {

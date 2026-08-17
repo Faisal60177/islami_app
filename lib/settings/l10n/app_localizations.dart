@@ -143,7 +143,7 @@ const Map<String, Map<String, String>> _translations = {
     'sign_in_subtitle': 'Sign in to sync progress',
     'active_badge': 'Active',
     'quote_hardship': '"Indeed, with hardship comes ease."',
-    'quote_hardship_ref': '— Quran 94:5',
+    'quote_hardship_ref': '— quran_tilawat 94:5',
     'muslim_user': 'Muslim User',
 
 // ── Settings Page ──────────────────────────────────────────────────────────
@@ -160,7 +160,7 @@ const Map<String, Map<String, String>> _translations = {
     'app_name': 'Islamic App',
     'version': 'Version 2.5.0',
     'quote_patience': '"And seek help through patience and prayer."',
-    'quote_patience_ref': '— Quran 2:45',
+    'quote_patience_ref': '— quran_tilawat 2:45',
 
     // Weekdays
     'monday': 'Monday',
@@ -918,7 +918,7 @@ const Map<String, Map<String, String>> _translations = {
     'sunset': 'Matahari Terbenam','noon': 'Tengah Hari','tahajjud': 'Tahajud',
     'ishraq': 'Isyrak',    'chasht': 'Dhuha',        'zawal': 'Zawal',
     'awabin': 'Awwabin',   'iftar': 'Buka Puasa',    'sahri': 'Akhir Sahur',
-    'today': 'Hari Ini',   'tools': 'Alat',          'quran': 'Al-Quran',
+    'today': 'Hari Ini',   'tools': 'Alat',          'quran': 'Al-quran_tilawat',
     'duas': 'Doa',         'menu': 'Menu',           'settings': 'Pengaturan',
     'profile': 'Profil',   'logout': 'Keluar',       'prayer_times': 'Waktu Shalat',
     'salat_prayers': 'Shalat Wajib',
@@ -964,7 +964,7 @@ const Map<String, Map<String, String>> _translations = {
     'sign_in_subtitle': 'Masuk untuk sinkronkan progres',
     'active_badge': 'Aktif',
     'quote_hardship': '"Sesungguhnya bersama kesulitan ada kemudahan."',
-    'quote_hardship_ref': '— Quran 94:5',
+    'quote_hardship_ref': '— quran_tilawat 94:5',
     'muslim_user': 'Pengguna Muslim',
     'location_section': 'LOKASI',
     'hijri_section': 'KALENDER HIJRIYAH',
@@ -979,7 +979,7 @@ const Map<String, Map<String, String>> _translations = {
     'app_name': 'Aplikasi Islam',
     'version': 'Versi 2.5.0',
     'quote_patience': '"Dan mintalah pertolongan dengan sabar dan shalat."',
-    'quote_patience_ref': '— Quran 2:45',
+    'quote_patience_ref': '— quran_tilawat 2:45',
 
     'location_updated_successfully': 'Lokasi berhasil diperbarui',
     'location_saved_successfully': 'Lokasi berhasil disimpan',
@@ -1093,7 +1093,7 @@ const Map<String, Map<String, String>> _translations = {
     'sunset': 'Matahari Terbenam','noon': 'Tengah Hari','tahajjud': 'Tahajud',
     'ishraq': 'Isyraq',    'chasht': 'Dhuha',        'zawal': 'Zawal',
     'awabin': 'Awwabin',   'iftar': 'Berbuka',       'sahri': 'Akhir Sahur',
-    'today': 'Hari Ini',   'tools': 'Alat',          'quran': 'Al-Quran',
+    'today': 'Hari Ini',   'tools': 'Alat',          'quran': 'Al-quran_tilawat',
     'duas': 'Doa',         'menu': 'Menu',           'settings': 'Tetapan',
     'profile': 'Profil',   'logout': 'Log Keluar',   'prayer_times': 'Waktu Solat',
     'salat_prayers': 'Solat Fardhu',
@@ -1139,7 +1139,7 @@ const Map<String, Map<String, String>> _translations = {
     'sign_in_subtitle': 'Log masuk untuk segerakkan kemajuan',
     'active_badge': 'Aktif',
     'quote_hardship': '"Sesungguhnya bersama kesukaran ada kemudahan."',
-    'quote_hardship_ref': '— Quran 94:5',
+    'quote_hardship_ref': '— quran_tilawat 94:5',
     'muslim_user': 'Pengguna Muslim',
     'location_section': 'LOKASI',
     'hijri_section': 'KALENDAR HIJRI',
@@ -1154,7 +1154,7 @@ const Map<String, Map<String, String>> _translations = {
     'app_name': 'Apl Islam',
     'version': 'Versi 2.5.0',
     'quote_patience': '"Dan mintalah pertolongan dengan sabar dan solat."',
-    'quote_patience_ref': '— Quran 2:45',
+    'quote_patience_ref': '— quran_tilawat 2:45',
 
     'location_updated_successfully': 'Lokasi berjaya dikemas kini',
     'location_saved_successfully': 'Lokasi berjaya disimpan',

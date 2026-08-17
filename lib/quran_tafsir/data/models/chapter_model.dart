@@ -1,5 +1,3 @@
-import 'package:timeago/timeago.dart';
-
 import '../../domain/entities/chapter.dart';
 
 class ChapterModel extends Chapter{

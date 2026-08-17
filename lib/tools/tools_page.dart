@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:muslim_app/Menu/menu_page.dart';
-import 'package:muslim_app/Quran/pages/quran_page.dart';
+import 'package:muslim_app/quran_tilawat//pages/quran_page.dart';
 import 'package:muslim_app/home/home_page.dart';
 import 'package:muslim_app/duas/pages/duas_page.dart';
-import 'package:muslim_app/tasbih/tasbih_page.dart';
+import 'package:muslim_app/tasbih/pages/tasbih_page.dart';
 import 'package:muslim_app/inspiration/pages/inspiration_page.dart';
 import 'package:muslim_app/notification/page/notification_page.dart';
 import 'package:muslim_app/calendar/pages/calendar_page.dart';
@@ -96,9 +96,9 @@ class _ToolsPageState extends State<ToolsPage>
           // Sections data (lambdas capture context lazily – safe)
           final sections = [
             _Section(l10n.knowledge, l10n.learnExplore, accent, [
-              _Tool(l10n.quran,       'assets/icons/quran.png',
+              _Tool(l10n.quran,       'assets/icons/quran_tilawat.png',
                       () => _push(QuranPage())),
-              _Tool(l10n.quran,       'assets/icons/quran.png',
+              _Tool(l10n.quran,       'assets/icons/quran_tafsir.png',
                       () => _push(QuranTafsirPage())),
               _Tool(l10n.duas,        'assets/icons/duas.png',
                       () => _push(DuasPage())),
@@ -110,7 +110,7 @@ class _ToolsPageState extends State<ToolsPage>
                       () => _push(TasbihPage())),
               _Tool(l10n.prayerTimes,'assets/icons/prayer_time.png',
                       () => _push(PrayerTimesPage())),
-              _Tool(l10n.prayerTimes,'assets/icons/prayer_time.png',
+              _Tool(l10n.prayerTimes,'assets/icons/alarm.png',
                       () => _push(AlarmListPage(theme: theme, l10n: l10n,))),
               _Tool(l10n.inspiration, 'assets/icons/inspiration.png',
                       () => _push(InspirationPage())),
@@ -315,8 +315,8 @@ class _ToolsPageState extends State<ToolsPage>
   }) {
     final items = [
       (l10n.today, 'assets/icons/today.png'),
-      (l10n.tools, 'assets/icons/tools.png'),
-      (l10n.quran, 'assets/icons/quran.png'),
+      (l10n.tools, 'assets/icons/features.png'),
+      (l10n.quran, 'assets/icons/quran_tilawat.png'),
       (l10n.duas,  'assets/icons/duas.png'),
       (l10n.menu,  'assets/icons/menu.png'),
     ];

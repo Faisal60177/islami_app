@@ -84,6 +84,7 @@ dependencies:
   workmanager: ^0.9.0+3
   android_alarm_manager_plus: ^4.0.4
   just_audio: ^0.9.42
+  google_maps_flutter: ^2.9.0
 
 
 
@@ -114,8 +115,8 @@ flutter_launcher_icons:
     ios: true
     image_path: "assets/icons/AppIcon.png"
     remove_alpha_ios: true
-    adaptive_icon_background: "#0a3d1f"        # ← add
-    adaptive_icon_foreground: "assets/icons/AppIcon.png"  # ← add
+    adaptive_icon_background: "#0a3d1f"
+    adaptive_icon_foreground: "assets/icons/AppIcon.png"
 
 
 flutter_native_splash:
@@ -142,12 +143,16 @@ flutter:
 
   uses-material-design: true
   assets:
+    - assets/icons/quran_tilawat.png
+    - assets/icons/quran_tafsir.png
     - assets/sounds/tasbih_click.mp3
     - assets/icons/quran.png
     - assets/icons/duas.png
     - assets/icons/tasbih.png
     - assets/icons/menu.png
     - assets/icons/tools.png
+    - assets/icons/features.png
+    - assets/icons/alarm.png
     - assets/icons/qibla.png
     - assets/icons/calendar.png
     - assets/icons/notification.png

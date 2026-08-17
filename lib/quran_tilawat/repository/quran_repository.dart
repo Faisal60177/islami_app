@@ -4,15 +4,13 @@ import '../models/surah_model.dart';
 import 'bookmark_storage.dart';
 import '../models/bookmark_model.dart';
 
-// ── Your PDF page layout ────────────────────────────────────
-// Total image files extracted from your PDF
 const int kTotalPdfPages = 619;
 
-// The PDF page range that contains actual Quran text
-// Page 3 = first Quran page (Surah Al-Fatiha)
-// Page 612 = last Quran page (end of Surah An-Nas)
-const int kQuranFirstPage = 1;    // PDF page 3 = Quran page 1
-const int kQuranLastPage  = 619;  // PDF page 612 = Quran page 604
+// The PDF page range that contains actual quran_tilawat text
+// Page 3 = first quran_tilawat page (Surah Al-Fatiha)
+// Page 612 = last quran_tilawat page (end of Surah An-Nas)
+const int kQuranFirstPage = 1;    // PDF page 3 = quran_tilawat page 1
+const int kQuranLastPage  = 619;  // PDF page 612 = quran_tilawat page 604
 
 // Convert between "Surah page number" (1-604 in your metadata JSON)
 // and "PDF image file number" (3-612 in your assets folder)

@@ -1,16 +1,6 @@
-// juz_list_view.dart
-//
-// PURPOSE: Juz tab এর content। এখন শুধু ৩০টা Juz এর তালিকা দেখাচ্ছে
-// (verse count, range সহ)। এখনই "tap করলে ওই Juz এর আয়াত দেখাও" পুরোপুরি
-// implement করিনি — কারণ সেটার জন্য /verses/by_juz endpoint টা
-// datasource/repository তে আলাদা করে যোগ করা লাগবে, যেটা এই ধাপে
-// অন্তর্ভুক্ত করলে অসম্পূর্ণ/অপরীক্ষিত কোড দেওয়া হতো।
-//
-// TODO (পরের ধাপ): getVersesByJuz() যোগ করে tap করলে SurahDetailPage
-// এর মতো একটা VerseListPage(byJuz: juzNumber) এ navigate করানো।
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../pages/juz_detail_page.dart';
 import '../providers/juz_list_provider.dart';
 
 class JuzListView extends ConsumerWidget {
@@ -47,7 +37,7 @@ class JuzListView extends ConsumerWidget {
       ),
       data: (juzs) => ListView.separated(
         itemCount: juzs.length,
-        separatorBuilder: (_, __) => const Divider(height: 1),
+        separatorBuilder: (context, index) => const Divider(height: 1),
         itemBuilder: (context, index) {
           final juz = juzs[index];
           return ListTile(
@@ -57,10 +47,12 @@ class JuzListView extends ConsumerWidget {
               '${juz.firstVerseKey} — ${juz.lastVerseKey} · ${juz.versesCount} Ayahs',
             ),
             onTap: () {
-              // TODO: getVersesByJuz() যোগ হলে এখানে navigate করানো হবে
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Juz অনুযায়ী verse reading শীঘ্রই আসছে।'),
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => JuzDetailPage(
+                    juzNumber: juz.juzNumber,
+                    juzName: 'Juz ${juz.juzNumber}',
+                  ),
                 ),
               );
             },

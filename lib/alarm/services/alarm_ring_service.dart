@@ -22,9 +22,6 @@ String _assetFor(AlarmSoundType type) {
   }
 }
 
-// FIX: checks the phone's physical ringer switch before vibrating.
-// Silent mode → stay fully silent, no vibration at all.
-// Vibrate or Normal/Ring mode → vibrate as before.
 
 Future<bool> _shouldVibrate(bool vibrateWanted) async {
   if (!vibrateWanted) return false;

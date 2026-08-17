@@ -3,8 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:muslim_app/settings/cubit/settings_cubit.dart';
 import 'package:muslim_app/settings/cubit/settings_state.dart';
 import 'package:muslim_app/settings/theme/app_themes.dart';
-import 'package:muslim_app/quran/cubit/quran_cubit.dart';
-import 'package:muslim_app/quran/repository/quran_repository.dart';
+import 'package:muslim_app/quran_tilawat/cubit/quran_cubit.dart';
+import 'package:muslim_app/quran_tilawat/repository/quran_repository.dart';
 import '../services/quran_download_service.dart';
 
 class QuranDownloadScreen extends StatefulWidget {
@@ -144,7 +144,7 @@ class _QuranDownloadScreenState extends State<QuranDownloadScreen>
                   ),
                   SizedBox(height: rsw * 0.010),
                   Text(
-                    'The Holy Quran · 15-line Mushaf',
+                    'The Holy quran_tilawat · 15-line Mushaf',
                     style: TextStyle(
                         color: theme.textLow,
                         fontSize: rsw * 0.028),

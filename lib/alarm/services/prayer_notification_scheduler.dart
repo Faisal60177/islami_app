@@ -36,12 +36,6 @@ class PrayerNotificationScheduler {
 
   tz.TZDateTime _toTz(DateTime dt) => tz.TZDateTime.from(dt, tz.local);
 
-  /// Computes and schedules alarms + waqt-pings for TODAY plus
-  /// [daysAhead]-1 future days in one pass (default: rolling 30-day
-  /// window). This is what makes alarms survive weeks/months of the app
-  /// never being reopened — the OS already holds ~30 days of future
-  /// alarms at all times. DailyRefillService calls this once every
-  /// midnight to keep the window topped up forever.
   Future<void> rescheduleAll({
     required LocationModel location,
     required String timeZoneName,
@@ -63,8 +57,6 @@ class PrayerNotificationScheduler {
           location, timeZoneName, date,
         );
       } catch (_) {
-        // Skip this single day on calculation failure — the rest of the
-        // 30-day window still schedules normally.
         continue;
       }
 
@@ -78,10 +70,6 @@ class PrayerNotificationScheduler {
 
         final alarmTime = baseTime.add(Duration(minutes: setting.offsetMinutes));
 
-        // For dayOffset 0 ("today"), skip times already passed — those
-        // will simply not be re-scheduled for today, exactly as before.
-        // Every future day (dayOffset > 0) is always ahead of "now" by
-        // definition, so this check never skips a future day's prayer.
         if (setting.enabled && alarmTime.isAfter(now)) {
           await _notif.scheduleAlarm(
             id: alarmNotificationId(prayerId, dayOffset),
@@ -105,14 +93,6 @@ class PrayerNotificationScheduler {
         }
       }
     }
-
-    // FIX: writes both the alarm-id list and waqt-id list to disk in
-    // exactly two SharedPreferences operations, once the entire 30-day
-    // loop above has finished. Previously each scheduleAlarm()/
-    // scheduleWaqtPing() call wrote to disk individually inside the
-    // loop — ~420 separate read+append+write cycles per pass, which is
-    // what produced the hundreds of SharedPreferencesImpl fsync entries
-    // seen in logcat.
     await _notif.flushScheduledIds();
   }
 }

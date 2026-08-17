@@ -600,7 +600,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                         color: thm.accent, fontSize: 24, fontFamily: 'Amiri')),
                 const SizedBox(height: 8),
                 Text(
-                  'Sign in to sync your progress,\nduas, and Quran bookmarks.',
+                  'Sign in to sync your progress,\nduas, and quran_tilawat bookmarks.',
                   textAlign: TextAlign.center,
                   style:
                   TextStyle(color: thm.textLow, fontSize: 15, height: 1.6),

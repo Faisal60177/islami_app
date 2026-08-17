@@ -153,7 +153,7 @@ class AboutPage extends StatelessWidget {
   Widget _featureGrid(AppThemeOption thm, double width) {
     final features = [
       _FeatureItem('🕐', 'Prayer Times', 'GPS-accurate Adhan'),
-      _FeatureItem('📖', 'Holy Quran', '114 Surah'),
+      _FeatureItem('📖', 'Holy quran_tilawat', '114 Surah'),
       _FeatureItem('🤲', 'Daily duas', '200+ authentic duas'),
       _FeatureItem('🧭', 'Qibla', 'Real-time compass'),
       _FeatureItem('📿', 'Tasbeeh', 'Digital counter'),
@@ -269,7 +269,7 @@ class AboutPage extends StatelessWidget {
             'help Muslims around the world strengthen their faith and daily practice. '
             'Built with love by a team of dedicated Muslim developers, this app '
             'provides accurate prayer times based on your GPS location, complete '
-            'Quran with translations and audio recitations, authentic duas & Adhkar, '
+            'quran_tilawat with translations and audio recitations, authentic duas & Adhkar, '
             'Qibla direction, and much more.\n\n'
             'Our mission is simple: to make Islamic knowledge accessible to every '
             'Muslim, wherever they are in the world — InshaAllah.',
@@ -359,7 +359,7 @@ class AboutPage extends StatelessWidget {
             textAlign: TextAlign.center,
             style: TextStyle(color: thm.textLow, fontSize: 12, fontStyle: FontStyle.italic),
           ),
-          Text('— Quran 51:55', style: TextStyle(color: thm.textLow, fontSize: 11)),
+          Text('— quran_tilawat 51:55', style: TextStyle(color: thm.textLow, fontSize: 11)),
           const SizedBox(height: 16),
           Divider(color: thm.accent.withOpacity(0.13)),
           const SizedBox(height: 12),

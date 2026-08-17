@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:muslim_app/Quran/pages/quran_page.dart';
+import 'package:muslim_app/quran_tilawat/pages/quran_page.dart';
 import 'package:muslim_app/location/home/location_page.dart';
 import 'package:muslim_app/tools/tools_page.dart';
 import '../../../location/cubit/location_cubit.dart';
@@ -452,8 +452,8 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
   }) {
     final items = [
       (l10n.today, 'assets/icons/today.png'),
-      (l10n.tools, 'assets/icons/tools.png'),
-      (l10n.quran, 'assets/icons/quran.png'),
+      (l10n.tools, 'assets/icons/features.png'),
+      (l10n.quran, 'assets/icons/quran_tilawat.png'),
       (l10n.duas,  'assets/icons/duas.png'),
       (l10n.menu,  'assets/icons/menu.png'),
     ];

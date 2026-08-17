@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:http/http.dart';
 import 'quran_auth_service.dart';
 
 class QuranApiClient {

@@ -49,7 +49,7 @@ class QuranDownloadService {
       final zipFile = File(zipPath);
 
       // ── Phase 1: Download zip ─────────────────────────────────────
-      onProgress(0, 100, 'Downloading Quran pages...');
+      onProgress(0, 100, 'Downloading quran_tilawat pages...');
 
       await _dio.download(
         _zipUrl,

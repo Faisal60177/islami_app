@@ -9,9 +9,6 @@ class _Zone {
 }
 
 class TimezoneService {
-  /// Returns IANA timezone string e.g. "America/New_York", "Asia/Dhaka"
-  /// Primary: free timeapi.io API (accurate for entire world)
-  /// Fallback: coordinate bounding-box lookup (works offline)
   static Future<String> getTimezone(double lat, double lng) async {
     try {
       final url = Uri.parse(
@@ -28,11 +25,6 @@ class TimezoneService {
     // Fallback: coordinate-based lookup
     return _coordinateFallback(lat, lng);
   }
-
-  // ── Coordinate bounding-box fallback ────────────────────────────────────
-  // Each entry: [minLat, maxLat, minLng, maxLng, 'IANA/Timezone']
-  // Ordered roughly by population/usage so common ones resolve faster.
-  // For countries that span multiple zones, sub-regions are listed first.
 
   static String _coordinateFallback(double lat, double lng) {
     for (final z in _zones) {

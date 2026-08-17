@@ -29,22 +29,9 @@ class NotificationService {
   static const String waqtChannelId  = 'prayer_waqt_channel';
   static const String ringingChannelId = 'prayer_ringing_channel';
 
-  // FIX: split into two separate keys — alarm ids go through
-  // AndroidAlarmManager (via AlarmRingService), waqt-ping ids only ever
-  // go through flutter_local_notifications' own scheduler. Mixing them
-  // in one list was causing AlarmRingService.cancel() to be called on
-  // ~210 ids that were never registered with AndroidAlarmManager at
-  // all, producing a permanent "not found" log burst on every single
-  // reschedule pass, not just the first one.
   static const String _scheduledAlarmIdsKey = 'scheduled_alarm_ring_ids';
   static const String _scheduledWaqtIdsKey  = 'scheduled_waqt_ids';
 
-  // FIX: buffered in memory during a reschedule pass instead of writing
-  // to SharedPreferences on every single scheduleAlarm()/scheduleWaqtPing()
-  // call. The previous per-call read+append+write pattern triggered ~420
-  // individual disk fsyncs per pass (visible in logcat as hundreds of
-  // SharedPreferencesImpl fsync entries) — now it's one read and one
-  // write per pass, via flushScheduledIds().
   final Set<int> _pendingAlarmIds = {};
   final Set<int> _pendingWaqtIds  = {};
 
@@ -127,10 +114,6 @@ class NotificationService {
     return await Permission.scheduleExactAlarm.isGranted;
   }
 
-  /// All sound types (silent, beep, adhan) route through AlarmRingService's
-  /// background isolate, so every alarm type shows the same ringing UI
-  /// and responds to Stop the same way — no separate plain-notification
-  /// path for silent anymore.
   Future<void> scheduleAlarm({
     required int id,
     required String title,
@@ -164,7 +147,7 @@ class NotificationService {
         notificationDetails: const NotificationDetails(
           android: AndroidNotificationDetails(
             waqtChannelId,
-            'Prayer time started',
+            'Prayer time Started',
             channelDescription: 'A quiet notice when a prayer waqt begins',
             importance: Importance.defaultImportance,
             priority: Priority.defaultPriority,
@@ -181,10 +164,6 @@ class NotificationService {
     }
   }
 
-  /// Called once by the scheduler after a full reschedule pass finishes
-  /// looping every day/prayer combination — writes both id sets to disk
-  /// in exactly two operations, instead of one write per individual
-  /// schedule call.
   Future<void> flushScheduledIds() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setStringList(
@@ -199,9 +178,6 @@ class NotificationService {
     _pendingWaqtIds.clear();
   }
 
-  /// Called from the background isolate (alarm_ring_service.dart) the
-  /// moment ringing starts, so the user sees an ongoing notification with
-  /// a Stop button while the adhan/beep/vibration is running.
   Future<void> showRingingNotification({
     required int id,
     required String title,
@@ -233,14 +209,6 @@ class NotificationService {
 
   Future<void> cancel(int id) => _plugin.cancel(id: id);
 
-  /// FIX: alarm ids and waqt-ping ids are now cancelled separately.
-  /// AlarmRingService.cancel() (→ AndroidAlarmManager.cancel()) is only
-  /// called for ids that were actually scheduled through
-  /// AndroidAlarmManager — never for waqt-ping ids, which only exist in
-  /// flutter_local_notifications and were never registered with
-  /// AndroidAlarmManager in the first place. This was the real source of
-  /// the permanent "cancel: broadcast receiver not found" burst on every
-  /// single reschedule pass.
   Future<void> cancelAllPrayerNotifications() async {
     final prefs = await SharedPreferences.getInstance();
     final alarmIds = prefs.getStringList(_scheduledAlarmIdsKey) ?? [];
@@ -256,15 +224,12 @@ class NotificationService {
     for (final idStr in waqtIds) {
       final id = int.tryParse(idStr);
       if (id == null) continue;
-      // Local-notification cancel only — never AlarmRingService here.
       await _plugin.cancel(id: id);
     }
 
     await prefs.setStringList(_scheduledAlarmIdsKey, []);
     await prefs.setStringList(_scheduledWaqtIdsKey, []);
 
-    // One-time cleanup for the old single-day scheme (ids 100-106 /
-    // 200-206) from before the 30-day rolling window existed.
     for (int idx = 0; idx < allSchedulablePrayerIds.length; idx++) {
       await _plugin.cancel(id: 100 + idx);
       await _plugin.cancel(id: 200 + idx);

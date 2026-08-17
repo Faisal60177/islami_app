@@ -49,7 +49,7 @@ class _AlarmRingingPageState extends State<AlarmRingingPage> {
   @override
   Widget build(BuildContext context) {
     return PopScope(
-      canPop: false, // block back button — must use Stop, like a real alarm
+      canPop: false,
       child: Scaffold(
         backgroundColor: const Color(0xFF0A1410),
         body: SafeArea(
@@ -86,7 +86,7 @@ class _AlarmRingingPageState extends State<AlarmRingingPage> {
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  "It's time for prayer",
+                  "It's time for Prayer",
                   style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 15),
                 ),
                 const SizedBox(height: 6),

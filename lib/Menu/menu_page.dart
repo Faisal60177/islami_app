@@ -6,7 +6,6 @@ import 'package:muslim_app/settings/l10n/app_localizations.dart';
 import 'package:muslim_app/settings/cubit/settings_cubit.dart';
 import 'package:muslim_app/settings/cubit/settings_state.dart';
 import 'package:muslim_app/settings/theme/app_themes.dart';
-import 'package:muslim_app/settings/pages/sections/theme_settings_section.dart';
 import 'profile/profile_page.dart';
 import 'package:muslim_app/settings/pages/settings_page.dart';
 import 'contact/contact_page.dart';
@@ -16,7 +15,7 @@ import 'about/about_page.dart';
 import 'auth/sign_out_page.dart';
 import 'package:muslim_app/home/home_page.dart';
 import 'package:muslim_app/tools/tools_page.dart';
-import 'package:muslim_app/Quran/pages/quran_page.dart';
+import 'package:muslim_app/quran_tilawat/pages/quran_page.dart';
 import 'package:muslim_app/duas/pages/duas_page.dart';
 import 'package:muslim_app/core/app_info.dart';
 
@@ -299,8 +298,8 @@ class MenuPage extends StatelessWidget {
       BuildContext context, AppLocalizations l10n, AppThemeOption thm) {
     final items = [
       (l10n.today,  'assets/icons/today.png'),
-      (l10n.tools,  'assets/icons/tools.png'),
-      (l10n.quran,  'assets/icons/quran.png'),
+      (l10n.tools,  'assets/icons/features.png'),
+      (l10n.quran,  'assets/icons/quran_tilawat.png'),
       (l10n.duas,   'assets/icons/duas.png'),
       (l10n.menu,   'assets/icons/menu.png'),
     ];

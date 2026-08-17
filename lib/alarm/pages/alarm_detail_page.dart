@@ -138,10 +138,10 @@ class _AlarmDetailPageState extends State<AlarmDetailPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(l10n.translate('Waqt Started Notice'),
+                      Text(l10n.translate('Prayer Notification'),
                           style: TextStyle(
                               color: theme.textHigh, fontSize: 14, fontWeight: FontWeight.w600)),
-                      Text(l10n.translate('Waqt Started Notice Desc'),
+                      Text(l10n.translate('Waqt Start Notice'),
                           style: TextStyle(color: theme.textLow, fontSize: 12)),
                     ],
                   ),
@@ -189,7 +189,7 @@ class _AlarmDetailPageState extends State<AlarmDetailPage> {
                 ),
                 Slider(
                   value: _draft.offsetMinutes.toDouble(),
-                  min: -120, max: 120, divisions: 240,
+                  min: -240, max: 240, divisions: 480,
                   activeColor: theme.accent,
                   inactiveColor: theme.textLow.withOpacity(0.25),
                   onChanged: (v) => setState(() => _draft = _draft.copyWith(offsetMinutes: v.round())),
@@ -197,10 +197,10 @@ class _AlarmDetailPageState extends State<AlarmDetailPage> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('-120 min', style: TextStyle(color: theme.textLow, fontSize: 11)),
+                    Text('-240 min', style: TextStyle(color: theme.textLow, fontSize: 11)),
                     Text(_offsetLabel(_draft.offsetMinutes),
                         style: TextStyle(color: theme.accent, fontSize: 12, fontWeight: FontWeight.w600)),
-                    Text('+120 min', style: TextStyle(color: theme.textLow, fontSize: 11)),
+                    Text('+240 min', style: TextStyle(color: theme.textLow, fontSize: 11)),
                   ],
                 ),
               ],
@@ -285,7 +285,7 @@ class _AlarmDetailPageState extends State<AlarmDetailPage> {
                 Text(l10n.translate('Alarm Sound'),
                     style: TextStyle(color: theme.textHigh, fontSize: 14, fontWeight: FontWeight.w600)),
                 const SizedBox(height: 10),
-                _soundOption(theme, AlarmSoundType.silent, l10n.translate('Silent/vibrate'), canPreview: false),
+                _soundOption(theme, AlarmSoundType.silent, l10n.translate('Silent/vibrate'), canPreview: true),
                 const SizedBox(height: 8),
                 _soundOption(theme, AlarmSoundType.beep, l10n.translate('Long Beep')),
                 const SizedBox(height: 8),
@@ -345,7 +345,7 @@ class _AlarmDetailPageState extends State<AlarmDetailPage> {
                 if (!context.mounted) return;
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text(l10n.translate('save')),
+                    content: Text(l10n.translate('Save')),
                     backgroundColor: theme.accent,
                     behavior: SnackBarBehavior.floating,
                     duration: const Duration(seconds: 1),
@@ -353,7 +353,7 @@ class _AlarmDetailPageState extends State<AlarmDetailPage> {
                 );
                 Navigator.pop(context);
               },
-              child: Text(l10n.translate('save'),
+              child: Text(l10n.translate('Save'),
                   style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w700)),
             ),
           ),

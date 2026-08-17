@@ -11,11 +11,16 @@ abstract class QuranRepository {
     required int chapterNumber,
     List<int> translationIds = const [],
     int? reciterId,
-});
+  });
+
+  Future<List<Verse>> getVersesByJuz({
+    required int juzNumber,
+    List<int> translationIds = const [],
+    int? reciterId,
+  });
 
   Future<List<TranslationResource>> getAvailableTranslations();
   Future<List<Reciter>> getAvailableReciters();
 
   Future<List<Juz>> getJuzs();
-
 }

@@ -146,8 +146,8 @@ class _QuranPageBodyState extends State<_QuranPageBody>
       double rsw, double sw, AppLocalizations l10n) {
     final items = [
       (l10n.today, 'assets/icons/today.png'),
-      (l10n.tools, 'assets/icons/tools.png'),
-      (l10n.quran, 'assets/icons/quran.png'),
+      (l10n.tools, 'assets/icons/features.png'),
+      (l10n.quran, 'assets/icons/quran_tilawat.png'),
       (l10n.duas,  'assets/icons/duas.png'),
       (l10n.menu,  'assets/icons/menu.png'),
     ];
@@ -217,7 +217,7 @@ class _QuranPageBodyState extends State<_QuranPageBody>
   }
 }
 
-// ── Quran header ─────────────────────────────────────────────────────────────
+// ── quran_tilawat header ─────────────────────────────────────────────────────────────
 class _QuranHeader extends StatelessWidget {
   final AppThemeOption theme;
   final double rsw;
@@ -250,7 +250,7 @@ class _QuranHeader extends StatelessWidget {
         children: [
           Expanded(
             child: Text(
-              'Hifz Quran',
+              'Hifz quran_tilawat',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
@@ -374,7 +374,7 @@ class _QuickActionsRow extends StatelessWidget {
                       fontSize: rsw * 0.040,
                       fontWeight: FontWeight.w700)),
               SizedBox(height: rsw * 0.008),
-              Text('Enter a Quran page number from 1 to 611',
+              Text('Enter a quran_tilawat page number from 1 to 611',
                   style: TextStyle(
                       color: theme.textLow, fontSize: rsw * 0.026)),
               SizedBox(height: rsw * 0.026),

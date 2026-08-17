@@ -99,7 +99,7 @@ const List<String> allSchedulablePrayerIds = [
 ];
 
 
-const int scheduleDaysAhead = 30;
+const int scheduleDaysAhead = 3;
 
 
 int alarmNotificationId(String prayerId, [int dayOffset = 0]) =>

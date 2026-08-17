@@ -11,18 +11,23 @@ class QuranRemoteDataSource {
   QuranRemoteDataSource({ required QuranApiClient apiClient})
   : _apiClient = apiClient;
 
-
   Future<List<JuzModel>> getJuzs() async {
     try {
       final response = await _apiClient.dio.get('/juzs');
       final list = response.data['juzs'] as List<dynamic>;
-      return list
+
+      final juzs = list
           .map((json) => JuzModel.fromJson(json as Map<String, dynamic>))
           .toList();
+      final seen = <int>{};
+      final uniqueJuzs = juzs.where((j) => seen.add(j.juzNumber)).toList();
+
+      return uniqueJuzs;
     } on DioException catch (e) {
       throw _mapDioError(e, context: 'fetching juzs');
     }
   }
+
 
   Future<List<ChapterModel>> getChapters() async {
     try {
@@ -38,11 +43,17 @@ class QuranRemoteDataSource {
     required int chapterNumber,
     List<int> translationIds = const [],
     int? reciterId,
+    int page =1,
+    int perPage = 50,
 }) async {
     try{
       final queryParams = <String, dynamic>{
-        'per_page': 50,
-        'fields' : 'text_uthmani',
+        'per_page': perPage > 50 ? 50 : perPage,
+        'page': page,
+        'fields' : 'text_uthmani,chapter_id',
+        'words': true,
+        'word_fields': 'text_uthmani,location,char_type_name,position',
+        'translation_fields': 'resource_name',
       };
       if(translationIds.isNotEmpty){
         queryParams['translations'] = translationIds.join(',');
@@ -52,7 +63,7 @@ class QuranRemoteDataSource {
       }
 
       final response = await _apiClient.dio.get(
-        '/verse/by_chapter/$chapterNumber',
+        '/verses/by_chapter/$chapterNumber',
         queryParameters:  queryParams,
       );
 
@@ -61,6 +72,43 @@ class QuranRemoteDataSource {
           .map((json) => VerseModel.fromJson(json as Map<String, dynamic>)).toList();
     } on DioException catch (e){
       throw _mapDioError(e, context: 'fetching verses for chapter $chapterNumber');
+    }
+  }
+
+  Future<List<VerseModel>> getVersesByJuz({
+    required int juzNumber,
+    List<int> translationIds = const [],
+    int? reciterId,
+    int page =1,
+    int perPage = 50,
+  }) async {
+    try {
+      final queryParams = <String, dynamic>{
+        'per_page': perPage > 50 ? 50 : perPage,
+        'page': page,
+        'fields': 'text_uthmani,chapter_id',
+        'words': true,
+        'word_fields': 'text_uthmani,location,char_type_name,position',
+        'translation_fields': 'resource_name',
+      };
+      if (translationIds.isNotEmpty) {
+        queryParams['translations'] = translationIds.join(',');
+      }
+      if (reciterId != null) {
+        queryParams['audio'] = reciterId;
+      }
+
+      final response = await _apiClient.dio.get(
+        '/verses/by_juz/$juzNumber',
+        queryParameters: queryParams,
+      );
+
+      final versesJson = response.data['verses'] as List<dynamic>;
+      return versesJson
+          .map((json) => VerseModel.fromJson(json as Map<String, dynamic>))
+          .toList();
+    } on DioException catch (e) {
+      throw _mapDioError(e, context: 'fetching verses for juz $juzNumber');
     }
   }
 
@@ -93,33 +141,20 @@ class QuranRemoteDataSource {
 
   Exception _mapDioError(DioException e, {required String context}) {
     print('=== QURAN API ERROR ($context) ===');
-    // ignore: avoid_print
-    print('Type: ${e.type}');
-    // ignore: avoid_print
-    print('Message: ${e.message}');
-    // ignore: avoid_print
-    print('Status Code: ${e.response?.statusCode}');
-    // ignore: avoid_print
-    print('Response Data: ${e.response?.data}');
-
-    print('Underlying Error: ${e.error}');
-    print('Underlying Error Type: ${e.error.runtimeType}');
-    // ignore: avoid_print
-    print('===================================');
 
     if (e.type == DioExceptionType.connectionTimeout ||
         e.type == DioExceptionType.receiveTimeout ||
         e.type == DioExceptionType.connectionError) {
       return QuranNetworkException(
-        'Internet connection মনে হচ্ছে নেই বা slow। ($context)',
+        'Internet connection slow। ($context)',
       );
     }
     if (e.response?.statusCode == 429) {
       return QuranRateLimitException(
-        'অনেক বেশি request পাঠানো হয়েছে, একটু পর আবার চেষ্টা করুন।',
+        'request send, try again',
       );
     }
-    return QuranNetworkException('$context এ সমস্যা হয়েছে: ${e.message}');
+    return QuranNetworkException('$context failed: ${e.message}');
   }
 
 }
@@ -138,7 +173,3 @@ class QuranRateLimitException implements Exception {
   @override
   String toString() => message;
 }
-
-
-
-

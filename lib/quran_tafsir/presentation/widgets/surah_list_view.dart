@@ -1,14 +1,3 @@
-// surah_list_view.dart
-//
-// PURPOSE: এটা Surah list দেখানোর "body content" — কোনো Scaffold/AppBar
-// নেই এখানে ইচ্ছাকৃতভাবে। এটাকে বের করে আনা হয়েছে যাতে এই একই list
-// দুই জায়গায় reuse করা যায়:
-//   ১. standalone SurahListPage (নিজের Scaffold সহ) — direct navigation এ
-//   ২. QuranTafsirPage এর TabBar এর ভিতরে (Scaffold সেখানে বাইরে থেকে আসে)
-//
-// এভাবে আলাদা করাটাই Clean Code এর "Don't Repeat Yourself (DRY)" নীতি —
-// একই loading/error/data logic দুইবার লিখতে হচ্ছে না।
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/chapter_list_provider.dart';
@@ -32,7 +21,7 @@ class SurahListView extends ConsumerWidget {
               const Icon(Icons.wifi_off, size: 48, color: Colors.grey),
               const SizedBox(height: 12),
               Text(
-                'কুরআন লোড করা যায়নি।\nইন্টারনেট সংযোগ চেক করুন।',
+                "Didn't load quran_tilawat\n Check your internet",
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
@@ -41,7 +30,7 @@ class SurahListView extends ConsumerWidget {
                 onPressed: () =>
                     ref.read(chapterListNotifierProvider.notifier).refresh(),
                 icon: const Icon(Icons.refresh),
-                label: const Text('আবার চেষ্টা করুন'),
+                label: const Text('Try Again'),
               ),
             ],
           ),

@@ -297,7 +297,7 @@ class _SettingsPageState extends State<SettingsPage>
             ),
           ),
           SizedBox(height: rsw * 0.008),
-          Text('— Quran 2:45',
+          Text('— quran_tilawat 2:45',
               style: TextStyle(
                   color: theme.textLow,
                   fontSize: (rsw * 0.025).clamp(9.0, 12.0))),

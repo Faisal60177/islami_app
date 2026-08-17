@@ -1,16 +1,3 @@
-// audio_player_provider.dart
-//
-// PURPOSE: Ayah/Verse recitation audio play করার জন্য একটা centralized
-// player state। আপাতত এটা সম্পূর্ণ ONLINE STREAMING — verse.audio.url
-// সরাসরি just_audio কে দেওয়া হচ্ছে, কোনো download/local caching নেই।
-//
-// ভবিষ্যতে "download for offline" feature আসলে (premium/subscription),
-// এই ফাইলেই একটা check যোগ হবে: "এই ayah এর audio local এ downloaded
-// আছে কিনা, থাকলে local file path দাও, না থাকলে online URL দাও" —
-// আর play() method এর ভিতরের logic ছাড়া বাকি কিছু বদলাতে হবে না,
-// কারণ UI শুধু play()/pause()/seekToVerse() call করে, internal
-// source কোথা থেকে আসছে সেটা জানে না।
-
 import 'package:just_audio/just_audio.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../domain/entities/verse.dart';
@@ -21,7 +8,7 @@ enum QuranAudioStatus { idle, loading, playing, paused, error }
 
 class QuranAudioState {
   final QuranAudioStatus status;
-  final String? currentVerseKey; // যেমন "1:1" — কোন আয়াত এখন বাজছে
+  final String? currentVerseKey;
   final Duration position;
   final Duration duration;
   final String? errorMessage;
@@ -55,11 +42,13 @@ class QuranAudioState {
 class QuranAudioPlayerNotifier extends _$QuranAudioPlayerNotifier {
   late final AudioPlayer _player;
 
+  List<Verse> _playableQueue = [];
+  ConcatenatingAudioSource? _playlist;
+
   @override
   QuranAudioState build() {
     _player = AudioPlayer();
 
-    // Player এর position/status বদলালে state sync রাখা হচ্ছে
     _player.positionStream.listen((position) {
       state = state.copyWith(position: position);
     });
@@ -70,18 +59,25 @@ class QuranAudioPlayerNotifier extends _$QuranAudioPlayerNotifier {
       }
     });
 
+    _player.currentIndexStream.listen((index) {
+      if (index != null && index >= 0 && index < _playableQueue.length) {
+        state = state.copyWith(currentVerseKey: _playableQueue[index].verseKey);
+      }
+    });
+
     _player.playerStateStream.listen((playerState) {
-      if (playerState.playing) {
+      if (playerState.processingState == ProcessingState.completed) {
+        state = const QuranAudioState();
+      } else if (playerState.playing) {
         state = state.copyWith(status: QuranAudioStatus.playing);
-      } else if (playerState.processingState == ProcessingState.completed) {
-        state = state.copyWith(status: QuranAudioStatus.idle);
+      } else if (playerState.processingState == ProcessingState.buffering ||
+          playerState.processingState == ProcessingState.loading) {
+        state = state.copyWith(status: QuranAudioStatus.loading);
       } else if (playerState.processingState == ProcessingState.ready) {
         state = state.copyWith(status: QuranAudioStatus.paused);
       }
     });
 
-    // Provider dispose হওয়ার সময় player resource clean-up করা জরুরি,
-    // নাহলে memory leak হবে।
     ref.onDispose(() {
       _player.dispose();
     });
@@ -89,15 +85,21 @@ class QuranAudioPlayerNotifier extends _$QuranAudioPlayerNotifier {
     return const QuranAudioState();
   }
 
-  /// একটা নির্দিষ্ট আয়াতের audio play করা।
-  /// [verse] এর ভিতরে audio.url না থাকলে (null), কিছু হবে না —
-  /// UI তে সেই ক্ষেত্রে play button disable রাখা উচিত।
-  Future<void> playVerse(Verse verse) async {
-    final audioUrl = verse.audio?.url;
-    if (audioUrl == null) {
+  bool _isSameQueue(List<Verse> queue) {
+    if (queue.length != _playableQueue.length) return false;
+    if (queue.isEmpty) return true;
+    return queue.first.verseKey == _playableQueue.first.verseKey &&
+        queue.last.verseKey == _playableQueue.last.verseKey;
+  }
+
+  Future<void> playVerse(Verse verse, {required List<Verse> queue}) async {
+    final playable = queue.where((v) => v.audio != null).toList();
+    final targetIndex = playable.indexWhere((v) => v.verseKey == verse.verseKey);
+
+    if (targetIndex == -1) {
       state = state.copyWith(
         status: QuranAudioStatus.error,
-        errorMessage: 'এই আয়াতের জন্য কোনো audio পাওয়া যায়নি।',
+        errorMessage: 'No Audio for this Ayah',
       );
       return;
     }
@@ -107,12 +109,23 @@ class QuranAudioPlayerNotifier extends _$QuranAudioPlayerNotifier {
         status: QuranAudioStatus.loading,
         currentVerseKey: verse.verseKey,
       );
-      await _player.setUrl(audioUrl);
+
+      if (!_isSameQueue(playable)) {
+        _playableQueue = playable;
+        final sources = playable
+            .map((v) => AudioSource.uri(Uri.parse(v.audio!.url)))
+            .toList();
+        _playlist = ConcatenatingAudioSource(children: sources);
+        await _player.setAudioSource(_playlist!, initialIndex: targetIndex);
+      } else {
+        await _player.seek(Duration.zero, index: targetIndex);
+      }
+
       await _player.play();
     } catch (e) {
       state = state.copyWith(
         status: QuranAudioStatus.error,
-        errorMessage: 'Audio play করতে সমস্যা হয়েছে। Internet চেক করুন।',
+        errorMessage: 'Check your Internet',
       );
     }
   }

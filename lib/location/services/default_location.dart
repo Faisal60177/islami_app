@@ -6,6 +6,6 @@ class DefaultLocation {
     longitude: 92.3058,
     city:      'Teknaf',
     country:   'Bangladesh',
-    timeZone:  'Asia/Dhaka', // explicit
+    timeZone:  'Asia/Dhaka',
   );
 }

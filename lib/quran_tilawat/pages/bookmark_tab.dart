@@ -131,7 +131,7 @@ class _BookmarkTile extends StatelessWidget {
                     SizedBox(height: rsw * 0.005),
                     Text(
                       isQuranPage
-                          ? 'Quran page $quranPage  ·  Image ${bm.pageNumber}'
+                          ? 'quran_tilawat page $quranPage  ·  Image ${bm.pageNumber}'
                           : 'Image page ${bm.pageNumber}',
                       style: TextStyle(
                           color: theme.textLow, fontSize: rsw * 0.024),

@@ -11,7 +11,7 @@ import 'package:muslim_app/settings/cubit/settings_state.dart';
 import 'package:muslim_app/settings/theme/app_themes.dart';
 import 'package:muslim_app/home/home_page.dart';
 import 'package:muslim_app/tools/tools_page.dart';
-import 'package:muslim_app/Quran/pages/quran_page.dart';
+import 'package:muslim_app/quran_tilawat/pages/quran_page.dart';
 import 'package:muslim_app/Menu/menu_page.dart';
 
 class DuasPage extends StatefulWidget {
@@ -151,8 +151,8 @@ class _DuasPageState extends State<DuasPage>
 
     final items = [
       (l10n.today, 'assets/icons/today.png'),
-      (l10n.tools, 'assets/icons/tools.png'),
-      (l10n.quran, 'assets/icons/quran.png'),
+      (l10n.tools, 'assets/icons/features.png'),
+      (l10n.quran, 'assets/icons/quran_tilawat.png'),
       (l10n.duas,  'assets/icons/duas.png'),
       (l10n.menu,  'assets/icons/menu.png'),
     ];

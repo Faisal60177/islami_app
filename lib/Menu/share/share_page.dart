@@ -12,9 +12,9 @@ const _appLink =
 
 const _shareMessage =
     '🕌 Assalamu Alaikum!\n\n'
-    'I\'ve been using Muslim Life App — it\'s amazing for Quran, duas, Prayer Times & more!\n\n'
+    'I\'ve been using Muslim Life App — it\'s amazing for quran_tilawat, duas, Prayer Times & more!\n\n'
     '📲 Download it here:\n$_appLink\n\n'
-    '#Islam #Quran #MuslimApp';
+    '#Islam #quran_tilawat #MuslimApp';
 
 class SharePage extends StatelessWidget {
   const SharePage({super.key});

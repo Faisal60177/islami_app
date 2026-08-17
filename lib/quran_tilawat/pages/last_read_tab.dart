@@ -35,7 +35,7 @@ class LastReadTab extends StatelessWidget {
               if (s.page <= page) { currentSurah = s; break; }
             }
 
-            // Progress calculation (pages 3–612 = 610 Quran pages)
+            // Progress calculation (pages 3–612 = 610 quran_tilawat pages)
             final isQuranRange = page >= 3 && page <= 612;
             final quranPage    = isQuranRange ? page - 2 : (page < 3 ? 0 : 610);
             final progress     = (quranPage / 610).clamp(0.0, 1.0);
@@ -117,7 +117,7 @@ class LastReadTab extends StatelessWidget {
                   Row(
                     children: [
                       _StatCard(
-                        label: 'Quran page',
+                        label: 'quran_tilawat page',
                         value: '$quranPage',
                         sub: 'of 610',
                         color: theme.accent,
@@ -129,7 +129,7 @@ class LastReadTab extends StatelessWidget {
                         label: 'Completed',
                         value:
                         '${(progress * 100).toStringAsFixed(1)}%',
-                        sub: 'of Quran',
+                        sub: 'of quran_tilawat',
                         color: const Color(0xFF64B5F6),
                         theme: theme,
                         rsw: rsw,
@@ -212,7 +212,7 @@ class _ResumeCard extends StatelessWidget {
                 ),
                 SizedBox(height: rsw * 0.008),
                 Text(
-                  isQuranRange ? currentSurah.nameTranslit : 'Al-Quran',
+                  isQuranRange ? currentSurah.nameTranslit : 'Al-quran_tilawat',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: Colors.white,
@@ -235,7 +235,7 @@ class _ResumeCard extends StatelessWidget {
                 Row(
                   children: [
                     Text(
-                      'Quran page $quranPage of 610',
+                      'quran_tilawat page $quranPage of 610',
                       style: TextStyle(
                           color: theme.textLow, fontSize: rsw * 0.024),
                     ),

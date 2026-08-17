@@ -24,10 +24,6 @@ class AlarmCubit extends Cubit<AlarmState> {
         _scheduler = scheduler ?? PrayerNotificationScheduler(),
         _locationStorage = locationStorage ?? LocationStorage(),
         super(const AlarmState());
-
-  /// App startup — reads whatever location is already saved in storage
-  /// (GPS-derived, searched, or default), exactly once. Never touches
-  /// LocationCubit or its stream/emission history — completely decoupled.
   Future<void> load() async {
     final settings = await _repo.loadAll();
     emit(state.copyWith(settings: settings, isLoading: false));
@@ -50,8 +46,6 @@ class AlarmCubit extends Cubit<AlarmState> {
     await _rescheduleIfPossible();
   }
 
-  /// Called EXACTLY ONCE, only from the explicit "Save" action in
-  /// LocationPage — never from a listener, never reactively.
   Future<void> onLocationUpdated({
     required LocationModel location,
     required String timeZoneName,

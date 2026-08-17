@@ -46,7 +46,8 @@ class QuranRepositoryImpl implements QuranRepository {
     int? reciterId,
   }) async {
     final cacheKey = _buildVerseCacheKey(
-      chapterNumber: chapterNumber,
+      id: chapterNumber,
+      prefix: 'ch',
       translationIds: translationIds,
       reciterId: reciterId,
     );
@@ -57,6 +58,33 @@ class QuranRepositoryImpl implements QuranRepository {
 
     final verses = await _remoteDataSource.getVersesByChapter(
       chapterNumber: chapterNumber,
+      translationIds: translationIds,
+      reciterId: reciterId,
+    );
+
+    _cachedVerses[cacheKey] = verses;
+    return verses;
+  }
+
+  @override
+  Future<List<Verse>> getVersesByJuz({
+    required int juzNumber,
+    List<int> translationIds = const [],
+    int? reciterId,
+  }) async {
+    final cacheKey = _buildVerseCacheKey(
+      id: juzNumber,
+      prefix: 'juz',
+      translationIds: translationIds,
+      reciterId: reciterId,
+    );
+
+    if (_cachedVerses.containsKey(cacheKey)) {
+      return _cachedVerses[cacheKey]!;
+    }
+
+    final verses = await _remoteDataSource.getVersesByJuz(
+      juzNumber: juzNumber,
       translationIds: translationIds,
       reciterId: reciterId,
     );
@@ -96,11 +124,12 @@ class QuranRepositoryImpl implements QuranRepository {
   }
 
   String _buildVerseCacheKey({
-    required int chapterNumber,
+    required int id,
+    required String prefix,
     required List<int> translationIds,
     int? reciterId,
   }) {
     final sortedTranslations = [...translationIds]..sort();
-    return 'ch$chapterNumber-t${sortedTranslations.join("_")}-r${reciterId ?? "none"}';
+    return '$prefix$id-t${sortedTranslations.join("_")}-r${reciterId ?? "none"}';
   }
 }
