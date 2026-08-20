@@ -11,7 +11,7 @@ class AlarmRepository {
       final raw = prefs.getString('$_prefix$id');
       result[id] = raw != null
           ? PrayerAlarmSetting.decode(id, raw)
-          : PrayerAlarmSetting(prayerId: id);
+          : PrayerAlarmSetting.defaultFor(id);
     }
     return result;
   }

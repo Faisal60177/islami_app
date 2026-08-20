@@ -39,7 +39,7 @@ const Map<String, Map<String, String>> _translations = {
     'ishraq': 'Ishraq',    'chasht': 'Chasht',      'zawal': 'Zawal',
     'awabin': 'Awabin',    'iftar': 'Iftar',        'sahri': 'Sahri End',
     'today': 'Today',      'tools': 'Tools',        'quran': 'Quran',
-    'duas': 'duas',        'menu': 'Menu',          'settings': 'Settings',
+    'duas': 'duas',        'menu': 'menu',          'settings': 'Settings',
     'profile': 'Profile',  'logout': 'Sign Out',    'prayer_times': 'Prayer Times',
     'salat_prayers': 'Salat Prayers',
     'prohibited_times': 'Prohibited Times',
@@ -76,6 +76,9 @@ const Map<String, Map<String, String>> _translations = {
     'found': 'found',
     'search': 'Search',
     'save': 'Save',
+    'tafsir': 'Tafsir',
+    'tilawat': 'Tilawat',
+    'alarm': 'Alarm',
 
 
     //duas page
@@ -120,7 +123,7 @@ const Map<String, Map<String, String>> _translations = {
     'search_duas_hint': 'Search duas...',
 
     // ── Menu Page ──────────────────────────────────────────────────────────────
-    'menu_title': 'Menu',
+    'menu_title': 'menu',
     'account': 'Account',
     'support': 'Support',
     'info': 'Info',
@@ -240,6 +243,9 @@ const Map<String, Map<String, String>> _translations = {
     'calendar': 'التقويم',
     'notification': 'الإشعارات',
     'masail': 'مسائل',
+    'tafsir': 'تفسير',
+    'tilawat': 'تلاوة',
+    'alarm': 'منبه',
 
     'location_updated_successfully': 'تم تحديث الموقع بنجاح',
     'location_saved_successfully': 'تم حفظ الموقع بنجاح',
@@ -415,6 +421,9 @@ const Map<String, Map<String, String>> _translations = {
     'calendar': 'ক্যালেন্ডার',
     'notification': 'নোটিফিকেশন',
     'masail': 'মাসাইল',
+    'tafsir': 'তাফসির',
+    'tilawat': 'তিলাওয়াত',
+    'alarm': 'অ্যালার্ম',
 
     'location_updated_successfully': 'অবস্থান সফলভাবে আপডেট হয়েছে',
     'location_saved_successfully': 'অবস্থান সফলভাবে সংরক্ষিত হয়েছে',
@@ -644,6 +653,9 @@ const Map<String, Map<String, String>> _translations = {
     'found': 'مل گیا',
     'search': 'تلاش',
     'save': 'محفوظ کریں',
+    'tafsir': 'تفسیر',
+    'tilawat': 'تلاوت',
+    'alarm': 'الارم',
 
     'category': 'زمرہ',
     'all': 'سب',
@@ -804,6 +816,9 @@ const Map<String, Map<String, String>> _translations = {
     'version': 'Sürüm 2.5.0',
     'quote_patience': '"Sabır ve namazla yardım isteyin."',
     'quote_patience_ref': '— Kuran 2:45',
+    'tafsir': 'Tefsir',
+    'tilawat': 'Tilâvet',
+    'alarm': 'Alarm',
 
     'location_updated_successfully': 'Konum başarıyla güncellendi',
     'location_saved_successfully': 'Konum başarıyla kaydedildi',
@@ -919,7 +934,7 @@ const Map<String, Map<String, String>> _translations = {
     'ishraq': 'Isyrak',    'chasht': 'Dhuha',        'zawal': 'Zawal',
     'awabin': 'Awwabin',   'iftar': 'Buka Puasa',    'sahri': 'Akhir Sahur',
     'today': 'Hari Ini',   'tools': 'Alat',          'quran': 'Al-quran_tilawat',
-    'duas': 'Doa',         'menu': 'Menu',           'settings': 'Pengaturan',
+    'duas': 'Doa',         'menu': 'menu',           'settings': 'Pengaturan',
     'profile': 'Profil',   'logout': 'Keluar',       'prayer_times': 'Waktu Shalat',
     'salat_prayers': 'Shalat Wajib',
     'prohibited_times': 'Waktu Terlarang',
@@ -941,7 +956,7 @@ const Map<String, Map<String, String>> _translations = {
     'calendar': 'Kalender',
     'notification': 'Notifikasi',
     'masail': 'Masail',
-    'menu_title': 'Menu',
+    'menu_title': 'menu',
     'account': 'Akun',
     'support': 'Dukungan',
     'info': 'Info',
@@ -995,6 +1010,9 @@ const Map<String, Map<String, String>> _translations = {
     'found': 'ditemukan',
     'search': 'Cari',
     'save': 'Simpan',
+    'tafsir': 'Tafsir',
+    'tilawat': 'Tilawah',
+    'alarm': 'Alarm',
 
     'category': 'Kategori',
     'all': 'Semua',
@@ -1094,7 +1112,7 @@ const Map<String, Map<String, String>> _translations = {
     'ishraq': 'Isyraq',    'chasht': 'Dhuha',        'zawal': 'Zawal',
     'awabin': 'Awwabin',   'iftar': 'Berbuka',       'sahri': 'Akhir Sahur',
     'today': 'Hari Ini',   'tools': 'Alat',          'quran': 'Al-quran_tilawat',
-    'duas': 'Doa',         'menu': 'Menu',           'settings': 'Tetapan',
+    'duas': 'Doa',         'menu': 'menu',           'settings': 'Tetapan',
     'profile': 'Profil',   'logout': 'Log Keluar',   'prayer_times': 'Waktu Solat',
     'salat_prayers': 'Solat Fardhu',
     'prohibited_times': 'Waktu Larangan',
@@ -1116,7 +1134,7 @@ const Map<String, Map<String, String>> _translations = {
     'calendar': 'Kalendar',
     'notification': 'Pemberitahuan',
     'masail': 'Masail',
-    'menu_title': 'Menu',
+    'menu_title': 'menu',
     'account': 'Akaun',
     'support': 'Sokongan',
     'info': 'Maklumat',
@@ -1170,6 +1188,9 @@ const Map<String, Map<String, String>> _translations = {
     'found': 'ditemui',
     'search': 'Cari',
     'save': 'Simpan',
+    'tafsir': 'Tafsir',
+    'tilawat': 'Tilawah',
+    'alarm': 'Penggera',
 
     'category': 'Kategori',
     'all': 'Semua',
@@ -1269,7 +1290,7 @@ const Map<String, Map<String, String>> _translations = {
     'ishraq': 'Ishraq',    'chasht': 'Dhuha',        'zawal': 'Zawal',
     'awabin': 'Awabin',    'iftar': 'Iftar',         'sahri': 'Fin du Sahri',
     'today': "Aujourd'hui",'tools': 'Outils',        'quran': 'Coran',
-    'duas': 'Douas',       'menu': 'Menu',           'settings': 'Paramètres',
+    'duas': 'Douas',       'menu': 'menu',           'settings': 'Paramètres',
     'profile': 'Profil',   'logout': 'Déconnexion',  'prayer_times': 'Heures de prière',
     'salat_prayers': 'Prières obligatoires',
     'prohibited_times': 'Heures interdites',
@@ -1291,7 +1312,7 @@ const Map<String, Map<String, String>> _translations = {
     'calendar': 'Calendrier',
     'notification': 'Notification',
     'masail': 'Masâil',
-    'menu_title': 'Menu',
+    'menu_title': 'menu',
     'account': 'Compte',
     'support': 'Assistance',
     'info': 'Infos',
@@ -1345,6 +1366,9 @@ const Map<String, Map<String, String>> _translations = {
     'found': 'trouvé',
     'search': 'Rechercher',
     'save': 'Enregistrer',
+    'tafsir': 'Tafsir',
+    'tilawat': 'Récitation',
+    'alarm': 'Alarme',
 
     'category': 'Catégorie',
     'all': 'Tout',
@@ -1519,6 +1543,9 @@ const Map<String, Map<String, String>> _translations = {
     'found': 'gefunden',
     'search': 'Suchen',
     'save': 'Speichern',
+    'tafsir': 'Tafsir',
+    'tilawat': 'Rezitation',
+    'alarm': 'Alarm',
 
     'category': 'Catégorie',
     'all': 'Tout',
@@ -1693,6 +1720,9 @@ const Map<String, Map<String, String>> _translations = {
     'found': 'найдено',
     'search': 'Поиск',
     'save': 'Сохранить',
+    'tafsir': 'Тафсир',
+    'tilawat': 'Тилават',
+    'alarm': 'Будильник',
 
     'category': 'Категория',
     'all': 'Все',
@@ -1854,7 +1884,7 @@ class AppLocalizations {
   String get notification       => translate('notification');
   String get masail             => translate('masail');
 
-  // ── Menu Page ──────────────────────────────────────────────────────────────
+  // ── menu Page ──────────────────────────────────────────────────────────────
   String get menuTitle          => translate('menu_title');
   String get account            => translate('account');
   String get support            => translate('support');
@@ -1979,6 +2009,9 @@ class AppLocalizations {
   String get found                       => translate('found');
   String get search                      => translate('search');
   String get save                        => translate('save');
+  String get tafsir                      => translate('tafsir');
+  String get tilawat                     => translate('tilawat');
+  String get alarm                       => translate('alarm');
 
 
 

@@ -25,6 +25,8 @@ import 'widgets/ring_animation.dart';
 import 'package:flutter/services.dart';
 import 'package:muslim_app/alarm/pages/alarm_list_page.dart';
 
+
+
 class PrayerTimesPage extends StatefulWidget {
   const PrayerTimesPage({super.key});
 
@@ -212,8 +214,6 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
 
                     BlocBuilder<PrayerTimesCubit, PrayerTimesState>(
                       builder: (context, state) {
-                        // Hero reduced from 0.46 -> 0.40 of screen height so
-                        // users reach the prayer-times cards with less scroll.
                         final heroH  = (sh * 0.40).clamp(280.0, 380.0);
                         final ringSz = (rsw * 0.50).clamp(165.0, 205.0);
 
@@ -282,9 +282,6 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                                                       child: SizedBox(
                                                         width:  maxTextWidth,
                                                         height: sh * 0.030,
-                                                        // FIX: only marquee-scroll text that actually
-                                                        // overflows; short text ("Teknaf, Bangladesh")
-                                                        // was showing a looping/duplicate peek before.
                                                         child: _buildLocationText(text, maxTextWidth),
                                                       ),
                                                     ),
@@ -360,9 +357,6 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                                   top:   heroH * 0.34,
                                   left:  0, right: 0,
                                   child: Center(
-                                    // NEW: soft circular backdrop so the outer
-                                    // minaret shafts fade behind the ring
-                                    // instead of visibly crossing its stroke.
                                     child: Container(
                                       width:  ringSz + 26,
                                       height: ringSz + 26,

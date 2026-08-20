@@ -19,8 +19,6 @@ class QuranSettingsSheet extends StatelessWidget {
       expand: false,
       builder: (context, scrollController) {
         return Container(
-          // ── এখানেই background fix — theme এর surface color ব্যবহার
-          // করা হচ্ছে যাতে light/dark mode দুটোতেই সঠিক দেখায় ──
           decoration: BoxDecoration(
             color: Theme.of(context).scaffoldBackgroundColor,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
@@ -70,9 +68,7 @@ class QuranSettingsSheet extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────
 // Reciter Tab
-// ─────────────────────────────────────────────────────────────────
 class _ReciterTab extends ConsumerStatefulWidget {
   final ScrollController scrollController;
   const _ReciterTab({required this.scrollController});
@@ -146,9 +142,7 @@ class _ReciterTabState extends ConsumerState<_ReciterTab> {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────
 // Translation Tab
-// ─────────────────────────────────────────────────────────────────
 class _TranslationTab extends ConsumerStatefulWidget {
   final ScrollController scrollController;
   const _TranslationTab({required this.scrollController});
@@ -257,9 +251,7 @@ class _TranslationTabState extends ConsumerState<_TranslationTab> {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────
-// Arabic Tab (নতুন) — শুধু font size, script selection future
-// ─────────────────────────────────────────────────────────────────
+// Arabic Tab —  font size, script selection future
 class _ArabicTab extends ConsumerWidget {
   final ScrollController scrollController;
   const _ArabicTab({required this.scrollController});
@@ -326,32 +318,6 @@ class _ArabicTab extends ConsumerWidget {
                       .updateArabicFontSize(preferences.arabicFontSize + 2),
                 ),
               ],
-            ),
-            const SizedBox(height: 24),
-
-            // ── সততার সাথে জানানো: script selection future ──
-            Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: Colors.amber.withOpacity(0.12),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: Colors.amber.withOpacity(0.3)),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.info_outline, size: 18, color: Colors.amber),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      'IndoPak ও Tajweed script শীঘ্রই আসছে।',
-                      style: TextStyle(
-                        fontSize: 12.5,
-                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
             ),
           ],
         );

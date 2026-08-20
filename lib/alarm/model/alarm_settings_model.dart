@@ -46,6 +46,14 @@ class PrayerAlarmSetting {
     );
   }
 
+  factory PrayerAlarmSetting.defaultFor(String prayerId) {
+    const defaultOnIds = {'fajr', 'dhuhr', 'asr', 'maghrib', 'isha'};
+    return PrayerAlarmSetting(
+      prayerId: prayerId,
+      enabled: defaultOnIds.contains(prayerId),
+    );
+  }
+
   bool isActiveOn(int weekday) {
     if (repeatMode == RepeatMode.everyday) return true;
     return customWeekdays.contains(weekday);

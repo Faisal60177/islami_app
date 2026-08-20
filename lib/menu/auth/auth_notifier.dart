@@ -7,11 +7,11 @@ import 'auth_state.dart';
 const String _kWebClientId =
     '330629038977-7ivpamsds13tqcr6v15sokcrtgav0p3o.apps.googleusercontent.com';
 
-// ── Provider ──────────────────────────────────────────────────────────────────
+// Provider
 final authNotifierProvider =
 StateNotifierProvider<AuthNotifier, AuthState>((ref) => AuthNotifier());
 
-// ── Notifier ──────────────────────────────────────────────────────────────────
+// ── Notifier
 class AuthNotifier extends StateNotifier<AuthState> {
   AuthNotifier() : super(const AuthState()) {
     _init();
@@ -52,6 +52,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
     state = state.copyWith(
       isLoggedIn:   true,
+      uid:          user.uid,
       displayName:  user.displayName ?? '',
       email:        user.email       ?? '',
       hasPassword:  hasPassword,
@@ -600,7 +601,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
-  // ── Error mapping ──────────────────────────────────────────────────────────
+  // Error mapping
 
   String _mapFirebaseError(String code) {
     switch (code) {

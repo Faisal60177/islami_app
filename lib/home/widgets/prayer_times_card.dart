@@ -3,7 +3,6 @@ import 'package:intl/intl.dart';
 import 'package:muslim_app/home/model/prayer_times_models.dart';
 import 'package:muslim_app/settings/l10n/app_localizations.dart';
 import 'package:muslim_app/settings/theme/app_themes.dart';
-
 class PrayerTimesCard extends StatelessWidget {
   final PrayerTimesModel prayerTimes;
   final bool use24h;
@@ -82,7 +81,7 @@ class PrayerTimesCard extends StatelessWidget {
                       color: theme.accent, size: 16),
                   const SizedBox(width: 6),
                   Text(
-                    'Alarm',
+                    l10n.alarm,
                     style: TextStyle(
                       color: theme.accent,
                       fontSize: 12,
@@ -114,7 +113,6 @@ class PrayerTimesCard extends StatelessWidget {
 
         const SizedBox(height: 12),
 
-        // ── Prohibited times — compact 3-segment strip ──────────────────────
         _SegmentStrip(
           theme: theme,
           caption: l10n.prohibitedTimes,
@@ -161,7 +159,6 @@ class PrayerTimesCard extends StatelessWidget {
   }
 }
 
-// ── Unified list card ──────────────────────────────────────────────────────
 class _ListCard extends StatelessWidget {
   final AppThemeOption theme;
   final String title;

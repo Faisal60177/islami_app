@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../widgets/surah_list_view.dart';
 import '../widgets/juz_list_view.dart';
 import '../widgets/quran_settings_button.dart';
+import '../widgets/bookmark_list_view.dart';
 
 class QuranTafsirPage extends StatelessWidget {
   const QuranTafsirPage({super.key});
@@ -9,7 +10,7 @@ class QuranTafsirPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 2,
+      length: 3,
       child: Scaffold(
         appBar: AppBar(
           title: const Text("Al Quran Tafsir"),
@@ -20,6 +21,7 @@ class QuranTafsirPage extends StatelessWidget {
             tabs: [
               Tab(text: "Surah"),
               Tab(text: "Para"),
+              Tab(text: "Bookmarks")
             ],
           ),
         ),
@@ -27,6 +29,7 @@ class QuranTafsirPage extends StatelessWidget {
           children: [
             SurahListView(),
             JuzListView(),
+            BookmarkListView(),
           ],
         ),
       ),

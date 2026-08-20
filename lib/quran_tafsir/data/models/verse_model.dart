@@ -90,6 +90,49 @@ class VerseModel extends Verse {
     return baseUrl + rawUrl;
   }
 
+  factory VerseModel.fromEntity(Verse verse) => VerseModel(
+    id: verse.id,
+    verseKey: verse.verseKey,
+    verseNumber: verse.verseNumber,
+    chapterId: verse.chapterId,
+    textUthmani: verse.textUthmani,
+    translations: verse.translations,
+    words: verse.words,
+    audio: verse.audio,
+  );
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'verse_key': verseKey,
+      'verse_number': verseNumber,
+      'chapter_id': chapterId,
+      'text_uthmani': textUthmani,
+      'translations': translations
+          .map((t) => {
+        'resource_id': t.resourceId,
+        'resource_name': t.resourceName,
+        'text': t.text,
+      })
+          .toList(),
+      'words': words
+          .map((w) => {
+        'position': w.position,
+        'text_uthmani': w.textUthmani,
+        'char_type_name': w.charType,
+      })
+          .toList(),
+      'audio': audio == null
+          ? null
+          : {
+        'url': audio!.url,
+        'segments': audio!.segments
+            .map((s) => [s.wordStart, s.wordEnd, s.startMs, s.endMs])
+            .toList(),
+      },
+    };
+  }
+
   static List<AudioSegment> _parseSegments(dynamic raw) {
     if (raw == null) return [];
     final list = raw as List<dynamic>;

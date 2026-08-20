@@ -21,7 +21,7 @@ class JuzListView extends ConsumerWidget {
               const Icon(Icons.wifi_off, size: 48, color: Colors.grey),
               const SizedBox(height: 12),
               Text(
-                'Juz লোড করা যায়নি।\nইন্টারনেট সংযোগ চেক করুন।',
+                'Check your Internet',
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
@@ -29,7 +29,7 @@ class JuzListView extends ConsumerWidget {
               ElevatedButton.icon(
                 onPressed: () => ref.invalidate(juzListProvider),
                 icon: const Icon(Icons.refresh),
-                label: const Text('আবার চেষ্টা করুন'),
+                label: const Text('Try again'),
               ),
             ],
           ),

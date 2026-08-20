@@ -7,7 +7,7 @@ class SurahListPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Al-quran_tilawat')),
+      appBar: AppBar(title: const Text('Quran Tafsir')),
       body: const SurahListView(),
     );
   }

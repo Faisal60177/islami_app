@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 class AuthState {
   final bool isLoading;
   final String errorMessage;
+  final String uid;
   final String displayName;
   final String email;
   final String photoUrl;
@@ -14,6 +15,7 @@ class AuthState {
   const AuthState({
     this.isLoading    = false,
     this.errorMessage = '',
+    this.uid          = '',
     this.displayName  = '',
     this.email        = '',
     this.photoUrl     = '',
@@ -25,6 +27,7 @@ class AuthState {
   AuthState copyWith({
     bool?   isLoading,
     String? errorMessage,
+    String? uid,
     String? displayName,
     String? email,
     String? photoUrl,
@@ -35,6 +38,7 @@ class AuthState {
     return AuthState(
       isLoading:    isLoading    ?? this.isLoading,
       errorMessage: errorMessage ?? this.errorMessage,
+      uid:          uid          ?? this.uid,
       displayName:  displayName  ?? this.displayName,
       email:        email        ?? this.email,
       photoUrl:     photoUrl     ?? this.photoUrl,

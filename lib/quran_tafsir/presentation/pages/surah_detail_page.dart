@@ -1,14 +1,17 @@
 
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../providers/audio_player_provider.dart';
 import '../providers/verse_reader_provider.dart';
 import '../providers/user_preference_provider.dart';
 import '../providers/chapter_list_provider.dart';
+import '../widgets/appbar_switcher_title.dart';
+import '../widgets/chapter_juz_picker_sheet.dart';
 import '../widgets/quran_settings_button.dart';
 import '../widgets/verse_card.dart';
 import '../../domain/entities/verse.dart';
 import '../../domain/entities/chapter.dart';
+import '../widgets/quran_audio_bar.dart';
 
 class SurahDetailPage extends ConsumerWidget {
   final int chapterNumber;
@@ -25,7 +28,12 @@ class SurahDetailPage extends ConsumerWidget {
     final preferencesAsync = ref.watch(quranPreferencesProvider);
 
     return Scaffold(
-      appBar: AppBar(title: Text(chapterName),
+      appBar: AppBar(
+        title: AppBarSwitcherTitle(
+          currentLabel: chapterName,
+          pickerType: PickerType.juz,
+          currentJuzNumber: chapterNumber,
+        ),
         actions: const [
           QuranSettingsButton(),
         ],),
@@ -41,6 +49,7 @@ class SurahDetailPage extends ConsumerWidget {
           return _VerseListView(params: params, chapterId: chapterNumber);
         },
       ),
+      bottomNavigationBar: const QuranAudioBar(),
     );
   }
 }
@@ -104,7 +113,7 @@ class _VerseListView extends ConsumerWidget {
       itemCount: verses.length + (chapter != null ? 1 : 0),
       itemBuilder: (context, index) {
         if (chapter != null && index == 0) {
-          return _ChapterHeader(chapter: chapter);
+          return _ChapterHeader(chapter: chapter, verses: verses);
         }
         final verseIndex = chapter != null ? index - 1 : index;
         return VerseCard(verse: verses[verseIndex], allVerses: verses);
@@ -115,7 +124,8 @@ class _VerseListView extends ConsumerWidget {
 
 class _ChapterHeader extends StatelessWidget {
   final Chapter chapter;
-  const _ChapterHeader({required this.chapter});
+  final List<Verse> verses;
+  const _ChapterHeader({required this.chapter, required this.verses});
 
   @override
   Widget build(BuildContext context) {
@@ -143,7 +153,18 @@ class _ChapterHeader extends StatelessWidget {
           Text(
             '${chapter.translatedName} • ${chapter.revelationPlace} • ${chapter.versesCount} Ayahs',
             style: Theme.of(context).textTheme.bodySmall,
+
           ),
+      const SizedBox(height: 12),
+      Consumer(
+        builder: (context, ref, _) => ElevatedButton.icon(
+          onPressed: () => ref
+              .read(quranAudioPlayerNotifierProvider.notifier)
+              .playVerse(verses.first, queue: verses),
+          icon: const Icon(Icons.play_arrow_rounded),
+          label: const Text('Play Surah'),
+        ),
+      ),
         ],
       ),
     );

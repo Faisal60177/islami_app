@@ -9,30 +9,42 @@ enum QuranAudioStatus { idle, loading, playing, paused, error }
 class QuranAudioState {
   final QuranAudioStatus status;
   final String? currentVerseKey;
+  final Verse? currentVerse;
   final Duration position;
   final Duration duration;
+  final double speed;
+  final bool repeatOne;
   final String? errorMessage;
 
   const QuranAudioState({
     this.status = QuranAudioStatus.idle,
     this.currentVerseKey,
+    this.currentVerse,
     this.position = Duration.zero,
     this.duration = Duration.zero,
+    this.speed = 1.0,
+    this.repeatOne = false,
     this.errorMessage,
   });
 
   QuranAudioState copyWith({
     QuranAudioStatus? status,
     String? currentVerseKey,
+    Verse? currentVerse,
     Duration? position,
     Duration? duration,
+    double? speed,
+    bool? repeatOne,
     String? errorMessage,
   }) {
     return QuranAudioState(
       status: status ?? this.status,
       currentVerseKey: currentVerseKey ?? this.currentVerseKey,
+      currentVerse: currentVerse ?? this.currentVerse,
       position: position ?? this.position,
       duration: duration ?? this.duration,
+      speed: speed ?? this.speed,
+      repeatOne: repeatOne ?? this.repeatOne,
       errorMessage: errorMessage,
     );
   }
@@ -61,7 +73,8 @@ class QuranAudioPlayerNotifier extends _$QuranAudioPlayerNotifier {
 
     _player.currentIndexStream.listen((index) {
       if (index != null && index >= 0 && index < _playableQueue.length) {
-        state = state.copyWith(currentVerseKey: _playableQueue[index].verseKey);
+        state = state.copyWith(currentVerseKey: _playableQueue[index].verseKey,
+        currentVerse: _playableQueue[index]);
       }
     });
 
@@ -147,5 +160,24 @@ class QuranAudioPlayerNotifier extends _$QuranAudioPlayerNotifier {
 
   Future<void> seekTo(Duration position) async {
     await _player.seek(position);
+  }
+
+  Future<void> next() async {
+    if (_player.hasNext) await _player.seekToNext();
+  }
+
+  Future<void> previous() async {
+    if (_player.hasPrevious) await _player.seekToPrevious();
+  }
+
+  Future<void> setSpeed(double speed) async {
+    await _player.setSpeed(speed);
+    state = state.copyWith(speed: speed);
+  }
+
+  Future<void> toggleRepeatOne() async {
+    final newValue = !state.repeatOne;
+    await _player.setLoopMode(newValue ? LoopMode.one : LoopMode.off);
+    state = state.copyWith(repeatOne: newValue);
   }
 }

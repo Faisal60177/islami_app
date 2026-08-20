@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../providers/audio_player_provider.dart';
 import '../providers/verse_reader_provider.dart';
 import '../providers/user_preference_provider.dart';
 import '../providers/chapter_list_provider.dart';
+import '../widgets/appbar_switcher_title.dart';
+import '../widgets/chapter_juz_picker_sheet.dart';
 import '../widgets/quran_settings_button.dart';
 import '../widgets/verse_card.dart';
 import '../../domain/entities/verse.dart';
 import '../../domain/entities/chapter.dart';
+import '../widgets/quran_audio_bar.dart';
+
 
 class JuzDetailPage extends ConsumerWidget {
   final int juzNumber;
@@ -23,7 +28,12 @@ class JuzDetailPage extends ConsumerWidget {
     final preferencesAsync = ref.watch(quranPreferencesProvider);
 
     return Scaffold(
-      appBar: AppBar(title: Text(juzName),
+      appBar: AppBar(
+        title: AppBarSwitcherTitle(
+          currentLabel: juzName,
+          pickerType: PickerType.surah,
+          currentChapterNumber: juzNumber,
+        ),
         actions: const [
           QuranSettingsButton(),
         ],),
@@ -36,9 +46,10 @@ class JuzDetailPage extends ConsumerWidget {
             translationIds: preferences.translationIds,
             reciterId: preferences.reciterId,
           );
-          return _VerseListView(params: params);
+          return _VerseListView(params: params, juzNumber: juzNumber);
         },
       ),
+      bottomNavigationBar: const QuranAudioBar(),
     );
   }
 }
@@ -46,7 +57,8 @@ class JuzDetailPage extends ConsumerWidget {
 class _VerseListView extends ConsumerWidget {
   final VerseReaderParams params;
 
-  const _VerseListView({required this.params});
+  final int juzNumber;
+  const _VerseListView({required this.params, required this.juzNumber});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -105,21 +117,41 @@ class _VerseListView extends ConsumerWidget {
       items.add(verse);
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.all(12),
-      itemCount: items.length,
-      itemBuilder: (context, index) {
-        final item = items[index];
-        if (item is Chapter) {
-          return _ChapterHeader(chapter: item);
-        } else if (item is int) {
-          return Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            child: Text('Surah $item', style: Theme.of(context).textTheme.titleLarge),
-          );
-        }
-        return VerseCard(verse: item as Verse, allVerses: verses);
-      },
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(12),
+          child: Consumer(
+            builder: (context, ref, _) => ElevatedButton.icon(
+              onPressed: verses.isEmpty
+                  ? null
+                  : () => ref
+                  .read(quranAudioPlayerNotifierProvider.notifier)
+                  .playVerse(verses.first, queue: verses),
+              icon: const Icon(Icons.play_arrow_rounded),
+              label: Text('Play Juz $juzNumber'),
+            ),
+          ),
+        ),
+        Expanded(
+          child: ListView.builder(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            itemCount: items.length,
+            itemBuilder: (context, index) {
+              final item = items[index];
+              if (item is Chapter) {
+                return _ChapterHeader(chapter: item);
+              } else if (item is int) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  child: Text('Surah $item', style: Theme.of(context).textTheme.titleLarge),
+                );
+              }
+              return VerseCard(verse: item as Verse, allVerses: verses);
+            },
+          ),
+        ),
+      ],
     );
   }
 }

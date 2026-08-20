@@ -509,7 +509,7 @@ class _UserGreetingCard extends ConsumerWidget {
   }
 }
 
-// ─── Menu Section ─────────────────────────────────────────────────────────────
+// ─── menu Section ─────────────────────────────────────────────────────────────
 class _MenuSection extends StatelessWidget {
   final List<_MenuItem> items;
   final AppThemeOption thm;
@@ -552,7 +552,7 @@ class _MenuSection extends StatelessWidget {
   }
 }
 
-// ─── Menu Tile ────────────────────────────────────────────────────────────────
+// ─── menu Tile ────────────────────────────────────────────────────────────────
 class _MenuTile extends StatelessWidget {
   final _MenuItem item;
   final AppThemeOption thm;
@@ -645,7 +645,7 @@ class _MenuTile extends StatelessWidget {
   }
 }
 
-// ─── Menu Item data class ─────────────────────────────────────────────────────
+// ─── menu Item data class ─────────────────────────────────────────────────────
 class _MenuItem {
   final IconData icon;
   final Color    iconColor;

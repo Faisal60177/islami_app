@@ -17,7 +17,6 @@ import '../alarm/pages/alarm_list_page.dart';
 import '../masail/pages/masail_page.dart';
 import '../quran_tafsir/presentation/pages/quran_tafsir_page.dart';
 
-// ─── Section model ──────────────────────────────────────────────────────────
 class _Section {
   final String title;
   final String subtitle;
@@ -33,7 +32,6 @@ class _Tool {
   const _Tool(this.label, this.asset, this.onTap);
 }
 
-// ─── Page ───────────────────────────────────────────────────────────────────
 class ToolsPage extends StatefulWidget {
   const ToolsPage({super.key});
 
@@ -96,9 +94,9 @@ class _ToolsPageState extends State<ToolsPage>
           // Sections data (lambdas capture context lazily – safe)
           final sections = [
             _Section(l10n.knowledge, l10n.learnExplore, accent, [
-              _Tool(l10n.quran,       'assets/icons/quran_tilawat.png',
+              _Tool(l10n.tilawat,       'assets/icons/quran_tilawat.png',
                       () => _push(QuranPage())),
-              _Tool(l10n.quran,       'assets/icons/quran_tafsir.png',
+              _Tool(l10n.tafsir,       'assets/icons/quran_tafsir.png',
                       () => _push(QuranTafsirPage())),
               _Tool(l10n.duas,        'assets/icons/duas.png',
                       () => _push(DuasPage())),
@@ -110,7 +108,7 @@ class _ToolsPageState extends State<ToolsPage>
                       () => _push(TasbihPage())),
               _Tool(l10n.prayerTimes,'assets/icons/prayer_time.png',
                       () => _push(PrayerTimesPage())),
-              _Tool(l10n.prayerTimes,'assets/icons/alarm.png',
+              _Tool(l10n.alarm,'assets/icons/alarm.png',
                       () => _push(AlarmListPage(theme: theme, l10n: l10n,))),
               _Tool(l10n.inspiration, 'assets/icons/inspiration.png',
                       () => _push(InspirationPage())),

@@ -153,7 +153,7 @@ class AboutPage extends StatelessWidget {
   Widget _featureGrid(AppThemeOption thm, double width) {
     final features = [
       _FeatureItem('🕐', 'Prayer Times', 'GPS-accurate Adhan'),
-      _FeatureItem('📖', 'Holy quran_tilawat', '114 Surah'),
+      _FeatureItem('📖', 'Holy Quran Tlawat', 'Tafsir and Audio'),
       _FeatureItem('🤲', 'Daily duas', '200+ authentic duas'),
       _FeatureItem('🧭', 'Qibla', 'Real-time compass'),
       _FeatureItem('📿', 'Tasbeeh', 'Digital counter'),

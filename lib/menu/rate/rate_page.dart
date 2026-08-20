@@ -371,7 +371,7 @@ class _RatePageState extends State<RatePage> with SingleTickerProviderStateMixin
                         backgroundColor: thm.accent,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                       ),
-                      child: const Text('Back to Menu',
+                      child: const Text('Back to menu',
                           style: TextStyle(
                               color: Colors.white, fontWeight: FontWeight.w700, fontSize: 15)),
                     ),

@@ -5,6 +5,7 @@ import 'package:share_plus/share_plus.dart';
 import '../providers/audio_player_provider.dart';
 import '../providers/user_preference_provider.dart';
 import '../../domain/entities/verse.dart';
+import '../providers/bookmark_provider.dart';
 
 const int _kTransliterationResourceId = 57;
 
@@ -47,7 +48,6 @@ class _VerseCardState extends ConsumerState<VerseCard> {
         ? ref.watch(quranAudioPlayerNotifierProvider.select((s) => s.position))
         : Duration.zero;
 
-    // ── Auto-scroll: এই card টা "playing" হয়ে ওঠার মুহূর্তে ──
     ref.listen(
       quranAudioPlayerNotifierProvider.select(
             (s) => s.currentVerseKey == verse.verseKey,
@@ -61,7 +61,7 @@ class _VerseCardState extends ConsumerState<VerseCard> {
                 ctx,
                 duration: const Duration(milliseconds: 400),
                 curve: Curves.easeInOut,
-                alignment: 0.2, // screen এর উপরের দিকে রাখা, একদম top না
+                alignment: 0.2,
               );
             }
           });
@@ -113,7 +113,6 @@ class _VerseCardState extends ConsumerState<VerseCard> {
               fontSize: arabicFontSize,
             ),
 
-            // ── Transliteration: আলাদা, italic, translation থেকে আলাদা ──
             if (_transliterationOf(verse) != null) ...[
               const SizedBox(height: 12),
               Text(
@@ -251,7 +250,7 @@ class _AyahNumberOrnament extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ornamentSize = size * 1.35; // Arabic font size এর অনুপাতে scale
+    final ornamentSize = size * 1.35;
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 4),
       child: Stack(
@@ -297,12 +296,18 @@ class _ActionButtons extends ConsumerWidget {
             (s) =>
         s.currentVerseKey == verse.verseKey &&
             s.status == QuranAudioStatus.loading,
+      )
+    );
+    final isBookmarked = ref.watch(
+      bookmarkNotifierProvider.select(
+            (list) => list.any((b) => b.verse.verseKey == verse.verseKey),
       ),
     );
 
     return Row(
       children: [
         isLoadingThisVerse
+
             ? const SizedBox(
           width: 32,
           height: 32,
@@ -311,6 +316,7 @@ class _ActionButtons extends ConsumerWidget {
             child: CircularProgressIndicator(strokeWidth: 2),
           ),
         )
+
             : IconButton(
           icon: Icon(
             isCurrentlyPlaying
@@ -357,6 +363,15 @@ class _ActionButtons extends ConsumerWidget {
               '${verse.textUthmani}\n\n$translationText\n\nShared via Muslim Life',
             );
           },
+        ),
+        IconButton(
+          icon: Icon(
+            isBookmarked ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
+            size: 20,
+            color: isBookmarked ? Theme.of(context).colorScheme.primary : null,
+          ),
+          onPressed: () =>
+              ref.read(bookmarkNotifierProvider.notifier).toggle(verse),
         ),
       ],
     );

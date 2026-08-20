@@ -189,7 +189,7 @@ class _AlarmDetailPageState extends State<AlarmDetailPage> {
                 ),
                 Slider(
                   value: _draft.offsetMinutes.toDouble(),
-                  min: -240, max: 240, divisions: 480,
+                  min: -60, max: 60, divisions: 120,
                   activeColor: theme.accent,
                   inactiveColor: theme.textLow.withOpacity(0.25),
                   onChanged: (v) => setState(() => _draft = _draft.copyWith(offsetMinutes: v.round())),
@@ -197,10 +197,10 @@ class _AlarmDetailPageState extends State<AlarmDetailPage> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('-240 min', style: TextStyle(color: theme.textLow, fontSize: 11)),
+                    Text('-60 min', style: TextStyle(color: theme.textLow, fontSize: 11)),
                     Text(_offsetLabel(_draft.offsetMinutes),
                         style: TextStyle(color: theme.accent, fontSize: 12, fontWeight: FontWeight.w600)),
-                    Text('+240 min', style: TextStyle(color: theme.textLow, fontSize: 11)),
+                    Text('+60 min', style: TextStyle(color: theme.textLow, fontSize: 11)),
                   ],
                 ),
               ],
@@ -208,8 +208,6 @@ class _AlarmDetailPageState extends State<AlarmDetailPage> {
           ),
 
           const SizedBox(height: 16),
-
-          // ── Repeat: everyday vs custom days ──────────────────────────────
           _card(
             theme,
             child: Column(
