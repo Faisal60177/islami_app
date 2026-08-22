@@ -34,18 +34,18 @@ import 'package:muslim_app/alarm/services/alarm_ring_service.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 
 void main() async {
-  // ── 1. Flutter binding — must always be first ──────────────────────────
+  //1. Flutter binding
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
-  // ── 2. UI setup — no dependencies, safe to run early ────────────────────
+  //2. UI setup
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
   await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 
-  // ── 2.5. Background audio (Quran Tafsir) ────────────────────────────────
+  //2.5. Background audio (Quran Tafsir)
   await JustAudioBackground.init(
     androidNotificationChannelId: 'com.siratalmustaqeem.muslimlife.audio',
     androidNotificationChannelName: 'Quran Tafsir Audio',
@@ -53,11 +53,11 @@ void main() async {
     androidStopForegroundOnPause: true,
   );
 
-  // ── 3. Alarm/notification system — strict order required ───────────────
+  // 3. Alarm/notification system
   await AlarmRingService.initialize();
 
 
-  // Timezone data must be loaded before NotificationService.init() runs,
+  // Timezone
   tz.initializeTimeZones();
 
   // Creates notification channels and sets the local timezone location.
@@ -67,19 +67,19 @@ void main() async {
 
   await DailyRefillService.ensureChainStarted();
 
-  // ── 4. Firebase ──────────────────────────────────────────────────────────
+  //4. Firebase
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  // ── 5. App metadata ──────────────────────────────────────────────────────
+  //5. App metadata
   await AppInfo.init();
 
-  // ── 6. Saved language, needed before creating language-aware cubits ─────
+  // 6. Saved language
   final prefs = await SharedPreferences.getInstance();
   final savedLanguage = prefs.getString('language') ?? 'en';
 
-  // ── 7. Storage / repository instances ─────────────────────────────────────
+  // 7. Storage / repository instances
   final locationStorage    = LocationStorage();
   final prayerTimesStorage = PrayerTimesStorage();
   final permissionService  = PermissionService();
@@ -89,12 +89,12 @@ void main() async {
   final inspirationRepository = InspirationRepository();
   final masailRepository      = MasailRepository();
 
-  // ── 8. Pre-built SQLite copies — no internet required ────────────────────
+  //8. Pre-built SQLite copies
   await duasRepository.initDatabase();
   await inspirationRepository.initDatabase();
   await masailRepository.initDatabase();
 
-  // ── 9. Splash removed only once everything above is ready ────────────────
+  //9. Splash removed only once everything above is ready
   FlutterNativeSplash.remove();
 
   runApp(
@@ -145,7 +145,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // ── React to settings changes so theme + RTL apply globally ─────────────
+    //React to settings changes so theme + RTL apply globally
     return BlocBuilder<SettingsCubit, SettingsState>(
       builder: (context, settingsState) {
         final appTheme = getThemeById(settingsState.themeMode);
@@ -159,7 +159,7 @@ class MyApp extends StatelessWidget {
           title: 'Prayer Times App',
           theme: buildThemeData(appTheme),
 
-          // ── RTL / LTR support ─────────────────────────────────────────
+          //RTL / LTR support
           builder: (context, child) => Directionality(
             textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
             child: child!,
