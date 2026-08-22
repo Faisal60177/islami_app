@@ -1,6 +1,7 @@
 import 'package:just_audio/just_audio.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../domain/entities/verse.dart';
+import 'package:audio_service/audio_service.dart' show MediaItem;
 
 part 'audio_player_provider.g.dart';
 
@@ -126,7 +127,14 @@ class QuranAudioPlayerNotifier extends _$QuranAudioPlayerNotifier {
       if (!_isSameQueue(playable)) {
         _playableQueue = playable;
         final sources = playable
-            .map((v) => AudioSource.uri(Uri.parse(v.audio!.url)))
+            .map((v) => AudioSource.uri(
+          Uri.parse(v.audio!.url),
+          tag: MediaItem(
+            id: v.verseKey,
+            title: 'Ayah ${v.verseKey}',
+            artist: 'Tafsir • Muslim Life',
+          ),
+        ))
             .toList();
         _playlist = ConcatenatingAudioSource(children: sources);
         await _player.setAudioSource(_playlist!, initialIndex: targetIndex);

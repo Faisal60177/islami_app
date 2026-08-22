@@ -84,7 +84,8 @@ dependencies:
   workmanager: ^0.9.0+3
   android_alarm_manager_plus: ^4.0.4
   just_audio: ^0.9.42
-  google_maps_flutter: ^2.9.0
+  just_audio_background: ^0.0.1-beta.17
+  audio_service: ^0.18.15
 
 
 

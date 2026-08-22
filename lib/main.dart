@@ -31,6 +31,7 @@ import 'alarm/cubit/alarm_cubit.dart';
 import 'package:muslim_app/core/app_info.dart';
 import 'package:muslim_app/alarm/services/notification_service.dart';
 import 'package:muslim_app/alarm/services/alarm_ring_service.dart';
+import 'package:just_audio_background/just_audio_background.dart';
 
 void main() async {
   // ── 1. Flutter binding — must always be first ──────────────────────────
@@ -44,28 +45,26 @@ void main() async {
   ]);
   await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 
+  // ── 2.5. Background audio (Quran Tafsir) ────────────────────────────────
+  await JustAudioBackground.init(
+    androidNotificationChannelId: 'com.siratalmustaqeem.muslimlife.audio',
+    androidNotificationChannelName: 'Quran Tafsir Audio',
+    androidNotificationOngoing: true,
+    androidStopForegroundOnPause: true,
+  );
+
   // ── 3. Alarm/notification system — strict order required ───────────────
-  // AndroidAlarmManager must init first (plugin requirement: as early as
-  // possible, right after the Flutter binding is ready).
   await AlarmRingService.initialize();
 
 
   // Timezone data must be loaded before NotificationService.init() runs,
-  // since that call sets tz.local using this data.
   tz.initializeTimeZones();
 
   // Creates notification channels and sets the local timezone location.
   await NotificationService.instance.init();
 
-  // Must come after init() — requesting permission before channels exist
-  // is safe but pointless; keeping it after init() avoids any ordering risk.
   await NotificationService.instance.requestPermissions();
 
-  // Registers the daily WorkManager task. Must come AFTER notifications
-  // are initialized and permitted — the background task calls
-  // NotificationService.instance.init() again internally (safe, it's
-  // idempotent) but scheduling before permissions exist would risk the
-  // first background run silently failing to post anything.
   await DailyRefillService.ensureChainStarted();
 
   // ── 4. Firebase ──────────────────────────────────────────────────────────
