@@ -60,7 +60,6 @@ class PrayerTimesCard extends StatelessWidget {
 
     return Column(
       children: [
-        // ── Salat times — one unified list ──────────────────────────────────
         _ListCard(
           theme: theme,
           title: l10n.salatPrayers,
@@ -125,7 +124,6 @@ class PrayerTimesCard extends StatelessWidget {
 
         const SizedBox(height: 12),
 
-        // ── Sawm times — compact 2-segment strip ─────────────────────────────
         _SegmentStrip(
           theme: theme,
           caption: l10n.sawmTimes,
@@ -136,7 +134,6 @@ class PrayerTimesCard extends StatelessWidget {
         ),
         const SizedBox(height: 12),
 
-        // ── Nafal prayers — secondary list, lighter weight ───────────────────
         _ListCard(
           theme: theme,
           title: l10n.nafalPrayers,
@@ -217,7 +214,6 @@ class _ListCard extends StatelessWidget {
   }
 }
 
-// ── Row (Salat + Nafal) ─────────────────────────────────────────────────────
 class _Row extends StatelessWidget {
   final AppThemeOption theme;
   final String   name;
@@ -290,7 +286,6 @@ class _Row extends StatelessWidget {
   }
 }
 
-// ── Segment strip (Prohibited + Sawm) ───────────────────────────────────────
 class _Segment {
   final String label;
   final String time;

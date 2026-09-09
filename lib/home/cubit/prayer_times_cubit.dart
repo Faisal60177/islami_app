@@ -24,7 +24,6 @@ class PrayerTimesCubit extends Cubit<PrayerTimesState> {
     });
   }
 
-  // ── today's times on location change ─────────────────────────────────────
 
   Future<void> _calculateAndSavePrayerTimes(LocationModel location) async {
     emit(PrayerTimesLoading());
@@ -40,7 +39,6 @@ class PrayerTimesCubit extends Cubit<PrayerTimesState> {
     }
   }
 
-  // ── any date — called by MonthlyCalendarPage ──────────────────────────────
 
   Future<PrayerTimesModel?> calculateForDate(DateTime date) async {
     final locState = locationCubit.state;
@@ -56,8 +54,6 @@ class PrayerTimesCubit extends Cubit<PrayerTimesState> {
       return null;
     }
   }
-
-  // ── manual override ───────────────────────────────────────────────────────
 
   Future<void> updatePrayerTimes(LocationModel location, PrayerTimesModel updated) async {
     await storage.savePrayerTimes(updated);

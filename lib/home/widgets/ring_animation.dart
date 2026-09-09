@@ -105,7 +105,6 @@ class _PrayerRingWidgetState extends State<PrayerRingWidget>
     final sz       = widget.size;
     final progress = _progress();
 
-    // Defaults match your original hardcoded colors exactly, if not supplied.
     final normalColor     = widget.accentColor     ?? Colors.white;
     final prohibitedColor = widget.prohibitedColor ?? const Color(0xFFFF4444);
 

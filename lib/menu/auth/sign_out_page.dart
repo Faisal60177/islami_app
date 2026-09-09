@@ -101,7 +101,7 @@ class SignOutPage extends ConsumerWidget {
 
                   SizedBox(height: isWide ? 48 : 40),
 
-                  // ── Confirmation card ────────────────────────────────
+                  // Confirmation card
                   Container(
                     padding: EdgeInsets.all(isWide ? 28 : 20),
                     decoration: BoxDecoration(
@@ -134,7 +134,7 @@ class SignOutPage extends ConsumerWidget {
 
                   const SizedBox(height: 28),
 
-                  // ── Sign Out button ──────────────────────────────────
+                  // Sign Out button
                   Consumer(builder: (_, ref, __) {
                     final loading = ref.watch(authNotifierProvider).isLoading;
                     return SizedBox(

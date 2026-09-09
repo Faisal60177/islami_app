@@ -35,7 +35,6 @@ class PrayerTimesModel {
   final DateTime sahriEnd;
 
 
-
   const PrayerTimesModel({
     required this.fajrStart,
     required this.fajrEnd,
@@ -66,7 +65,6 @@ class PrayerTimesModel {
     required this.zawalStart,
   });
 
-  /// CopyWith method
   PrayerTimesModel copyWith({
     DateTime? fajrStart,
     DateTime? fajrEnd,
@@ -127,7 +125,6 @@ class PrayerTimesModel {
     );
   }
 
-  /// JSON Serialization
   Map<String, dynamic> toJson() {
     return {
       'fajrStart': fajrStart.toIso8601String(),

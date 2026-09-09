@@ -60,8 +60,6 @@ class _MosquePainter extends CustomPainter {
         ).createShader(Rect.fromLTWH(0, 0, w, h)),
     );
 
-    // NOTE: anchors moved from h*0.13 -> h*0.17 so moon/sun clear the
-    // status bar area (hero sits behind AppBar via extendBodyBehindAppBar).
     if (prayer == 'Isha' || prayer == 'Fajr' || prayer == '') {
       final rng = math.Random(99);
       for (int i = 0; i < 60; i++) {

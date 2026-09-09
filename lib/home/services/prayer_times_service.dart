@@ -5,8 +5,6 @@ import '../model/prayer_times_models.dart';
 
 class PrayerTimesService {
 
-  // ── shared builder ────────────────────────────────────────────────────────
-
   static PrayerTimesModel _buildModel(PrayerTimes prayerTimes, tz.Location timezone) {
 
     DateTime loc(DateTime tzDt) {
@@ -61,19 +59,14 @@ class PrayerTimesService {
     const aliases = {
       'Asia/Kuala_Lumpur': 'Asia/Kuching',
       'Malaysia Time':     'Asia/Kuching',
-      // add more aliases here if needed
     };
     return aliases[tz] ?? tz;
   }
-
-  // ── for today (used by cubit on location load) ────────────────────────────
 
   static Future<PrayerTimesModel> getPrayerTimesForLocation(
       LocationModel location, String timeZoneName) async {
     return getPrayerTimesForDate(location, timeZoneName, DateTime.now());
   }
-
-  // ── for any date (used by calendar page) ─────────────────────────────────
 
   static Future<PrayerTimesModel> getPrayerTimesForDate(
       LocationModel location, String timeZoneName, DateTime date) async {
@@ -84,7 +77,7 @@ class PrayerTimesService {
 
     final prayerTimes = PrayerTimes(
       coordinates: coordinates,
-      date: date,                  // ✅ uses the passed date
+      date: date,
       calculationParameters: params,
       precision: true,
     );
