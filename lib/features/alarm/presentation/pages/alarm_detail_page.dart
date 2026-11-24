@@ -148,7 +148,6 @@ class _AlarmDetailPageState extends State<AlarmDetailPage> {
 
           const SizedBox(height: 16),
 
-          // ── Waqt-start passive notification toggle ─────────────────────────
           _card(
             theme,
             child: Row(

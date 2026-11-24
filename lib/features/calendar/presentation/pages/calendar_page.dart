@@ -66,8 +66,6 @@ class _MonthlyCalendarPageState extends State<MonthlyCalendarPage>
     super.dispose();
   }
 
-  // ── load prayer times for any tapped day ─────────────────────────────────
-
   Future<void> _loadTimesForDay(DateTime day) async {
     setState(() => _loadingDay = true);
     _panelController.reset();
@@ -81,8 +79,6 @@ class _MonthlyCalendarPageState extends State<MonthlyCalendarPage>
       _panelController.forward();
     }
   }
-
-  // ── calendar helpers ──────────────────────────────────────────────────────
 
   List<DateTime?> _daysInMonthGrid() {
     final firstDay = DateTime(_focusedMonth.year, _focusedMonth.month, 1);
@@ -122,8 +118,6 @@ class _MonthlyCalendarPageState extends State<MonthlyCalendarPage>
     return DateFormat('h:mm a').format(dt);
   }
 
-  // ── build ─────────────────────────────────────────────────────────────────
-
   @override
   Widget build(BuildContext context) {
     final sw = MediaQuery.of(context).size.width;
@@ -139,7 +133,6 @@ class _MonthlyCalendarPageState extends State<MonthlyCalendarPage>
           backgroundColor: theme.background,
           body: Stack(
             children: [
-              // ── Background glow orbs ──
               Positioned(
                 top: -sh * 0.05,
                 right: -sw * 0.3,
@@ -175,7 +168,6 @@ class _MonthlyCalendarPageState extends State<MonthlyCalendarPage>
                 ),
               ),
 
-              // ── Main Content ──
               SafeArea(
                 child: FadeTransition(
                   opacity: _fadeAnimation,
@@ -258,8 +250,6 @@ class _MonthlyCalendarPageState extends State<MonthlyCalendarPage>
     );
   }
 
-  // ── header ────────────────────────────────────────────────────────────────
-
   Widget _buildHeader(double sw, AppThemeOption theme, AppLocalizations l10n) {
     return Row(
       children: [
@@ -310,8 +300,6 @@ class _MonthlyCalendarPageState extends State<MonthlyCalendarPage>
     );
   }
 
-  // ── calendar card ─────────────────────────────────────────────────────────
-
   Widget _buildCalendarCard(
     double sw,
     double sh,
@@ -346,8 +334,6 @@ class _MonthlyCalendarPageState extends State<MonthlyCalendarPage>
       ),
     );
   }
-
-  // ── month nav header ──────────────────────────────────────────────────────
 
   Widget _buildMonthHeader(double sw, AppThemeOption theme) {
     final label = DateFormat('MMMM yyyy').format(_focusedMonth);
@@ -415,8 +401,6 @@ class _MonthlyCalendarPageState extends State<MonthlyCalendarPage>
     );
   }
 
-  // ── weekday row ───────────────────────────────────────────────────────────
-
   Widget _buildWeekdayRow(
     double sw,
     AppLocalizations l10n,
@@ -442,8 +426,6 @@ class _MonthlyCalendarPageState extends State<MonthlyCalendarPage>
           .toList(),
     );
   }
-
-  // ── calendar grid ─────────────────────────────────────────────────────────
 
   Widget _buildCalendarGrid(
     double sw,
@@ -523,8 +505,6 @@ class _MonthlyCalendarPageState extends State<MonthlyCalendarPage>
     );
   }
 
-  // ── panel loading ─────────────────────────────────────────────────────────
-
   Widget _buildPanelLoading(
     double sw,
     double sh,
@@ -542,8 +522,6 @@ class _MonthlyCalendarPageState extends State<MonthlyCalendarPage>
       ),
     );
   }
-
-  // ── no location ───────────────────────────────────────────────────────────
 
   Widget _buildNoLocation(
     double sw,
@@ -573,8 +551,6 @@ class _MonthlyCalendarPageState extends State<MonthlyCalendarPage>
       ),
     );
   }
-
-  // ── prayer panel ──────────────────────────────────────────────────────────
 
   Widget _buildPrayerPanel(
     double sw,
@@ -759,7 +735,6 @@ class _MonthlyCalendarPageState extends State<MonthlyCalendarPage>
             ),
           ),
 
-          // Prayer rows
           Padding(
             padding: EdgeInsets.symmetric(
               horizontal: sw * 0.045,

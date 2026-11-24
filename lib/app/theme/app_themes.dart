@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-// ─── Theme Definitions ────────────────────────────────────────────────────────
 class AppThemeOption {
   final String id;
   final String name;
@@ -32,7 +31,6 @@ class AppThemeOption {
 }
 
 const List<AppThemeOption> appThemes = [
-  // ── Dark Forest (Default) ──────────────────────────────────────────────────
   AppThemeOption(
     id: 'dark',
     name: 'Dark Forest',
@@ -48,7 +46,6 @@ const List<AppThemeOption> appThemes = [
     isDark: true,
   ),
 
-  // ── Midnight Blue ─────────────────────────────────────────────────────────
   AppThemeOption(
     id: 'midnight',
     name: 'Midnight Blue',
@@ -64,7 +61,6 @@ const List<AppThemeOption> appThemes = [
     isDark: true,
   ),
 
-  // ── Desert Gold ───────────────────────────────────────────────────────────
   AppThemeOption(
     id: 'desert',
     name: 'Desert Gold',
@@ -80,7 +76,6 @@ const List<AppThemeOption> appThemes = [
     isDark: true,
   ),
 
-  // ── Rose Dusk ─────────────────────────────────────────────────────────────
   AppThemeOption(
     id: 'rose',
     name: 'Rose Dusk',
@@ -96,7 +91,6 @@ const List<AppThemeOption> appThemes = [
     isDark: true,
   ),
 
-  // ── Light Ivory ───────────────────────────────────────────────────────────
   AppThemeOption(
     id: 'light',
     name: 'Light Ivory',
@@ -112,7 +106,6 @@ const List<AppThemeOption> appThemes = [
     isDark: false,
   ),
 
-  // ── Ocean Teal ────────────────────────────────────────────────────────────
   AppThemeOption(
     id: 'ocean',
     name: 'Ocean Teal',

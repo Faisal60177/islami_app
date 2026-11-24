@@ -2,9 +2,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:muslim_app/features/prayer_times/data/models/prayer_times_models.dart';
 import 'package:muslim_app/features/prayer_times/presentation/cubit/prayer_times_state.dart';
 import 'package:muslim_app/features/prayer_times/data/datasources/prayer_times_remote_data_source.dart';
-import '../../../location/cubit/location_cubit.dart';
-import '../../../location/cubit/location_state.dart';
-import '../../../location/model/location_model.dart';
+import 'package:muslim_app/features/location/presentation/cubit/location_cubit.dart';
+import 'package:muslim_app/features/location/presentation/cubit/location_state.dart';
+import 'package:muslim_app/features/location/data/models/location_model.dart';
 import 'package:muslim_app/features/prayer_times/data/datasources/prayer_times_local_data_source.dart';
 
 class PrayerTimesCubit extends Cubit<PrayerTimesState> {

@@ -1,8 +1,5 @@
 import 'package:package_info_plus/package_info_plus.dart';
 
-/// Call AppInfo.init() once in main() before runApp().
-/// After that, use AppInfo.version / AppInfo.buildNumber anywhere,
-/// synchronously, with no FutureBuilder needed.
 class AppInfo {
   static late final PackageInfo _info;
   static bool _initialized = false;
@@ -15,12 +12,12 @@ class AppInfo {
 
   static String get version {
     assert(_initialized, 'AppInfo.init() must be called before use');
-    return _info.version; // e.g. "1.0.0"
+    return _info.version;
   }
 
   static String get buildNumber {
     assert(_initialized, 'AppInfo.init() must be called before use');
-    return _info.buildNumber; // e.g. "9"
+    return _info.buildNumber;
   }
 
   static String get appName {
@@ -28,6 +25,5 @@ class AppInfo {
     return _info.appName;
   }
 
-  /// Convenience combined string: "1.0.0 (Build 9)"
   static String get versionWithBuild => 'Version $version (Build $buildNumber)';
 }

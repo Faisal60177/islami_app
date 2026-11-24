@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:muslim_app/features/menu/presentation/pages/menu_page.dart';
-import 'package:muslim_app/quran_tilawat//pages/quran_page.dart';
+import 'package:muslim_app/features/quran_tilawat/presentation/pages/quran_page.dart';
 import 'package:muslim_app/features/home/presentation/pages/home_page.dart';
 import 'package:muslim_app/features/duas/presentation/pages/duas_page.dart';
 import 'package:muslim_app/features/tasbih/presentation/pages/tasbih_page.dart';

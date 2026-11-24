@@ -7,12 +7,10 @@ import 'package:muslim_app/features/auth/presentation/providers/auth_state.dart'
 const String _kWebClientId =
     '330629038977-7ivpamsds13tqcr6v15sokcrtgav0p3o.apps.googleusercontent.com';
 
-// Provider
 final authNotifierProvider = StateNotifierProvider<AuthNotifier, AuthState>(
   (ref) => AuthNotifier(),
 );
 
-// ── Notifier
 class AuthNotifier extends StateNotifier<AuthState> {
   AuthNotifier() : super(const AuthState()) {
     _init();
@@ -29,7 +27,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
   String? get pendingGoogleEmail => _pendingGoogleEmail;
 
   void _init() {
-    // Initialize Google Sign-In with serverClientId
     _googleSignIn
         .initialize(serverClientId: _kWebClientId)
         .then((_) {
@@ -37,7 +34,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
         })
         .catchError((_) {});
 
-    // Single source of truth — react to Firebase auth changes
     _auth.userChanges().listen((user) {
       if (user != null) {
         _loadUserData(user);
@@ -85,8 +81,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
       state = state.copyWith(photoUrl: user.photoURL ?? '');
     }
   }
-
-  // ── Helpers ────────────────────────────────────────────────────────────────
 
   Future<List<String>> _getProvidersFromFirestore(String email) async {
     try {
@@ -159,7 +153,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
     );
   }
 
-  // ── Email Sign Up ──────────────────────────────────────────────────────────
 
   Future<bool> signUpWithEmail({
     required String name,
@@ -179,14 +172,12 @@ class AuthNotifier extends StateNotifier<AuthState> {
         if (e.code == 'email-already-in-use') {
           final providers = await _getProvidersFromFirestore(email.trim());
           if (providers.contains('password')) {
-            // Already a full email/password account — don't try Google linking
             state = state.copyWith(
               errorMessage:
                   'This email is already registered. Please sign in instead.',
             );
             return false;
           }
-          // Only attempt Google-linking if account is Google-only
           return await _linkPasswordToExistingAccount(
             email: email.trim(),
             password: password,
@@ -223,7 +214,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
-  // ── Email Sign In ──────────────────────────────────────────────────────────
 
   Future<bool> signInWithEmail({
     required String email,
@@ -270,15 +260,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
-  // ── Google Sign In ─────────────────────────────────────────────────────────
-  //
-  // Logic:
-  //   1. Get Google credential
-  //   2. Check if a Firebase account already exists for this email
-  //   3a. No account → create new (Google-only)
-  //   3b. Google account → sign in normally
-  //   3c. Email+password account → sign in AND link Google to it (merge)
-
   Future<bool> signInWithGoogle() async {
     try {
       state = state.copyWith(isLoading: true, errorMessage: '');
@@ -298,7 +279,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
       }
 
       if (providers.contains('google') && !providers.contains('password')) {
-        // Returning Google-only user
         return await _completeGoogleSignIn(
           google.credential,
           google.email,
@@ -309,7 +289,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
       }
 
       if (providers.contains('password')) {
-        // Email+password account exists → sign in with Google AND link it
         return await _signInAndLinkGoogle(
           google.credential,
           google.email,
@@ -367,8 +346,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
     return true;
   }
 
-  // Signs in with Google credential into an existing email+password account,
-  // then links Google provider to it so BOTH methods work going forward.
   Future<bool> _signInAndLinkGoogle(
     AuthCredential googleCredential,
     String googleEmail,
@@ -430,7 +407,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
-  // Called by the UI after the user enters their existing password.
   Future<bool> completeGoogleLinkWithPassword({
     required String email,
     required String password,
@@ -446,14 +422,12 @@ class AuthNotifier extends StateNotifier<AuthState> {
     try {
       state = state.copyWith(isLoading: true, errorMessage: '');
 
-      // 1. Verify ownership via existing password
       final userCred = await _auth.signInWithEmailAndPassword(
         email: email.trim(),
         password: password,
       );
       final user = userCred.user!;
 
-      // 2. Link the pending Google credential
       final alreadyLinked = user.providerData.any(
         (p) => p.providerId == 'google.com',
       );
@@ -461,7 +435,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
         await user.linkWithCredential(pending);
       }
 
-      // 3. Update Firestore additively — password stays intact
       await _firestore.collection('users').doc(user.uid).update({
         'providers': FieldValue.arrayUnion(['google']),
         'photoUrl': user.photoURL ?? _pendingGooglePhoto ?? '',
@@ -481,8 +454,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
-  // Links password to an existing Google-only account (called from signUpWithEmail
-  // when Firebase returns email-already-in-use).
   Future<bool> _linkPasswordToExistingAccount({
     required String email,
     required String password,
@@ -536,7 +507,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
-  // ── Password Reset ─────────────────────────────────────────────────────────
 
   Future<bool> sendPasswordReset(String emailAddress) async {
     try {
@@ -559,7 +529,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
-  // ── Sign Out ───────────────────────────────────────────────────────────────
 
   Future<void> signOut() async {
     try {
@@ -568,7 +537,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
     await _auth.signOut();
   }
 
-  // ── Update Profile ─────────────────────────────────────────────────────────
 
   Future<bool> updateProfile({required String name}) async {
     try {
@@ -590,7 +558,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
-  // ── Add / Update Password ──────────────────────────────────────────────────
 
   Future<bool> addPasswordToAccount({required String password}) async {
     try {
@@ -658,7 +625,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
-  // Error mapping
 
   String _mapFirebaseError(String code) {
     switch (code) {

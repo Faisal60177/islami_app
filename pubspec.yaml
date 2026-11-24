@@ -86,6 +86,7 @@ dependencies:
   just_audio: ^0.9.42
   just_audio_background: ^0.0.1-beta.17
   audio_service: ^0.18.15
+  path: ^1.9.1
 
 
 

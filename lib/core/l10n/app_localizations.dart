@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-// ─── Supported Languages ──────────────────────────────────────────────────────
 class AppLanguage {
   final String code;
   final String name;
@@ -30,7 +29,6 @@ const List<AppLanguage> supportedLanguages = [
   AppLanguage(code: 'ru', name: 'Russian',  nativeName: 'Русский',    flag: '🇷🇺'),
 ];
 
-// ─── Translation Maps ─────────────────────────────────────────────────────────
 const Map<String, Map<String, String>> _translations = {
   'en': {
     'fajr': 'Fajr',        'dhuhr': 'Dhuhr',       'asr': 'Asr',
@@ -81,7 +79,6 @@ const Map<String, Map<String, String>> _translations = {
     'alarm': 'Alarm',
 
 
-    //duas page
     'category': 'Category',
     'all': 'All',
     'favorite': 'Favorite',
@@ -122,7 +119,6 @@ const Map<String, Map<String, String>> _translations = {
     'saved': 'Saved',
     'search_duas_hint': 'Search duas...',
 
-    // ── Menu Page ──────────────────────────────────────────────────────────────
     'menu_title': 'menu',
     'account': 'Account',
     'support': 'Support',
@@ -149,7 +145,6 @@ const Map<String, Map<String, String>> _translations = {
     'quote_hardship_ref': '— quran_tilawat 94:5',
     'muslim_user': 'Muslim User',
 
-// ── Settings Page ──────────────────────────────────────────────────────────
     'location_section': 'LOCATION',
     'hijri_section': 'HIJRI CALENDAR',
     'language_section': 'LANGUAGE',
@@ -165,7 +160,6 @@ const Map<String, Map<String, String>> _translations = {
     'quote_patience': '"And seek help through patience and prayer."',
     'quote_patience_ref': '— quran_tilawat 2:45',
 
-    // Weekdays
     'monday': 'Monday',
     'tuesday': 'Tuesday',
     'wednesday': 'Wednesday',
@@ -174,7 +168,6 @@ const Map<String, Map<String, String>> _translations = {
     'saturday': 'Saturday',
     'sunday': 'Sunday',
 
-    // Months
     'january': 'January',
     'february': 'February',
     'march': 'March',
@@ -202,7 +195,6 @@ const Map<String, Map<String, String>> _translations = {
     'hijri_month_11': 'Dhu al-Qi\'dah',
     'hijri_month_12': 'Dhu al-Hijjah',
 
-    // Numbers
     '0': '0',
     '1': '1',
     '2': '2',
@@ -343,7 +335,6 @@ const Map<String, Map<String, String>> _translations = {
     'quote_patience': '"واستعينوا بالصبر والصلاة."',
     'quote_patience_ref': '— القرآن 2:45',
 
-    // Weekdays
     'monday': 'الاثنين',
     'tuesday': 'الثلاثاء',
     'wednesday': 'الأربعاء',
@@ -352,7 +343,6 @@ const Map<String, Map<String, String>> _translations = {
     'saturday': 'السبت',
     'sunday': 'الأحد',
 
-    // Months
     'january': 'يناير',
     'february': 'فبراير',
     'march': 'مارس',
@@ -380,7 +370,6 @@ const Map<String, Map<String, String>> _translations = {
     'hijri_month_11': 'ذُو القَعْدَة',
     'hijri_month_12': 'ذُو الحِجَّة',
 
-    // Numbers
     '0': '٠',
     '1': '١',
     '2': '٢',
@@ -521,7 +510,6 @@ const Map<String, Map<String, String>> _translations = {
     'quote_patience': '"ধৈর্য ও নামাজের মাধ্যমে সাহায্য চাও।"',
     'quote_patience_ref': '— কুরআন ২:৪৫',
 
-    // Weekdays
     'monday': 'সোমবার',
     'tuesday': 'মঙ্গলবার',
     'wednesday': 'বুধবার',
@@ -530,7 +518,6 @@ const Map<String, Map<String, String>> _translations = {
     'saturday': 'শনিবার',
     'sunday': 'রবিবার',
 
-    // Months
     'january': 'জানুয়ারি',
     'february': 'ফেব্রুয়ারি',
     'march': 'মার্চ',
@@ -558,7 +545,6 @@ const Map<String, Map<String, String>> _translations = {
     'hijri_month_11': 'জিলকদ',
     'hijri_month_12': 'জিলহজ',
 
-    // Numbers
     '0': '০',
     '1': '১',
     '2': '২',
@@ -699,7 +685,6 @@ const Map<String, Map<String, String>> _translations = {
 
 
 
-    // Weekdays
     'monday': 'پیر',
     'tuesday': 'منگل',
     'wednesday': 'بدھ',
@@ -708,7 +693,6 @@ const Map<String, Map<String, String>> _translations = {
     'saturday': 'ہفتہ',
     'sunday': 'اتوار',
 
-// Months
     'january': 'جنوری',
     'february': 'فروری',
     'march': 'مارچ',
@@ -736,7 +720,6 @@ const Map<String, Map<String, String>> _translations = {
     'hijri_month_11': 'ذوالقعدہ',
     'hijri_month_12': 'ذوالحجہ',
 
-    // Numbers
     '0': '٠',
     '1': '١',
     '2': '٢',
@@ -878,7 +861,6 @@ const Map<String, Map<String, String>> _translations = {
 
 
 
-    // Weekdays
     'monday': 'Pazartesi',
     'tuesday': 'Salı',
     'wednesday': 'Çarşamba',
@@ -887,7 +869,6 @@ const Map<String, Map<String, String>> _translations = {
     'saturday': 'Cumartesi',
     'sunday': 'Pazar',
 
-// Months
     'january': 'Ocak',
     'february': 'Şubat',
     'march': 'Mart',
@@ -915,7 +896,6 @@ const Map<String, Map<String, String>> _translations = {
     'hijri_month_11': 'Zilkade',
     'hijri_month_12': 'Zilhicce',
 
-    // Numbers
     '0': '0',
     '1': '1',
     '2': '2',
@@ -1056,7 +1036,6 @@ const Map<String, Map<String, String>> _translations = {
 
 
 
-    // Weekdays
     'monday': 'Senin',
     'tuesday': 'Selasa',
     'wednesday': 'Rabu',
@@ -1065,7 +1044,6 @@ const Map<String, Map<String, String>> _translations = {
     'saturday': 'Sabtu',
     'sunday': 'Minggu',
 
-// Months
     'january': 'Januari',
     'february': 'Februari',
     'march': 'Maret',
@@ -1093,7 +1071,6 @@ const Map<String, Map<String, String>> _translations = {
     'hijri_month_11': 'Zulkaidah',
     'hijri_month_12': 'Zulhijjah',
 
-    // Numbers
     '0': '0',
     '1': '1',
     '2': '2',
@@ -1234,7 +1211,6 @@ const Map<String, Map<String, String>> _translations = {
 
 
 
-    // Weekdays
     'monday': 'Isnin',
     'tuesday': 'Selasa',
     'wednesday': 'Rabu',
@@ -1243,7 +1219,6 @@ const Map<String, Map<String, String>> _translations = {
     'saturday': 'Sabtu',
     'sunday': 'Ahad',
 
-// Months
     'january': 'Januari',
     'february': 'Februari',
     'march': 'Mac',
@@ -1271,7 +1246,6 @@ const Map<String, Map<String, String>> _translations = {
     'hijri_month_11': 'Zulkaedah',
     'hijri_month_12': 'Zulhijjah',
 
-    // Numbers
     '0': '0',
     '1': '1',
     '2': '2',
@@ -1411,7 +1385,6 @@ const Map<String, Map<String, String>> _translations = {
     'search_duas_hint': 'Rechercher des douas...',
 
 
-    // Weekdays
     'monday': 'Lundi',
     'tuesday': 'Mardi',
     'wednesday': 'Mercredi',
@@ -1420,7 +1393,6 @@ const Map<String, Map<String, String>> _translations = {
     'saturday': 'Samedi',
     'sunday': 'Dimanche',
 
-// Months
     'january': 'Janvier',
     'february': 'Février',
     'march': 'Mars',
@@ -1448,7 +1420,6 @@ const Map<String, Map<String, String>> _translations = {
     'hijri_month_11': 'Dhou al-Qi\'da',
     'hijri_month_12': 'Dhou al-Hijja',
 
-    // Numbers
     '0': '0',
     '1': '1',
     '2': '2',
@@ -1588,7 +1559,6 @@ const Map<String, Map<String, String>> _translations = {
     'search_duas_hint': 'duas suchen...',
 
 
-    // Weekdays
     'monday': 'Montag',
     'tuesday': 'Dienstag',
     'wednesday': 'Mittwoch',
@@ -1597,7 +1567,6 @@ const Map<String, Map<String, String>> _translations = {
     'saturday': 'Samstag',
     'sunday': 'Sonntag',
 
-// Months
     'january': 'Januar',
     'february': 'Februar',
     'march': 'März',
@@ -1625,7 +1594,6 @@ const Map<String, Map<String, String>> _translations = {
     'hijri_month_11': 'Dhu l-Qa\'da',
     'hijri_month_12': 'Dhu l-Hijja',
 
-    // Numbers
     '0': '0',
     '1': '1',
     '2': '2',
@@ -1766,7 +1734,6 @@ const Map<String, Map<String, String>> _translations = {
 
 
 
-    // Weekdays
     'monday': 'Понедельник',
     'tuesday': 'Вторник',
     'wednesday': 'Среда',
@@ -1775,7 +1742,6 @@ const Map<String, Map<String, String>> _translations = {
     'saturday': 'Суббота',
     'sunday': 'Воскресенье',
 
-// Months
     'january': 'Январь',
     'february': 'Февраль',
     'march': 'Март',
@@ -1803,7 +1769,6 @@ const Map<String, Map<String, String>> _translations = {
     'hijri_month_11': 'Зуль-каада',
     'hijri_month_12': 'Зуль-хиджа',
 
-    // Numbers
     '0': '0',
     '1': '1',
     '2': '2',
@@ -1817,7 +1782,6 @@ const Map<String, Map<String, String>> _translations = {
   },
 };
 
-// ─── AppLocalizations ─────────────────────────────────────────────────────────
 class AppLocalizations {
   final String languageCode;
   const AppLocalizations(this.languageCode);
@@ -1862,7 +1826,7 @@ class AppLocalizations {
   String get locating       => translate('locating');
   String get permissionDenied=> translate('permission_denied');
   String get loading => translate('loading');
-  // Weekdays
+
   String get monday => translate('monday');
   String get tuesday => translate('tuesday');
   String get wednesday => translate('wednesday');
@@ -1884,7 +1848,6 @@ class AppLocalizations {
   String get notification       => translate('notification');
   String get masail             => translate('masail');
 
-  // ── menu Page ──────────────────────────────────────────────────────────────
   String get menuTitle          => translate('menu_title');
   String get account            => translate('account');
   String get support            => translate('support');
@@ -1911,7 +1874,6 @@ class AppLocalizations {
   String get quoteHardshipRef   => translate('quote_hardship_ref');
   String get muslimUser         => translate('muslim_user');
 
-// ── Settings Page ──────────────────────────────────────────────────────────
   String get locationSection    => translate('location_section');
   String get hijriSection       => translate('hijri_section');
   String get languageSection    => translate('language_section');
@@ -1927,7 +1889,6 @@ class AppLocalizations {
   String get quotePatience      => translate('quote_patience');
   String get quotePatienceRef   => translate('quote_patience_ref');
 
-// Months
   String get january => translate('january');
   String get february => translate('february');
   String get march => translate('march');
@@ -1941,7 +1902,6 @@ class AppLocalizations {
   String get november => translate('november');
   String get december => translate('december');
 
-  // Numbers
   String get zero => translate('0');
   String get one => translate('1');
   String get two => translate('2');
@@ -1953,7 +1913,6 @@ class AppLocalizations {
   String get eight => translate('8');
   String get nine => translate('9');
 
-  // ── duas Page ──────────────────────────────────────────────────────────────
   String get category              => translate('category');
   String get all                   => translate('all');
   String get favorite              => translate('favorite');
@@ -1994,7 +1953,6 @@ class AppLocalizations {
   String get saved                 => translate('saved');
   String get searchDuasHint => translate('search_duas_hint');
 
-  //location page
   String get locationUpdatedSuccessfully => translate('location_updated_successfully');
   String get locationSavedSuccessfully   => translate('location_saved_successfully');
   String get setUpLocation               => translate('set_up_location');
@@ -2020,7 +1978,6 @@ class AppLocalizations {
           orElse: () => supportedLanguages.first).isRtl;
 }
 
-// ─── Extension for easy access ────────────────────────────────────────────────
 extension AppLocalizationsExtension on BuildContext {
   AppLocalizations l10n(String languageCode) => AppLocalizations(languageCode);
 }

@@ -268,8 +268,6 @@ class _MosquePainter extends CustomPainter {
     _ogivalDome(path, rwX + lwW / 2, lwY, lwW * 0.42, lwH * 0.68);
     _finial(path, rwX + lwW / 2, lwY - lwH * 0.68, h * 0.026, w * 0.007);
 
-    // Outer minarets shortened + moved down slightly so their shafts/finials
-    // stay clear of the ring above and the status bar at the very top.
     final lmCX = cx - mw / 2 - lwW - w * 0.075;
     _minaret(path, lmCX, h * 0.32, h * 0.55, w * 0.021, groundY);
     final rmCX = cx + mw / 2 + lwW + w * 0.075;

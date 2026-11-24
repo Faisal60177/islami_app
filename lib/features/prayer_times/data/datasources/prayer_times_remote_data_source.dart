@@ -1,6 +1,6 @@
 import 'package:adhan_dart/adhan_dart.dart';
 import 'package:timezone/timezone.dart' as tz;
-import '../../../location/model/location_model.dart';
+import 'package:muslim_app/features/location/data/models/location_model.dart';
 import 'package:muslim_app/features/prayer_times/data/models/prayer_times_models.dart';
 
 class PrayerTimesService {

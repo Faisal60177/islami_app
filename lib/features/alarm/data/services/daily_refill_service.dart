@@ -39,7 +39,7 @@ class DailyRefillService {
 
   static Future<void> _armNextMidnight() async {
     final now = DateTime.now();
-    var next = DateTime(now.year, now.month, now.day, 0, 5); // 12:05 AM
+    var next = DateTime(now.year, now.month, now.day, 0, 5);
     if (!next.isAfter(now)) {
       next = next.add(const Duration(days: 1));
     }

@@ -80,7 +80,6 @@ class SignOutPage extends ConsumerWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // ── Avatar ──────────────────────────────────────────
                     Container(
                       width: avatarSize,
                       height: avatarSize,
@@ -133,7 +132,6 @@ class SignOutPage extends ConsumerWidget {
 
                     SizedBox(height: isWide ? 48 : 40),
 
-                    // Confirmation card
                     Container(
                       padding: EdgeInsets.all(isWide ? 28 : 20),
                       decoration: BoxDecoration(
@@ -176,7 +174,6 @@ class SignOutPage extends ConsumerWidget {
 
                     const SizedBox(height: 28),
 
-                    // Sign Out button
                     Consumer(
                       builder: (_, ref, _) {
                         final loading = ref
@@ -244,7 +241,6 @@ class SignOutPage extends ConsumerWidget {
 
                     const SizedBox(height: 14),
 
-                    // ── Cancel button ────────────────────────────────────
                     SizedBox(
                       width: double.infinity,
                       height: 54,
