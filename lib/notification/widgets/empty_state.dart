@@ -22,13 +22,15 @@ class NotificationEmptyState extends StatelessWidget {
                 color: const Color(0xFF0D2E1C),
                 shape: BoxShape.circle,
                 border: Border.all(
-                    color: _accent.withOpacity(0.20), width: 1.5),
+                  color: _accent.withValues(alpha: 0.20),
+                  width: 1.5,
+                ),
               ),
               child: Icon(
                 isFiltered
                     ? Icons.filter_list_off_rounded
                     : Icons.notifications_off_rounded,
-                color: _accent.withOpacity(0.45),
+                color: _accent.withValues(alpha: 0.45),
                 size: sw * 0.11,
               ),
             ),

@@ -19,7 +19,7 @@ class MasailSqflite {
 
   Future<void> initFromAssetIfNeeded() async {
     final dbPath = await getDatabasesPath();
-    final path   = join(dbPath, 'masail.db');
+    final path = join(dbPath, 'masail.db');
 
     final exists = await databaseExists(path);
     if (!exists) {
@@ -27,7 +27,7 @@ class MasailSqflite {
         await Directory(dirname(path)).create(recursive: true);
       } catch (_) {}
 
-      final data  = await rootBundle.load('assets/db/masail.db');
+      final data = await rootBundle.load('assets/db/masail.db');
       final bytes = data.buffer.asUint8List(
         data.offsetInBytes,
         data.lengthInBytes,
@@ -36,9 +36,7 @@ class MasailSqflite {
       debugPrint('✅ masail.db copied from assets');
     }
 
-    if (_database == null) {
-      _database = await _initDB();
-    }
+    _database ??= await _initDB();
   }
 
   Future<Database> _initDB() async {
@@ -50,7 +48,6 @@ class MasailSqflite {
         await db.execute('PRAGMA foreign_keys = ON');
       },
       onCreate: (db, version) async {
-
         // ── Categories core table ──────────────────────────
         await db.execute('''
           CREATE TABLE IF NOT EXISTS masail_categories(
@@ -134,8 +131,11 @@ class MasailSqflite {
 
   Future<void> insertCategory(Map<String, dynamic> data) async {
     final db = await database;
-    await db.insert('masail_categories', data,
-        conflictAlgorithm: ConflictAlgorithm.replace);
+    await db.insert(
+      'masail_categories',
+      data,
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
   }
 
   Future<void> insertCategoryTranslation({
@@ -144,21 +144,20 @@ class MasailSqflite {
     required String title,
   }) async {
     final db = await database;
-    await db.insert(
-      'masail_category_translations',
-      {
-        'category_id':   categoryId,
-        'language_code': languageCode,
-        'title':         title,
-      },
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
+    await db.insert('masail_category_translations', {
+      'category_id': categoryId,
+      'language_code': languageCode,
+      'title': title,
+    }, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
   // Get all categories — resolved language with COALESCE fallback to English
-  Future<List<Map<String, dynamic>>> getAllCategories(String languageCode) async {
+  Future<List<Map<String, dynamic>>> getAllCategories(
+    String languageCode,
+  ) async {
     final db = await database;
-    return await db.rawQuery('''
+    return await db.rawQuery(
+      '''
       SELECT
         c.category_id,
         c.category_icon,
@@ -169,15 +168,20 @@ class MasailSqflite {
       LEFT JOIN masail_category_translations fallback
         ON c.category_id = fallback.category_id AND fallback.language_code = 'en'
       ORDER BY c.category_id ASC
-    ''', [languageCode]);
+    ''',
+      [languageCode],
+    );
   }
 
   // ── Masail ──────────────────────────────────────────────
 
   Future<void> insertMasail(Map<String, dynamic> data) async {
     final db = await database;
-    await db.insert('masail', data,
-        conflictAlgorithm: ConflictAlgorithm.replace);
+    await db.insert(
+      'masail',
+      data,
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
   }
 
   Future<void> insertMasailTranslation({
@@ -186,21 +190,17 @@ class MasailSqflite {
     required String question,
     required String answer,
     required String reference,
-    String? madhab,           // optional — not every masail has a madhab
+    String? madhab, // optional — not every masail has a madhab
   }) async {
     final db = await database;
-    await db.insert(
-      'masail_translations',
-      {
-        'masail_id':     masailId,
-        'language_code': languageCode,
-        'question':      question,
-        'answer':        answer,
-        'reference':     reference,
-        'madhab':        madhab,   // nullable — fine if null
-      },
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
+    await db.insert('masail_translations', {
+      'masail_id': masailId,
+      'language_code': languageCode,
+      'question': question,
+      'answer': answer,
+      'reference': reference,
+      'madhab': madhab, // nullable — fine if null
+    }, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
   // Get masail by category — JOIN resolves language, COALESCE falls back to English
@@ -210,7 +210,8 @@ class MasailSqflite {
     required String userId,
   }) async {
     final db = await database;
-    return await db.rawQuery('''
+    return await db.rawQuery(
+      '''
       SELECT
         m.id,
         m.category_id,
@@ -240,7 +241,9 @@ class MasailSqflite {
       ) cat_t ON m.category_id = cat_t.category_id
       WHERE m.category_id = ?
       ORDER BY m.id ASC
-    ''', [languageCode, userId, languageCode, categoryId]);
+    ''',
+      [languageCode, userId, languageCode, categoryId],
+    );
   }
 
   // Get ALL masail — same JOIN logic but no WHERE filter
@@ -249,7 +252,8 @@ class MasailSqflite {
     required String userId,
   }) async {
     final db = await database;
-    return await db.rawQuery('''
+    return await db.rawQuery(
+      '''
       SELECT
         m.id,
         m.category_id,
@@ -278,7 +282,9 @@ class MasailSqflite {
           ON c2.category_id = fb2.category_id AND fb2.language_code = 'en'
       ) cat_t ON m.category_id = cat_t.category_id
       ORDER BY m.id ASC
-    ''', [languageCode, userId, languageCode]);
+    ''',
+      [languageCode, userId, languageCode],
+    );
   }
 
   // ── Bookmarks ───────────────────────────────────────────
@@ -289,15 +295,11 @@ class MasailSqflite {
     required bool isBookmarked,
   }) async {
     final db = await database;
-    await db.insert(
-      'masail_user_bookmarks',
-      {
-        'user_id':       userId,
-        'masail_id':     masailId,
-        'is_bookmarked': isBookmarked ? 1 : 0,
-      },
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
+    await db.insert('masail_user_bookmarks', {
+      'user_id': userId,
+      'masail_id': masailId,
+      'is_bookmarked': isBookmarked ? 1 : 0,
+    }, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
   Future<List<Map<String, dynamic>>> getBookmarkedForUser({
@@ -305,7 +307,8 @@ class MasailSqflite {
     required String languageCode,
   }) async {
     final db = await database;
-    return await db.rawQuery('''
+    return await db.rawQuery(
+      '''
       SELECT
         m.id,
         m.category_id,
@@ -323,42 +326,63 @@ class MasailSqflite {
       LEFT JOIN masail_translations fb
         ON m.id = fb.masail_id AND fb.language_code = 'en'
       ORDER BY m.id ASC
-    ''', [userId, languageCode]);
+    ''',
+      [userId, languageCode],
+    );
   }
 
   Future<void> replaceUserBookmarks(
-      String userId, List<Map<String, dynamic>> bookmarks) async {
+    String userId,
+    List<Map<String, dynamic>> bookmarks,
+  ) async {
     if (bookmarks.isEmpty) return;
     final db = await database;
     await db.transaction((txn) async {
-      await txn.delete('masail_user_bookmarks',
-          where: 'user_id = ?', whereArgs: [userId]);
+      await txn.delete(
+        'masail_user_bookmarks',
+        where: 'user_id = ?',
+        whereArgs: [userId],
+      );
       for (final row in bookmarks) {
-        await txn.insert('masail_user_bookmarks', row,
-            conflictAlgorithm: ConflictAlgorithm.replace);
+        await txn.insert(
+          'masail_user_bookmarks',
+          row,
+          conflictAlgorithm: ConflictAlgorithm.replace,
+        );
       }
     });
   }
 
   Future<List<Map<String, dynamic>>> getGuestBookmarks() async {
     final db = await database;
-    return await db.query('masail_user_bookmarks',
-        where: 'user_id = ?', whereArgs: ['guest']);
+    return await db.query(
+      'masail_user_bookmarks',
+      where: 'user_id = ?',
+      whereArgs: ['guest'],
+    );
   }
 
   Future<void> migrateGuestToUser(String userId) async {
     final db = await database;
-    await db.update('masail_user_bookmarks', {'user_id': userId},
-        where: 'user_id = ?', whereArgs: ['guest']);
+    await db.update(
+      'masail_user_bookmarks',
+      {'user_id': userId},
+      where: 'user_id = ?',
+      whereArgs: ['guest'],
+    );
   }
 
   Future<Map<String, dynamic>?> getUserBookmarkForMasail(
-      String userId, int masailId) async {
+    String userId,
+    int masailId,
+  ) async {
     final db = await database;
-    final result = await db.query('masail_user_bookmarks',
-        where: 'user_id = ? AND masail_id = ?',
-        whereArgs: [userId, masailId],
-        limit: 1);
+    final result = await db.query(
+      'masail_user_bookmarks',
+      where: 'user_id = ? AND masail_id = ?',
+      whereArgs: [userId, masailId],
+      limit: 1,
+    );
     return result.isNotEmpty ? result.first : null;
   }
 
@@ -366,18 +390,26 @@ class MasailSqflite {
 
   Future<void> deleteRemovedCategories(List<int> firestoreIds) async {
     final db = await database;
-    final existing = await db.query('masail_categories',
-        columns: ['category_id']);
+    final existing = await db.query(
+      'masail_categories',
+      columns: ['category_id'],
+    );
     final toDelete = existing
         .map((r) => r['category_id'] as int)
         .toSet()
         .difference(firestoreIds.toSet());
 
     for (final id in toDelete) {
-      await db.delete('masail_category_translations',
-          where: 'category_id = ?', whereArgs: [id]);
-      await db.delete('masail_categories',
-          where: 'category_id = ?', whereArgs: [id]);
+      await db.delete(
+        'masail_category_translations',
+        where: 'category_id = ?',
+        whereArgs: [id],
+      );
+      await db.delete(
+        'masail_categories',
+        where: 'category_id = ?',
+        whereArgs: [id],
+      );
       debugPrint('🗑️ Masail category $id deleted from SQLite');
     }
   }
@@ -391,12 +423,17 @@ class MasailSqflite {
         .difference(firestoreIds.toSet());
 
     for (final id in toDelete) {
-      await db.delete('masail_user_bookmarks',
-          where: 'masail_id = ?', whereArgs: [id]);
-      await db.delete('masail_translations',
-          where: 'masail_id = ?', whereArgs: [id]);
-      await db.delete('masail',
-          where: 'id = ?', whereArgs: [id]);
+      await db.delete(
+        'masail_user_bookmarks',
+        where: 'masail_id = ?',
+        whereArgs: [id],
+      );
+      await db.delete(
+        'masail_translations',
+        where: 'masail_id = ?',
+        whereArgs: [id],
+      );
+      await db.delete('masail', where: 'id = ?', whereArgs: [id]);
       debugPrint('🗑️ Masail $id deleted from SQLite');
     }
   }

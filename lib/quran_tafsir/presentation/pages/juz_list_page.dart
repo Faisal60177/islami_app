@@ -1,9 +1,8 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../widgets/juz_list_view.dart';
 
-class JuzListPage extends StatelessWidget{
+class JuzListPage extends StatelessWidget {
   const JuzListPage({super.key});
 
   @override
@@ -13,5 +12,4 @@ class JuzListPage extends StatelessWidget{
       body: const JuzListView(),
     );
   }
-
 }

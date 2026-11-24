@@ -16,8 +16,7 @@ class MasailPage extends StatefulWidget {
   State<MasailPage> createState() => _MasailPageState();
 }
 
-class _MasailPageState extends State<MasailPage>
-    with TickerProviderStateMixin {
+class _MasailPageState extends State<MasailPage> with TickerProviderStateMixin {
   late TabController _tabController;
   final TextEditingController _searchController = TextEditingController();
   String searchQuery = '';
@@ -44,18 +43,18 @@ class _MasailPageState extends State<MasailPage>
 
   @override
   Widget build(BuildContext context) {
-    final theme    = getThemeById(context.watch<SettingsCubit>().state.themeMode);
+    final theme = getThemeById(context.watch<SettingsCubit>().state.themeMode);
     final langCode = context.watch<SettingsCubit>().state.languageCode;
-    final l10n     = AppLocalizations(langCode);
-    final isRtl    = l10n.isRtl;
+    final l10n = AppLocalizations(langCode);
+    final isRtl = l10n.isRtl;
 
     final size = MediaQuery.of(context).size;
-    final sw   = size.width;
-    final sh   = size.height;
+    final sw = size.width;
+    final sh = size.height;
 
     final tabs = [
       {'label': l10n.category, 'icon': Icons.grid_view_rounded},
-      {'label': l10n.all,      'icon': Icons.menu_book_rounded},
+      {'label': l10n.all, 'icon': Icons.menu_book_rounded},
       {'label': l10n.bookmark, 'icon': Icons.bookmark_rounded},
     ];
 
@@ -67,7 +66,8 @@ class _MasailPageState extends State<MasailPage>
           children: [
             // ── Pinned Header ──────────────────────────────────────────
             _MasailHeader(
-              sw: sw, sh: sh,
+              sw: sw,
+              sh: sh,
               isRtl: isRtl,
               theme: theme,
               searchController: _searchController,
@@ -172,15 +172,17 @@ class _MasailHeader extends StatelessWidget {
           ),
           // ── Top border ──
           Positioned(
-            top: 0, left: 0, right: 0,
+            top: 0,
+            left: 0,
+            right: 0,
             child: Container(
               height: 3,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    theme.accent.withOpacity(0.7),
+                    theme.accent.withValues(alpha: 0.7),
                     theme.accent,
-                    theme.accent.withOpacity(0.7),
+                    theme.accent.withValues(alpha: 0.7),
                   ],
                 ),
               ),
@@ -190,13 +192,16 @@ class _MasailHeader extends StatelessWidget {
           Positioned(
             top: -sw * 0.15,
             right: isRtl ? null : -sw * 0.1,
-            left:  isRtl ? -sw * 0.1 : null,
+            left: isRtl ? -sw * 0.1 : null,
             child: Container(
-              width: sw * 0.5, height: sw * 0.5,
+              width: sw * 0.5,
+              height: sw * 0.5,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
-                    color: Colors.white.withOpacity(0.1), width: 1.5),
+                  color: Colors.white.withValues(alpha: 0.1),
+                  width: 1.5,
+                ),
               ),
             ),
           ),
@@ -205,12 +210,15 @@ class _MasailHeader extends StatelessWidget {
             left: isRtl ? null : -sw * 0.08,
             right: isRtl ? -sw * 0.08 : null,
             child: Container(
-              width: sw * 0.32, height: sw * 0.32,
+              width: sw * 0.32,
+              height: sw * 0.32,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.white.withOpacity(0.03),
+                color: Colors.white.withValues(alpha: 0.03),
                 border: Border.all(
-                    color: Colors.white.withOpacity(0.08), width: 1),
+                  color: Colors.white.withValues(alpha: 0.08),
+                  width: 1,
+                ),
               ),
             ),
           ),
@@ -219,7 +227,11 @@ class _MasailHeader extends StatelessWidget {
             bottom: false,
             child: Padding(
               padding: EdgeInsets.fromLTRB(
-                  sw * 0.05, sh * 0.015, sw * 0.05, sw * 0.04),
+                sw * 0.05,
+                sh * 0.015,
+                sw * 0.05,
+                sw * 0.04,
+              ),
               child: Column(
                 crossAxisAlignment: isRtl
                     ? CrossAxisAlignment.end
@@ -227,19 +239,25 @@ class _MasailHeader extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Row(
-                    textDirection:
-                    isRtl ? TextDirection.rtl : TextDirection.ltr,
+                    textDirection: isRtl
+                        ? TextDirection.rtl
+                        : TextDirection.ltr,
                     children: [
                       Container(
                         padding: const EdgeInsets.all(9),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.15),
+                          color: Colors.white.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(14),
                           border: Border.all(
-                              color: Colors.white.withOpacity(0.3), width: 1),
+                            color: Colors.white.withValues(alpha: 0.3),
+                            width: 1,
+                          ),
                         ),
-                        child: Icon(Icons.auto_stories_rounded,
-                            color: Colors.white, size: sw * 0.06),
+                        child: Icon(
+                          Icons.auto_stories_rounded,
+                          color: Colors.white,
+                          size: sw * 0.06,
+                        ),
                       ),
                       SizedBox(width: sw * 0.03),
                       Column(
@@ -259,7 +277,7 @@ class _MasailHeader extends StatelessWidget {
                           Text(
                             'مسائل فقہیہ',
                             style: TextStyle(
-                              color: Colors.white.withOpacity(0.85),
+                              color: Colors.white.withValues(alpha: 0.85),
                               fontSize: sw * 0.038,
                               fontWeight: FontWeight.w400,
                               fontFamily: 'Amiri',
@@ -274,35 +292,46 @@ class _MasailHeader extends StatelessWidget {
                   Container(
                     height: sh * 0.052,
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.12),
+                      color: Colors.white.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(14),
                       border: Border.all(
-                          color: Colors.white.withOpacity(0.25), width: 1),
+                        color: Colors.white.withValues(alpha: 0.25),
+                        width: 1,
+                      ),
                     ),
                     child: TextField(
                       controller: searchController,
-                      textDirection:
-                      isRtl ? TextDirection.rtl : TextDirection.ltr,
+                      textDirection: isRtl
+                          ? TextDirection.rtl
+                          : TextDirection.ltr,
                       style: TextStyle(
-                          color: Colors.white, fontSize: sw * 0.036),
+                        color: Colors.white,
+                        fontSize: sw * 0.036,
+                      ),
                       decoration: InputDecoration(
                         hintText: 'Search masail...',
                         hintStyle: TextStyle(
-                            color: Colors.white.withOpacity(0.45),
-                            fontSize: sw * 0.035),
-                        prefixIcon: Icon(Icons.search_rounded,
-                            color: Colors.white.withOpacity(0.85),
-                            size: sw * 0.05),
+                          color: Colors.white.withValues(alpha: 0.45),
+                          fontSize: sw * 0.035,
+                        ),
+                        prefixIcon: Icon(
+                          Icons.search_rounded,
+                          color: Colors.white.withValues(alpha: 0.85),
+                          size: sw * 0.05,
+                        ),
                         suffixIcon: searchQuery.isNotEmpty
                             ? IconButton(
-                          icon: const Icon(Icons.close_rounded,
-                              color: Colors.white54),
-                          onPressed: () => searchController.clear(),
-                        )
+                                icon: const Icon(
+                                  Icons.close_rounded,
+                                  color: Colors.white54,
+                                ),
+                                onPressed: () => searchController.clear(),
+                              )
                             : null,
                         border: InputBorder.none,
-                        contentPadding:
-                        EdgeInsets.symmetric(vertical: sh * 0.012),
+                        contentPadding: EdgeInsets.symmetric(
+                          vertical: sh * 0.012,
+                        ),
                       ),
                     ),
                   ),
@@ -334,7 +363,7 @@ class _GeometricPatternPainter extends CustomPainter {
           final angle = k * 3.14159 / 4;
           final r = k % 2 == 0 ? 10.0 : 5.0;
           final px = cx + r * (k == 0 ? 1 : _cos(angle));
-          final py = y  + r * _sin(angle);
+          final py = y + r * _sin(angle);
           k == 0 ? path.moveTo(px, py) : path.lineTo(px, py);
         }
         path.close();
@@ -343,11 +372,24 @@ class _GeometricPatternPainter extends CustomPainter {
     }
   }
 
-  double _cos(double a) => a == 0 ? 1 : (a == 3.14159 / 2 ? 0 :
-  (a == 3.14159 ? -1 : (a == 3 * 3.14159 / 2 ? 0 :
-  (a < 3.14159 / 2 ? 1 - a * a / 2 : -1 + (a - 3.14159) * (a - 3.14159) / 2))));
-  double _sin(double a) => a == 0 ? 0 : (a == 3.14159 / 2 ? 1 :
-  (a == 3.14159 ? 0 : (a == 3 * 3.14159 / 2 ? -1 : a - a * a * a / 6)));
+  double _cos(double a) => a == 0
+      ? 1
+      : (a == 3.14159 / 2
+            ? 0
+            : (a == 3.14159
+                  ? -1
+                  : (a == 3 * 3.14159 / 2
+                        ? 0
+                        : (a < 3.14159 / 2
+                              ? 1 - a * a / 2
+                              : -1 + (a - 3.14159) * (a - 3.14159) / 2))));
+  double _sin(double a) => a == 0
+      ? 0
+      : (a == 3.14159 / 2
+            ? 1
+            : (a == 3.14159
+                  ? 0
+                  : (a == 3 * 3.14159 / 2 ? -1 : a - a * a * a / 6)));
 
   @override
   bool shouldRepaint(_) => false;

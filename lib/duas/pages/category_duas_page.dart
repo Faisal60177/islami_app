@@ -5,7 +5,6 @@ import '../model/duas_model.dart';
 import '../cubit/duas_cubit.dart';
 import 'package:muslim_app/utils/language_utils.dart';
 import 'duas_detail_page.dart';
-import 'package:muslim_app/settings/l10n/app_localizations.dart';
 import 'package:muslim_app/settings/cubit/settings_cubit.dart';
 import 'package:muslim_app/settings/theme/app_themes.dart';
 
@@ -32,9 +31,9 @@ class _CategoryDuasPageState extends State<CategoryDuasPage> {
     try {
       final cubit = context.read<DuasCubit>();
       final data = await cubit.repository.getDuasByCategory(
-        categoryId:   widget.category.categoryId,
+        categoryId: widget.category.categoryId,
         languageCode: cubit.currentLanguageCode,
-        userId:       cubit.userId,
+        userId: cubit.userId,
       );
       setState(() {
         duas = data;
@@ -71,54 +70,61 @@ class _CategoryDuasPageState extends State<CategoryDuasPage> {
         ),
         body: isLoading
             ? Center(
-          child: CircularProgressIndicator(
-            color: theme.accent,
-            strokeWidth: 3,
-          ),
-        )
+                child: CircularProgressIndicator(
+                  color: theme.accent,
+                  strokeWidth: 3,
+                ),
+              )
             : duas.isEmpty
             ? Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.menu_book_rounded,
-                  size: w * 0.15, color: theme.textLow.withOpacity(0.4)),
-              SizedBox(height: h * 0.02),
-              Text(
-                'No duas in this category',
-                style: TextStyle(
-                  color: theme.textLow,
-                  fontSize: w * 0.045,
-                  fontWeight: FontWeight.w500,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.menu_book_rounded,
+                      size: w * 0.15,
+                      color: theme.textLow.withValues(alpha: 0.4),
+                    ),
+                    SizedBox(height: h * 0.02),
+                    Text(
+                      'No duas in this category',
+                      style: TextStyle(
+                        color: theme.textLow,
+                        fontSize: w * 0.045,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ],
-          ),
-        )
-        // ── No RefreshIndicator — plain ListView, no pull refresh ──
+              )
+            // ── No RefreshIndicator — plain ListView, no pull refresh ──
             : ListView.builder(
-          physics: const BouncingScrollPhysics(),
-          padding: EdgeInsets.fromLTRB(
-              w * 0.04, h * 0.018, w * 0.04, h * 0.03),
-          itemCount: duas.length,
-          itemBuilder: (context, index) {
-            final dua = duas[index];
-            return _DuaCard(
-              dua: dua,
-              index: index,
-              isRtl: isRtl,
-              theme: theme,
-              onTap: () async {
-                await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => DuasDetailPage(dua: dua),
-                  ),
-                );
-              },
-            );
-          },
-        ),
+                physics: const BouncingScrollPhysics(),
+                padding: EdgeInsets.fromLTRB(
+                  w * 0.04,
+                  h * 0.018,
+                  w * 0.04,
+                  h * 0.03,
+                ),
+                itemCount: duas.length,
+                itemBuilder: (context, index) {
+                  final dua = duas[index];
+                  return _DuaCard(
+                    dua: dua,
+                    index: index,
+                    isRtl: isRtl,
+                    theme: theme,
+                    onTap: () async {
+                      await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => DuasDetailPage(dua: dua),
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
       ),
     );
   }
@@ -162,7 +168,7 @@ class _DuaCardState extends State<_DuaCard> {
 
   @override
   Widget build(BuildContext context) {
-    final dua   = widget.dua;
+    final dua = widget.dua;
     final index = widget.index;
     final isRtl = widget.isRtl;
     final theme = widget.theme;
@@ -184,7 +190,7 @@ class _DuaCardState extends State<_DuaCard> {
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(theme.isDark ? 0.20 : 0.055),
+            color: Colors.black.withValues(alpha: theme.isDark ? 0.20 : 0.055),
             blurRadius: 12,
             offset: const Offset(0, 3),
           ),
@@ -195,8 +201,8 @@ class _DuaCardState extends State<_DuaCard> {
         borderRadius: BorderRadius.circular(18),
         child: InkWell(
           borderRadius: BorderRadius.circular(18),
-          splashColor: theme.accent.withOpacity(0.08),
-          highlightColor: theme.accent.withOpacity(0.04),
+          splashColor: theme.accent.withValues(alpha: 0.08),
+          highlightColor: theme.accent.withValues(alpha: 0.04),
           onTap: widget.onTap,
           child: Padding(
             padding: EdgeInsets.symmetric(
@@ -210,14 +216,17 @@ class _DuaCardState extends State<_DuaCard> {
                   height: w * 0.12,
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [accentColor, accentColor.withOpacity(0.75)],
+                      colors: [
+                        accentColor,
+                        accentColor.withValues(alpha: 0.75),
+                      ],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
                     borderRadius: BorderRadius.circular(14),
                     boxShadow: [
                       BoxShadow(
-                        color: accentColor.withOpacity(0.3),
+                        color: accentColor.withValues(alpha: 0.3),
                         blurRadius: 8,
                         offset: const Offset(0, 3),
                       ),
@@ -256,8 +265,7 @@ class _DuaCardState extends State<_DuaCard> {
                       if (dua.title.isNotEmpty)
                         Text(
                           dua.title,
-                          textAlign:
-                          isRtl ? TextAlign.right : TextAlign.left,
+                          textAlign: isRtl ? TextAlign.right : TextAlign.left,
                           style: TextStyle(
                             fontSize: w * 0.032,
                             color: theme.textLow,
@@ -273,15 +281,17 @@ class _DuaCardState extends State<_DuaCard> {
                               vertical: h * 0.004,
                             ),
                             decoration: BoxDecoration(
-                              color: theme.accent.withOpacity(0.09),
+                              color: theme.accent.withValues(alpha: 0.09),
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(Icons.label_rounded,
-                                    size: w * 0.03,
-                                    color: theme.accent),
+                                Icon(
+                                  Icons.label_rounded,
+                                  size: w * 0.03,
+                                  color: theme.accent,
+                                ),
                                 SizedBox(width: w * 0.01),
                                 Text(
                                   dua.categoryTitle,
@@ -304,7 +314,7 @@ class _DuaCardState extends State<_DuaCard> {
                                       : Icons.favorite_outline_rounded,
                                   color: dua.isFavorite
                                       ? const Color(0xFFE57373)
-                                      : theme.textLow.withOpacity(0.5),
+                                      : theme.textLow.withValues(alpha: 0.5),
                                   size: w * 0.05,
                                 ),
                               ),
@@ -317,7 +327,7 @@ class _DuaCardState extends State<_DuaCard> {
                                       : Icons.bookmark_outline_rounded,
                                   color: dua.isBookmarked
                                       ? const Color(0xFF64B5F6)
-                                      : theme.textLow.withOpacity(0.5),
+                                      : theme.textLow.withValues(alpha: 0.5),
                                   size: w * 0.05,
                                 ),
                               ),
@@ -329,8 +339,11 @@ class _DuaCardState extends State<_DuaCard> {
                   ),
                 ),
                 SizedBox(width: w * 0.02),
-                Icon(Icons.chevron_right_rounded,
-                    color: theme.textLow.withOpacity(0.5), size: w * 0.055),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  color: theme.textLow.withValues(alpha: 0.5),
+                  size: w * 0.055,
+                ),
               ],
             ),
           ),

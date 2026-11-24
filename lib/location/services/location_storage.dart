@@ -1,8 +1,4 @@
-import 'dart:convert';
-import 'package:geolocator/geolocator.dart';
-import 'package:geocoding/geocoding.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:http/http.dart' as http;
 import 'package:muslim_app/location/model/location_model.dart';
 
 class LocationStorage {
@@ -17,15 +13,15 @@ class LocationStorage {
 
   Future<LocationModel?> getSavedLocation() async {
     final prefs = await SharedPreferences.getInstance();
-    final lat  = prefs.getDouble('lat');
-    final lon  = prefs.getDouble('lon');
+    final lat = prefs.getDouble('lat');
+    final lon = prefs.getDouble('lon');
     if (lat == null || lon == null) return null;
 
     return LocationModel(
       latitude: lat,
       longitude: lon,
-      city:     prefs.getString('city')     ?? '',
-      country:  prefs.getString('country')  ?? '',
+      city: prefs.getString('city') ?? '',
+      country: prefs.getString('country') ?? '',
       timeZone: prefs.getString('timeZone') ?? 'Asia/Dhaka', // NEW
     );
   }

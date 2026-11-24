@@ -53,19 +53,32 @@ class _CategoryPageState extends State<CategoryPage> {
 
   IconData _getCategoryIconData(String iconName) {
     switch (iconName) {
-      case 'sun':        return Icons.wb_sunny_rounded;
-      case 'moon':       return Icons.nights_stay_rounded;
-      case 'star':       return Icons.star_rounded;
-      case 'home':       return Icons.home_rounded;
-      case 'food':       return Icons.restaurant_rounded;
-      case 'travel':     return Icons.airplanemode_active_rounded;
-      case 'prayer':     return Icons.mosque_rounded;
-      case 'sleep':      return Icons.bedtime_rounded;
-      case 'health':     return Icons.favorite_rounded;
-      case 'rain':       return Icons.water_drop_rounded;
-      case 'wind':       return Icons.air_rounded;
-      case 'protection': return Icons.shield_rounded;
-      default:           return Icons.auto_awesome_rounded;
+      case 'sun':
+        return Icons.wb_sunny_rounded;
+      case 'moon':
+        return Icons.nights_stay_rounded;
+      case 'star':
+        return Icons.star_rounded;
+      case 'home':
+        return Icons.home_rounded;
+      case 'food':
+        return Icons.restaurant_rounded;
+      case 'travel':
+        return Icons.airplanemode_active_rounded;
+      case 'prayer':
+        return Icons.mosque_rounded;
+      case 'sleep':
+        return Icons.bedtime_rounded;
+      case 'health':
+        return Icons.favorite_rounded;
+      case 'rain':
+        return Icons.water_drop_rounded;
+      case 'wind':
+        return Icons.air_rounded;
+      case 'protection':
+        return Icons.shield_rounded;
+      default:
+        return Icons.auto_awesome_rounded;
     }
   }
 
@@ -83,17 +96,16 @@ class _CategoryPageState extends State<CategoryPage> {
 
     if (_isLoading) {
       return Center(
-        child: CircularProgressIndicator(
-          color: theme.accent,
-          strokeWidth: 3,
-        ),
+        child: CircularProgressIndicator(color: theme.accent, strokeWidth: 3),
       );
     }
 
     final categories = _categories
-        .where((cat) => cat.categoryTitle
-        .toLowerCase()
-        .contains(widget.searchQuery.toLowerCase()))
+        .where(
+          (cat) => cat.categoryTitle.toLowerCase().contains(
+            widget.searchQuery.toLowerCase(),
+          ),
+        )
         .toList();
 
     if (categories.isEmpty) {
@@ -101,8 +113,11 @@ class _CategoryPageState extends State<CategoryPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.category_outlined,
-                size: w * 0.15, color: theme.textLow.withOpacity(0.4)),
+            Icon(
+              Icons.category_outlined,
+              size: w * 0.15,
+              color: theme.textLow.withValues(alpha: 0.4),
+            ),
             SizedBox(height: h * 0.02),
             Text(
               l10n.noCategoriesFound,
@@ -121,60 +136,59 @@ class _CategoryPageState extends State<CategoryPage> {
     return Directionality(
       textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
       child: CustomScrollView(
-          physics: const ClampingScrollPhysics(),
-          slivers: [
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: EdgeInsets.fromLTRB(
-                    w * 0.05, h * 0.022, w * 0.05, h * 0.01),
-                child: Text(
-                  '${categories.length} ${l10n.categories}',
-                  textAlign: isRtl ? TextAlign.right : TextAlign.left,
-                  style: TextStyle(
-                    fontSize: w * 0.038,
-                    color: theme.textLow,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-            ),
-            SliverPadding(
+        physics: const ClampingScrollPhysics(),
+        slivers: [
+          SliverToBoxAdapter(
+            child: Padding(
               padding: EdgeInsets.fromLTRB(
-                  w * 0.04, 0, w * 0.04, h * 0.04),
-              sliver: SliverGrid(
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: w * 0.04,
-                  mainAxisSpacing: w * 0.04,
-                  childAspectRatio: 1.1,
-                ),
-                delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                    final cat = categories[index];
-                    final gradientColors =
-                    cardGradients[index % cardGradients.length];
-                    final iconData = _getCategoryIconData(cat.categoryIcon);
-
-                    return _CategoryCard(
-                      category: cat,
-                      gradientColors: gradientColors,
-                      iconData: iconData,
-                      isRtl: isRtl, // ✅ pass RTL flag to card
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) =>
-                              CategoryDuasPage(category: cat),
-                        ),
-                      ),
-                    );
-                  },
-                  childCount: categories.length,
+                w * 0.05,
+                h * 0.022,
+                w * 0.05,
+                h * 0.01,
+              ),
+              child: Text(
+                '${categories.length} ${l10n.categories}',
+                textAlign: isRtl ? TextAlign.right : TextAlign.left,
+                style: TextStyle(
+                  fontSize: w * 0.038,
+                  color: theme.textLow,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+          SliverPadding(
+            padding: EdgeInsets.fromLTRB(w * 0.04, 0, w * 0.04, h * 0.04),
+            sliver: SliverGrid(
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: w * 0.04,
+                mainAxisSpacing: w * 0.04,
+                childAspectRatio: 1.1,
+              ),
+              delegate: SliverChildBuilderDelegate((context, index) {
+                final cat = categories[index];
+                final gradientColors =
+                    cardGradients[index % cardGradients.length];
+                final iconData = _getCategoryIconData(cat.categoryIcon);
+
+                return _CategoryCard(
+                  category: cat,
+                  gradientColors: gradientColors,
+                  iconData: iconData,
+                  isRtl: isRtl, // ✅ pass RTL flag to card
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => CategoryDuasPage(category: cat),
+                    ),
+                  ),
+                );
+              }, childCount: categories.length),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -210,9 +224,10 @@ class _CategoryCardState extends State<_CategoryCard>
       duration: const Duration(milliseconds: 120),
       vsync: this,
     );
-    _scaleAnim = Tween<double>(begin: 1.0, end: 0.96).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
-    );
+    _scaleAnim = Tween<double>(
+      begin: 1.0,
+      end: 0.96,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
   }
 
   @override
@@ -248,7 +263,7 @@ class _CategoryCardState extends State<_CategoryCard>
             borderRadius: BorderRadius.circular(22),
             boxShadow: [
               BoxShadow(
-                color: widget.gradientColors[0].withOpacity(0.35),
+                color: widget.gradientColors[0].withValues(alpha: 0.35),
                 blurRadius: 14,
                 offset: const Offset(0, 5),
               ),
@@ -264,7 +279,7 @@ class _CategoryCardState extends State<_CategoryCard>
                   height: w * 0.3,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Colors.white.withOpacity(0.07),
+                    color: Colors.white.withValues(alpha: 0.07),
                   ),
                 ),
               ),
@@ -276,7 +291,7 @@ class _CategoryCardState extends State<_CategoryCard>
                   height: w * 0.2,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Colors.white.withOpacity(0.05),
+                    color: Colors.white.withValues(alpha: 0.05),
                   ),
                 ),
               ),
@@ -289,11 +304,14 @@ class _CategoryCardState extends State<_CategoryCard>
                     Container(
                       padding: EdgeInsets.all(w * 0.028),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
+                        color: Colors.white.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(14),
                       ),
-                      child: Icon(widget.iconData,
-                          color: Colors.white, size: w * 0.065),
+                      child: Icon(
+                        widget.iconData,
+                        color: Colors.white,
+                        size: w * 0.065,
+                      ),
                     ),
                     Column(
                       // ✅ align text to right for RTL languages
@@ -327,13 +345,13 @@ class _CategoryCardState extends State<_CategoryCard>
                                   ? Icons.arrow_back_rounded
                                   : Icons.arrow_forward_rounded,
                               size: w * 0.035,
-                              color: Colors.white.withOpacity(0.7),
+                              color: Colors.white.withValues(alpha: 0.7),
                             ),
                             SizedBox(width: w * 0.01),
                             Text(
                               l10n.viewAll,
                               style: TextStyle(
-                                color: Colors.white.withOpacity(0.7),
+                                color: Colors.white.withValues(alpha: 0.7),
                                 fontSize: w * 0.028,
                                 fontWeight: FontWeight.w500,
                               ),

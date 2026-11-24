@@ -87,12 +87,18 @@ class _AlarmRingingPageState extends State<AlarmRingingPage> {
                 const SizedBox(height: 10),
                 Text(
                   "It's time for Prayer",
-                  style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 15),
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.6),
+                    fontSize: 15,
+                  ),
                 ),
                 const SizedBox(height: 6),
                 Text(
                   _timeLabel(),
-                  style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 14),
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.4),
+                    fontSize: 14,
+                  ),
                 ),
                 const Spacer(flex: 3),
                 SizedBox(

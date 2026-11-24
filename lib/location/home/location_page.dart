@@ -11,7 +11,7 @@ import '../../settings/l10n/app_localizations.dart';
 import '../../settings/theme/app_themes.dart';
 
 class LocationPage extends StatefulWidget {
-  const LocationPage({Key? key}) : super(key: key);
+  const LocationPage({super.key});
 
   @override
   State<LocationPage> createState() => _LocationPageState();
@@ -43,10 +43,10 @@ class _LocationPageState extends State<LocationPage>
       parent: _fadeController,
       curve: Curves.easeOut,
     );
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.15),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(parent: _slideController, curve: Curves.easeOutCubic));
+    _slideAnimation =
+        Tween<Offset>(begin: const Offset(0, 0.15), end: Offset.zero).animate(
+          CurvedAnimation(parent: _slideController, curve: Curves.easeOutCubic),
+        );
 
     _fadeController.forward();
     _slideController.forward();
@@ -85,7 +85,7 @@ class _LocationPageState extends State<LocationPage>
                     shape: BoxShape.circle,
                     gradient: RadialGradient(
                       colors: [
-                        theme.accent.withOpacity(0.18),
+                        theme.accent.withValues(alpha: 0.18),
                         Colors.transparent,
                       ],
                     ),
@@ -102,7 +102,7 @@ class _LocationPageState extends State<LocationPage>
                     shape: BoxShape.circle,
                     gradient: RadialGradient(
                       colors: [
-                        theme.primary.withOpacity(0.14),
+                        theme.primary.withValues(alpha: 0.14),
                         Colors.transparent,
                       ],
                     ),
@@ -146,13 +146,32 @@ class _LocationPageState extends State<LocationPage>
                                   children: [
                                     _buildHeader(sw, l10n, theme),
                                     SizedBox(height: sh * 0.035),
-                                    _buildSearchBar(context, sw, sh, l10n, theme),
+                                    _buildSearchBar(
+                                      context,
+                                      sw,
+                                      sh,
+                                      l10n,
+                                      theme,
+                                    ),
                                     SizedBox(height: sh * 0.025),
 
                                     if (state is LocationLoaded) ...[
-                                      _buildLocationCard(state.location, sw, sh, l10n, theme),
+                                      _buildLocationCard(
+                                        state.location,
+                                        sw,
+                                        sh,
+                                        l10n,
+                                        theme,
+                                      ),
                                       SizedBox(height: sh * 0.02),
-                                      _buildGPSButton(context, state, sw, sh, l10n, theme),
+                                      _buildGPSButton(
+                                        context,
+                                        state,
+                                        sw,
+                                        sh,
+                                        l10n,
+                                        theme,
+                                      ),
                                     ],
 
                                     if (state is LocationLoading)
@@ -162,7 +181,14 @@ class _LocationPageState extends State<LocationPage>
                                       _buildPermissionDenied(sw, l10n, theme),
 
                                     if (state is LocationSearchResults)
-                                      _buildSearchResults(context, state, sw, sh, l10n, theme),
+                                      _buildSearchResults(
+                                        context,
+                                        state,
+                                        sw,
+                                        sh,
+                                        l10n,
+                                        theme,
+                                      ),
                                   ],
                                 ),
                               ),
@@ -181,12 +207,21 @@ class _LocationPageState extends State<LocationPage>
                                   color: theme.background,
                                   border: Border(
                                     top: BorderSide(
-                                      color: theme.textLow.withOpacity(0.12),
+                                      color: theme.textLow.withValues(
+                                        alpha: 0.12,
+                                      ),
                                       width: 0.8,
                                     ),
                                   ),
                                 ),
-                                child: _buildSaveButton(context, state, sw, sh, l10n, theme),
+                                child: _buildSaveButton(
+                                  context,
+                                  state,
+                                  sw,
+                                  sh,
+                                  l10n,
+                                  theme,
+                                ),
                               ),
                           ],
                         ),
@@ -214,7 +249,7 @@ class _LocationPageState extends State<LocationPage>
               color: theme.surface,
               borderRadius: BorderRadius.circular(sw * 0.03),
               border: Border.all(
-                color: theme.accent.withOpacity(0.15),
+                color: theme.accent.withValues(alpha: 0.15),
                 width: 1,
               ),
             ),
@@ -255,13 +290,19 @@ class _LocationPageState extends State<LocationPage>
   }
 
   // ────────────────────────────────────────────────
-  Widget _buildSearchBar(BuildContext context, double sw, double sh, AppLocalizations l10n, AppThemeOption theme) {
+  Widget _buildSearchBar(
+    BuildContext context,
+    double sw,
+    double sh,
+    AppLocalizations l10n,
+    AppThemeOption theme,
+  ) {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(sw * 0.04),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.3),
+            color: Colors.black.withValues(alpha: 0.3),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -275,7 +316,7 @@ class _LocationPageState extends State<LocationPage>
                 color: theme.surface,
                 borderRadius: BorderRadius.circular(sw * 0.04),
                 border: Border.all(
-                  color: theme.accent.withOpacity(0.15),
+                  color: theme.accent.withValues(alpha: 0.15),
                   width: 1,
                 ),
               ),
@@ -314,8 +355,9 @@ class _LocationPageState extends State<LocationPage>
           ),
           SizedBox(width: sw * 0.03),
           GestureDetector(
-            onTap: () =>
-                context.read<LocationCubit>().searchLocation(searchController.text),
+            onTap: () => context.read<LocationCubit>().searchLocation(
+              searchController.text,
+            ),
             child: Container(
               padding: EdgeInsets.symmetric(
                 vertical: sh * 0.018,
@@ -330,7 +372,7 @@ class _LocationPageState extends State<LocationPage>
                 borderRadius: BorderRadius.circular(sw * 0.04),
                 boxShadow: [
                   BoxShadow(
-                    color: theme.accent.withOpacity(0.4),
+                    color: theme.accent.withValues(alpha: 0.4),
                     blurRadius: 16,
                     offset: const Offset(0, 6),
                   ),
@@ -353,7 +395,13 @@ class _LocationPageState extends State<LocationPage>
   }
 
   // ────────────────────────────────────────────────
-  Widget _buildLocationCard(LocationModel location, double sw, double sh, AppLocalizations l10n, AppThemeOption theme) {
+  Widget _buildLocationCard(
+    LocationModel location,
+    double sw,
+    double sh,
+    AppLocalizations l10n,
+    AppThemeOption theme,
+  ) {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.symmetric(
@@ -363,20 +411,20 @@ class _LocationPageState extends State<LocationPage>
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            theme.accent.withOpacity(0.22),
-            theme.primary.withOpacity(0.18),
+            theme.accent.withValues(alpha: 0.22),
+            theme.primary.withValues(alpha: 0.18),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(sw * 0.05),
         border: Border.all(
-          color: theme.accent.withOpacity(0.3),
+          color: theme.accent.withValues(alpha: 0.3),
           width: 1.2,
         ),
         boxShadow: [
           BoxShadow(
-            color: theme.accent.withOpacity(0.12),
+            color: theme.accent.withValues(alpha: 0.12),
             blurRadius: 24,
             offset: const Offset(0, 8),
           ),
@@ -388,10 +436,10 @@ class _LocationPageState extends State<LocationPage>
             width: sw * 0.12,
             height: sw * 0.12,
             decoration: BoxDecoration(
-              color: theme.accent.withOpacity(0.2),
+              color: theme.accent.withValues(alpha: 0.2),
               shape: BoxShape.circle,
               border: Border.all(
-                color: theme.accent.withOpacity(0.4),
+                color: theme.accent.withValues(alpha: 0.4),
                 width: 1.5,
               ),
             ),
@@ -436,7 +484,7 @@ class _LocationPageState extends State<LocationPage>
               vertical: sw * 0.015,
             ),
             decoration: BoxDecoration(
-              color: theme.accent.withOpacity(0.2),
+              color: theme.accent.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(sw * 0.02),
             ),
             child: Text(
@@ -456,7 +504,13 @@ class _LocationPageState extends State<LocationPage>
 
   // ────────────────────────────────────────────────
   Widget _buildGPSButton(
-      BuildContext context, LocationState state, double sw, double sh, AppLocalizations l10n, AppThemeOption theme) {
+    BuildContext context,
+    LocationState state,
+    double sw,
+    double sh,
+    AppLocalizations l10n,
+    AppThemeOption theme,
+  ) {
     final isLoading = state is LocationLoading;
     return SizedBox(
       width: double.infinity,
@@ -470,12 +524,12 @@ class _LocationPageState extends State<LocationPage>
             color: theme.surface,
             borderRadius: BorderRadius.circular(sw * 0.04),
             border: Border.all(
-              color: theme.accent.withOpacity(0.30),
+              color: theme.accent.withValues(alpha: 0.30),
               width: 1.2,
             ),
             boxShadow: [
               BoxShadow(
-                color: theme.accent.withOpacity(0.1),
+                color: theme.accent.withValues(alpha: 0.1),
                 blurRadius: 16,
                 offset: const Offset(0, 4),
               ),
@@ -503,9 +557,7 @@ class _LocationPageState extends State<LocationPage>
               Text(
                 isLoading ? l10n.loading : l10n.useCurrentLocationGps,
                 style: TextStyle(
-                  color: isLoading
-                      ? theme.textLow
-                      : theme.accent,
+                  color: isLoading ? theme.textLow : theme.accent,
                   fontSize: sw * 0.042,
                   fontWeight: FontWeight.w600,
                   letterSpacing: 0.2,
@@ -519,7 +571,12 @@ class _LocationPageState extends State<LocationPage>
   }
 
   // ────────────────────────────────────────────────
-  Widget _buildLoadingState(double sw, double sh, AppLocalizations l10n, AppThemeOption theme) {
+  Widget _buildLoadingState(
+    double sw,
+    double sh,
+    AppLocalizations l10n,
+    AppThemeOption theme,
+  ) {
     return SizedBox(
       height: sh * 0.5,
       child: Center(
@@ -532,7 +589,7 @@ class _LocationPageState extends State<LocationPage>
               child: CircularProgressIndicator(
                 color: theme.accent,
                 strokeWidth: 3,
-                backgroundColor: theme.textLow.withOpacity(0.1),
+                backgroundColor: theme.textLow.withValues(alpha: 0.1),
               ),
             ),
             SizedBox(height: sh * 0.025),
@@ -551,15 +608,19 @@ class _LocationPageState extends State<LocationPage>
   }
 
   // ────────────────────────────────────────────────
-  Widget _buildPermissionDenied(double sw, AppLocalizations l10n, AppThemeOption theme) {
+  Widget _buildPermissionDenied(
+    double sw,
+    AppLocalizations l10n,
+    AppThemeOption theme,
+  ) {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.all(sw * 0.06),
       decoration: BoxDecoration(
-        color: Colors.redAccent.withOpacity(0.1),
+        color: Colors.redAccent.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(sw * 0.05),
         border: Border.all(
-          color: Colors.redAccent.withOpacity(0.3),
+          color: Colors.redAccent.withValues(alpha: 0.3),
           width: 1,
         ),
       ),
@@ -583,10 +644,7 @@ class _LocationPageState extends State<LocationPage>
           SizedBox(height: sw * 0.015),
           Text(
             l10n.enableGpsPermissionDesc,
-            style: TextStyle(
-              color: theme.textLow,
-              fontSize: sw * 0.037,
-            ),
+            style: TextStyle(color: theme.textLow, fontSize: sw * 0.037),
             textAlign: TextAlign.center,
           ),
         ],
@@ -594,8 +652,14 @@ class _LocationPageState extends State<LocationPage>
     );
   }
 
-
-  Widget _buildSaveButton(BuildContext context, LocationState state, double sw, double sh, AppLocalizations l10n, AppThemeOption theme) {
+  Widget _buildSaveButton(
+    BuildContext context,
+    LocationState state,
+    double sw,
+    double sh,
+    AppLocalizations l10n,
+    AppThemeOption theme,
+  ) {
     if (state is! LocationLoaded) return const SizedBox.shrink();
 
     return SizedBox(
@@ -632,7 +696,7 @@ class _LocationPageState extends State<LocationPage>
             borderRadius: BorderRadius.circular(sw * 0.04),
             boxShadow: [
               BoxShadow(
-                color: theme.accent.withOpacity(0.4),
+                color: theme.accent.withValues(alpha: 0.4),
                 blurRadius: 16,
                 offset: const Offset(0, 6),
               ),
@@ -654,10 +718,15 @@ class _LocationPageState extends State<LocationPage>
     );
   }
 
-
   // ────────────────────────────────────────────────
   Widget _buildSearchResults(
-      BuildContext context, LocationSearchResults state, double sw, double sh, AppLocalizations l10n, AppThemeOption theme) {
+    BuildContext context,
+    LocationSearchResults state,
+    double sw,
+    double sh,
+    AppLocalizations l10n,
+    AppThemeOption theme,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -677,12 +746,11 @@ class _LocationPageState extends State<LocationPage>
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           itemCount: state.results.length,
-          separatorBuilder: (_, __) => SizedBox(height: sh * 0.012),
+          separatorBuilder: (_, _) => SizedBox(height: sh * 0.012),
           itemBuilder: (context, index) {
             final LocationModel loc = state.results[index];
             return GestureDetector(
-              onTap: () =>
-                  context.read<LocationCubit>().selectLocation(loc),
+              onTap: () => context.read<LocationCubit>().selectLocation(loc),
               child: Container(
                 padding: EdgeInsets.symmetric(
                   horizontal: sw * 0.045,
@@ -692,7 +760,7 @@ class _LocationPageState extends State<LocationPage>
                   color: theme.surface,
                   borderRadius: BorderRadius.circular(sw * 0.04),
                   border: Border.all(
-                    color: theme.accent.withOpacity(0.10),
+                    color: theme.accent.withValues(alpha: 0.10),
                     width: 1,
                   ),
                 ),
@@ -702,7 +770,7 @@ class _LocationPageState extends State<LocationPage>
                       width: sw * 0.1,
                       height: sw * 0.1,
                       decoration: BoxDecoration(
-                        color: theme.accent.withOpacity(0.15),
+                        color: theme.accent.withValues(alpha: 0.15),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
@@ -724,7 +792,7 @@ class _LocationPageState extends State<LocationPage>
                     ),
                     Icon(
                       Icons.chevron_right_rounded,
-                      color: theme.textLow.withOpacity(0.6),
+                      color: theme.textLow.withValues(alpha: 0.6),
                       size: sw * 0.055,
                     ),
                   ],

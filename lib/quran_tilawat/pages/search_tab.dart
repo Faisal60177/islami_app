@@ -29,9 +29,10 @@ class _SearchOverlayPageState extends State<SearchOverlayPage> {
     _ctrl.dispose();
     super.dispose();
   }
+
   @override
   Widget build(BuildContext context) {
-    final sw  = MediaQuery.of(context).size.width;
+    final sw = MediaQuery.of(context).size.width;
     final rsw = sw.clamp(320.0, 420.0);
 
     return BlocBuilder<SettingsCubit, SettingsState>(
@@ -45,46 +46,58 @@ class _SearchOverlayPageState extends State<SearchOverlayPage> {
                 // ── Search bar with back button ──────────────────
                 Padding(
                   padding: EdgeInsets.fromLTRB(
-                      rsw * 0.030, rsw * 0.020, rsw * 0.040, rsw * 0.014),
+                    rsw * 0.030,
+                    rsw * 0.020,
+                    rsw * 0.040,
+                    rsw * 0.014,
+                  ),
                   child: Row(
                     children: [
                       IconButton(
                         onPressed: () => Navigator.pop(context),
-                        icon: Icon(Icons.arrow_back_rounded,
-                            color: theme.textLow),
+                        icon: Icon(
+                          Icons.arrow_back_rounded,
+                          color: theme.textLow,
+                        ),
                       ),
                       Expanded(
                         child: Container(
                           decoration: BoxDecoration(
                             color: theme.surface,
-                            borderRadius:
-                            BorderRadius.circular(rsw * 0.034),
+                            borderRadius: BorderRadius.circular(rsw * 0.034),
                             border: Border.all(
-                                color: theme.accent.withOpacity(0.25),
-                                width: 1),
+                              color: theme.accent.withValues(alpha: 0.25),
+                              width: 1,
+                            ),
                           ),
                           child: Row(
                             children: [
                               SizedBox(width: rsw * 0.026),
-                              Icon(Icons.search_rounded,
-                                  color: theme.accent, size: rsw * 0.046),
+                              Icon(
+                                Icons.search_rounded,
+                                color: theme.accent,
+                                size: rsw * 0.046,
+                              ),
                               SizedBox(width: rsw * 0.014),
                               Expanded(
                                 child: TextField(
                                   controller: _ctrl,
                                   autofocus: true,
                                   style: TextStyle(
-                                      color: theme.textHigh,
-                                      fontSize: rsw * 0.032),
+                                    color: theme.textHigh,
+                                    fontSize: rsw * 0.032,
+                                  ),
                                   decoration: InputDecoration(
                                     hintText: 'Search surah by name or number…',
                                     hintStyle: TextStyle(
-                                        color: theme.textLow,
-                                        fontSize: rsw * 0.026),
+                                      color: theme.textLow,
+                                      fontSize: rsw * 0.026,
+                                    ),
                                     border: InputBorder.none,
                                     isDense: true,
                                     contentPadding: EdgeInsets.symmetric(
-                                        vertical: rsw * 0.026),
+                                      vertical: rsw * 0.026,
+                                    ),
                                   ),
                                   onChanged: (v) =>
                                       context.read<QuranCubit>().search(v),
@@ -98,9 +111,11 @@ class _SearchOverlayPageState extends State<SearchOverlayPage> {
                                   },
                                   child: Padding(
                                     padding: EdgeInsets.all(rsw * 0.016),
-                                    child: Icon(Icons.clear_rounded,
-                                        color: theme.textLow,
-                                        size: rsw * 0.030),
+                                    child: Icon(
+                                      Icons.clear_rounded,
+                                      color: theme.textLow,
+                                      size: rsw * 0.030,
+                                    ),
                                   ),
                                 ),
                             ],
@@ -116,26 +131,27 @@ class _SearchOverlayPageState extends State<SearchOverlayPage> {
                   child: _ctrl.text.trim().isEmpty
                       ? _EmptyPrompt(theme: theme, rsw: rsw)
                       : BlocBuilder<QuranCubit, QuranState>(
-                    builder: (_, state) {
-                      if (state is! QuranLoaded) return const SizedBox();
-                      final results = state.searchResults;
-                      if (results.isEmpty) {
-                        return _NoResults(theme: theme, rsw: rsw);
-                      }
-                      return ListView.builder(
-                        padding: EdgeInsets.symmetric(
-                            horizontal: rsw * 0.040,
-                            vertical: rsw * 0.014),
-                        physics: const BouncingScrollPhysics(),
-                        itemCount: results.length,
-                        itemBuilder: (_, i) => _SearchResultTile(
-                          surah: results[i],
-                          theme: theme,
-                          rsw: rsw,
+                          builder: (_, state) {
+                            if (state is! QuranLoaded) return const SizedBox();
+                            final results = state.searchResults;
+                            if (results.isEmpty) {
+                              return _NoResults(theme: theme, rsw: rsw);
+                            }
+                            return ListView.builder(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: rsw * 0.040,
+                                vertical: rsw * 0.014,
+                              ),
+                              physics: const BouncingScrollPhysics(),
+                              itemCount: results.length,
+                              itemBuilder: (_, i) => _SearchResultTile(
+                                surah: results[i],
+                                theme: theme,
+                                rsw: rsw,
+                              ),
+                            );
+                          },
                         ),
-                      );
-                    },
-                  ),
                 ),
               ],
             ),
@@ -158,15 +174,24 @@ class _EmptyPrompt extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.search_rounded, color: theme.textLow.withOpacity(0.4), size: rsw * 0.14),
+          Icon(
+            Icons.search_rounded,
+            color: theme.textLow.withValues(alpha: 0.4),
+            size: rsw * 0.14,
+          ),
           SizedBox(height: rsw * 0.025),
-          Text('Start typing to search surahs',
-              style: TextStyle(color: theme.textLow, fontSize: rsw * 0.032)),
+          Text(
+            'Start typing to search surahs',
+            style: TextStyle(color: theme.textLow, fontSize: rsw * 0.032),
+          ),
           SizedBox(height: rsw * 0.008),
-          Text('Search by name, translation, or number',
-              style: TextStyle(
-                  color: theme.textLow.withOpacity(0.6),
-                  fontSize: rsw * 0.024)),
+          Text(
+            'Search by name, translation, or number',
+            style: TextStyle(
+              color: theme.textLow.withValues(alpha: 0.6),
+              fontSize: rsw * 0.024,
+            ),
+          ),
         ],
       ),
     );
@@ -185,10 +210,16 @@ class _NoResults extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.search_off_rounded, color: theme.textLow, size: rsw * 0.12),
+          Icon(
+            Icons.search_off_rounded,
+            color: theme.textLow,
+            size: rsw * 0.12,
+          ),
           SizedBox(height: rsw * 0.025),
-          Text('No surahs found',
-              style: TextStyle(color: theme.textLow, fontSize: rsw * 0.034)),
+          Text(
+            'No surahs found',
+            style: TextStyle(color: theme.textLow, fontSize: rsw * 0.034),
+          ),
         ],
       ),
     );
@@ -214,20 +245,23 @@ class _SearchResultTile extends StatelessWidget {
         MaterialPageRoute(
           builder: (_) => BlocProvider.value(
             value: context.read<QuranCubit>(),
-            child: QuranReaderPage(
-                initialPage: surah.page, surah: surah),
+            child: QuranReaderPage(initialPage: surah.page, surah: surah),
           ),
         ),
       ),
       child: Container(
         margin: EdgeInsets.only(bottom: rsw * 0.016),
         padding: EdgeInsets.symmetric(
-            horizontal: rsw * 0.030, vertical: rsw * 0.022),
+          horizontal: rsw * 0.030,
+          vertical: rsw * 0.022,
+        ),
         decoration: BoxDecoration(
           color: theme.surface,
           borderRadius: BorderRadius.circular(rsw * 0.030),
           border: Border.all(
-              color: theme.accent.withOpacity(0.10), width: 0.8),
+            color: theme.accent.withValues(alpha: 0.10),
+            width: 0.8,
+          ),
         ),
         child: Row(
           children: [
@@ -235,8 +269,9 @@ class _SearchResultTile extends StatelessWidget {
               width: rsw * 0.082,
               height: rsw * 0.082,
               decoration: BoxDecoration(
-                  color: theme.accent.withOpacity(0.12),
-                  shape: BoxShape.circle),
+                color: theme.accent.withValues(alpha: 0.12),
+                shape: BoxShape.circle,
+              ),
               child: Center(
                 child: Text(
                   '${surah.number}',
@@ -268,7 +303,9 @@ class _SearchResultTile extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                        color: theme.textLow, fontSize: rsw * 0.024),
+                      color: theme.textLow,
+                      fontSize: rsw * 0.024,
+                    ),
                   ),
                 ],
               ),

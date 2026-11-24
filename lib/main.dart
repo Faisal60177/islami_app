@@ -34,18 +34,15 @@ import 'package:muslim_app/alarm/services/alarm_ring_service.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 
 void main() async {
-  //1. Flutter binding
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
-  //2. UI setup
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
   await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 
-  //2.5. Background audio (Quran Tafsir)
   await JustAudioBackground.init(
     androidNotificationChannelId: 'com.siratalmustaqeem.muslimlife.audio',
     androidNotificationChannelName: 'Quran Tafsir Audio',
@@ -53,55 +50,42 @@ void main() async {
     androidStopForegroundOnPause: true,
   );
 
-  // 3. Alarm/notification system
   await AlarmRingService.initialize();
 
-
-  // Timezone
   tz.initializeTimeZones();
 
-  // Creates notification channels and sets the local timezone location.
   await NotificationService.instance.init();
 
   await NotificationService.instance.requestPermissions();
 
   await DailyRefillService.ensureChainStarted();
 
-  //4. Firebase
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
-  //5. App metadata
   await AppInfo.init();
 
-  // 6. Saved language
   final prefs = await SharedPreferences.getInstance();
   final savedLanguage = prefs.getString('language') ?? 'en';
 
-  // 7. Storage / repository instances
-  final locationStorage    = LocationStorage();
+  final locationStorage = LocationStorage();
   final prayerTimesStorage = PrayerTimesStorage();
-  final permissionService  = PermissionService();
+  final permissionService = PermissionService();
   final locationRepository = LocationRepository();
 
-  final duasRepository        = DuasRepository();
+  final duasRepository = DuasRepository();
   final inspirationRepository = InspirationRepository();
-  final masailRepository      = MasailRepository();
+  final masailRepository = MasailRepository();
 
-  //8. Pre-built SQLite copies
   await duasRepository.initDatabase();
   await inspirationRepository.initDatabase();
   await masailRepository.initDatabase();
 
-  //9. Splash removed only once everything above is ready
   FlutterNativeSplash.remove();
 
   runApp(
     ProviderScope(
       child: MultiBlocProvider(
         providers: [
-          // Settings first — theme/language wraps the whole app.
           BlocProvider<SettingsCubit>(create: (_) => SettingsCubit()),
 
           BlocProvider(
@@ -121,16 +105,17 @@ void main() async {
             create: (_) => NotificationCubit(NotificationRepository()),
           ),
           BlocProvider(
-            create: (_) => DuasCubit(duasRepository)
-              ..updateLanguage(savedLanguage),
+            create: (_) =>
+                DuasCubit(duasRepository)..updateLanguage(savedLanguage),
           ),
           BlocProvider(
-            create: (_) => InspirationCubit(inspirationRepository)
-              ..updateLanguage(savedLanguage),
+            create: (_) =>
+                InspirationCubit(inspirationRepository)
+                  ..updateLanguage(savedLanguage),
           ),
           BlocProvider(
-            create: (_) => MasailCubit(masailRepository)
-              ..updateLanguage(savedLanguage),
+            create: (_) =>
+                MasailCubit(masailRepository)..updateLanguage(savedLanguage),
           ),
           BlocProvider(create: (_) => AlarmCubit()..load()),
         ],
@@ -145,13 +130,12 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    //React to settings changes so theme + RTL apply globally
     return BlocBuilder<SettingsCubit, SettingsState>(
       builder: (context, settingsState) {
         final appTheme = getThemeById(settingsState.themeMode);
 
-        // Arabic & Urdu are RTL
-        final isRtl = settingsState.languageCode == 'ar' ||
+        final isRtl =
+            settingsState.languageCode == 'ar' ||
             settingsState.languageCode == 'ur';
 
         return MaterialApp(
@@ -159,15 +143,12 @@ class MyApp extends StatelessWidget {
           title: 'Prayer Times App',
           theme: buildThemeData(appTheme),
 
-          //RTL / LTR support
           builder: (context, child) => Directionality(
             textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
             child: child!,
           ),
 
-          home: AlarmLaunchGate(
-              child: const PrayerTimesPage(),
-            ),
+          home: AlarmLaunchGate(child: const HomePage()),
         );
       },
     );

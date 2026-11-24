@@ -81,23 +81,29 @@ class _InspirationPageState extends State<InspirationPage>
         backgroundColor: theme.surface,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new_rounded,
-              color: theme.textHigh, size: 20),
+          icon: Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: theme.textHigh,
+            size: 20,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
           'Inspiration',
           style: TextStyle(
-            color:      theme.textHigh,
-            fontSize:   20,
+            color: theme.textHigh,
+            fontSize: 20,
             fontWeight: FontWeight.w600,
             letterSpacing: 0.3,
           ),
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.bookmark_border_rounded,
-                color: theme.textHigh, size: 24),
+            icon: Icon(
+              Icons.bookmark_border_rounded,
+              color: theme.textHigh,
+              size: 24,
+            ),
             onPressed: () {
               // ── Navigate to dedicated bookmarks page ───────────
               Navigator.push(
@@ -118,8 +124,7 @@ class _InspirationPageState extends State<InspirationPage>
           // ── Only rebuild categories once on first load ─────────
           // Do NOT re-trigger loadAllInspirations on every state
           // change — that caused the spinner loop
-          if (state is InspirationCategoriesLoaded &&
-              !_categoriesLoaded) {
+          if (state is InspirationCategoriesLoaded && !_categoriesLoaded) {
             _categoriesLoaded = true;
             setState(() {
               _categories = state.categories;
@@ -149,7 +154,10 @@ class _InspirationPageState extends State<InspirationPage>
   Widget _buildCategoryTabs(AppThemeOption theme) {
     final allCategories = [
       InspirationCategoryModel(
-          categoryId: -1, categoryTitle: 'All', categoryIcon: ''),
+        categoryId: -1,
+        categoryTitle: 'All',
+        categoryIcon: '',
+      ),
       ..._categories,
     ];
 
@@ -160,37 +168,30 @@ class _InspirationPageState extends State<InspirationPage>
         padding: const EdgeInsets.symmetric(horizontal: 16),
         itemCount: allCategories.length,
         itemBuilder: (context, index) {
-          final cat        = allCategories[index];
+          final cat = allCategories[index];
           final isSelected = cat.categoryId == _selectedCategoryId;
           return GestureDetector(
             onTap: () => _onCategorySelected(cat.categoryId),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
-              margin:  const EdgeInsets.only(right: 10),
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 20, vertical: 8),
+              margin: const EdgeInsets.only(right: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
               decoration: BoxDecoration(
-                color: isSelected
-                    ? theme.accent
-                    : theme.cardColor,
+                color: isSelected ? theme.accent : theme.cardColor,
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
                   color: isSelected
                       ? theme.accent
-                      : theme.accent.withOpacity(0.2),
+                      : theme.accent.withValues(alpha: 0.2),
                   width: 1,
                 ),
               ),
               child: Text(
                 cat.categoryTitle,
                 style: TextStyle(
-                  color: isSelected
-                      ? Colors.white
-                      : theme.textLow,
-                  fontSize:   13,
-                  fontWeight: isSelected
-                      ? FontWeight.w700
-                      : FontWeight.w400,
+                  color: isSelected ? Colors.white : theme.textLow,
+                  fontSize: 13,
+                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
                   letterSpacing: 0.2,
                 ),
               ),
@@ -204,23 +205,23 @@ class _InspirationPageState extends State<InspirationPage>
   Widget _buildBody(InspirationState state, AppThemeOption theme) {
     if (state is InspirationLoading) {
       return Center(
-        child: CircularProgressIndicator(
-            color: theme.accent, strokeWidth: 2),
+        child: CircularProgressIndicator(color: theme.accent, strokeWidth: 2),
       );
     }
 
     if (state is InspirationError) {
       return Center(
-        child: Text(state.message,
-            style: TextStyle(color: theme.textLow)),
+        child: Text(state.message, style: TextStyle(color: theme.textLow)),
       );
     }
 
     if (state is InspirationLoaded) {
       if (state.inspirations.isEmpty) {
         return Center(
-          child: Text('No inspirations found.',
-              style: TextStyle(color: theme.textLow, fontSize: 14)),
+          child: Text(
+            'No inspirations found.',
+            style: TextStyle(color: theme.textLow, fontSize: 14),
+          ),
         );
       }
       return _buildGrid(state.inspirations);
@@ -231,14 +232,14 @@ class _InspirationPageState extends State<InspirationPage>
 
   Widget _buildGrid(List<InspirationModel> inspirations) {
     return MasonryGridView.count(
-      crossAxisCount:  2,
+      crossAxisCount: 2,
       mainAxisSpacing: 10,
       crossAxisSpacing: 10,
       padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
       itemCount: inspirations.length,
       itemBuilder: (context, index) {
         return _InspirationCard(
-          inspiration:    inspirations[index],
+          inspiration: inspirations[index],
           gradientColors: gradientForIndex(index),
           onTap: () => Navigator.push(
             context,
@@ -249,9 +250,9 @@ class _InspirationPageState extends State<InspirationPage>
               ),
             ),
           ),
-          onFavoriteTap: () => context
-              .read<InspirationCubit>()
-              .toggleFavorite(inspirations[index]),
+          onFavoriteTap: () => context.read<InspirationCubit>().toggleFavorite(
+            inspirations[index],
+          ),
         );
       },
     );
@@ -263,9 +264,9 @@ class _InspirationPageState extends State<InspirationPage>
 //  for contrast, same treatment as category cards elsewhere)
 class _InspirationCard extends StatefulWidget {
   final InspirationModel inspiration;
-  final List<Color>      gradientColors;
-  final VoidCallback     onTap;
-  final VoidCallback     onFavoriteTap;
+  final List<Color> gradientColors;
+  final VoidCallback onTap;
+  final VoidCallback onFavoriteTap;
 
   const _InspirationCard({
     required this.inspiration,
@@ -299,24 +300,36 @@ class _InspirationCardState extends State<_InspirationCard> {
           children: [
             if (inspiration.reference != null &&
                 inspiration.reference!.isNotEmpty)
-              Text(inspiration.reference!,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(color: Colors.white54, fontSize: 10)),
+              Text(
+                inspiration.reference!,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(color: Colors.white54, fontSize: 10),
+              ),
             const SizedBox(height: 4),
-            Text(inspiration.title,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                    color: Colors.white, fontSize: 13,
-                    fontWeight: FontWeight.w600, height: 1.3)),
+            Text(
+              inspiration.title,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                height: 1.3,
+              ),
+            ),
             const SizedBox(height: 8),
-            Text(inspiration.quoteText,
-                maxLines: 4,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                    color: Colors.white, fontSize: 15,
-                    fontWeight: FontWeight.w700, height: 1.4)),
+            Text(
+              inspiration.quoteText,
+              maxLines: 4,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                height: 1.4,
+              ),
+            ),
             const SizedBox(height: 10),
             Align(
               alignment: Alignment.bottomRight,

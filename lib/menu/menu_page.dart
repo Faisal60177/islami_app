@@ -24,7 +24,7 @@ class MenuPage extends StatelessWidget {
   const MenuPage({super.key});
 
   static final List<Widget> _pages = [
-    const PrayerTimesPage(),
+    const HomePage(),
     const ToolsPage(),
     const QuranPage(),
     const DuasPage(),
@@ -37,7 +37,7 @@ class MenuPage extends StatelessWidget {
     return BlocBuilder<SettingsCubit, SettingsState>(
       builder: (context, state) {
         final l10n = AppLocalizations(state.languageCode);
-        final thm  = getThemeById(state.themeMode);
+        final thm = getThemeById(state.themeMode);
 
         return Scaffold(
           backgroundColor: thm.background,
@@ -51,7 +51,10 @@ class MenuPage extends StatelessWidget {
 
   // ── AppBar ──────────────────────────────────────────────────────────────
   PreferredSizeWidget _buildAppBar(
-      BuildContext context, AppLocalizations l10n, AppThemeOption thm) {
+    BuildContext context,
+    AppLocalizations l10n,
+    AppThemeOption thm,
+  ) {
     return AppBar(
       automaticallyImplyLeading: false,
       backgroundColor: thm.surface,
@@ -61,7 +64,7 @@ class MenuPage extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: thm.accent.withOpacity(0.2),
+              color: thm.accent.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(10),
             ),
             child: ClipRRect(
@@ -87,35 +90,37 @@ class MenuPage extends StatelessWidget {
         ],
       ),
       actions: [
-        Consumer(builder: (_, ref, __) {
-          final auth = ref.watch(authNotifierProvider);
-          if (!auth.isLoggedIn) return const SizedBox.shrink();
-          return GestureDetector(
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const ProfilePage()),
-            ),
-            child: Container(
-              margin: const EdgeInsets.only(right: 16),
-              width: 38,
-              height: 38,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: thm.accent.withOpacity(0.6),
-                border: Border.all(color: thm.accent.withOpacity(0.5)),
-              ),
-              child: auth.photoUrl.isNotEmpty
-                  ? ClipOval(
-                child: Image.network(
-                  auth.photoUrl,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) =>
-                      _initials(auth.displayName),
+        Consumer(
+          builder: (_, ref, _) {
+            final auth = ref.watch(authNotifierProvider);
+            if (!auth.isLoggedIn) return const SizedBox.shrink();
+            return GestureDetector(
+              onTap: () => Navigator.of(
+                context,
+              ).push(MaterialPageRoute(builder: (_) => const ProfilePage())),
+              child: Container(
+                margin: const EdgeInsets.only(right: 16),
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: thm.accent.withValues(alpha: 0.6),
+                  border: Border.all(color: thm.accent.withValues(alpha: 0.5)),
                 ),
-              )
-                  : _initials(auth.displayName),
-            ),
-          );
-        }),
+                child: auth.photoUrl.isNotEmpty
+                    ? ClipOval(
+                        child: Image.network(
+                          auth.photoUrl,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, _, _) =>
+                              _initials(auth.displayName),
+                        ),
+                      )
+                    : _initials(auth.displayName),
+              ),
+            );
+          },
+        ),
       ],
     );
   }
@@ -135,7 +140,10 @@ class MenuPage extends StatelessWidget {
 
   // ── Body ────────────────────────────────────────────────────────────────
   Widget _buildBody(
-      BuildContext context, AppLocalizations l10n, AppThemeOption thm) {
+    BuildContext context,
+    AppLocalizations l10n,
+    AppThemeOption thm,
+  ) {
     return LayoutBuilder(
       builder: (context, constraints) {
         final horizontal = constraints.maxWidth > 600 ? 24.0 : 16.0;
@@ -149,7 +157,6 @@ class MenuPage extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-
                     // ── Account section ──────────────────────────────────
                     _sectionLabel(l10n.account, thm),
                     const SizedBox(height: 10),
@@ -170,7 +177,6 @@ class MenuPage extends StatelessWidget {
                           subtitle: l10n.settingsSubtitle,
                           page: const SettingsPage(),
                         ),
-
                       ],
                     ),
                     const SizedBox(height: 24),
@@ -217,7 +223,8 @@ class MenuPage extends StatelessWidget {
                           icon: Icons.info_outline_rounded,
                           iconColor: const Color(0xFFFF9800),
                           title: l10n.aboutApp,
-                          subtitle: '${l10n.aboutSubtitle} • v${AppInfo.version}',
+                          subtitle:
+                              '${l10n.aboutSubtitle} • v${AppInfo.version}',
                           page: const AboutPage(),
                         ),
                       ],
@@ -263,12 +270,12 @@ class MenuPage extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            thm.accent.withOpacity(0.1),
-            thm.accent.withOpacity(0.05),
+            thm.accent.withValues(alpha: 0.1),
+            thm.accent.withValues(alpha: 0.05),
           ],
         ),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: thm.accent.withOpacity(0.2)),
+        border: Border.all(color: thm.accent.withValues(alpha: 0.2)),
       ),
       child: Column(
         children: [
@@ -295,24 +302,25 @@ class MenuPage extends StatelessWidget {
 
   // ── Bottom Nav ───────────────────────────────────────────────────────────
   Widget _buildNav(
-      BuildContext context, AppLocalizations l10n, AppThemeOption thm) {
+    BuildContext context,
+    AppLocalizations l10n,
+    AppThemeOption thm,
+  ) {
     final items = [
-      (l10n.today,  'assets/icons/today.png'),
-      (l10n.tools,  'assets/icons/features.png'),
-      (l10n.quran,  'assets/icons/quran_tilawat.png'),
-      (l10n.duas,   'assets/icons/duas.png'),
-      (l10n.menu,   'assets/icons/menu.png'),
+      (l10n.today, 'assets/icons/today.png'),
+      (l10n.tools, 'assets/icons/features.png'),
+      (l10n.quran, 'assets/icons/quran_tilawat.png'),
+      (l10n.duas, 'assets/icons/duas.png'),
+      (l10n.menu, 'assets/icons/menu.png'),
     ];
 
     return Container(
       decoration: BoxDecoration(
         color: thm.surface,
         border: Border(
-          top: BorderSide(color: thm.accent.withOpacity(0.25), width: 1),
+          top: BorderSide(color: thm.accent.withValues(alpha: 0.25), width: 1),
         ),
-        boxShadow: const [
-          BoxShadow(color: Colors.black54, blurRadius: 20),
-        ],
+        boxShadow: const [BoxShadow(color: Colors.black54, blurRadius: 20)],
       ),
       child: SafeArea(
         top: false,
@@ -321,9 +329,9 @@ class MenuPage extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: items.asMap().entries.map((e) {
-              final i      = e.key;
-              final label  = e.value.$1;
-              final asset  = e.value.$2;
+              final i = e.key;
+              final label = e.value.$1;
+              final asset = e.value.$2;
               final active = i == 4;
 
               return GestureDetector(
@@ -332,7 +340,7 @@ class MenuPage extends StatelessWidget {
                     Navigator.pushReplacement(
                       context,
                       PageRouteBuilder(
-                        pageBuilder: (_, __, ___) => _pages[i],
+                        pageBuilder: (_, _, _) => _pages[i],
                         transitionDuration: Duration.zero,
                         reverseTransitionDuration: Duration.zero,
                       ),
@@ -347,7 +355,7 @@ class MenuPage extends StatelessWidget {
                   ),
                   decoration: BoxDecoration(
                     color: active
-                        ? thm.accent.withOpacity(0.22)
+                        ? thm.accent.withValues(alpha: 0.22)
                         : Colors.transparent,
                     borderRadius: BorderRadius.circular(16),
                   ),
@@ -360,8 +368,9 @@ class MenuPage extends StatelessWidget {
                         label,
                         style: TextStyle(
                           fontSize: 10,
-                          fontWeight:
-                          active ? FontWeight.w700 : FontWeight.w400,
+                          fontWeight: active
+                              ? FontWeight.w700
+                              : FontWeight.w400,
                           color: active ? thm.accent : thm.textLow,
                         ),
                       ),
@@ -397,42 +406,49 @@ class _UserGreetingCard extends ConsumerWidget {
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: thm.accent.withOpacity(0.2)),
+        border: Border.all(color: thm.accent.withValues(alpha: 0.2)),
         boxShadow: [
           BoxShadow(
-              color: Colors.black.withOpacity(thm.isDark ? 0.3 : 0.08),
-              blurRadius: 12,
-              offset: const Offset(0, 4)),
+            color: Colors.black.withValues(alpha: thm.isDark ? 0.3 : 0.08),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
         ],
       ),
       child: Row(
         children: [
           // Avatar
           GestureDetector(
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const ProfilePage()),
-            ),
+            onTap: () => Navigator.of(
+              context,
+            ).push(MaterialPageRoute(builder: (_) => const ProfilePage())),
             child: Container(
-              width: 60, height: 60,
+              width: 60,
+              height: 60,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: thm.accent.withOpacity(0.6),
-                border: Border.all(color: thm.accent.withOpacity(0.5), width: 2),
+                color: thm.accent.withValues(alpha: 0.6),
+                border: Border.all(
+                  color: thm.accent.withValues(alpha: 0.5),
+                  width: 2,
+                ),
               ),
               child: auth.isLoggedIn && auth.photoUrl.isNotEmpty
                   ? ClipOval(
-                  child: Image.network(auth.photoUrl, fit: BoxFit.cover))
+                      child: Image.network(auth.photoUrl, fit: BoxFit.cover),
+                    )
                   : Center(
-                child: Text(
-                  auth.isLoggedIn && auth.displayName.isNotEmpty
-                      ? auth.displayName[0].toUpperCase()
-                      : '🙋',
-                  style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold),
-                ),
-              ),
+                      child: Text(
+                        auth.isLoggedIn && auth.displayName.isNotEmpty
+                            ? auth.displayName[0].toUpperCase()
+                            : '🙋',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
             ),
           ),
           const SizedBox(width: 14),
@@ -450,13 +466,14 @@ class _UserGreetingCard extends ConsumerWidget {
                 Text(
                   auth.isLoggedIn
                       ? (auth.displayName.isNotEmpty
-                      ? auth.displayName
-                      : l10n.muslimUser)
+                            ? auth.displayName
+                            : l10n.muslimUser)
                       : l10n.signInSubtitle,
                   style: TextStyle(
-                      color: thm.textHigh,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 17),
+                    color: thm.textHigh,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 17,
+                  ),
                   overflow: TextOverflow.ellipsis,
                 ),
                 if (!auth.isLoggedIn)
@@ -467,15 +484,21 @@ class _UserGreetingCard extends ConsumerWidget {
                     child: Container(
                       margin: const EdgeInsets.only(top: 6),
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 4),
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
-                          color: thm.accent.withOpacity(0.6),
-                          borderRadius: BorderRadius.circular(8)),
-                      child: Text(l10n.signIn,
-                          style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700)),
+                        color: thm.accent.withValues(alpha: 0.6),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        l10n.signIn,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
                     ),
                   ),
               ],
@@ -485,21 +508,23 @@ class _UserGreetingCard extends ConsumerWidget {
           // Active badge
           if (auth.isLoggedIn)
             Container(
-              padding:
-              const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               decoration: BoxDecoration(
-                color: thm.accent.withOpacity(0.1),
+                color: thm.accent.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: thm.accent.withOpacity(0.3)),
+                border: Border.all(color: thm.accent.withValues(alpha: 0.3)),
               ),
               child: Column(
                 children: [
                   const Text('🌙', style: TextStyle(fontSize: 16)),
-                  Text(l10n.activeBadge,
-                      style: TextStyle(
-                          color: thm.accent,
-                          fontSize: 10,
-                          fontWeight: FontWeight.w700)),
+                  Text(
+                    l10n.activeBadge,
+                    style: TextStyle(
+                      color: thm.accent,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -521,10 +546,10 @@ class _MenuSection extends StatelessWidget {
       decoration: BoxDecoration(
         color: thm.cardColor,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: thm.accent.withOpacity(0.2)),
+        border: Border.all(color: thm.accent.withValues(alpha: 0.2)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(thm.isDark ? 0.2 : 0.05),
+            color: Colors.black.withValues(alpha: thm.isDark ? 0.2 : 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -532,8 +557,8 @@ class _MenuSection extends StatelessWidget {
       ),
       child: Column(
         children: items.asMap().entries.map((e) {
-          final i      = e.key;
-          final item   = e.value;
+          final i = e.key;
+          final item = e.value;
           final isLast = i == items.length - 1;
           return Column(
             children: [
@@ -541,7 +566,7 @@ class _MenuSection extends StatelessWidget {
               if (!isLast)
                 Divider(
                   height: 1,
-                  color: thm.accent.withOpacity(0.15),
+                  color: thm.accent.withValues(alpha: 0.15),
                   indent: 58,
                 ),
             ],
@@ -567,10 +592,10 @@ class _MenuTile extends StatelessWidget {
         onTap: () => Navigator.push(
           context,
           PageRouteBuilder(
-            pageBuilder: (_, __, ___) => item.page,
+            pageBuilder: (_, _, _) => item.page,
             transitionDuration: const Duration(milliseconds: 280),
             reverseTransitionDuration: const Duration(milliseconds: 280),
-            transitionsBuilder: (_, animation, __, child) {
+            transitionsBuilder: (_, animation, _, child) {
               return SlideTransition(
                 position: Tween<Offset>(
                   begin: const Offset(1, 0),
@@ -581,7 +606,7 @@ class _MenuTile extends StatelessWidget {
             },
           ),
         ),
-        splashColor: thm.accent.withOpacity(0.1),
+        splashColor: thm.accent.withValues(alpha: 0.1),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           child: Row(
@@ -590,7 +615,7 @@ class _MenuTile extends StatelessWidget {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: item.iconColor.withOpacity(0.12),
+                  color: item.iconColor.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(item.icon, color: item.iconColor, size: 20),
@@ -623,10 +648,7 @@ class _MenuTile extends StatelessWidget {
                       const SizedBox(height: 2),
                       Text(
                         item.subtitle!,
-                        style: TextStyle(
-                          color: thm.textLow,
-                          fontSize: 12,
-                        ),
+                        style: TextStyle(color: thm.textLow, fontSize: 12),
                       ),
                     ],
                   ],
@@ -648,11 +670,11 @@ class _MenuTile extends StatelessWidget {
 // ─── menu Item data class ─────────────────────────────────────────────────────
 class _MenuItem {
   final IconData icon;
-  final Color    iconColor;
-  final String   title;
-  final String?  subtitle;
-  final String?  badge;
-  final Widget   page;
+  final Color iconColor;
+  final String title;
+  final String? subtitle;
+  final String? badge;
+  final Widget page;
 
   const _MenuItem({
     required this.icon,
@@ -676,7 +698,7 @@ class _SignOutTile extends StatelessWidget {
       decoration: BoxDecoration(
         color: thm.cardColor,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.red.withOpacity(0.2)),
+        border: Border.all(color: Colors.red.withValues(alpha: 0.2)),
       ),
       child: Material(
         color: Colors.transparent,
@@ -685,10 +707,10 @@ class _SignOutTile extends StatelessWidget {
           onTap: () => Navigator.push(
             context,
             PageRouteBuilder(
-              pageBuilder: (_, __, ___) => const SignOutPage(),
+              pageBuilder: (_, _, _) => const SignOutPage(),
               transitionDuration: const Duration(milliseconds: 280),
               reverseTransitionDuration: const Duration(milliseconds: 280),
-              transitionsBuilder: (_, animation, __, child) {
+              transitionsBuilder: (_, animation, _, child) {
                 return SlideTransition(
                   position: Tween<Offset>(
                     begin: const Offset(1, 0),
@@ -699,7 +721,7 @@ class _SignOutTile extends StatelessWidget {
               },
             ),
           ),
-          splashColor: Colors.red.withOpacity(0.08),
+          splashColor: Colors.red.withValues(alpha: 0.08),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             child: Row(
@@ -708,7 +730,7 @@ class _SignOutTile extends StatelessWidget {
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: Colors.red.withOpacity(0.1),
+                    color: Colors.red.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Icon(
@@ -733,10 +755,7 @@ class _SignOutTile extends StatelessWidget {
                       const SizedBox(height: 2),
                       Text(
                         l10n.signOutSubtitle,
-                        style: TextStyle(
-                          color: thm.textLow,
-                          fontSize: 12,
-                        ),
+                        style: TextStyle(color: thm.textLow, fontSize: 12),
                       ),
                     ],
                   ),

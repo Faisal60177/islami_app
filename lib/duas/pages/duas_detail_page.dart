@@ -6,7 +6,6 @@ import '../model/duas_model.dart';
 import 'package:muslim_app/utils/language_utils.dart';
 import 'package:muslim_app/settings/l10n/app_localizations.dart';
 import 'package:muslim_app/settings/cubit/settings_cubit.dart';
-import 'package:muslim_app/settings/cubit/settings_state.dart';
 import 'package:muslim_app/settings/theme/app_themes.dart';
 
 class DuasDetailPage extends StatefulWidget {
@@ -19,11 +18,10 @@ class DuasDetailPage extends StatefulWidget {
 
 class _DuasDetailPageState extends State<DuasDetailPage>
     with TickerProviderStateMixin {
-
   late DuasModel _dua;
   late String _userId;
-  late bool _isRtl;         // ✅ NEW
-  late bool _isArabicUser;  // ✅ NEW
+  late bool _isRtl; // ✅ NEW
+  late bool _isArabicUser; // ✅ NEW
   bool _isPlaying = false;
   bool _interactionLoaded = false;
 
@@ -42,14 +40,18 @@ class _DuasDetailPageState extends State<DuasDetailPage>
     _userId = cubit.userId;
 
     // ✅ resolve RTL and Arabic flags once — from cubit language
-    _isRtl        = LanguageUtils.isRtl(cubit.currentLanguageCode);
+    _isRtl = LanguageUtils.isRtl(cubit.currentLanguageCode);
     _isArabicUser = LanguageUtils.isArabicUser(cubit.currentLanguageCode);
 
     _waveCtrl = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 800));
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
 
     _favCtrl = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 400));
+      vsync: this,
+      duration: const Duration(milliseconds: 400),
+    );
     _favBounce = TweenSequence([
       TweenSequenceItem(tween: Tween(begin: 1.0, end: 1.5), weight: 40),
       TweenSequenceItem(tween: Tween(begin: 1.5, end: 0.88), weight: 30),
@@ -57,7 +59,9 @@ class _DuasDetailPageState extends State<DuasDetailPage>
     ]).animate(CurvedAnimation(parent: _favCtrl, curve: Curves.easeOut));
 
     _bkmCtrl = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 400));
+      vsync: this,
+      duration: const Duration(milliseconds: 400),
+    );
     _bkmBounce = TweenSequence([
       TweenSequenceItem(tween: Tween(begin: 1.0, end: 1.5), weight: 40),
       TweenSequenceItem(tween: Tween(begin: 1.5, end: 0.88), weight: 30),
@@ -68,11 +72,13 @@ class _DuasDetailPageState extends State<DuasDetailPage>
   }
 
   Future<void> _loadUserInteraction() async {
-    final interaction = await context.read<DuasCubit>()
-        .repository.getUserInteractionForDua(_userId, _dua.id);
+    final interaction = await context
+        .read<DuasCubit>()
+        .repository
+        .getUserInteractionForDua(_userId, _dua.id);
     if (interaction != null && mounted) {
       setState(() {
-        _dua.isFavorite   = interaction['is_favorite']   == 1;
+        _dua.isFavorite = interaction['is_favorite'] == 1;
         _dua.isBookmarked = interaction['is_bookmarked'] == 1;
         _interactionLoaded = true;
       });
@@ -95,7 +101,9 @@ class _DuasDetailPageState extends State<DuasDetailPage>
     HapticFeedback.lightImpact();
     setState(() => _dua.isFavorite = !_dua.isFavorite);
     _favCtrl.forward(from: 0);
-    final l10n = AppLocalizations(context.read<SettingsCubit>().state.languageCode);
+    final l10n = AppLocalizations(
+      context.read<SettingsCubit>().state.languageCode,
+    );
     _toast(
       _dua.isFavorite ? l10n.addedToFavorites : l10n.removedFromFavorites,
       _dua.isFavorite ? const Color(0xFFE57373) : theme.textLow,
@@ -108,7 +116,9 @@ class _DuasDetailPageState extends State<DuasDetailPage>
     HapticFeedback.lightImpact();
     setState(() => _dua.isBookmarked = !_dua.isBookmarked);
     _bkmCtrl.forward(from: 0);
-    final l10n = AppLocalizations(context.read<SettingsCubit>().state.languageCode);
+    final l10n = AppLocalizations(
+      context.read<SettingsCubit>().state.languageCode,
+    );
     _toast(
       _dua.isBookmarked ? l10n.addedToBookmarked : l10n.removedFromBookmark,
       _dua.isBookmarked ? const Color(0xFF64B5F6) : theme.textLow,
@@ -136,44 +146,64 @@ class _DuasDetailPageState extends State<DuasDetailPage>
     if (_dua.reference.isNotEmpty) {
       copyText.write('Reference: ${_dua.reference}');
     }
-    final l10n = AppLocalizations(context.read<SettingsCubit>().state.languageCode);
+    final l10n = AppLocalizations(
+      context.read<SettingsCubit>().state.languageCode,
+    );
     Clipboard.setData(ClipboardData(text: copyText.toString()));
     _toast(l10n.copiedToClipboard, theme.accent, theme);
   }
 
   void _shareDua(AppThemeOption theme) {
     HapticFeedback.selectionClick();
-    final l10n = AppLocalizations(context.read<SettingsCubit>().state.languageCode);
+    final l10n = AppLocalizations(
+      context.read<SettingsCubit>().state.languageCode,
+    );
     _toast(l10n.sharing, theme.accent, theme);
   }
 
   void _toggleAudio() {
     HapticFeedback.lightImpact();
     setState(() => _isPlaying = !_isPlaying);
-    _isPlaying ? _waveCtrl.repeat() : (_waveCtrl..stop()..reset());
+    _isPlaying
+        ? _waveCtrl.repeat()
+        : (_waveCtrl
+            ..stop()
+            ..reset());
   }
 
   void _toast(String msg, Color color, AppThemeOption theme) {
     ScaffoldMessenger.of(context).clearSnackBars();
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      behavior: SnackBarBehavior.floating,
-      backgroundColor: theme.surface,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-      duration: const Duration(seconds: 2),
-      elevation: 0,
-      content: Row(children: [
-        Container(
-          width: 4, height: 32,
-          decoration: BoxDecoration(
-              color: color, borderRadius: BorderRadius.circular(4)),
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: theme.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+        duration: const Duration(seconds: 2),
+        elevation: 0,
+        content: Row(
+          children: [
+            Container(
+              width: 4,
+              height: 32,
+              decoration: BoxDecoration(
+                color: color,
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Text(
+              msg,
+              style: TextStyle(
+                color: theme.textHigh,
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
         ),
-        const SizedBox(width: 12),
-        Text(msg,
-            style: TextStyle(
-                color: theme.textHigh, fontSize: 13, fontWeight: FontWeight.w500)),
-      ]),
-    ));
+      ),
+    );
   }
 
   @override
@@ -213,9 +243,10 @@ class _DuasDetailPageState extends State<DuasDetailPage>
               Text(
                 _dua.title, // ✅ was _dua.tags — now uses resolved title
                 style: TextStyle(
-                    color: theme.textHigh,
-                    fontSize: sw * 0.042,
-                    fontWeight: FontWeight.w700),
+                  color: theme.textHigh,
+                  fontSize: sw * 0.042,
+                  fontWeight: FontWeight.w700,
+                ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -231,9 +262,12 @@ class _DuasDetailPageState extends State<DuasDetailPage>
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Center(
                   child: SizedBox(
-                    width: 18, height: 18,
+                    width: 18,
+                    height: 18,
                     child: CircularProgressIndicator(
-                        color: theme.textLow, strokeWidth: 2),
+                      color: theme.textLow,
+                      strokeWidth: 2,
+                    ),
                   ),
                 ),
               )
@@ -274,25 +308,37 @@ class _DuasDetailPageState extends State<DuasDetailPage>
               ),
             ],
             PopupMenuButton<String>(
-              icon: Icon(Icons.more_vert_rounded,
-                  color: theme.textLow, size: sw * 0.058),
+              icon: Icon(
+                Icons.more_vert_rounded,
+                color: theme.textLow,
+                size: sw * 0.058,
+              ),
               color: theme.cardColor,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14)),
+                borderRadius: BorderRadius.circular(14),
+              ),
               onSelected: (val) {
                 if (val == l10n.copy) _copyDua(theme);
                 if (val == l10n.share) _shareDua(theme);
               },
               itemBuilder: (_) => [
                 _menuItem(l10n.copy, Icons.copy_rounded, l10n.copyDua, theme),
-                _menuItem(l10n.share, Icons.share_rounded, l10n.shareDua, theme),
+                _menuItem(
+                  l10n.share,
+                  Icons.share_rounded,
+                  l10n.shareDua,
+                  theme,
+                ),
               ],
             ),
             const SizedBox(width: 4),
           ],
           bottom: PreferredSize(
             preferredSize: const Size.fromHeight(1),
-            child: Container(height: 1, color: theme.accent.withOpacity(0.1)),
+            child: Container(
+              height: 1,
+              color: theme.accent.withValues(alpha: 0.1),
+            ),
           ),
         ),
         body: SingleChildScrollView(
@@ -305,13 +351,15 @@ class _DuasDetailPageState extends State<DuasDetailPage>
 
               Padding(
                 padding: EdgeInsets.symmetric(
-                    horizontal: sw * 0.055, vertical: sw * 0.03),
+                  horizontal: sw * 0.055,
+                  vertical: sw * 0.03,
+                ),
                 child: Column(
                   crossAxisAlignment: _isRtl
-                      ? CrossAxisAlignment.end   // ✅ RTL alignment
+                      ? CrossAxisAlignment
+                            .end // ✅ RTL alignment
                       : CrossAxisAlignment.start,
                   children: [
-
                     // ✅ Transliteration — hidden for Arabic users
                     if (!_isArabicUser && _dua.transliteration.isNotEmpty) ...[
                       _SectionLabel(l10n.transliteration, sw, _isRtl, theme),
@@ -336,8 +384,7 @@ class _DuasDetailPageState extends State<DuasDetailPage>
                       SizedBox(height: sw * 0.03),
                       Text(
                         _dua.translationText,
-                        textAlign:
-                        _isRtl ? TextAlign.right : TextAlign.left,
+                        textAlign: _isRtl ? TextAlign.right : TextAlign.left,
                         style: TextStyle(
                           fontSize: sw * 0.04,
                           color: theme.textLow,
@@ -366,8 +413,7 @@ class _DuasDetailPageState extends State<DuasDetailPage>
                       SizedBox(height: sw * 0.025),
                       Text(
                         _dua.description!,
-                        textAlign:
-                        _isRtl ? TextAlign.right : TextAlign.left,
+                        textAlign: _isRtl ? TextAlign.right : TextAlign.left,
                         style: TextStyle(
                           fontSize: sw * 0.038,
                           color: theme.textLow,
@@ -377,8 +423,7 @@ class _DuasDetailPageState extends State<DuasDetailPage>
                     ],
 
                     // ✅ Audio — optional, hidden if audioUrl is null
-                    if (_dua.audioUrl != null &&
-                        _dua.audioUrl!.isNotEmpty) ...[
+                    if (_dua.audioUrl != null && _dua.audioUrl!.isNotEmpty) ...[
                       _Divider(sw, theme),
                       _AudioBar(
                         isPlaying: _isPlaying,
@@ -386,7 +431,7 @@ class _DuasDetailPageState extends State<DuasDetailPage>
                         onToggle: _toggleAudio,
                         sw: sw,
                         theme: theme,
-                        playingText: l10n.playingRecitation,   // ← add
+                        playingText: l10n.playingRecitation, // ← add
                         listenText: l10n.listenToRecitation,
                       ),
                     ],
@@ -403,16 +448,20 @@ class _DuasDetailPageState extends State<DuasDetailPage>
   }
 
   PopupMenuItem<String> _menuItem(
-      String val, IconData icon, String label, AppThemeOption theme) =>
-      PopupMenuItem(
-        value: val,
-        child: Row(children: [
-          Icon(icon, color: theme.textLow, size: 18),
-          const SizedBox(width: 12),
-          Text(label,
-              style: TextStyle(color: theme.textHigh, fontSize: 14)),
-        ]),
-      );
+    String val,
+    IconData icon,
+    String label,
+    AppThemeOption theme,
+  ) => PopupMenuItem(
+    value: val,
+    child: Row(
+      children: [
+        Icon(icon, color: theme.textLow, size: 18),
+        const SizedBox(width: 12),
+        Text(label, style: TextStyle(color: theme.textHigh, fontSize: 14)),
+      ],
+    ),
+  );
 }
 
 // ─── Arabic Hero ──────────────────────────────────────────────────────────────
@@ -420,46 +469,64 @@ class _ArabicHero extends StatelessWidget {
   final String arabic;
   final double sw;
   final AppThemeOption theme;
-  const _ArabicHero({required this.arabic, required this.sw, required this.theme});
+  const _ArabicHero({
+    required this.arabic,
+    required this.sw,
+    required this.theme,
+  });
 
-  Widget _ornament() => Row(children: [
-    Expanded(
-        child: Container(height: 1, color: theme.accent.withOpacity(0.22))),
-    Container(
+  Widget _ornament() => Row(
+    children: [
+      Expanded(
+        child: Container(
+          height: 1,
+          color: theme.accent.withValues(alpha: 0.22),
+        ),
+      ),
+      Container(
         margin: EdgeInsets.symmetric(horizontal: sw * 0.04),
         width: 5,
         height: 5,
         decoration: BoxDecoration(
-            color: theme.accent.withOpacity(0.45), shape: BoxShape.circle)),
-    Expanded(
-        child: Container(height: 1, color: theme.accent.withOpacity(0.22))),
-  ]);
+          color: theme.accent.withValues(alpha: 0.45),
+          shape: BoxShape.circle,
+        ),
+      ),
+      Expanded(
+        child: Container(
+          height: 1,
+          color: theme.accent.withValues(alpha: 0.22),
+        ),
+      ),
+    ],
+  );
 
   @override
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
       color: theme.cardColor,
-      padding:
-      EdgeInsets.fromLTRB(sw * 0.06, sw * 0.09, sw * 0.06, sw * 0.09),
-      child: Column(children: [
-        _ornament(),
-        SizedBox(height: sw * 0.08),
-        Text(
-          arabic,
-          textAlign: TextAlign.center,
-          textDirection: TextDirection.rtl, // ✅ always RTL — Arabic text
-          style: TextStyle(
-            fontFamily: 'Amiri',
-            fontSize: sw * 0.075,
-            color: theme.textHigh,
-            height: 2.1,
-            letterSpacing: 1.0,
+      padding: EdgeInsets.fromLTRB(sw * 0.06, sw * 0.09, sw * 0.06, sw * 0.09),
+      child: Column(
+        children: [
+          _ornament(),
+          SizedBox(height: sw * 0.08),
+          Text(
+            arabic,
+            textAlign: TextAlign.center,
+            textDirection: TextDirection.rtl, // ✅ always RTL — Arabic text
+            style: TextStyle(
+              fontFamily: 'Amiri',
+              fontSize: sw * 0.075,
+              color: theme.textHigh,
+              height: 2.1,
+              letterSpacing: 1.0,
+            ),
           ),
-        ),
-        SizedBox(height: sw * 0.08),
-        _ornament(),
-      ]),
+          SizedBox(height: sw * 0.08),
+          _ornament(),
+        ],
+      ),
     );
   }
 }
@@ -493,9 +560,10 @@ class _Divider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-      margin: EdgeInsets.symmetric(vertical: sw * 0.06),
-      height: 1,
-      color: theme.accent.withOpacity(0.1));
+    margin: EdgeInsets.symmetric(vertical: sw * 0.06),
+    height: 1,
+    color: theme.accent.withValues(alpha: 0.1),
+  );
 }
 
 // ─── Reference Block ─────────────────────────────────────────────────────────
@@ -517,8 +585,11 @@ class _ReferenceBlock extends StatelessWidget {
   Widget build(BuildContext context) => Row(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      Icon(Icons.menu_book_rounded,
-          color: theme.accent.withOpacity(0.65), size: sw * 0.042),
+      Icon(
+        Icons.menu_book_rounded,
+        color: theme.accent.withValues(alpha: 0.65),
+        size: sw * 0.042,
+      ),
       SizedBox(width: sw * 0.03),
       Expanded(
         child: Column(
@@ -562,7 +633,7 @@ class _AudioBar extends StatelessWidget {
   final double sw;
   final AppThemeOption theme;
   final String playingText; // ← add
-  final String listenText;  // ← add
+  final String listenText; // ← add
   const _AudioBar({
     required this.isPlaying,
     required this.waveCtrl,
@@ -576,55 +647,58 @@ class _AudioBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) => AnimatedContainer(
     duration: const Duration(milliseconds: 300),
-    padding: EdgeInsets.symmetric(
-        horizontal: sw * 0.045, vertical: sw * 0.04),
+    padding: EdgeInsets.symmetric(horizontal: sw * 0.045, vertical: sw * 0.04),
     decoration: BoxDecoration(
       color: theme.cardColor,
       borderRadius: BorderRadius.circular(18),
       border: Border.all(
-        color: isPlaying ? theme.accent.withOpacity(0.4) : theme.accent.withOpacity(0.1),
+        color: isPlaying
+            ? theme.accent.withValues(alpha: 0.4)
+            : theme.accent.withValues(alpha: 0.1),
         width: isPlaying ? 1.5 : 1,
       ),
     ),
-    child: Row(children: [
-      GestureDetector(
-        onTap: onToggle,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 250),
-          width: sw * 0.13,
-          height: sw * 0.13,
-          decoration: BoxDecoration(
-            color: isPlaying ? theme.accent : theme.primary.withOpacity(0.28),
-            shape: BoxShape.circle,
-          ),
-          child: Icon(
-            isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-            color: isPlaying ? Colors.white : theme.accent,
-            size: sw * 0.065,
+    child: Row(
+      children: [
+        GestureDetector(
+          onTap: onToggle,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 250),
+            width: sw * 0.13,
+            height: sw * 0.13,
+            decoration: BoxDecoration(
+              color: isPlaying
+                  ? theme.accent
+                  : theme.primary.withValues(alpha: 0.28),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+              color: isPlaying ? Colors.white : theme.accent,
+              size: sw * 0.065,
+            ),
           ),
         ),
-      ),
-      SizedBox(width: sw * 0.04),
-      Expanded(
-        child: Column(
+        SizedBox(width: sw * 0.04),
+        Expanded(
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                isPlaying
-                    ? playingText
-                    : listenText,
+                isPlaying ? playingText : listenText,
                 style: TextStyle(
                   fontSize: sw * 0.035,
                   color: isPlaying ? theme.textHigh : theme.textLow,
-                  fontWeight:
-                  isPlaying ? FontWeight.w600 : FontWeight.w400,
+                  fontWeight: isPlaying ? FontWeight.w600 : FontWeight.w400,
                 ),
               ),
               const SizedBox(height: 8),
               _Waveform(isPlaying: isPlaying, ctrl: waveCtrl, theme: theme),
-            ]),
-      ),
-    ]),
+            ],
+          ),
+        ),
+      ],
+    ),
   );
 }
 
@@ -633,7 +707,11 @@ class _Waveform extends StatelessWidget {
   final bool isPlaying;
   final AnimationController ctrl;
   final AppThemeOption theme;
-  const _Waveform({required this.isPlaying, required this.ctrl, required this.theme});
+  const _Waveform({
+    required this.isPlaying,
+    required this.ctrl,
+    required this.theme,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -649,7 +727,7 @@ class _Waveform extends StatelessWidget {
               height: e.value * 0.38,
               margin: const EdgeInsets.symmetric(horizontal: 1.5),
               decoration: BoxDecoration(
-                color: theme.textLow.withOpacity(0.22),
+                color: theme.textLow.withValues(alpha: 0.22),
                 borderRadius: BorderRadius.circular(2),
               ),
             );
@@ -657,10 +735,10 @@ class _Waveform extends StatelessWidget {
           final offset = e.key * 0.1;
           return AnimatedBuilder(
             animation: ctrl,
-            builder: (_, __) {
+            builder: (_, _) {
               final t = (ctrl.value + offset) % 1.0;
-              final h = e.value *
-                  (0.35 + 0.65 * (t < 0.5 ? t * 2 : (1 - t) * 2));
+              final h =
+                  e.value * (0.35 + 0.65 * (t < 0.5 ? t * 2 : (1 - t) * 2));
               return Container(
                 width: 3,
                 height: h,

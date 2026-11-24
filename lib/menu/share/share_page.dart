@@ -33,24 +33,36 @@ class SharePage extends StatelessWidget {
               icon: Icon(Icons.arrow_back_ios_new, color: thm.accent),
               onPressed: () => Navigator.of(context).pop(),
             ),
-            title: Text('Share App',
-                style: TextStyle(
-                    color: thm.textHigh, fontWeight: FontWeight.w600, fontSize: 18)),
+            title: Text(
+              'Share App',
+              style: TextStyle(
+                color: thm.textHigh,
+                fontWeight: FontWeight.w600,
+                fontSize: 18,
+              ),
+            ),
             centerTitle: true,
             elevation: 0,
           ),
           body: LayoutBuilder(
             builder: (context, constraints) {
-              final isWide   = constraints.maxWidth > 600;
+              final isWide = constraints.maxWidth > 600;
               final isTablet = constraints.maxWidth > 800;
-              final hPad = isTablet ? 48.0 : isWide ? 32.0 : 20.0;
+              final hPad = isTablet
+                  ? 48.0
+                  : isWide
+                  ? 32.0
+                  : 20.0;
               final maxW = isTablet ? 720.0 : double.infinity;
 
               return Center(
                 child: ConstrainedBox(
                   constraints: BoxConstraints(maxWidth: maxW),
                   child: SingleChildScrollView(
-                    padding: EdgeInsets.symmetric(horizontal: hPad, vertical: 20),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: hPad,
+                      vertical: 20,
+                    ),
                     child: Column(
                       children: [
                         const SizedBox(height: 8),
@@ -65,7 +77,7 @@ class SharePage extends StatelessWidget {
                         _linkCard(context, thm),
                         const SizedBox(height: 28),
                         _generalShareBtn(thm),
-                        const SizedBox(height: 20)
+                        const SizedBox(height: 20),
                       ],
                     ),
                   ),
@@ -88,71 +100,135 @@ class SharePage extends StatelessWidget {
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: thm.accent.withOpacity(0.25)),
+        border: Border.all(color: thm.accent.withValues(alpha: 0.25)),
       ),
       child: isWide
           ? Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Text('🌙', style: TextStyle(fontSize: 52)),
-          const SizedBox(width: 24),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Spread the Good',
-                  style: TextStyle(
-                      color: thm.textHigh, fontSize: 22, fontWeight: FontWeight.w800)),
-              const SizedBox(height: 6),
-              Text(
-                '"Whoever guides someone to goodness\nwill have a reward like the one who did it."',
-                style: TextStyle(
-                    color: thm.accent, fontSize: 13, fontStyle: FontStyle.italic, height: 1.5),
-              ),
-              const SizedBox(height: 4),
-              Text('— Prophet Muhammad ﷺ (Muslim)',
-                  style: TextStyle(color: thm.textLow, fontSize: 11)),
-            ],
-          ),
-        ],
-      )
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text('🌙', style: TextStyle(fontSize: 52)),
+                const SizedBox(width: 24),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Spread the Good',
+                      style: TextStyle(
+                        color: thm.textHigh,
+                        fontSize: 22,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      '"Whoever guides someone to goodness\nwill have a reward like the one who did it."',
+                      style: TextStyle(
+                        color: thm.accent,
+                        fontSize: 13,
+                        fontStyle: FontStyle.italic,
+                        height: 1.5,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '— Prophet Muhammad ﷺ (Muslim)',
+                      style: TextStyle(color: thm.textLow, fontSize: 11),
+                    ),
+                  ],
+                ),
+              ],
+            )
           : Column(
-        children: [
-          const Text('🌙', style: TextStyle(fontSize: 52)),
-          const SizedBox(height: 12),
-          Text('Spread the Good',
-              style: TextStyle(
-                  color: thm.textHigh, fontSize: 22, fontWeight: FontWeight.w800)),
-          const SizedBox(height: 8),
-          Text(
-            '"Whoever guides someone to goodness\nwill have a reward like the one who did it."',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-                color: thm.accent, fontSize: 13, fontStyle: FontStyle.italic, height: 1.5),
-          ),
-          const SizedBox(height: 4),
-          Text('— Prophet Muhammad ﷺ (Muslim)',
-              style: TextStyle(color: thm.textLow, fontSize: 11)),
-        ],
-      ),
+              children: [
+                const Text('🌙', style: TextStyle(fontSize: 52)),
+                const SizedBox(height: 12),
+                Text(
+                  'Spread the Good',
+                  style: TextStyle(
+                    color: thm.textHigh,
+                    fontSize: 22,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '"Whoever guides someone to goodness\nwill have a reward like the one who did it."',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: thm.accent,
+                    fontSize: 13,
+                    fontStyle: FontStyle.italic,
+                    height: 1.5,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '— Prophet Muhammad ﷺ (Muslim)',
+                  style: TextStyle(color: thm.textLow, fontSize: 11),
+                ),
+              ],
+            ),
     );
   }
 
   Widget _platformGrid(BuildContext context, double width, AppThemeOption thm) {
     final platforms = [
-      _PlatformItem(icon: '💬', label: 'WhatsApp',   color: const Color(0xFF25D366), onTap: () => _shareToWhatsApp()),
-      _PlatformItem(icon: '✈️', label: 'Telegram',   color: const Color(0xFF0088CC), onTap: () => _shareToTelegram()),
-      _PlatformItem(icon: '📘', label: 'Facebook',   color: const Color(0xFF1877F2), onTap: () => _shareToFacebook()),
-      _PlatformItem(icon: '🐦', label: 'Twitter / X', color: const Color(0xFF1DA1F2), onTap: () => _shareToTwitter()),
-      _PlatformItem(icon: '📸', label: 'Instagram',  color: const Color(0xFFE1306C), onTap: () => _shareGeneral()),
-      _PlatformItem(icon: '💼', label: 'LinkedIn',   color: const Color(0xFF0077B5), onTap: () => _shareGeneral()),
-      _PlatformItem(icon: '📧', label: 'Email',      color: const Color(0xFF4285F4), onTap: () => _shareViaEmail()),
-      _PlatformItem(icon: '📲', label: 'More…',      color: thm.accent,              onTap: () => _shareGeneral()),
+      _PlatformItem(
+        icon: '💬',
+        label: 'WhatsApp',
+        color: const Color(0xFF25D366),
+        onTap: () => _shareToWhatsApp(),
+      ),
+      _PlatformItem(
+        icon: '✈️',
+        label: 'Telegram',
+        color: const Color(0xFF0088CC),
+        onTap: () => _shareToTelegram(),
+      ),
+      _PlatformItem(
+        icon: '📘',
+        label: 'Facebook',
+        color: const Color(0xFF1877F2),
+        onTap: () => _shareToFacebook(),
+      ),
+      _PlatformItem(
+        icon: '🐦',
+        label: 'Twitter / X',
+        color: const Color(0xFF1DA1F2),
+        onTap: () => _shareToTwitter(),
+      ),
+      _PlatformItem(
+        icon: '📸',
+        label: 'Instagram',
+        color: const Color(0xFFE1306C),
+        onTap: () => _shareGeneral(),
+      ),
+      _PlatformItem(
+        icon: '💼',
+        label: 'LinkedIn',
+        color: const Color(0xFF0077B5),
+        onTap: () => _shareGeneral(),
+      ),
+      _PlatformItem(
+        icon: '📧',
+        label: 'Email',
+        color: const Color(0xFF4285F4),
+        onTap: () => _shareViaEmail(),
+      ),
+      _PlatformItem(
+        icon: '📲',
+        label: 'More…',
+        color: thm.accent,
+        onTap: () => _shareGeneral(),
+      ),
     ];
 
     // Responsive cross-axis count
     int crossCount = 4;
-    if (width > 800) crossCount = 8;
-    else if (width > 600) crossCount = 6;
+    if (width > 800) {
+      crossCount = 8;
+    } else if (width > 600)
+      crossCount = 6;
 
     return GridView.builder(
       shrinkWrap: true,
@@ -174,13 +250,16 @@ class SharePage extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                width: iconSize, height: iconSize,
+                width: iconSize,
+                height: iconSize,
                 decoration: BoxDecoration(
-                  color: p.color.withOpacity(0.12),
+                  color: p.color.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: p.color.withOpacity(0.3)),
+                  border: Border.all(color: p.color.withValues(alpha: 0.3)),
                 ),
-                child: Center(child: Text(p.icon, style: const TextStyle(fontSize: 22))),
+                child: Center(
+                  child: Text(p.icon, style: const TextStyle(fontSize: 22)),
+                ),
               ),
               const SizedBox(height: 5),
               Text(
@@ -203,7 +282,7 @@ class SharePage extends StatelessWidget {
       decoration: BoxDecoration(
         color: thm.cardColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: thm.accent.withOpacity(0.3)),
+        border: Border.all(color: thm.accent.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
@@ -212,7 +291,11 @@ class SharePage extends StatelessWidget {
           Expanded(
             child: Text(
               _appLink,
-              style: TextStyle(color: thm.textLow, fontSize: 12, overflow: TextOverflow.ellipsis),
+              style: TextStyle(
+                color: thm.textLow,
+                fontSize: 12,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
           ),
           const SizedBox(width: 8),
@@ -220,9 +303,18 @@ class SharePage extends StatelessWidget {
             onTap: () => _copyLink(context, thm),
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(color: thm.accent, borderRadius: BorderRadius.circular(8)),
-              child: const Text('Copy',
-                  style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w700)),
+              decoration: BoxDecoration(
+                color: thm.accent,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Text(
+                'Copy',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
             ),
           ),
         ],
@@ -238,16 +330,23 @@ class SharePage extends StatelessWidget {
         onPressed: _shareGeneral,
         style: ElevatedButton.styleFrom(
           backgroundColor: thm.accent,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
           elevation: 4,
         ),
         icon: const Icon(Icons.share, color: Colors.white, size: 20),
-        label: const Text('Share Now',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16)),
+        label: const Text(
+          'Share Now',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w700,
+            fontSize: 16,
+          ),
+        ),
       ),
     );
   }
-
 
   Widget _statChip(AppThemeOption thm, String value, String label) {
     return Expanded(
@@ -256,12 +355,18 @@ class SharePage extends StatelessWidget {
         decoration: BoxDecoration(
           color: thm.cardColor,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: thm.accent.withOpacity(0.2)),
+          border: Border.all(color: thm.accent.withValues(alpha: 0.2)),
         ),
         child: Column(
           children: [
-            Text(value,
-                style: TextStyle(color: thm.accent, fontWeight: FontWeight.w800, fontSize: 18)),
+            Text(
+              value,
+              style: TextStyle(
+                color: thm.accent,
+                fontWeight: FontWeight.w800,
+                fontSize: 18,
+              ),
+            ),
             const SizedBox(height: 2),
             Text(label, style: TextStyle(color: thm.textLow, fontSize: 11)),
           ],
@@ -270,33 +375,37 @@ class SharePage extends StatelessWidget {
     );
   }
 
-// ── Share Handlers ─────────────────────────────────────────────────────────
+  // ── Share Handlers ─────────────────────────────────────────────────────────
   Future<void> _shareGeneral() async =>
       await Share.share(_shareMessage, subject: 'Muslim Life');
 
   Future<void> _shareToWhatsApp() async {
-// Modern universal HTTPS formats reliably wake up the installed application
+    // Modern universal HTTPS formats reliably wake up the installed application
     final url = 'https://wa.me/?text=${Uri.encodeComponent(_shareMessage)}';
     await _tryLaunch(url);
   }
 
   Future<void> _shareToTelegram() async {
-    final url = 'https://t.me/share/url?url=${Uri.encodeComponent(_appLink)}&text=${Uri.encodeComponent(_shareMessage.replaceAll(_appLink, ''))}';
+    final url =
+        'https://t.me/share/url?url=${Uri.encodeComponent(_appLink)}&text=${Uri.encodeComponent(_shareMessage.replaceAll(_appLink, ''))}';
     await _tryLaunch(url);
   }
 
   Future<void> _shareToFacebook() async {
-    final url = 'https://www.facebook.com/sharer/sharer.php?u=${Uri.encodeComponent(_appLink)}';
+    final url =
+        'https://www.facebook.com/sharer/sharer.php?u=${Uri.encodeComponent(_appLink)}';
     await _tryLaunch(url);
   }
 
   Future<void> _shareToTwitter() async {
-    final url = 'https://twitter.com/intent/tweet?text=${Uri.encodeComponent(_shareMessage)}';
+    final url =
+        'https://twitter.com/intent/tweet?text=${Uri.encodeComponent(_shareMessage)}';
     await _tryLaunch(url);
   }
 
   Future<void> _shareViaEmail() async {
-    final url = 'mailto:?subject=${Uri.encodeComponent('Check out Islamic App')}&body=${Uri.encodeComponent(_shareMessage)}';
+    final url =
+        'mailto:?subject=${Uri.encodeComponent('Check out Islamic App')}&body=${Uri.encodeComponent(_shareMessage)}';
     await _tryLaunch(url);
   }
 
@@ -317,7 +426,7 @@ class SharePage extends StatelessWidget {
     );
   }
 
-// Fixed: Engine now attempts a real platform application launch before resorting to generic share sheets
+  // Fixed: Engine now attempts a real platform application launch before resorting to generic share sheets
   Future<void> _tryLaunch(String urlString) async {
     final uri = Uri.parse(urlString);
     try {
@@ -336,7 +445,12 @@ class _PlatformItem {
   final String icon, label;
   final Color color;
   final VoidCallback onTap;
-  const _PlatformItem({required this.icon, required this.label, required this.color, required this.onTap});
+  const _PlatformItem({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.onTap,
+  });
 }
 
 class _SectionLabel extends StatelessWidget {
@@ -349,11 +463,22 @@ class _SectionLabel extends StatelessWidget {
     return Row(
       children: [
         Container(
-          width: 4, height: 16,
-          decoration: BoxDecoration(color: thm.accent, borderRadius: BorderRadius.circular(4)),
+          width: 4,
+          height: 16,
+          decoration: BoxDecoration(
+            color: thm.accent,
+            borderRadius: BorderRadius.circular(4),
+          ),
         ),
         const SizedBox(width: 10),
-        Text(text, style: TextStyle(color: thm.textHigh, fontWeight: FontWeight.w700, fontSize: 15)),
+        Text(
+          text,
+          style: TextStyle(
+            color: thm.textHigh,
+            fontWeight: FontWeight.w700,
+            fontSize: 15,
+          ),
+        ),
       ],
     );
   }

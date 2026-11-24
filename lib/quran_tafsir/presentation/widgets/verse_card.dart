@@ -13,11 +13,7 @@ class VerseCard extends ConsumerStatefulWidget {
   final Verse verse;
   final List<Verse> allVerses;
 
-  const VerseCard({
-    super.key,
-    required this.verse,
-    required this.allVerses,
-  });
+  const VerseCard({super.key, required this.verse, required this.allVerses});
 
   @override
   ConsumerState<VerseCard> createState() => _VerseCardState();
@@ -32,15 +28,15 @@ class _VerseCardState extends ConsumerState<VerseCard> {
 
     final isCurrentlyPlaying = ref.watch(
       quranAudioPlayerNotifierProvider.select(
-            (s) =>
-        s.currentVerseKey == verse.verseKey &&
+        (s) =>
+            s.currentVerseKey == verse.verseKey &&
             s.status == QuranAudioStatus.playing,
       ),
     );
     final isLoadingThisVerse = ref.watch(
       quranAudioPlayerNotifierProvider.select(
-            (s) =>
-        s.currentVerseKey == verse.verseKey &&
+        (s) =>
+            s.currentVerseKey == verse.verseKey &&
             s.status == QuranAudioStatus.loading,
       ),
     );
@@ -50,9 +46,9 @@ class _VerseCardState extends ConsumerState<VerseCard> {
 
     ref.listen(
       quranAudioPlayerNotifierProvider.select(
-            (s) => s.currentVerseKey == verse.verseKey,
+        (s) => s.currentVerseKey == verse.verseKey,
       ),
-          (previous, isNowActive) {
+      (previous, isNowActive) {
         if (isNowActive == true && previous != true) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             final ctx = _cardKey.currentContext;
@@ -82,8 +78,8 @@ class _VerseCardState extends ConsumerState<VerseCard> {
         borderRadius: BorderRadius.circular(12),
         side: BorderSide(
           color: isCurrentlyPlaying
-              ? Theme.of(context).colorScheme.primary.withOpacity(0.5)
-              : Theme.of(context).dividerColor.withOpacity(0.1),
+              ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.5)
+              : Theme.of(context).dividerColor.withValues(alpha: 0.1),
           width: 1,
         ),
       ),
@@ -121,7 +117,9 @@ class _VerseCardState extends ConsumerState<VerseCard> {
                 style: TextStyle(
                   fontSize: 14,
                   fontStyle: FontStyle.italic,
-                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withValues(alpha: 0.6),
                   height: 1.4,
                 ),
               ),
@@ -129,8 +127,9 @@ class _VerseCardState extends ConsumerState<VerseCard> {
 
             if (_otherTranslationsOf(verse).isNotEmpty) ...[
               const Divider(height: 28),
-              ..._otherTranslationsOf(verse)
-                  .map((t) => _TranslationTile(translation: t)),
+              ..._otherTranslationsOf(
+                verse,
+              ).map((t) => _TranslationTile(translation: t)),
             ],
           ],
         ),
@@ -140,8 +139,9 @@ class _VerseCardState extends ConsumerState<VerseCard> {
 
   VerseTranslation? _transliterationOf(Verse verse) {
     try {
-      return verse.translations
-          .firstWhere((t) => t.resourceId == _kTransliterationResourceId);
+      return verse.translations.firstWhere(
+        (t) => t.resourceId == _kTransliterationResourceId,
+      );
     } catch (_) {
       return null;
     }
@@ -198,7 +198,10 @@ class _ArabicVerseText extends StatelessWidget {
             const TextSpan(text: ' '),
             WidgetSpan(
               alignment: PlaceholderAlignment.middle,
-              child: _AyahNumberOrnament(number: verse.verseNumber, size: fontSize),
+              child: _AyahNumberOrnament(
+                number: verse.verseNumber,
+                size: fontSize,
+              ),
             ),
           ],
         ),
@@ -213,7 +216,8 @@ class _ArabicVerseText extends StatelessWidget {
     for (final word in verse.words) {
       if (word.charType == 'end') continue;
 
-      final isActive = activeRange != null &&
+      final isActive =
+          activeRange != null &&
           word.position >= activeRange.$1 &&
           word.position <= activeRange.$2;
 
@@ -259,7 +263,7 @@ class _AyahNumberOrnament extends StatelessWidget {
           Icon(
             Icons.brightness_low,
             size: ornamentSize,
-            color: Theme.of(context).colorScheme.primary.withOpacity(0.7),
+            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.7),
           ),
           Text(
             '$number',
@@ -274,7 +278,6 @@ class _AyahNumberOrnament extends StatelessWidget {
   }
 }
 
-
 // Action buttons: play/pause + copy + share
 class _ActionButtons extends ConsumerWidget {
   final Verse verse;
@@ -286,56 +289,55 @@ class _ActionButtons extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isCurrentlyPlaying = ref.watch(
       quranAudioPlayerNotifierProvider.select(
-            (s) =>
-        s.currentVerseKey == verse.verseKey &&
+        (s) =>
+            s.currentVerseKey == verse.verseKey &&
             s.status == QuranAudioStatus.playing,
       ),
     );
     final isLoadingThisVerse = ref.watch(
       quranAudioPlayerNotifierProvider.select(
-            (s) =>
-        s.currentVerseKey == verse.verseKey &&
+        (s) =>
+            s.currentVerseKey == verse.verseKey &&
             s.status == QuranAudioStatus.loading,
-      )
+      ),
     );
     final isBookmarked = ref.watch(
       bookmarkNotifierProvider.select(
-            (list) => list.any((b) => b.verse.verseKey == verse.verseKey),
+        (list) => list.any((b) => b.verse.verseKey == verse.verseKey),
       ),
     );
 
     return Row(
       children: [
         isLoadingThisVerse
-
             ? const SizedBox(
-          width: 32,
-          height: 32,
-          child: Padding(
-            padding: EdgeInsets.all(8.0),
-            child: CircularProgressIndicator(strokeWidth: 2),
-          ),
-        )
-
+                width: 32,
+                height: 32,
+                child: Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              )
             : IconButton(
-          icon: Icon(
-            isCurrentlyPlaying
-                ? Icons.pause_circle_filled
-                : Icons.play_circle_fill,
-            color: Theme.of(context).colorScheme.primary,
-          ),
-          onPressed: verse.audio == null
-              ? null
-              : () {
-            final notifier =
-            ref.read(quranAudioPlayerNotifierProvider.notifier);
-            if (isCurrentlyPlaying) {
-              notifier.pause();
-            } else {
-              notifier.playVerse(verse, queue: allVerses);
-            }
-          },
-        ),
+                icon: Icon(
+                  isCurrentlyPlaying
+                      ? Icons.pause_circle_filled
+                      : Icons.play_circle_fill,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+                onPressed: verse.audio == null
+                    ? null
+                    : () {
+                        final notifier = ref.read(
+                          quranAudioPlayerNotifierProvider.notifier,
+                        );
+                        if (isCurrentlyPlaying) {
+                          notifier.pause();
+                        } else {
+                          notifier.playVerse(verse, queue: allVerses);
+                        }
+                      },
+              ),
         IconButton(
           icon: const Icon(Icons.copy_rounded, size: 20),
           onPressed: () {
@@ -366,7 +368,9 @@ class _ActionButtons extends ConsumerWidget {
         ),
         IconButton(
           icon: Icon(
-            isBookmarked ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
+            isBookmarked
+                ? Icons.bookmark_rounded
+                : Icons.bookmark_border_rounded,
             size: 20,
             color: isBookmarked ? Theme.of(context).colorScheme.primary : null,
           ),
@@ -391,7 +395,9 @@ class _TranslationTile extends StatelessWidget {
         children: [
           Text(
             translation.text.replaceAll(RegExp(r'<[^>]*>'), ''),
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(height: 1.5),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(height: 1.5),
           ),
           const SizedBox(height: 4),
           Text(

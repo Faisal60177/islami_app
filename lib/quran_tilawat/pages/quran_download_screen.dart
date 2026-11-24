@@ -11,8 +11,7 @@ class QuranDownloadScreen extends StatefulWidget {
   const QuranDownloadScreen({super.key});
 
   @override
-  State<QuranDownloadScreen> createState() =>
-      _QuranDownloadScreenState();
+  State<QuranDownloadScreen> createState() => _QuranDownloadScreenState();
 }
 
 class _QuranDownloadScreenState extends State<QuranDownloadScreen>
@@ -35,9 +34,10 @@ class _QuranDownloadScreenState extends State<QuranDownloadScreen>
       vsync: this,
       duration: const Duration(milliseconds: 1500),
     )..repeat(reverse: true);
-    _pulseAnim = Tween(begin: 0.95, end: 1.05).animate(
-      CurvedAnimation(parent: _pulseCtrl, curve: Curves.easeInOut),
-    );
+    _pulseAnim = Tween(
+      begin: 0.95,
+      end: 1.05,
+    ).animate(CurvedAnimation(parent: _pulseCtrl, curve: Curves.easeInOut));
     _startDownload();
   }
 
@@ -102,8 +102,7 @@ class _QuranDownloadScreenState extends State<QuranDownloadScreen>
           backgroundColor: theme.background,
           body: SafeArea(
             child: Padding(
-              padding:
-              EdgeInsets.symmetric(horizontal: rsw * 0.08),
+              padding: EdgeInsets.symmetric(horizontal: rsw * 0.08),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -117,15 +116,17 @@ class _QuranDownloadScreenState extends State<QuranDownloadScreen>
                       height: rsw * 0.32,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: theme.accent.withOpacity(0.10),
+                        color: theme.accent.withValues(alpha: 0.10),
                         border: Border.all(
-                            color: theme.accent.withOpacity(0.30),
-                            width: 1.5),
+                          color: theme.accent.withValues(alpha: 0.30),
+                          width: 1.5,
+                        ),
                       ),
                       child: Center(
-                        child: Text('📖',
-                            style:
-                            TextStyle(fontSize: rsw * 0.13)),
+                        child: Text(
+                          '📖',
+                          style: TextStyle(fontSize: rsw * 0.13),
+                        ),
                       ),
                     ),
                   ),
@@ -146,8 +147,9 @@ class _QuranDownloadScreenState extends State<QuranDownloadScreen>
                   Text(
                     'The Holy quran_tilawat · 15-line Mushaf',
                     style: TextStyle(
-                        color: theme.textLow,
-                        fontSize: rsw * 0.028),
+                      color: theme.textLow,
+                      fontSize: rsw * 0.028,
+                    ),
                   ),
 
                   SizedBox(height: rsw * 0.05),
@@ -156,23 +158,24 @@ class _QuranDownloadScreenState extends State<QuranDownloadScreen>
                   Container(
                     padding: EdgeInsets.all(rsw * 0.04),
                     decoration: BoxDecoration(
-                      color: theme.accent.withOpacity(0.06),
-                      borderRadius:
-                      BorderRadius.circular(rsw * 0.04),
+                      color: theme.accent.withValues(alpha: 0.06),
+                      borderRadius: BorderRadius.circular(rsw * 0.04),
                       border: Border.all(
-                          color: theme.accent.withOpacity(0.20),
-                          width: 0.8),
+                        color: theme.accent.withValues(alpha: 0.20),
+                        width: 0.8,
+                      ),
                     ),
                     child: Row(
                       children: [
-                        Icon(Icons.download_rounded,
-                            color: theme.accent,
-                            size: rsw * 0.055),
+                        Icon(
+                          Icons.download_rounded,
+                          color: theme.accent,
+                          size: rsw * 0.055,
+                        ),
                         SizedBox(width: rsw * 0.03),
                         Expanded(
                           child: Column(
-                            crossAxisAlignment:
-                            CrossAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
                                 'One-Time Setup',
@@ -203,15 +206,15 @@ class _QuranDownloadScreenState extends State<QuranDownloadScreen>
                   // ── Progress / Error ──────────────────────────────
                   if (!_hasError) ...[
                     Row(
-                      mainAxisAlignment:
-                      MainAxisAlignment.spaceBetween,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Expanded(
                           child: Text(
                             _statusText,
                             style: TextStyle(
-                                color: theme.textLow,
-                                fontSize: rsw * 0.024),
+                              color: theme.textLow,
+                              fontSize: rsw * 0.024,
+                            ),
                           ),
                         ),
                         Text(
@@ -226,30 +229,30 @@ class _QuranDownloadScreenState extends State<QuranDownloadScreen>
                     ),
                     SizedBox(height: rsw * 0.018),
                     ClipRRect(
-                      borderRadius:
-                      BorderRadius.circular(rsw * 0.012),
+                      borderRadius: BorderRadius.circular(rsw * 0.012),
                       child: LinearProgressIndicator(
                         value: _progress / 100,
                         minHeight: rsw * 0.024,
-                        backgroundColor:
-                        theme.accent.withOpacity(0.12),
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                            theme.accent),
+                        backgroundColor: theme.accent.withValues(alpha: 0.12),
+                        valueColor: AlwaysStoppedAnimation<Color>(theme.accent),
                       ),
                     ),
                     SizedBox(height: rsw * 0.018),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.info_outline_rounded,
-                            color: theme.textLow,
-                            size: rsw * 0.030),
+                        Icon(
+                          Icons.info_outline_rounded,
+                          color: theme.textLow,
+                          size: rsw * 0.030,
+                        ),
                         SizedBox(width: rsw * 0.012),
                         Text(
                           'Please keep the app open',
                           style: TextStyle(
-                              color: theme.textLow,
-                              fontSize: rsw * 0.024),
+                            color: theme.textLow,
+                            fontSize: rsw * 0.024,
+                          ),
                         ),
                       ],
                     ),
@@ -259,18 +262,20 @@ class _QuranDownloadScreenState extends State<QuranDownloadScreen>
                     Container(
                       padding: EdgeInsets.all(rsw * 0.04),
                       decoration: BoxDecoration(
-                        color: Colors.red.withOpacity(0.08),
-                        borderRadius:
-                        BorderRadius.circular(rsw * 0.03),
+                        color: Colors.red.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(rsw * 0.03),
                         border: Border.all(
-                            color: Colors.red.withOpacity(0.30),
-                            width: 0.8),
+                          color: Colors.red.withValues(alpha: 0.30),
+                          width: 0.8,
+                        ),
                       ),
                       child: Column(
                         children: [
-                          Icon(Icons.wifi_off_rounded,
-                              color: Colors.red[300],
-                              size: rsw * 0.06),
+                          Icon(
+                            Icons.wifi_off_rounded,
+                            color: Colors.red[300],
+                            size: rsw * 0.06,
+                          ),
                           SizedBox(height: rsw * 0.02),
                           Text(
                             'Connection Error',
@@ -285,8 +290,9 @@ class _QuranDownloadScreenState extends State<QuranDownloadScreen>
                             _errorMsg,
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                                color: theme.textLow,
-                                fontSize: rsw * 0.022),
+                              color: theme.textLow,
+                              fontSize: rsw * 0.022,
+                            ),
                           ),
                         ],
                       ),
@@ -296,12 +302,10 @@ class _QuranDownloadScreenState extends State<QuranDownloadScreen>
                       onTap: _startDownload,
                       child: Container(
                         width: double.infinity,
-                        padding: EdgeInsets.symmetric(
-                            vertical: rsw * 0.035),
+                        padding: EdgeInsets.symmetric(vertical: rsw * 0.035),
                         decoration: BoxDecoration(
                           color: theme.accent,
-                          borderRadius:
-                          BorderRadius.circular(rsw * 0.035),
+                          borderRadius: BorderRadius.circular(rsw * 0.035),
                         ),
                         child: Center(
                           child: Text(

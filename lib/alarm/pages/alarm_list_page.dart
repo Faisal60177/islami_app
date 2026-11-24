@@ -14,27 +14,43 @@ class AlarmListPage extends StatelessWidget {
 
   String _nameFor(String id) {
     switch (id) {
-      case 'fajr':     return l10n.fajr;
-      case 'dhuhr':    return l10n.dhuhr;
-      case 'asr':      return l10n.asr;
-      case 'maghrib':  return l10n.maghrib;
-      case 'isha':     return l10n.isha;
-      case 'chasht':   return l10n.chasht;
-      case 'tahajjud': return l10n.tahajjud;
-      default:         return id;
+      case 'fajr':
+        return l10n.fajr;
+      case 'dhuhr':
+        return l10n.dhuhr;
+      case 'asr':
+        return l10n.asr;
+      case 'maghrib':
+        return l10n.maghrib;
+      case 'isha':
+        return l10n.isha;
+      case 'chasht':
+        return l10n.chasht;
+      case 'tahajjud':
+        return l10n.tahajjud;
+      default:
+        return id;
     }
   }
 
   IconData _iconFor(String id) {
     switch (id) {
-      case 'fajr':     return Icons.wb_twilight_outlined;
-      case 'dhuhr':    return Icons.wb_sunny_outlined;
-      case 'asr':      return Icons.cloud_outlined;
-      case 'maghrib':  return Icons.nightlight_outlined;
-      case 'isha':     return Icons.dark_mode_outlined;
-      case 'chasht':   return Icons.wb_sunny_outlined;
-      case 'tahajjud': return Icons.bedtime_outlined;
-      default:         return Icons.notifications_outlined;
+      case 'fajr':
+        return Icons.wb_twilight_outlined;
+      case 'dhuhr':
+        return Icons.wb_sunny_outlined;
+      case 'asr':
+        return Icons.cloud_outlined;
+      case 'maghrib':
+        return Icons.nightlight_outlined;
+      case 'isha':
+        return Icons.dark_mode_outlined;
+      case 'chasht':
+        return Icons.wb_sunny_outlined;
+      case 'tahajjud':
+        return Icons.bedtime_outlined;
+      default:
+        return Icons.notifications_outlined;
     }
   }
 
@@ -49,13 +65,17 @@ class AlarmListPage extends StatelessWidget {
           icon: Icon(Icons.arrow_back_ios_rounded, color: theme.accent),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Text(l10n.translate('Set Alarm'),
-            style: TextStyle(color: theme.textHigh, fontWeight: FontWeight.w700)),
+        title: Text(
+          l10n.translate('Set Alarm'),
+          style: TextStyle(color: theme.textHigh, fontWeight: FontWeight.w700),
+        ),
       ),
       body: BlocBuilder<AlarmCubit, AlarmState>(
         builder: (context, state) {
           if (state.isLoading) {
-            return Center(child: CircularProgressIndicator(color: theme.accent));
+            return Center(
+              child: CircularProgressIndicator(color: theme.accent),
+            );
           }
           return ListView(
             padding: const EdgeInsets.all(16),
@@ -74,12 +94,15 @@ class AlarmListPage extends StatelessWidget {
 
   Widget _sectionLabel(String text) => Padding(
     padding: const EdgeInsets.only(left: 4, bottom: 10),
-    child: Text(text,
-        style: TextStyle(
-            color: theme.textLow,
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 0.3)),
+    child: Text(
+      text,
+      style: TextStyle(
+        color: theme.textLow,
+        fontSize: 13,
+        fontWeight: FontWeight.w600,
+        letterSpacing: 0.3,
+      ),
+    ),
   );
 
   Widget _card(BuildContext context, List<String> ids) {
@@ -87,7 +110,7 @@ class AlarmListPage extends StatelessWidget {
       decoration: BoxDecoration(
         color: theme.cardColor,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: theme.textLow.withOpacity(0.16)),
+        border: Border.all(color: theme.textLow.withValues(alpha: 0.16)),
       ),
       child: Column(
         children: ids.asMap().entries.map((e) {
@@ -110,9 +133,14 @@ class AlarmListPage extends StatelessWidget {
                     ),
                   ),
                   leading: Icon(_iconFor(id), color: theme.textLow, size: 20),
-                  title: Text(_nameFor(id),
-                      style: TextStyle(
-                          color: theme.textHigh, fontSize: 14, fontWeight: FontWeight.w500)),
+                  title: Text(
+                    _nameFor(id),
+                    style: TextStyle(
+                      color: theme.textHigh,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -139,7 +167,12 @@ class AlarmListPage extends StatelessWidget {
                 ),
               ),
               if (!isLast)
-                Divider(height: 1, color: theme.textLow.withOpacity(0.14), indent: 14, endIndent: 14),
+                Divider(
+                  height: 1,
+                  color: theme.textLow.withValues(alpha: 0.14),
+                  indent: 14,
+                  endIndent: 14,
+                ),
             ],
           );
         }).toList(),

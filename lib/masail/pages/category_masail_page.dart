@@ -32,12 +32,16 @@ class _CategoryMasailPageState extends State<CategoryMasailPage> {
     setState(() => isLoading = true);
     try {
       final cubit = context.read<MasailCubit>();
-      final data  = await cubit.repository.getMasailByCategory(
-        categoryId:   widget.category.categoryId,
+      final data = await cubit.repository.getMasailByCategory(
+        categoryId: widget.category.categoryId,
         languageCode: cubit.currentLanguageCode,
-        userId:       cubit.userId,
+        userId: cubit.userId,
       );
-      if (mounted) setState(() { masail = data; isLoading = false; });
+      if (mounted)
+        setState(() {
+          masail = data;
+          isLoading = false;
+        });
     } catch (e) {
       debugPrint('❌ CategoryMasailPage load error: $e');
       if (mounted) setState(() => isLoading = false);
@@ -57,41 +61,46 @@ class _CategoryMasailPageState extends State<CategoryMasailPage> {
       child: Scaffold(
         backgroundColor: theme.background,
         appBar: _MasailAppBar(
-          title:    widget.category.categoryTitle,
+          title: widget.category.categoryTitle,
           subtitle: 'Masail', // l10n
-          isRtl:    isRtl,
-          w:        w,
+          isRtl: isRtl,
+          w: w,
         ),
         body: isLoading
             ? Center(
-            child: CircularProgressIndicator(
-                color: theme.accent, strokeWidth: 2.5))
+                child: CircularProgressIndicator(
+                  color: theme.accent,
+                  strokeWidth: 2.5,
+                ),
+              )
             : masail.isEmpty
             ? _EmptyMasail(w: w, h: h)
             : ListView.builder(
-            padding: EdgeInsets.fromLTRB(
-                w * 0.04, h * 0.018, w * 0.04, h * 0.04),
-            itemCount: masail.length,
-            itemBuilder: (_, i) => MasailCard(
-              masail: masail[i],
-              index:  i,
-              isRtl:  isRtl,
-              onTap: () async {
-                await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) =>
-                        MasailDetailPage(masail: masail[i]),
-                  ),
-                );
-              },
-            ),
-          ),
-        ),
+                padding: EdgeInsets.fromLTRB(
+                  w * 0.04,
+                  h * 0.018,
+                  w * 0.04,
+                  h * 0.04,
+                ),
+                itemCount: masail.length,
+                itemBuilder: (_, i) => MasailCard(
+                  masail: masail[i],
+                  index: i,
+                  isRtl: isRtl,
+                  onTap: () async {
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => MasailDetailPage(masail: masail[i]),
+                      ),
+                    );
+                  },
+                ),
+              ),
+      ),
     );
   }
 }
-
 
 // ─────────────────────────────────────────────────────────────────────────────
 // all_masail_page.dart  (same file for convenience — split if preferred)
@@ -120,21 +129,29 @@ class _AllMasailPageState extends State<AllMasailPage>
 
   Future<void> _load() async {
     final cubit = context.read<MasailCubit>();
-    final data  = await cubit.repository.getAllMasail(
+    final data = await cubit.repository.getAllMasail(
       languageCode: cubit.currentLanguageCode,
-      userId:       cubit.userId,
+      userId: cubit.userId,
     );
-    if (mounted) setState(() { allMasail = data; isLoading = false; });
+    if (mounted)
+      setState(() {
+        allMasail = data;
+        isLoading = false;
+      });
   }
 
   List<MasailModel> get _filtered {
     if (widget.searchQuery.isEmpty) return allMasail;
     final q = widget.searchQuery.toLowerCase();
-    return allMasail.where((m) =>
-    (m.arabic  != null && m.arabic!.toLowerCase().contains(q)) ||
-        m.question.toLowerCase().contains(q) ||
-        m.answer.toLowerCase().contains(q)   ||
-        m.categoryTitle.toLowerCase().contains(q)).toList();
+    return allMasail
+        .where(
+          (m) =>
+              (m.arabic != null && m.arabic!.toLowerCase().contains(q)) ||
+              m.question.toLowerCase().contains(q) ||
+              m.answer.toLowerCase().contains(q) ||
+              m.categoryTitle.toLowerCase().contains(q),
+        )
+        .toList();
   }
 
   @override
@@ -163,8 +180,8 @@ class _AllMasailPageState extends State<AllMasailPage>
         itemCount: _filtered.length,
         itemBuilder: (_, i) => MasailCard(
           masail: _filtered[i],
-          index:  i,
-          isRtl:  isRtl,
+          index: i,
+          isRtl: isRtl,
           onTap: () async {
             await Navigator.push(
               context,
@@ -179,14 +196,13 @@ class _AllMasailPageState extends State<AllMasailPage>
   }
 }
 
-
 // ─────────────────────────────────────────────────────────────────────────────
 // Shared MasailCard widget
 // ─────────────────────────────────────────────────────────────────────────────
 class MasailCard extends StatefulWidget {
   final MasailModel masail;
-  final int         index;
-  final bool        isRtl;
+  final int index;
+  final bool isRtl;
   final VoidCallback onTap;
 
   const MasailCard({
@@ -206,8 +222,7 @@ class _MasailCardState extends State<MasailCard> {
       text.length <= limit ? text : '${text.substring(0, limit)}...';
 
   void _toggleBookmark() {
-    setState(() =>
-    widget.masail.isBookmarked = !widget.masail.isBookmarked);
+    setState(() => widget.masail.isBookmarked = !widget.masail.isBookmarked);
     context.read<MasailCubit>().toggleBookmark(widget.masail);
   }
 
@@ -222,55 +237,57 @@ class _MasailCardState extends State<MasailCard> {
   @override
   Widget build(BuildContext context) {
     final theme = getThemeById(context.watch<SettingsCubit>().state.themeMode);
-    final m     = widget.masail;
-    final w     = MediaQuery.of(context).size.width;
-    final h     = MediaQuery.of(context).size.height;
+    final m = widget.masail;
+    final w = MediaQuery.of(context).size.width;
+    final h = MediaQuery.of(context).size.height;
     final badge = _badgeColors[widget.index % _badgeColors.length];
 
     return Container(
       margin: EdgeInsets.only(bottom: h * 0.014),
       decoration: BoxDecoration(
-        color:         theme.cardColor,
-        borderRadius:  BorderRadius.circular(18),
+        color: theme.cardColor,
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(color: theme.surface, width: 1.2),
         boxShadow: [
           BoxShadow(
-            color:      theme.accent.withOpacity(0.06),
+            color: theme.accent.withValues(alpha: 0.06),
             blurRadius: 12,
-            offset:     const Offset(0, 3),
+            offset: const Offset(0, 3),
           ),
         ],
       ),
       child: Material(
-        color:         Colors.transparent,
-        borderRadius:  BorderRadius.circular(18),
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(18),
         child: InkWell(
-          borderRadius:   BorderRadius.circular(18),
-          splashColor:    theme.accent.withOpacity(0.06),
-          highlightColor: theme.accent.withOpacity(0.03),
+          borderRadius: BorderRadius.circular(18),
+          splashColor: theme.accent.withValues(alpha: 0.06),
+          highlightColor: theme.accent.withValues(alpha: 0.03),
           onTap: widget.onTap,
           child: Padding(
             padding: EdgeInsets.symmetric(
-                horizontal: w * 0.04, vertical: h * 0.016),
+              horizontal: w * 0.04,
+              vertical: h * 0.016,
+            ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // ── Number badge ──
                 Container(
-                  width:  w * 0.11,
+                  width: w * 0.11,
                   height: w * 0.11,
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [badge, badge.withOpacity(0.75)],
-                      begin:  Alignment.topLeft,
-                      end:    Alignment.bottomRight,
+                      colors: [badge, badge.withValues(alpha: 0.75)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
                     ),
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
-                        color:      badge.withOpacity(0.28),
+                        color: badge.withValues(alpha: 0.28),
                         blurRadius: 8,
-                        offset:     const Offset(0, 3),
+                        offset: const Offset(0, 3),
                       ),
                     ],
                   ),
@@ -278,8 +295,8 @@ class _MasailCardState extends State<MasailCard> {
                     child: Text(
                       m.id.toString(),
                       style: TextStyle(
-                        color:      Colors.white,
-                        fontSize:   w * 0.034,
+                        color: Colors.white,
+                        fontSize: w * 0.034,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -303,10 +320,10 @@ class _MasailCardState extends State<MasailCard> {
                               _short(m.arabic!, 70),
                               textAlign: TextAlign.right,
                               style: TextStyle(
-                                fontSize:   w * 0.04,
+                                fontSize: w * 0.04,
                                 fontWeight: FontWeight.w600,
-                                color:      theme.textHigh,
-                                height:     1.55,
+                                color: theme.textHigh,
+                                height: 1.55,
                                 fontFamily: 'Amiri',
                               ),
                             ),
@@ -315,12 +332,13 @@ class _MasailCardState extends State<MasailCard> {
                       // Question preview
                       Text(
                         _short(m.question),
-                        textAlign:
-                        widget.isRtl ? TextAlign.right : TextAlign.left,
+                        textAlign: widget.isRtl
+                            ? TextAlign.right
+                            : TextAlign.left,
                         style: TextStyle(
-                          fontSize:   w * 0.034,
-                          color:      theme.textHigh,
-                          height:     1.5,
+                          fontSize: w * 0.034,
+                          color: theme.textHigh,
+                          height: 1.5,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -334,19 +352,20 @@ class _MasailCardState extends State<MasailCard> {
                               // Category chip
                               _Chip(
                                 label: m.categoryTitle,
-                                icon:  Icons.folder_outlined,
+                                icon: Icons.folder_outlined,
                                 color: theme.accent,
-                                w:     w, h: h,
+                                w: w,
+                                h: h,
                               ),
                               // Madhab chip — only if present
-                              if (m.madhab != null &&
-                                  m.madhab!.isNotEmpty) ...[
+                              if (m.madhab != null && m.madhab!.isNotEmpty) ...[
                                 SizedBox(width: w * 0.015),
                                 _Chip(
                                   label: m.madhab!,
-                                  icon:  Icons.school_outlined,
+                                  icon: Icons.school_outlined,
                                   color: theme.textLow,
-                                  w:     w, h: h,
+                                  w: w,
+                                  h: h,
                                 ),
                               ],
                             ],
@@ -360,7 +379,7 @@ class _MasailCardState extends State<MasailCard> {
                                   : Icons.bookmark_outline_rounded,
                               color: m.isBookmarked
                                   ? theme.accent
-                                  : theme.textLow.withOpacity(0.5),
+                                  : theme.textLow.withValues(alpha: 0.5),
                               size: w * 0.052,
                             ),
                           ),
@@ -370,8 +389,11 @@ class _MasailCardState extends State<MasailCard> {
                   ),
                 ),
                 SizedBox(width: w * 0.015),
-                Icon(Icons.chevron_right_rounded,
-                    color: theme.textLow.withOpacity(0.6), size: w * 0.05),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  color: theme.textLow.withValues(alpha: 0.6),
+                  size: w * 0.05,
+                ),
               ],
             ),
           ),
@@ -381,13 +403,12 @@ class _MasailCardState extends State<MasailCard> {
   }
 }
 
-
 // ── Small label chip ──────────────────────────────────────────────────────────
 class _Chip extends StatelessWidget {
-  final String   label;
+  final String label;
   final IconData icon;
-  final Color    color;
-  final double   w, h;
+  final Color color;
+  final double w, h;
   const _Chip({
     required this.label,
     required this.icon,
@@ -398,11 +419,10 @@ class _Chip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-    padding: EdgeInsets.symmetric(
-        horizontal: w * 0.022, vertical: h * 0.004),
+    padding: EdgeInsets.symmetric(horizontal: w * 0.022, vertical: h * 0.004),
     decoration: BoxDecoration(
-      color:         color.withOpacity(0.09),
-      borderRadius:  BorderRadius.circular(20),
+      color: color.withValues(alpha: 0.09),
+      borderRadius: BorderRadius.circular(20),
     ),
     child: Row(
       mainAxisSize: MainAxisSize.min,
@@ -412,8 +432,8 @@ class _Chip extends StatelessWidget {
         Text(
           label,
           style: TextStyle(
-            fontSize:   w * 0.028,
-            color:      color,
+            fontSize: w * 0.028,
+            color: color,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -422,12 +442,11 @@ class _Chip extends StatelessWidget {
   );
 }
 
-
 // ── Custom app bar for category/detail pages ──────────────────────────────────
 class _MasailAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
   final String subtitle;
-  final bool   isRtl;
+  final bool isRtl;
   final double w;
 
   const _MasailAppBar({
@@ -445,49 +464,46 @@ class _MasailAppBar extends StatelessWidget implements PreferredSizeWidget {
     final theme = getThemeById(context.watch<SettingsCubit>().state.themeMode);
     return AppBar(
       backgroundColor: theme.surface,
-      elevation:       0,
+      elevation: 0,
       leading: IconButton(
         icon: Icon(
           isRtl
               ? Icons.arrow_forward_ios_rounded
               : Icons.arrow_back_ios_new_rounded,
           color: theme.accent,
-          size:  18,
+          size: 18,
         ),
         onPressed: () => Navigator.pop(context),
       ),
       titleSpacing: 0,
       title: Column(
-        crossAxisAlignment:
-        isRtl ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+        crossAxisAlignment: isRtl
+            ? CrossAxisAlignment.end
+            : CrossAxisAlignment.start,
         children: [
           Text(
             title,
             style: TextStyle(
-              color:      theme.textHigh,
-              fontSize:   w * 0.043,
+              color: theme.textHigh,
+              fontSize: w * 0.043,
               fontWeight: FontWeight.w700,
             ),
-            maxLines:  1,
-            overflow:  TextOverflow.ellipsis,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
           Text(
             subtitle,
-            style: TextStyle(
-                color: theme.accent, fontSize: w * 0.028),
+            style: TextStyle(color: theme.accent, fontSize: w * 0.028),
           ),
         ],
       ),
       bottom: PreferredSize(
         preferredSize: const Size.fromHeight(1),
-        child: Container(
-            height: 1,
-            color: theme.accent.withOpacity(0.2)),
+        child: Container(height: 1, color: theme.accent.withValues(alpha: 0.2)),
       ),
     );
   }
 }
-
 
 // ── Empty masail placeholder ──────────────────────────────────────────────────
 class _EmptyMasail extends StatelessWidget {
@@ -504,19 +520,21 @@ class _EmptyMasail extends StatelessWidget {
           Container(
             padding: EdgeInsets.all(w * 0.06),
             decoration: BoxDecoration(
-              color:  theme.accent.withOpacity(0.08),
-              shape:  BoxShape.circle,
+              color: theme.accent.withValues(alpha: 0.08),
+              shape: BoxShape.circle,
             ),
-            child: Icon(Icons.menu_book_rounded,
-                size:  w * 0.14,
-                color: theme.accent.withOpacity(0.4)),
+            child: Icon(
+              Icons.menu_book_rounded,
+              size: w * 0.14,
+              color: theme.accent.withValues(alpha: 0.4),
+            ),
           ),
           SizedBox(height: h * 0.02),
           Text(
             'No Masail found',
             style: TextStyle(
-              color:      theme.textLow,
-              fontSize:   w * 0.042,
+              color: theme.textLow,
+              fontSize: w * 0.042,
               fontWeight: FontWeight.w600,
             ),
           ),

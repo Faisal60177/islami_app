@@ -42,7 +42,7 @@ class _BookmarkedDuasPageState extends State<BookmarkedDuasPage>
     }
 
     final data = await cubit.repository.getBookmarkedForUser(
-      userId:       userId,
+      userId: userId,
       languageCode: cubit.currentLanguageCode,
     );
 
@@ -69,10 +69,12 @@ class _BookmarkedDuasPageState extends State<BookmarkedDuasPage>
     if (widget.searchQuery.isEmpty) return bookmarkDuas;
     final query = widget.searchQuery.toLowerCase();
     return bookmarkDuas
-        .where((dua) =>
-    dua.arabic.toLowerCase().contains(query) ||
-        dua.title.toLowerCase().contains(query) ||
-        dua.categoryTitle.toLowerCase().contains(query))
+        .where(
+          (dua) =>
+              dua.arabic.toLowerCase().contains(query) ||
+              dua.title.toLowerCase().contains(query) ||
+              dua.categoryTitle.toLowerCase().contains(query),
+        )
         .toList();
   }
 
@@ -102,8 +104,7 @@ class _BookmarkedDuasPageState extends State<BookmarkedDuasPage>
 
     if (isLoading) {
       return Center(
-        child: CircularProgressIndicator(
-            color: theme.accent, strokeWidth: 3),
+        child: CircularProgressIndicator(color: theme.accent, strokeWidth: 3),
       );
     }
 
@@ -138,19 +139,28 @@ class _BookmarkedDuasPageState extends State<BookmarkedDuasPage>
             SliverToBoxAdapter(
               child: Padding(
                 padding: EdgeInsets.fromLTRB(
-                    w * 0.05, h * 0.02, w * 0.05, h * 0.01),
+                  w * 0.05,
+                  h * 0.02,
+                  w * 0.05,
+                  h * 0.01,
+                ),
                 child: Container(
                   padding: EdgeInsets.symmetric(
-                      horizontal: w * 0.03, vertical: h * 0.007),
+                    horizontal: w * 0.03,
+                    vertical: h * 0.007,
+                  ),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF64B5F6).withOpacity(0.12),
+                    color: const Color(0xFF64B5F6).withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.bookmark_rounded,
-                          size: w * 0.04, color: const Color(0xFF64B5F6)),
+                      Icon(
+                        Icons.bookmark_rounded,
+                        size: w * 0.04,
+                        color: const Color(0xFF64B5F6),
+                      ),
                       SizedBox(width: w * 0.015),
                       Text(
                         '${filteredDuas.length} ${l10n.saved}',
@@ -166,30 +176,27 @@ class _BookmarkedDuasPageState extends State<BookmarkedDuasPage>
               ),
             ),
             SliverPadding(
-              padding: EdgeInsets.fromLTRB(
-                  w * 0.04, 0, w * 0.04, h * 0.03),
+              padding: EdgeInsets.fromLTRB(w * 0.04, 0, w * 0.04, h * 0.03),
               sliver: SliverList(
-                delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                    final dua = filteredDuas[index];
-                    return _BookmarkCard(
-                      dua: dua,
-                      isRtl: isRtl,
-                      theme: theme,
-                      onTap: () async {
-                        await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (_) => DuasDetailPage(dua: dua)),
-                        );
-                        loadBookmarks(); // ← reload after returning
-                      },
-                      // ── ADD: unfavorite directly from card ──
-                      onRemoveBookmark: () => _toggleBookmark(dua),
-                    );
-                  },
-                  childCount: filteredDuas.length,
-                ),
+                delegate: SliverChildBuilderDelegate((context, index) {
+                  final dua = filteredDuas[index];
+                  return _BookmarkCard(
+                    dua: dua,
+                    isRtl: isRtl,
+                    theme: theme,
+                    onTap: () async {
+                      await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => DuasDetailPage(dua: dua),
+                        ),
+                      );
+                      loadBookmarks(); // ← reload after returning
+                    },
+                    // ── ADD: unfavorite directly from card ──
+                    onRemoveBookmark: () => _toggleBookmark(dua),
+                  );
+                }, childCount: filteredDuas.length),
               ),
             ),
           ],
@@ -198,8 +205,6 @@ class _BookmarkedDuasPageState extends State<BookmarkedDuasPage>
     );
   }
 }
-
-
 
 class _BookmarkCard extends StatelessWidget {
   final DuasModel dua;
@@ -232,12 +237,15 @@ class _BookmarkCard extends StatelessWidget {
         color: theme.cardColor,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
-            color: const Color(0xFF64B5F6).withOpacity(0.2), width: 1),
+          color: const Color(0xFF64B5F6).withValues(alpha: 0.2),
+          width: 1,
+        ),
         boxShadow: [
           BoxShadow(
-              color: const Color(0xFF64B5F6).withOpacity(0.07),
-              blurRadius: 12,
-              offset: const Offset(0, 3)),
+            color: const Color(0xFF64B5F6).withValues(alpha: 0.07),
+            blurRadius: 12,
+            offset: const Offset(0, 3),
+          ),
         ],
       ),
       child: Material(
@@ -248,7 +256,9 @@ class _BookmarkCard extends StatelessWidget {
           onTap: onTap,
           child: Padding(
             padding: EdgeInsets.symmetric(
-                horizontal: w * 0.04, vertical: h * 0.016),
+              horizontal: w * 0.04,
+              vertical: h * 0.016,
+            ),
             child: Row(
               children: [
                 // ── CHANGED: tap icon to unfavorite ──
@@ -258,14 +268,15 @@ class _BookmarkCard extends StatelessWidget {
                     width: w * 0.12,
                     height: w * 0.12,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF64B5F6).withOpacity(0.12),
+                      color: const Color(0xFF64B5F6).withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(14),
                     ),
                     child: Center(
                       child: Icon(
                         dua.isFavorite
-                            ? Icons.bookmark_rounded          // ← filled
-                            : Icons.bookmark_remove_rounded,  // ← empty
+                            ? Icons
+                                  .bookmark_rounded // ← filled
+                            : Icons.bookmark_remove_rounded, // ← empty
                         color: const Color(0xFF64B5F6),
                         size: w * 0.055,
                       ),
@@ -294,8 +305,7 @@ class _BookmarkCard extends StatelessWidget {
                       if (dua.title.isNotEmpty)
                         Text(
                           dua.title,
-                          textAlign:
-                          isRtl ? TextAlign.right : TextAlign.left,
+                          textAlign: isRtl ? TextAlign.right : TextAlign.left,
                           style: TextStyle(
                             fontSize: w * 0.032,
                             color: theme.textLow,
@@ -304,25 +314,31 @@ class _BookmarkCard extends StatelessWidget {
                       SizedBox(height: h * 0.006),
                       Container(
                         padding: EdgeInsets.symmetric(
-                            horizontal: w * 0.025, vertical: h * 0.004),
+                          horizontal: w * 0.025,
+                          vertical: h * 0.004,
+                        ),
                         decoration: BoxDecoration(
-                          color: theme.accent.withOpacity(0.09),
+                          color: theme.accent.withValues(alpha: 0.09),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
                           dua.categoryTitle,
                           style: TextStyle(
-                              fontSize: w * 0.03,
-                              color: theme.accent,
-                              fontWeight: FontWeight.w600),
+                            fontSize: w * 0.03,
+                            color: theme.accent,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                     ],
                   ),
                 ),
                 SizedBox(width: w * 0.02),
-                Icon(Icons.chevron_right_rounded,
-                    color: theme.textLow.withOpacity(0.5), size: w * 0.055),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  color: theme.textLow.withValues(alpha: 0.5),
+                  size: w * 0.055,
+                ),
               ],
             ),
           ),
@@ -331,11 +347,6 @@ class _BookmarkCard extends StatelessWidget {
     );
   }
 }
-
-
-
-
-
 
 class _EmptyState extends StatelessWidget {
   final IconData icon;
@@ -366,23 +377,31 @@ class _EmptyState extends StatelessWidget {
             Container(
               padding: EdgeInsets.all(w * 0.06),
               decoration: BoxDecoration(
-                  color: iconColor.withOpacity(0.1), shape: BoxShape.circle),
+                color: iconColor.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
               child: Icon(icon, size: w * 0.14, color: iconColor),
             ),
             SizedBox(height: h * 0.025),
-            Text(title,
-                style: TextStyle(
-                    fontSize: w * 0.048,
-                    fontWeight: FontWeight.w700,
-                    color: theme.textHigh),
-                textAlign: TextAlign.center),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: w * 0.048,
+                fontWeight: FontWeight.w700,
+                color: theme.textHigh,
+              ),
+              textAlign: TextAlign.center,
+            ),
             SizedBox(height: h * 0.01),
-            Text(subtitle,
-                style: TextStyle(
-                    fontSize: w * 0.036,
-                    color: theme.textLow,
-                    height: 1.5),
-                textAlign: TextAlign.center),
+            Text(
+              subtitle,
+              style: TextStyle(
+                fontSize: w * 0.036,
+                color: theme.textLow,
+                height: 1.5,
+              ),
+              textAlign: TextAlign.center,
+            ),
           ],
         ),
       ),

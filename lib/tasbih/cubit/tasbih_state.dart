@@ -1,9 +1,8 @@
 import 'package:equatable/equatable.dart';
 import '../models/click_mode.dart';
 import '../models/history_entry.dart';
-import '../pages/tasbih_page.dart';
 
-class TasbihState  extends Equatable{
+class TasbihState extends Equatable {
   final bool isLoaded;
   final List<String> dhikrOptions;
   final int dhikrIndex;
@@ -17,7 +16,7 @@ class TasbihState  extends Equatable{
   final bool justCompleted;
 
   const TasbihState({
-    this.isLoaded= false,
+    this.isLoaded = false,
     this.dhikrOptions = const [
       'سُبْحَانَ ٱللَّهِ',
       'ٱلْحَمْدُ لِلَّهِ',
@@ -35,7 +34,7 @@ class TasbihState  extends Equatable{
       'أَسْتَغْفِرُ ٱللَّهَ ٱلَّذِي لَا إِلَٰهَ إِلَّا هُوَ ٱلْحَيُّ ٱلْقَيُّومُ وَأَتُوبُ إِلَيْهِ',
       'لَا إِلَٰهَ إِلَّا أَنْتَ سُبْحَانَكَ إِنِّي كُنْتُ مِنَ ٱلظَّالِمِينَ',
       'رَبَّنَا آتِنَا فِي ٱلدُّنْيَا حَسَنَةً وَفِي ٱلْآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ ٱلنَّارِ',
-      'يَا حَيُّ يَا قَيُّومُ بِرَحْمَتِكَ أَسْتَغِيثُ'
+      'يَا حَيُّ يَا قَيُّومُ بِرَحْمَتِكَ أَسْتَغِيثُ',
     ],
     this.dhikrIndex = 0,
     this.current = 0,
@@ -46,7 +45,7 @@ class TasbihState  extends Equatable{
     this.mode = ClickMode.sound,
     this.history = const [],
     this.justCompleted = false,
-});
+  });
 
   String get activeDhikr => dhikrOptions[dhikrIndex];
   double get progress => target == 0 ? 0 : current / target;
@@ -62,7 +61,7 @@ class TasbihState  extends Equatable{
     ClickMode? mode,
     List<HistoryEntry>? history,
     bool? justCompleted,
-}) {
+  }) {
     return TasbihState(
       isLoaded: isLoaded ?? this.isLoaded,
       dhikrIndex: dhikrIndex ?? this.dhikrIndex,

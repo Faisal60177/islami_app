@@ -13,7 +13,7 @@ class LastReadTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final sw  = MediaQuery.of(context).size.width;
+    final sw = MediaQuery.of(context).size.width;
     final rsw = sw.clamp(320.0, 420.0);
 
     return BlocBuilder<SettingsCubit, SettingsState>(
@@ -23,22 +23,26 @@ class LastReadTab extends StatelessWidget {
           builder: (_, state) {
             if (state is! QuranLoaded) {
               return Center(
-                  child: CircularProgressIndicator(color: theme.accent));
+                child: CircularProgressIndicator(color: theme.accent),
+              );
             }
 
-            final page   = state.lastReadPage;
+            final page = state.lastReadPage;
             final surahs = state.surahs;
 
             // Find current surah for this page
             SurahModel currentSurah = surahs.first;
             for (final s in surahs.reversed) {
-              if (s.page <= page) { currentSurah = s; break; }
+              if (s.page <= page) {
+                currentSurah = s;
+                break;
+              }
             }
 
             // Progress calculation (pages 3–612 = 610 quran_tilawat pages)
             final isQuranRange = page >= 3 && page <= 612;
-            final quranPage    = isQuranRange ? page - 2 : (page < 3 ? 0 : 610);
-            final progress     = (quranPage / 610).clamp(0.0, 1.0);
+            final quranPage = isQuranRange ? page - 2 : (page < 3 ? 0 : 610);
+            final progress = (quranPage / 610).clamp(0.0, 1.0);
 
             return SingleChildScrollView(
               padding: EdgeInsets.all(rsw * 0.045),
@@ -127,8 +131,7 @@ class LastReadTab extends StatelessWidget {
                       SizedBox(width: rsw * 0.020),
                       _StatCard(
                         label: 'Completed',
-                        value:
-                        '${(progress * 100).toStringAsFixed(1)}%',
+                        value: '${(progress * 100).toStringAsFixed(1)}%',
                         sub: 'of quran_tilawat',
                         color: const Color(0xFF64B5F6),
                         theme: theme,
@@ -183,7 +186,10 @@ class _ResumeCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: theme.surface,
         borderRadius: BorderRadius.circular(rsw * 0.048),
-        border: Border.all(color: theme.accent.withOpacity(0.22), width: 1),
+        border: Border.all(
+          color: theme.accent.withValues(alpha: 0.22),
+          width: 1,
+        ),
       ),
       child: Column(
         children: [
@@ -197,18 +203,22 @@ class _ResumeCard extends StatelessWidget {
                   height: rsw * 0.18,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: theme.accent.withOpacity(0.10),
+                    color: theme.accent.withValues(alpha: 0.10),
                     border: Border.all(
-                        color: theme.accent.withOpacity(0.25), width: 1),
+                      color: theme.accent.withValues(alpha: 0.25),
+                      width: 1,
+                    ),
                   ),
-                  child: Icon(Icons.history_edu_rounded,
-                      color: theme.accent, size: rsw * 0.095),
+                  child: Icon(
+                    Icons.history_edu_rounded,
+                    color: theme.accent,
+                    size: rsw * 0.095,
+                  ),
                 ),
                 SizedBox(height: rsw * 0.025),
                 Text(
                   'Continue Reading',
-                  style: TextStyle(
-                      color: theme.textLow, fontSize: rsw * 0.028),
+                  style: TextStyle(color: theme.textLow, fontSize: rsw * 0.028),
                 ),
                 SizedBox(height: rsw * 0.008),
                 Text(
@@ -237,7 +247,9 @@ class _ResumeCard extends StatelessWidget {
                     Text(
                       'quran_tilawat page $quranPage of 610',
                       style: TextStyle(
-                          color: theme.textLow, fontSize: rsw * 0.024),
+                        color: theme.textLow,
+                        fontSize: rsw * 0.024,
+                      ),
                     ),
                     const Spacer(),
                     Text(
@@ -256,9 +268,8 @@ class _ResumeCard extends StatelessWidget {
                   child: LinearProgressIndicator(
                     value: progress,
                     minHeight: rsw * 0.014,
-                    backgroundColor: theme.accent.withOpacity(0.12),
-                    valueColor:
-                    AlwaysStoppedAnimation<Color>(theme.accent),
+                    backgroundColor: theme.accent.withValues(alpha: 0.12),
+                    valueColor: AlwaysStoppedAnimation<Color>(theme.accent),
                   ),
                 ),
               ],
@@ -273,7 +284,9 @@ class _ResumeCard extends StatelessWidget {
                 builder: (_) => BlocProvider.value(
                   value: context.read<QuranCubit>(),
                   child: QuranReaderPage(
-                      initialPage: page, surah: currentSurah),
+                    initialPage: page,
+                    surah: currentSurah,
+                  ),
                 ),
               ),
             ),
@@ -290,8 +303,11 @@ class _ResumeCard extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.play_arrow_rounded,
-                      color: Colors.white, size: rsw * 0.052),
+                  Icon(
+                    Icons.play_arrow_rounded,
+                    color: Colors.white,
+                    size: rsw * 0.052,
+                  ),
                   SizedBox(width: rsw * 0.016),
                   Text(
                     'Resume — Page $quranPage',
@@ -335,12 +351,16 @@ class _QuickBtn extends StatelessWidget {
       onTap: onTap,
       child: Container(
         padding: EdgeInsets.symmetric(
-            vertical: rsw * 0.030, horizontal: rsw * 0.020),
+          vertical: rsw * 0.030,
+          horizontal: rsw * 0.020,
+        ),
         decoration: BoxDecoration(
           color: theme.surface,
           borderRadius: BorderRadius.circular(rsw * 0.032),
           border: Border.all(
-              color: theme.accent.withOpacity(0.18), width: 0.8),
+            color: theme.accent.withValues(alpha: 0.18),
+            width: 0.8,
+          ),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -351,14 +371,18 @@ class _QuickBtn extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(label,
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: rsw * 0.028,
-                        fontWeight: FontWeight.w600)),
-                Text(sub,
-                    style: TextStyle(
-                        color: theme.textLow, fontSize: rsw * 0.022)),
+                Text(
+                  label,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: rsw * 0.028,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                Text(
+                  sub,
+                  style: TextStyle(color: theme.textLow, fontSize: rsw * 0.022),
+                ),
               ],
             ),
           ],
@@ -391,11 +415,13 @@ class _StatCard extends StatelessWidget {
     return Expanded(
       child: Container(
         padding: EdgeInsets.symmetric(
-            vertical: rsw * 0.025, horizontal: rsw * 0.015),
+          vertical: rsw * 0.025,
+          horizontal: rsw * 0.015,
+        ),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.08),
+          color: color.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(rsw * 0.028),
-          border: Border.all(color: color.withOpacity(0.22), width: 0.8),
+          border: Border.all(color: color.withValues(alpha: 0.22), width: 0.8),
         ),
         child: Column(
           children: [
@@ -407,15 +433,19 @@ class _StatCard extends StatelessWidget {
                 fontWeight: FontWeight.w800,
               ),
             ),
-            Text(sub,
-                style: TextStyle(
-                    color: theme.textLow, fontSize: rsw * 0.020)),
+            Text(
+              sub,
+              style: TextStyle(color: theme.textLow, fontSize: rsw * 0.020),
+            ),
             SizedBox(height: rsw * 0.004),
-            Text(label,
-                style: TextStyle(
-                    color: Colors.white,
-                    fontSize: rsw * 0.022,
-                    fontWeight: FontWeight.w600)),
+            Text(
+              label,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: rsw * 0.022,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ],
         ),
       ),

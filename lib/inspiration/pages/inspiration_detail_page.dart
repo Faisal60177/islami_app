@@ -24,8 +24,7 @@ class InspirationDetailPage extends StatefulWidget {
   });
 
   @override
-  State<InspirationDetailPage> createState() =>
-      _InspirationDetailPageState();
+  State<InspirationDetailPage> createState() => _InspirationDetailPageState();
 }
 
 class _InspirationDetailPageState extends State<InspirationDetailPage> {
@@ -79,8 +78,7 @@ class _InspirationDetailPageState extends State<InspirationDetailPage> {
           // adapt their colors for light vs dark themes.
           SafeArea(
             child: Padding(
-              padding:
-              const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -91,18 +89,19 @@ class _InspirationDetailPageState extends State<InspirationDetailPage> {
                   ),
                   Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 14, vertical: 6),
+                      horizontal: 14,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: theme.isDark
                           ? Colors.black26
-                          : theme.surface.withOpacity(0.9),
+                          : theme.surface.withValues(alpha: 0.9),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
                       '${_currentIndex + 1} / ${widget.inspirations.length}',
                       style: TextStyle(
-                        color:
-                        theme.isDark ? Colors.white70 : theme.textHigh,
+                        color: theme.isDark ? Colors.white70 : theme.textHigh,
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
                       ),
@@ -188,7 +187,7 @@ class _InspirationFullCardState extends State<_InspirationFullCard> {
                   style: TextStyle(
                     color: widget.theme.isDark
                         ? Colors.white24
-                        : widget.theme.textLow.withOpacity(0.6),
+                        : widget.theme.textLow.withValues(alpha: 0.6),
                     fontSize: 11,
                     letterSpacing: 0.5,
                   ),
@@ -218,8 +217,7 @@ class _InspirationFullCardState extends State<_InspirationFullCard> {
                   inspiration: inspiration,
                   watermark: const _WatermarkBar(
                     appName: 'Muslim Life',
-                    appIconAsset:
-                    'assets/icons/AppIcon.png',
+                    appIconAsset: 'assets/icons/AppIcon.png',
                   ),
                 ),
               ),
@@ -271,7 +269,8 @@ class _InspirationFullCardState extends State<_InspirationFullCard> {
           theme: theme,
           onTap: () {
             setState(
-                    () => inspiration.isBookmarked = !inspiration.isBookmarked);
+              () => inspiration.isBookmarked = !inspiration.isBookmarked,
+            );
             context.read<InspirationCubit>().toggleBookmark(inspiration);
           },
         ),
@@ -284,24 +283,24 @@ class _InspirationFullCardState extends State<_InspirationFullCard> {
       // Give the hidden share-card widget one frame to paint before capture.
       await Future.delayed(const Duration(milliseconds: 50));
 
-      final boundary = _shareCardKey.currentContext!.findRenderObject()
-      as RenderRepaintBoundary;
+      final boundary =
+          _shareCardKey.currentContext!.findRenderObject()
+              as RenderRepaintBoundary;
 
       // 360x640 logical size × pixelRatio 3.0 = 1080x1920 → Full HD.
       final image = await boundary.toImage(pixelRatio: 3.0);
-      final bytes =
-      (await image.toByteData(format: ui.ImageByteFormat.png))!
-          .buffer
-          .asUint8List();
+      final bytes = (await image.toByteData(
+        format: ui.ImageByteFormat.png,
+      ))!.buffer.asUint8List();
 
       final dir = await getTemporaryDirectory();
-      final file = await File('${dir.path}/inspiration_share.png')
-          .writeAsBytes(bytes);
+      final file = await File(
+        '${dir.path}/inspiration_share.png',
+      ).writeAsBytes(bytes);
 
-      await Share.shareXFiles(
-        [XFile(file.path)],
-        text: widget.inspiration.quoteText,
-      );
+      await Share.shareXFiles([
+        XFile(file.path),
+      ], text: widget.inspiration.quoteText);
     } catch (e) {
       debugPrint('Share failed: $e');
     }
@@ -316,10 +315,7 @@ class _QuoteCardContent extends StatelessWidget {
   final InspirationModel inspiration;
   final Widget? watermark; // null = on-screen card, set = share card
 
-  const _QuoteCardContent({
-    required this.inspiration,
-    this.watermark,
-  });
+  const _QuoteCardContent({required this.inspiration, this.watermark});
 
   bool get _hasReference {
     final r = inspiration.reference;
@@ -333,7 +329,7 @@ class _QuoteCardContent extends StatelessWidget {
     final hasR = r != null && r.isNotEmpty;
     final hasA = a != null && a.isNotEmpty;
     if (hasR && hasA) return '$r — $a';
-    if (hasR) return r!;
+    if (hasR) return r;
     return a!;
   }
 
@@ -350,7 +346,9 @@ class _QuoteCardContent extends StatelessWidget {
                 // ── Category — top-left corner ──
                 Container(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 14, vertical: 6),
+                    horizontal: 14,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.white12,
                     borderRadius: BorderRadius.circular(20),
@@ -428,7 +426,7 @@ class _QuoteCardContent extends StatelessWidget {
         ),
 
         // ── Watermark — only present on the share card ──
-        if (watermark != null) watermark!,
+        ?watermark,
       ],
     );
   }
@@ -441,17 +439,14 @@ class _WatermarkBar extends StatelessWidget {
   final String appName;
   final String appIconAsset;
 
-  const _WatermarkBar({
-    required this.appName,
-    required this.appIconAsset,
-  });
+  const _WatermarkBar({required this.appName, required this.appIconAsset});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 14),
-      color: Colors.black.withOpacity(0.28),
+      color: Colors.black.withValues(alpha: 0.28),
       child: Row(
         children: [
           ClipRRect(
@@ -507,7 +502,7 @@ class _ActionButton extends StatelessWidget {
               border: Border.all(
                 color: theme.isDark
                     ? Colors.white12
-                    : theme.textLow.withOpacity(0.25),
+                    : theme.textLow.withValues(alpha: 0.25),
               ),
             ),
             child: Icon(icon, color: color, size: 22),
@@ -518,7 +513,7 @@ class _ActionButton extends StatelessWidget {
             style: TextStyle(
               color: theme.isDark
                   ? Colors.white38
-                  : theme.textLow.withOpacity(0.8),
+                  : theme.textLow.withValues(alpha: 0.8),
               fontSize: 11,
               fontWeight: FontWeight.w400,
             ),
@@ -552,12 +547,12 @@ class _CircleButton extends StatelessWidget {
         decoration: BoxDecoration(
           color: theme.isDark
               ? Colors.black26
-              : theme.surface.withOpacity(0.9),
+              : theme.surface.withValues(alpha: 0.9),
           shape: BoxShape.circle,
           border: Border.all(
             color: theme.isDark
                 ? Colors.white12
-                : theme.textLow.withOpacity(0.2),
+                : theme.textLow.withValues(alpha: 0.2),
           ),
         ),
         child: Icon(

@@ -8,7 +8,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 Future<void> _launchPrivacyPolicy() async {
-  final Uri url = Uri.parse('https://faisal60177.github.io/muslim-life/privacy.html');
+  final Uri url = Uri.parse(
+    'https://faisal60177.github.io/muslim-life/privacy.html',
+  );
   if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
     throw Exception('Could not launch $url');
   }
@@ -17,14 +19,17 @@ Future<void> _launchPrivacyPolicy() async {
 class SessionSettingsSection extends StatelessWidget {
   final AppThemeOption theme;
   final AppLocalizations l10n;
-  const SessionSettingsSection(
-      {super.key, required this.theme, required this.l10n});
+  const SessionSettingsSection({
+    super.key,
+    required this.theme,
+    required this.l10n,
+  });
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<SettingsCubit, SettingsState>(
       builder: (context, state) {
-        final thm   = getThemeById(state.themeMode);
+        final thm = getThemeById(state.themeMode);
 
         return Column(
           children: [
@@ -45,11 +50,12 @@ class SessionSettingsSection extends StatelessWidget {
               decoration: BoxDecoration(
                 color: thm.surface,
                 borderRadius: BorderRadius.circular(18),
-                border: Border.all(color: Colors.red.withOpacity(0.25)),
+                border: Border.all(color: Colors.red.withValues(alpha: 0.25)),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.red.withOpacity(0.06),
-                    blurRadius: 12, offset: const Offset(0, 4),
+                    color: Colors.red.withValues(alpha: 0.06),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
                   ),
                 ],
               ),
@@ -60,10 +66,12 @@ class SessionSettingsSection extends StatelessWidget {
                   onTap: () => Navigator.push(
                     context,
                     PageRouteBuilder(
-                      pageBuilder: (_, __, ___) => const SignOutPage(),
+                      pageBuilder: (_, _, _) => const SignOutPage(),
                       transitionDuration: const Duration(milliseconds: 300),
-                      reverseTransitionDuration: const Duration(milliseconds: 300),
-                      transitionsBuilder: (_, animation, __, child) {
+                      reverseTransitionDuration: const Duration(
+                        milliseconds: 300,
+                      ),
+                      transitionsBuilder: (_, animation, _, child) {
                         return SlideTransition(
                           position: Tween<Offset>(
                             begin: const Offset(1, 0),
@@ -74,20 +82,26 @@ class SessionSettingsSection extends StatelessWidget {
                       },
                     ),
                   ),
-                  splashColor: Colors.red.withOpacity(0.08),
+                  splashColor: Colors.red.withValues(alpha: 0.08),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 14),
+                      horizontal: 16,
+                      vertical: 14,
+                    ),
                     child: Row(
                       children: [
                         Container(
-                          width: 40, height: 40,
+                          width: 40,
+                          height: 40,
                           decoration: BoxDecoration(
-                            color: Colors.red.withOpacity(0.12),
+                            color: Colors.red.withValues(alpha: 0.12),
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: const Icon(Icons.logout_rounded,
-                              color: Colors.redAccent, size: 20),
+                          child: const Icon(
+                            Icons.logout_rounded,
+                            color: Colors.redAccent,
+                            size: 20,
+                          ),
                         ),
                         const SizedBox(width: 14),
                         Expanded(
@@ -105,13 +119,18 @@ class SessionSettingsSection extends StatelessWidget {
                               Text(
                                 'End your current session',
                                 style: TextStyle(
-                                    color: thm.textLow, fontSize: 12),
+                                  color: thm.textLow,
+                                  fontSize: 12,
+                                ),
                               ),
                             ],
                           ),
                         ),
-                        const Icon(Icons.arrow_forward_ios_rounded,
-                            color: Colors.redAccent, size: 14),
+                        const Icon(
+                          Icons.arrow_forward_ios_rounded,
+                          color: Colors.redAccent,
+                          size: 14,
+                        ),
                       ],
                     ),
                   ),
@@ -123,7 +142,6 @@ class SessionSettingsSection extends StatelessWidget {
       },
     );
   }
-
 }
 
 class _ActionTile extends StatelessWidget {
@@ -151,11 +169,12 @@ class _ActionTile extends StatelessWidget {
       decoration: BoxDecoration(
         color: thm.surface,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: thm.accent.withOpacity(0.15)),
+        border: Border.all(color: thm.accent.withValues(alpha: 0.15)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(thm.isDark ? 0.25 : 0.05),
-            blurRadius: 10, offset: const Offset(0, 3),
+            color: Colors.black.withValues(alpha: thm.isDark ? 0.25 : 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
@@ -164,16 +183,16 @@ class _ActionTile extends StatelessWidget {
         child: InkWell(
           borderRadius: BorderRadius.circular(18),
           onTap: onTap,
-          splashColor: iconColor.withOpacity(0.07),
+          splashColor: iconColor.withValues(alpha: 0.07),
           child: Padding(
-            padding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             child: Row(
               children: [
                 Container(
-                  width: 40, height: 40,
+                  width: 40,
+                  height: 40,
                   decoration: BoxDecoration(
-                    color: iconColor.withOpacity(0.13),
+                    color: iconColor.withValues(alpha: 0.13),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(icon, color: iconColor, size: 20),
@@ -192,9 +211,10 @@ class _ActionTile extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 2),
-                      Text(subtitle,
-                          style: TextStyle(
-                              color: thm.textLow, fontSize: 12)),
+                      Text(
+                        subtitle,
+                        style: TextStyle(color: thm.textLow, fontSize: 12),
+                      ),
                     ],
                   ),
                 ),
@@ -218,8 +238,11 @@ class _ActionTile extends StatelessWidget {
 class SessionSettingsPage extends StatelessWidget {
   final AppThemeOption theme;
   final AppLocalizations l10n;
-  const SessionSettingsPage(
-      {super.key, required this.theme, required this.l10n});
+  const SessionSettingsPage({
+    super.key,
+    required this.theme,
+    required this.l10n,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -235,9 +258,13 @@ class SessionSettingsPage extends StatelessWidget {
               icon: Icon(Icons.arrow_back_ios_rounded, color: thm.accent),
               onPressed: () => Navigator.pop(context),
             ),
-            title: Text('Session',
-                style: TextStyle(
-                    color: thm.textHigh, fontWeight: FontWeight.w700)),
+            title: Text(
+              'Session',
+              style: TextStyle(
+                color: thm.textHigh,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
           ),
           body: SingleChildScrollView(
             padding: const EdgeInsets.all(16),

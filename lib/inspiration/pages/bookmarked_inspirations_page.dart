@@ -6,7 +6,6 @@ import '../model/inspiration_model.dart';
 import 'inspiration_detail_page.dart';
 import 'inspiration_page.dart' show gradientForIndex;
 import 'package:muslim_app/settings/cubit/settings_cubit.dart';
-import 'package:muslim_app/settings/cubit/settings_state.dart';
 import 'package:muslim_app/settings/theme/app_themes.dart';
 
 class BookmarkedInspirationsPage extends StatefulWidget {
@@ -31,7 +30,7 @@ class _BookmarkedInspirationsPageState
   Future<void> _load() async {
     if (!mounted) return;
     setState(() => _isLoading = true);
-    final cubit  = context.read<InspirationCubit>();
+    final cubit = context.read<InspirationCubit>();
     final userId = cubit.userId;
 
     // Sync Firestore for logged-in users
@@ -40,14 +39,14 @@ class _BookmarkedInspirationsPageState
     }
 
     final data = await cubit.repository.getBookmarkedForUser(
-      userId:       userId,
+      userId: userId,
       languageCode: cubit.currentLanguageCode,
     );
 
     if (!mounted) return;
     setState(() {
       _bookmarked = data;
-      _isLoading  = false;
+      _isLoading = false;
     });
   }
 
@@ -69,58 +68,62 @@ class _BookmarkedInspirationsPageState
         backgroundColor: theme.surface,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new_rounded,
-              color: theme.textHigh, size: 18),
+          icon: Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: theme.textHigh,
+            size: 18,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
           'Saved',
           style: TextStyle(
-            color:      theme.textHigh,
-            fontSize:   20,
+            color: theme.textHigh,
+            fontSize: 20,
             fontWeight: FontWeight.w600,
           ),
         ),
       ),
       body: _isLoading
           ? Center(
-          child: CircularProgressIndicator(
-              color: theme.accent, strokeWidth: 2))
+              child: CircularProgressIndicator(
+                color: theme.accent,
+                strokeWidth: 2,
+              ),
+            )
           : _bookmarked.isEmpty
           ? Center(
-        child: Text(
-          'No saved inspirations yet.',
-          style: TextStyle(
-              color: theme.textLow, fontSize: 14),
-        ),
-      )
-          : MasonryGridView.count(
-        physics: const ClampingScrollPhysics(),
-        crossAxisCount:   2,
-        mainAxisSpacing:  10,
-        crossAxisSpacing: 10,
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
-        itemCount: _bookmarked.length,
-        itemBuilder: (context, index) {
-          final inspiration = _bookmarked[index];
-          return _BookmarkCard(
-            inspiration:    inspiration,
-            gradientColors: gradientForIndex(index),
-            accentColor: theme.accent,
-            onRemove: () => _removeBookmark(inspiration),
-            onTap: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => InspirationDetailPage(
-                  inspirations: _bookmarked,
-                  initialIndex: index,
-                ),
+              child: Text(
+                'No saved inspirations yet.',
+                style: TextStyle(color: theme.textLow, fontSize: 14),
               ),
+            )
+          : MasonryGridView.count(
+              physics: const ClampingScrollPhysics(),
+              crossAxisCount: 2,
+              mainAxisSpacing: 10,
+              crossAxisSpacing: 10,
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+              itemCount: _bookmarked.length,
+              itemBuilder: (context, index) {
+                final inspiration = _bookmarked[index];
+                return _BookmarkCard(
+                  inspiration: inspiration,
+                  gradientColors: gradientForIndex(index),
+                  accentColor: theme.accent,
+                  onRemove: () => _removeBookmark(inspiration),
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => InspirationDetailPage(
+                        inspirations: _bookmarked,
+                        initialIndex: index,
+                      ),
+                    ),
+                  ),
+                );
+              },
             ),
-          );
-        },
-      ),
-
     );
   }
 }
@@ -129,10 +132,10 @@ class _BookmarkedInspirationsPageState
 //  for contrast, same treatment as category cards elsewhere)
 class _BookmarkCard extends StatelessWidget {
   final InspirationModel inspiration;
-  final List<Color>      gradientColors;
-  final Color            accentColor;
-  final VoidCallback     onRemove;
-  final VoidCallback     onTap;
+  final List<Color> gradientColors;
+  final Color accentColor;
+  final VoidCallback onRemove;
+  final VoidCallback onTap;
 
   const _BookmarkCard({
     required this.inspiration,
@@ -150,8 +153,8 @@ class _BookmarkCard extends StatelessWidget {
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: gradientColors,
-            begin:  Alignment.topLeft,
-            end:    Alignment.bottomRight,
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
           borderRadius: BorderRadius.circular(16),
         ),
@@ -164,23 +167,22 @@ class _BookmarkCard extends StatelessWidget {
                 inspiration.reference!.isNotEmpty)
               Text(
                 inspiration.reference!,
-                maxLines:  1,
-                overflow:  TextOverflow.ellipsis,
-                style: const TextStyle(
-                    color: Colors.white54, fontSize: 10),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(color: Colors.white54, fontSize: 10),
               ),
 
             const SizedBox(height: 4),
 
             Text(
               inspiration.title,
-              maxLines:  2,
-              overflow:  TextOverflow.ellipsis,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
               style: const TextStyle(
-                color:      Colors.white,
-                fontSize:   13,
+                color: Colors.white,
+                fontSize: 13,
                 fontWeight: FontWeight.w600,
-                height:     1.3,
+                height: 1.3,
               ),
             ),
 
@@ -188,13 +190,13 @@ class _BookmarkCard extends StatelessWidget {
 
             Text(
               inspiration.quoteText,
-              maxLines:  4,
-              overflow:  TextOverflow.ellipsis,
+              maxLines: 4,
+              overflow: TextOverflow.ellipsis,
               style: const TextStyle(
-                color:      Colors.white,
-                fontSize:   15,
+                color: Colors.white,
+                fontSize: 15,
                 fontWeight: FontWeight.w700,
-                height:     1.4,
+                height: 1.4,
               ),
             ),
 
@@ -208,7 +210,7 @@ class _BookmarkCard extends StatelessWidget {
                 child: Icon(
                   Icons.bookmark_rounded,
                   color: accentColor,
-                  size:  20,
+                  size: 20,
                 ),
               ),
             ),

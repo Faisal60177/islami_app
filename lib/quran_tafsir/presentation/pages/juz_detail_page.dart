@@ -12,7 +12,6 @@ import '../../domain/entities/verse.dart';
 import '../../domain/entities/chapter.dart';
 import '../widgets/quran_audio_bar.dart';
 
-
 class JuzDetailPage extends ConsumerWidget {
   final int juzNumber;
   final String juzName;
@@ -34,12 +33,12 @@ class JuzDetailPage extends ConsumerWidget {
           pickerType: PickerType.surah,
           currentChapterNumber: juzNumber,
         ),
-        actions: const [
-          QuranSettingsButton(),
-        ],),
+        actions: const [QuranSettingsButton()],
+      ),
       body: preferencesAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, st) => const Center(child: Text('Error loading preferences')),
+        error: (e, st) =>
+            const Center(child: Text('Error loading preferences')),
         data: (preferences) {
           final params = VerseReaderParams(
             juzNumber: juzNumber,
@@ -81,9 +80,8 @@ class _VerseListView extends ConsumerWidget {
               ),
               const SizedBox(height: 16),
               ElevatedButton.icon(
-                onPressed: () => ref.invalidate(
-                  verseReaderNotifierProvider(params),
-                ),
+                onPressed: () =>
+                    ref.invalidate(verseReaderNotifierProvider(params)),
                 icon: const Icon(Icons.refresh),
                 label: const Text('Try again'),
               ),
@@ -94,7 +92,7 @@ class _VerseListView extends ConsumerWidget {
       data: (verses) {
         return chaptersAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (_, __) => _buildList(verses, []),
+          error: (_, _) => _buildList(verses, []),
           data: (chapters) => _buildList(verses, chapters),
         );
       },
@@ -108,7 +106,7 @@ class _VerseListView extends ConsumerWidget {
     for (final verse in verses) {
       if (verse.chapterId != lastChapterId) {
         final chapter = chapters.cast<Chapter?>().firstWhere(
-              (c) => c?.id == verse.chapterId,
+          (c) => c?.id == verse.chapterId,
           orElse: () => null,
         );
         items.add(chapter ?? verse.chapterId);
@@ -126,8 +124,8 @@ class _VerseListView extends ConsumerWidget {
               onPressed: verses.isEmpty
                   ? null
                   : () => ref
-                  .read(quranAudioPlayerNotifierProvider.notifier)
-                  .playVerse(verses.first, queue: verses),
+                        .read(quranAudioPlayerNotifierProvider.notifier)
+                        .playVerse(verses.first, queue: verses),
               icon: const Icon(Icons.play_arrow_rounded),
               label: Text('Play Juz $juzNumber'),
             ),
@@ -144,7 +142,10 @@ class _VerseListView extends ConsumerWidget {
               } else if (item is int) {
                 return Padding(
                   padding: const EdgeInsets.symmetric(vertical: 16),
-                  child: Text('Surah $item', style: Theme.of(context).textTheme.titleLarge),
+                  child: Text(
+                    'Surah $item',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
                 );
               }
               return VerseCard(verse: item as Verse, allVerses: verses);
@@ -167,7 +168,9 @@ class _ChapterHeader extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
+        color: Theme.of(
+          context,
+        ).colorScheme.primaryContainer.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -179,9 +182,9 @@ class _ChapterHeader extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             chapter.nameSimple,
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
           ),
           Text(
             '${chapter.translatedName} • ${chapter.revelationPlace}',

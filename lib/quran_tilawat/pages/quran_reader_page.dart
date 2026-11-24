@@ -27,22 +27,22 @@ class QuranReaderPage extends StatefulWidget {
 
 class _QuranReaderPageState extends State<QuranReaderPage>
     with SingleTickerProviderStateMixin {
-  static const int _totalImages  = 619;
-  static const int _quranStart   = 2;
-  static const int _quranEnd     = 619;
+  static const int _totalImages = 619;
+  static const int _quranStart = 2;
+  static const int _quranEnd = 619;
   static const int _defaultTurnMs = 1200;
 
   late int _currentPage;
   late int _nextPage;
-  bool _showOverlay  = true;
+  bool _showOverlay = true;
   bool _isBookmarked = false;
-  bool _isAnimating  = false;
+  bool _isAnimating = false;
 
   late AnimationController _curlCtrl;
-  late Animation<double>   _curlAnim;
+  late Animation<double> _curlAnim;
   bool _curlingForward = true;
 
-  double _dragX    = 0;
+  double _dragX = 0;
   bool _isDragging = false;
 
   String? _quranDirPath;
@@ -51,14 +51,17 @@ class _QuranReaderPageState extends State<QuranReaderPage>
   void initState() {
     super.initState();
     _currentPage = widget.initialPage.clamp(1, _totalImages);
-    _nextPage    = _currentPage;
+    _nextPage = _currentPage;
 
     // Slower, physical feel — easeOutCubic starts responsive then settles
     _curlCtrl = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: _defaultTurnMs),
     );
-    _curlAnim = CurvedAnimation(parent: _curlCtrl, curve: Curves.easeInOutCubic);
+    _curlAnim = CurvedAnimation(
+      parent: _curlCtrl,
+      curve: Curves.easeInOutCubic,
+    );
 
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
     WidgetsBinding.instance.addPostFrameCallback((_) => _checkBookmark());
@@ -81,8 +84,9 @@ class _QuranReaderPageState extends State<QuranReaderPage>
     final state = context.read<QuranCubit>().state;
     if (state is QuranLoaded && mounted) {
       setState(() {
-        _isBookmarked =
-            state.bookmarks.any((b) => b.pageNumber == _currentPage);
+        _isBookmarked = state.bookmarks.any(
+          (b) => b.pageNumber == _currentPage,
+        );
       });
     }
   }
@@ -107,8 +111,9 @@ class _QuranReaderPageState extends State<QuranReaderPage>
     final state = context.read<QuranCubit>().state;
     if (state is QuranLoaded && mounted) {
       setState(() {
-        _isBookmarked =
-            state.bookmarks.any((b) => b.pageNumber == _currentPage);
+        _isBookmarked = state.bookmarks.any(
+          (b) => b.pageNumber == _currentPage,
+        );
       });
     }
   }
@@ -120,9 +125,9 @@ class _QuranReaderPageState extends State<QuranReaderPage>
     if (clamped == _currentPage) return;
 
     setState(() {
-      _isAnimating    = true;
+      _isAnimating = true;
       _curlingForward = forward;
-      _nextPage       = clamped;
+      _nextPage = clamped;
     });
 
     _curlCtrl.reset();
@@ -151,7 +156,7 @@ class _QuranReaderPageState extends State<QuranReaderPage>
 
   void _onHorizontalDragStart(DragStartDetails d) {
     if (_isAnimating) return;
-    _dragX      = 0;
+    _dragX = 0;
     _isDragging = true;
   }
 
@@ -165,19 +170,20 @@ class _QuranReaderPageState extends State<QuranReaderPage>
     if (!_isDragging) return;
     _isDragging = false;
 
-    final velocity      = d.primaryVelocity ?? 0;
+    final velocity = d.primaryVelocity ?? 0;
     const distThreshold = 60.0;
-    const velThreshold  = 300.0;
+    const velThreshold = 300.0;
 
-    final shouldGoPrev = _dragX > distThreshold  || velocity > velThreshold;
+    final shouldGoPrev = _dragX > distThreshold || velocity > velThreshold;
     final shouldGoNext = _dragX < -distThreshold || velocity < -velThreshold;
 
     if (shouldGoPrev || shouldGoNext) {
       // Fast swipe → shorter duration (snappier feel)
       final speed = velocity.abs().clamp(300.0, 1500.0);
-      final ms    = (_defaultTurnMs - ((speed - 300) / 1200 * 300))
-          .round()
-          .clamp(800, _defaultTurnMs);
+      final ms = (_defaultTurnMs - ((speed - 300) / 1200 * 300)).round().clamp(
+        800,
+        _defaultTurnMs,
+      );
       _curlCtrl.duration = Duration(milliseconds: ms);
 
       if (shouldGoPrev) {
@@ -194,8 +200,8 @@ class _QuranReaderPageState extends State<QuranReaderPage>
 
   @override
   Widget build(BuildContext context) {
-    final mq  = MediaQuery.of(context);
-    final sw  = mq.size.width;
+    final mq = MediaQuery.of(context);
+    final sw = mq.size.width;
     final rsw = sw.clamp(320.0, 420.0);
 
     if (_quranDirPath == null) {
@@ -210,9 +216,9 @@ class _QuranReaderPageState extends State<QuranReaderPage>
         final theme = getThemeById(settings.themeMode);
         return BlocBuilder<QuranCubit, QuranState>(
           builder: (_, state) {
-            final surahs       = state is QuranLoaded ? state.surahs : <SurahModel>[];
+            final surahs = state is QuranLoaded ? state.surahs : <SurahModel>[];
             final currentSurah = _surahForPage(_currentPage, surahs);
-            final isQuranPage  =
+            final isQuranPage =
                 _currentPage >= _quranStart && _currentPage <= _quranEnd;
 
             return Scaffold(
@@ -228,7 +234,7 @@ class _QuranReaderPageState extends State<QuranReaderPage>
                     child: SizedBox.expand(
                       child: AnimatedBuilder(
                         animation: _curlAnim,
-                        builder: (_, __) => _PageCurlView(
+                        builder: (_, _) => _PageCurlView(
                           currentPage: _currentPage,
                           nextPage: _nextPage,
                           progress: _isAnimating ? _curlAnim.value : 0.0,
@@ -331,38 +337,40 @@ class _PageCurlView extends StatelessWidget {
       maxScale: 5.0,
       child: file.existsSync()
           ? Image.file(
-        file,
-        fit: BoxFit.contain,
-        errorBuilder: (_, __, ___) => _PagePlaceholder(
-          page: page,
-          surah: isQP ? surahForPage(page, surahs) : fallbackSurah,
-          rsw: rsw,
-          isQuranPage: isQP,
-        ),
-      )
+              file,
+              fit: BoxFit.contain,
+              errorBuilder: (_, _, _) => _PagePlaceholder(
+                page: page,
+                surah: isQP ? surahForPage(page, surahs) : fallbackSurah,
+                rsw: rsw,
+                isQuranPage: isQP,
+              ),
+            )
           : _PagePlaceholder(
-        page: page,
-        surah: isQP ? surahForPage(page, surahs) : fallbackSurah,
-        rsw: rsw,
-        isQuranPage: isQP,
-      ),
+              page: page,
+              surah: isQP ? surahForPage(page, surahs) : fallbackSurah,
+              rsw: rsw,
+              isQuranPage: isQP,
+            ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final angle    = progress * math.pi;
+    final angle = progress * math.pi;
     final showBack = angle > math.pi / 2;
 
     // RTL Mushaf curl:
     // forward (next page) = curl from LEFT edge (page turns right-to-left)
     // backward (prev page) = curl from RIGHT edge
-    final curlAlignment = forward ? Alignment.centerLeft : Alignment.centerRight;
-    final rotateAngle   = forward ? -angle : angle;
+    final curlAlignment = forward
+        ? Alignment.centerLeft
+        : Alignment.centerRight;
+    final rotateAngle = forward ? -angle : angle;
 
     // Shadow falls opposite to curl edge
-    final shadowBegin = forward ? Alignment.centerLeft  : Alignment.centerRight;
-    final shadowEnd   = forward ? Alignment.centerRight : Alignment.centerLeft;
+    final shadowBegin = forward ? Alignment.centerLeft : Alignment.centerRight;
+    final shadowEnd = forward ? Alignment.centerRight : Alignment.centerLeft;
 
     return Stack(
       fit: StackFit.expand,
@@ -400,73 +408,89 @@ class _PageCurlView extends StatelessWidget {
                   ..setEntry(3, 2, 0.0008)
                   ..rotateY(rotateAngle),
                 child: showBack
-                // Back of curling page shows next page mirrored
+                    // Back of curling page shows next page mirrored
                     ? Transform(
-                  alignment: Alignment.center,
-                  transform: Matrix4.identity()..rotateY(math.pi),
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      _buildPage(nextPage),
-                      Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.centerLeft,
-                            end: Alignment.centerRight,
-                            colors: [
-                              Colors.white.withOpacity(0.10),
-                              Colors.transparent,
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                )
-                // Front face: current page with curl-edge shadow
-                    : Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    _buildPage(currentPage),
-                    // RTL: forward shadow on LEFT, backward shadow on RIGHT
-                    if (forward)
-                      Positioned(
-                        left: 0, top: 0, bottom: 0,
-                        child: Container(
-                          width: (progress * rsw * 0.18)
-                              .clamp(0.0, rsw * 0.14),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.centerLeft,
-                              end: Alignment.centerRight,
-                              colors: [
-                                Colors.black.withOpacity(
-                                    (progress * 0.55).clamp(0.0, 0.55)),
-                                Colors.transparent,
-                              ],
+                        alignment: Alignment.center,
+                        transform: Matrix4.identity()..rotateY(math.pi),
+                        child: Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            _buildPage(nextPage),
+                            Container(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.centerLeft,
+                                  end: Alignment.centerRight,
+                                  colors: [
+                                    Colors.white.withValues(alpha: 0.10),
+                                    Colors.transparent,
+                                  ],
+                                ),
+                              ),
                             ),
-                          ),
+                          ],
                         ),
                       )
-                    else
-                      Positioned(
-                        right: 0, top: 0, bottom: 0,
-                        child: Container(
-                          width: (progress * rsw * 0.18)
-                              .clamp(0.0, rsw * 0.14),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                Colors.transparent,
-                                Colors.black.withOpacity(
-                                    (progress * 0.55).clamp(0.0, 0.55)),
-                              ],
+                    // Front face: current page with curl-edge shadow
+                    : Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          _buildPage(currentPage),
+                          // RTL: forward shadow on LEFT, backward shadow on RIGHT
+                          if (forward)
+                            Positioned(
+                              left: 0,
+                              top: 0,
+                              bottom: 0,
+                              child: Container(
+                                width: (progress * rsw * 0.18).clamp(
+                                  0.0,
+                                  rsw * 0.14,
+                                ),
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.centerLeft,
+                                    end: Alignment.centerRight,
+                                    colors: [
+                                      Colors.black.withValues(
+                                        alpha: (progress * 0.55).clamp(
+                                          0.0,
+                                          0.55,
+                                        ),
+                                      ),
+                                      Colors.transparent,
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            )
+                          else
+                            Positioned(
+                              right: 0,
+                              top: 0,
+                              bottom: 0,
+                              child: Container(
+                                width: (progress * rsw * 0.18).clamp(
+                                  0.0,
+                                  rsw * 0.14,
+                                ),
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      Colors.transparent,
+                                      Colors.black.withValues(
+                                        alpha: (progress * 0.55).clamp(
+                                          0.0,
+                                          0.55,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
                             ),
-                          ),
-                        ),
+                        ],
                       ),
-                  ],
-                ),
               ),
             ),
           ),
@@ -519,7 +543,10 @@ class _TopBar extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           _CircleBtn(
-              icon: Icons.arrow_back_ios_rounded, onTap: onBack, rsw: rsw),
+            icon: Icons.arrow_back_ios_rounded,
+            onTap: onBack,
+            rsw: rsw,
+          ),
           SizedBox(width: rsw * 0.022),
           Expanded(
             child: Column(
@@ -531,18 +558,23 @@ class _TopBar extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                      color: Colors.white,
-                      fontSize: rsw * 0.036,
-                      fontWeight: FontWeight.w700),
+                    color: Colors.white,
+                    fontSize: rsw * 0.036,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
                 Text(
                   isQuranPage
                       ? 'Page ${currentPage - 1} / 618 · Para ${surah.para}'
-                      : currentPage == 1 ? 'Cover Page' : 'Appendix',
+                      : currentPage == 1
+                      ? 'Cover Page'
+                      : 'Appendix',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style:
-                  TextStyle(color: Colors.white54, fontSize: rsw * 0.024),
+                  style: TextStyle(
+                    color: Colors.white54,
+                    fontSize: rsw * 0.024,
+                  ),
                 ),
               ],
             ),
@@ -557,10 +589,11 @@ class _TopBar extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.right,
                 style: TextStyle(
-                    fontFamily: 'Amiri',
-                    color: theme.accent,
-                    fontSize: rsw * 0.042,
-                    fontWeight: FontWeight.bold),
+                  fontFamily: 'Amiri',
+                  color: theme.accent,
+                  fontSize: rsw * 0.042,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           SizedBox(width: rsw * 0.018),
@@ -572,8 +605,8 @@ class _TopBar extends StatelessWidget {
             rsw: rsw,
             color: isBookmarked ? const Color(0xFFFFB74D) : Colors.white70,
             bgColor: isBookmarked
-                ? const Color(0xFFFFB74D).withOpacity(0.20)
-                : Colors.white.withOpacity(0.12),
+                ? const Color(0xFFFFB74D).withValues(alpha: 0.20)
+                : Colors.white.withValues(alpha: 0.12),
           ),
         ],
       ),
@@ -626,33 +659,39 @@ class _BottomBar extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(_pageLabel,
-              style: TextStyle(
-                  color: Colors.white60,
-                  fontSize: rsw * 0.026,
-                  fontWeight: FontWeight.w500)),
+          Text(
+            _pageLabel,
+            style: TextStyle(
+              color: Colors.white60,
+              fontSize: rsw * 0.026,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
           SizedBox(height: rsw * 0.010),
 
           Row(
             children: [
               _CircleBtn(
-                  icon: Icons.chevron_left_rounded,
-                  onTap: onPrev,
-                  rsw: rsw,
-                  size: rsw * 0.090),
+                icon: Icons.chevron_left_rounded,
+                onTap: onPrev,
+                rsw: rsw,
+                size: rsw * 0.090,
+              ),
               SizedBox(width: rsw * 0.015),
               Expanded(
                 child: SliderTheme(
                   data: SliderThemeData(
                     trackHeight: 3,
                     thumbShape: RoundSliderThumbShape(
-                        enabledThumbRadius: rsw * 0.020),
+                      enabledThumbRadius: rsw * 0.020,
+                    ),
                     overlayShape: RoundSliderOverlayShape(
-                        overlayRadius: rsw * 0.032),
-                    activeTrackColor:   theme.accent,
+                      overlayRadius: rsw * 0.032,
+                    ),
+                    activeTrackColor: theme.accent,
                     inactiveTrackColor: Colors.white24,
-                    thumbColor:         theme.accent,
-                    overlayColor:       theme.accent.withOpacity(0.18),
+                    thumbColor: theme.accent,
+                    overlayColor: theme.accent.withValues(alpha: 0.18),
                   ),
                   child: Directionality(
                     textDirection: TextDirection.rtl,
@@ -667,23 +706,25 @@ class _BottomBar extends StatelessWidget {
               ),
               SizedBox(width: rsw * 0.015),
               _CircleBtn(
-                  icon: Icons.chevron_right_rounded,
-                  onTap: onNext,
-                  rsw: rsw,
-                  size: rsw * 0.090),
+                icon: Icons.chevron_right_rounded,
+                onTap: onNext,
+                rsw: rsw,
+                size: rsw * 0.090,
+              ),
             ],
           ),
 
           SizedBox(height: rsw * 0.008),
           Container(
             padding: EdgeInsets.symmetric(
-                horizontal: rsw * 0.030, vertical: rsw * 0.008),
+              horizontal: rsw * 0.030,
+              vertical: rsw * 0.008,
+            ),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.10),
+              color: Colors.white.withValues(alpha: 0.10),
               borderRadius: BorderRadius.circular(rsw * 0.025),
               border: Border.all(color: Colors.white24, width: 0.5),
             ),
-
           ),
         ],
       ),
@@ -704,7 +745,7 @@ class _CircleBtn extends StatelessWidget {
     required this.icon,
     required this.onTap,
     required this.rsw,
-    this.color   = Colors.white70,
+    this.color = Colors.white70,
     this.bgColor = const Color(0x1FFFFFFF),
     this.size,
   });
@@ -715,7 +756,8 @@ class _CircleBtn extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: s, height: s,
+        width: s,
+        height: s,
         decoration: BoxDecoration(
           color: bgColor,
           shape: BoxShape.circle,
@@ -750,18 +792,27 @@ class _PagePlaceholder extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.menu_book_outlined,
-                  color: const Color(0xFF2E6B40), size: rsw * 0.14),
+              Icon(
+                Icons.menu_book_outlined,
+                color: const Color(0xFF2E6B40),
+                size: rsw * 0.14,
+              ),
               SizedBox(height: rsw * 0.03),
-              Text(page < 3 ? 'Cover Page' : 'Appendix',
-                  style: TextStyle(
-                      color: const Color(0xFF2E6B40),
-                      fontSize: rsw * 0.040,
-                      fontWeight: FontWeight.w700)),
-              Text('Image $page of 619',
-                  style: TextStyle(
-                      color: const Color(0xFF888888),
-                      fontSize: rsw * 0.026)),
+              Text(
+                page < 3 ? 'Cover Page' : 'Appendix',
+                style: TextStyle(
+                  color: const Color(0xFF2E6B40),
+                  fontSize: rsw * 0.040,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              Text(
+                'Image $page of 619',
+                style: TextStyle(
+                  color: const Color(0xFF888888),
+                  fontSize: rsw * 0.026,
+                ),
+              ),
             ],
           ),
         ),
@@ -778,31 +829,40 @@ class _PagePlaceholder extends StatelessWidget {
               'بِسْمِ اللهِ الرَّحْمَٰنِ الرَّحِيْمِ',
               textAlign: TextAlign.center,
               style: TextStyle(
-                  fontFamily: 'Amiri',
-                  color: const Color(0xFF2E6B40),
-                  fontSize: rsw * 0.046),
+                fontFamily: 'Amiri',
+                color: const Color(0xFF2E6B40),
+                fontSize: rsw * 0.046,
+              ),
             ),
             SizedBox(height: rsw * 0.04),
-            Text(surah.nameAr,
-                style: TextStyle(
-                    fontFamily: 'Amiri',
-                    color: const Color(0xFF2E6B40),
-                    fontSize: rsw * 0.065)),
+            Text(
+              surah.nameAr,
+              style: TextStyle(
+                fontFamily: 'Amiri',
+                color: const Color(0xFF2E6B40),
+                fontSize: rsw * 0.065,
+              ),
+            ),
             SizedBox(height: rsw * 0.015),
             Container(
               padding: EdgeInsets.symmetric(
-                  horizontal: rsw * 0.035, vertical: rsw * 0.012),
+                horizontal: rsw * 0.035,
+                vertical: rsw * 0.012,
+              ),
               decoration: BoxDecoration(
-                color: const Color(0xFF2E6B40).withOpacity(0.08),
+                color: const Color(0xFF2E6B40).withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(rsw * 0.025),
                 border: Border.all(
-                    color: const Color(0xFF2E6B40).withOpacity(0.25)),
+                  color: const Color(0xFF2E6B40).withValues(alpha: 0.25),
+                ),
               ),
               child: Text(
                 'Page $page  ·  Image ${page.toString().padLeft(3, '0')}.webp',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                    color: const Color(0xFF555555), fontSize: rsw * 0.024),
+                  color: const Color(0xFF555555),
+                  fontSize: rsw * 0.024,
+                ),
               ),
             ),
           ],

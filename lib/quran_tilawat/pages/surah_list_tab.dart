@@ -13,7 +13,7 @@ class SurahListTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final sw  = MediaQuery.of(context).size.width;
+    final sw = MediaQuery.of(context).size.width;
     final rsw = sw.clamp(320.0, 420.0);
 
     return BlocBuilder<SettingsCubit, SettingsState>(
@@ -23,18 +23,24 @@ class SurahListTab extends StatelessWidget {
           builder: (_, state) {
             if (state is QuranLoading || state is QuranInitial) {
               return Center(
-                  child: CircularProgressIndicator(color: theme.accent));
+                child: CircularProgressIndicator(color: theme.accent),
+              );
             }
             if (state is QuranError) {
               return Center(
-                  child: Text(state.message,
-                      style: TextStyle(color: Colors.red[300])));
+                child: Text(
+                  state.message,
+                  style: TextStyle(color: Colors.red[300]),
+                ),
+              );
             }
             final surahs = (state as QuranLoaded).surahs;
 
             return ListView.builder(
               padding: EdgeInsets.symmetric(
-                  horizontal: rsw * 0.030, vertical: rsw * 0.018),
+                horizontal: rsw * 0.030,
+                vertical: rsw * 0.018,
+              ),
               physics: const ClampingScrollPhysics(),
               itemCount: surahs.length,
               itemBuilder: (_, i) =>
@@ -52,13 +58,20 @@ class _SurahTile extends StatelessWidget {
   final AppThemeOption theme;
   final double rsw;
 
-  const _SurahTile(
-      {required this.surah, required this.theme, required this.rsw});
+  const _SurahTile({
+    required this.surah,
+    required this.theme,
+    required this.rsw,
+  });
 
   // Cycle through accent colours based on surah number
   static const _accentColors = [
-    Color(0xFF4CAF82), Color(0xFF64B5F6), Color(0xFFFFB74D),
-    Color(0xFFEF9A9A), Color(0xFFB39DDB), Color(0xFF80DEEA),
+    Color(0xFF4CAF82),
+    Color(0xFF64B5F6),
+    Color(0xFFFFB74D),
+    Color(0xFFEF9A9A),
+    Color(0xFFB39DDB),
+    Color(0xFF80DEEA),
   ];
 
   Color get _rowAccent => _accentColors[surah.number % _accentColors.length];
@@ -71,8 +84,7 @@ class _SurahTile extends StatelessWidget {
         MaterialPageRoute(
           builder: (_) => BlocProvider.value(
             value: context.read<QuranCubit>(),
-            child: QuranReaderPage(
-                initialPage: surah.page, surah: surah),
+            child: QuranReaderPage(initialPage: surah.page, surah: surah),
           ),
         ),
       ),
@@ -82,7 +94,9 @@ class _SurahTile extends StatelessWidget {
           color: theme.surface,
           borderRadius: BorderRadius.circular(rsw * 0.032),
           border: Border.all(
-              color: _rowAccent.withOpacity(0.18), width: 0.8),
+            color: _rowAccent.withValues(alpha: 0.18),
+            width: 0.8,
+          ),
         ),
         child: Row(
           children: [
@@ -91,7 +105,7 @@ class _SurahTile extends StatelessWidget {
               width: rsw * 0.125,
               margin: EdgeInsets.all(rsw * 0.020),
               decoration: BoxDecoration(
-                color: _rowAccent.withOpacity(0.12),
+                color: _rowAccent.withValues(alpha: 0.12),
                 shape: BoxShape.circle,
               ),
               padding: EdgeInsets.all(rsw * 0.018),
@@ -132,12 +146,17 @@ class _SurahTile extends StatelessWidget {
                       spacing: rsw * 0.012,
                       runSpacing: rsw * 0.006,
                       children: [
-                        _Chip('${surah.totalAyahs} Ayahs',
-                            theme.accent, rsw),
-                        _Chip(surah.revelationType,
-                            const Color(0xFF64B5F6), rsw),
-                        _Chip('Para ${surah.para}',
-                            const Color(0xFFFFB74D), rsw),
+                        _Chip('${surah.totalAyahs} Ayahs', theme.accent, rsw),
+                        _Chip(
+                          surah.revelationType,
+                          const Color(0xFF64B5F6),
+                          rsw,
+                        ),
+                        _Chip(
+                          'Para ${surah.para}',
+                          const Color(0xFFFFB74D),
+                          rsw,
+                        ),
                       ],
                     ),
                   ],
@@ -162,8 +181,11 @@ class _SurahTile extends StatelessWidget {
             // Chevron
             Padding(
               padding: EdgeInsets.only(right: rsw * 0.020),
-              child: Icon(Icons.chevron_right_rounded,
-                  color: theme.textLow, size: rsw * 0.040),
+              child: Icon(
+                Icons.chevron_right_rounded,
+                color: theme.textLow,
+                size: rsw * 0.040,
+              ),
             ),
           ],
         ),
@@ -183,9 +205,11 @@ class _Chip extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.symmetric(
-          horizontal: rsw * 0.014, vertical: rsw * 0.005),
+        horizontal: rsw * 0.014,
+        vertical: rsw * 0.005,
+      ),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.10),
+        color: color.withValues(alpha: 0.10),
         borderRadius: BorderRadius.circular(rsw * 0.020),
       ),
       child: Text(

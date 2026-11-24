@@ -1,8 +1,7 @@
 import 'dart:math';
-import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 
-class RingPainter extends CustomPainter{
+class RingPainter extends CustomPainter {
   final double progress;
   final Color trackColor;
   final Color progressColor;
@@ -49,6 +48,6 @@ class RingPainter extends CustomPainter{
   @override
   bool shouldRepaint(RingPainter old) =>
       old.progress != progress ||
-  old.progressColor != progressColor ||
-  old.trackColor != trackColor;
+      old.progressColor != progressColor ||
+      old.trackColor != trackColor;
 }

@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/audio_player_provider.dart';
@@ -34,12 +33,12 @@ class SurahDetailPage extends ConsumerWidget {
           pickerType: PickerType.juz,
           currentJuzNumber: chapterNumber,
         ),
-        actions: const [
-          QuranSettingsButton(),
-        ],),
+        actions: const [QuranSettingsButton()],
+      ),
       body: preferencesAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, st) => const Center(child: Text('Error loading preferences')),
+        error: (e, st) =>
+            const Center(child: Text('Error loading preferences')),
         data: (preferences) {
           final params = VerseReaderParams(
             chapterNumber: chapterNumber,
@@ -81,9 +80,8 @@ class _VerseListView extends ConsumerWidget {
               ),
               const SizedBox(height: 16),
               ElevatedButton.icon(
-                onPressed: () => ref.invalidate(
-                  verseReaderNotifierProvider(params),
-                ),
+                onPressed: () =>
+                    ref.invalidate(verseReaderNotifierProvider(params)),
                 icon: const Icon(Icons.refresh),
                 label: const Text('Try again'),
               ),
@@ -94,10 +92,10 @@ class _VerseListView extends ConsumerWidget {
       data: (verses) {
         return chaptersAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (_, __) => _buildList(verses, null),
+          error: (_, _) => _buildList(verses, null),
           data: (chapters) {
             final chapter = chapters.cast<Chapter?>().firstWhere(
-                  (c) => c?.id == chapterId,
+              (c) => c?.id == chapterId,
               orElse: () => null,
             );
             return _buildList(verses, chapter);
@@ -134,7 +132,9 @@ class _ChapterHeader extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
+        color: Theme.of(
+          context,
+        ).colorScheme.primaryContainer.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -146,25 +146,24 @@ class _ChapterHeader extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             chapter.nameSimple,
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
           ),
           Text(
             '${chapter.translatedName} • ${chapter.revelationPlace} • ${chapter.versesCount} Ayahs',
             style: Theme.of(context).textTheme.bodySmall,
-
           ),
-      const SizedBox(height: 12),
-      Consumer(
-        builder: (context, ref, _) => ElevatedButton.icon(
-          onPressed: () => ref
-              .read(quranAudioPlayerNotifierProvider.notifier)
-              .playVerse(verses.first, queue: verses),
-          icon: const Icon(Icons.play_arrow_rounded),
-          label: const Text('Play Surah'),
-        ),
-      ),
+          const SizedBox(height: 12),
+          Consumer(
+            builder: (context, ref, _) => ElevatedButton.icon(
+              onPressed: () => ref
+                  .read(quranAudioPlayerNotifierProvider.notifier)
+                  .playVerse(verses.first, queue: verses),
+              icon: const Icon(Icons.play_arrow_rounded),
+              label: const Text('Play Surah'),
+            ),
+          ),
         ],
       ),
     );

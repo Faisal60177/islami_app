@@ -13,12 +13,12 @@ class TypeBadge extends StatelessWidget {
     return Container(
       padding: EdgeInsets.symmetric(
         horizontal: sw * (large ? 0.035 : 0.022),
-        vertical:   sw * (large ? 0.012 : 0.007),
+        vertical: sw * (large ? 0.012 : 0.007),
       ),
       decoration: BoxDecoration(
         color: bg,
         borderRadius: BorderRadius.circular(sw * 0.05),
-        border: Border.all(color: fg.withOpacity(0.35), width: 0.8),
+        border: Border.all(color: fg.withValues(alpha: 0.35), width: 0.8),
       ),
       child: Text(
         label,
@@ -37,11 +37,11 @@ class TypeBadge extends StatelessWidget {
       case NotificationType.hadith:
         return ('Hadith', const Color(0xFF0A3D25), const Color(0xFF4CAF82));
       case NotificationType.dua:
-        return ('Dua',    const Color(0xFF0E2A3B), const Color(0xFF64B5F6));
+        return ('Dua', const Color(0xFF0E2A3B), const Color(0xFF64B5F6));
       case NotificationType.ad:
-        return ('Ad',     const Color(0xFF3B0E0E), const Color(0xFFEF9A9A));
+        return ('Ad', const Color(0xFF3B0E0E), const Color(0xFFEF9A9A));
       case NotificationType.info:
-        return ('Info',   const Color(0xFF2A2210), const Color(0xFFFFCC80));
+        return ('Info', const Color(0xFF2A2210), const Color(0xFFFFCC80));
     }
   }
 }

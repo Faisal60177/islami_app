@@ -5,8 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 class InspirationSqflite {
-  static final InspirationSqflite _instance =
-  InspirationSqflite._internal();
+  static final InspirationSqflite _instance = InspirationSqflite._internal();
   factory InspirationSqflite() => _instance;
   InspirationSqflite._internal();
 
@@ -20,7 +19,7 @@ class InspirationSqflite {
 
   Future<void> initFromAssetIfNeeded() async {
     final dbPath = await getDatabasesPath();
-    final path   = join(dbPath, 'inspiration.db');
+    final path = join(dbPath, 'inspiration.db');
 
     final exists = await databaseExists(path);
     if (!exists) {
@@ -28,7 +27,7 @@ class InspirationSqflite {
         await Directory(dirname(path)).create(recursive: true);
       } catch (_) {}
 
-      final data  = await rootBundle.load('assets/db/inspiration.db');
+      final data = await rootBundle.load('assets/db/inspiration.db');
       final bytes = data.buffer.asUint8List(
         data.offsetInBytes,
         data.lengthInBytes,
@@ -37,9 +36,7 @@ class InspirationSqflite {
       debugPrint('✅ inspiration.db copied from assets');
     }
 
-    if (_database == null) {
-      _database = await _initDB();
-    }
+    _database ??= await _initDB();
   }
 
   Future<Database> _initDB() async {
@@ -51,7 +48,6 @@ class InspirationSqflite {
         await db.execute('PRAGMA foreign_keys = ON');
       },
       onCreate: (db, version) async {
-
         // ── Inspiration categories core table ──────────────
         await db.execute('''
           CREATE TABLE IF NOT EXISTS inspiration_categories(
@@ -143,9 +139,11 @@ class InspirationSqflite {
   }
 
   Future<List<Map<String, dynamic>>> getAllCategories(
-      String languageCode) async {
+    String languageCode,
+  ) async {
     final db = await database;
-    return await db.rawQuery('''
+    return await db.rawQuery(
+      '''
       SELECT
         c.category_id,
         c.category_icon,
@@ -158,7 +156,9 @@ class InspirationSqflite {
         ON c.category_id = fallback.category_id
         AND fallback.language_code = 'en'
       ORDER BY c.category_id ASC
-    ''', [languageCode]);
+    ''',
+      [languageCode],
+    );
   }
 
   // ── Inspirations ────────────────────────────────────────
@@ -179,7 +179,8 @@ class InspirationSqflite {
     required String userId,
   }) async {
     final db = await database;
-    return await db.rawQuery('''
+    return await db.rawQuery(
+      '''
       SELECT
         i.id,
         i.category_id,
@@ -209,7 +210,9 @@ class InspirationSqflite {
       ) cat_t ON i.category_id = cat_t.category_id
       WHERE i.category_id = ?
       ORDER BY i.id ASC
-    ''', [languageCode, userId, languageCode, categoryId]);
+    ''',
+      [languageCode, userId, languageCode, categoryId],
+    );
   }
 
   // ✅ No quote_arabic in SELECT — removed completely
@@ -218,7 +221,8 @@ class InspirationSqflite {
     required String userId,
   }) async {
     final db = await database;
-    return await db.rawQuery('''
+    return await db.rawQuery(
+      '''
       SELECT
         i.id,
         i.category_id,
@@ -247,7 +251,9 @@ class InspirationSqflite {
           ON c2.category_id = fb2.category_id AND fb2.language_code = 'en'
       ) cat_t ON i.category_id = cat_t.category_id
       ORDER BY i.id ASC
-    ''', [languageCode, userId, languageCode]);
+    ''',
+      [languageCode, userId, languageCode],
+    );
   }
 
   // ── Favorites & Bookmarks ───────────────────────────────
@@ -259,16 +265,12 @@ class InspirationSqflite {
     required bool isBookmarked,
   }) async {
     final db = await database;
-    await db.insert(
-      'user_inspiration_interactions',
-      {
-        'user_id':        userId,
-        'inspiration_id': inspirationId,
-        'is_favorite':    isFavorite ? 1 : 0,
-        'is_bookmarked':  isBookmarked ? 1 : 0,
-      },
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
+    await db.insert('user_inspiration_interactions', {
+      'user_id': userId,
+      'inspiration_id': inspirationId,
+      'is_favorite': isFavorite ? 1 : 0,
+      'is_bookmarked': isBookmarked ? 1 : 0,
+    }, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
   Future<List<Map<String, dynamic>>> getFavoritesForUser({
@@ -276,7 +278,8 @@ class InspirationSqflite {
     required String languageCode,
   }) async {
     final db = await database;
-    return await db.rawQuery('''
+    return await db.rawQuery(
+      '''
       SELECT
         i.id,
         i.category_id,
@@ -295,7 +298,9 @@ class InspirationSqflite {
       LEFT JOIN inspiration_translations fb
         ON i.id = fb.inspiration_id AND fb.language_code = 'en'
       ORDER BY i.id ASC
-    ''', [userId, languageCode]);
+    ''',
+      [userId, languageCode],
+    );
   }
 
   Future<List<Map<String, dynamic>>> getBookmarkedForUser({
@@ -303,7 +308,8 @@ class InspirationSqflite {
     required String languageCode,
   }) async {
     final db = await database;
-    return await db.rawQuery('''
+    return await db.rawQuery(
+      '''
       SELECT
         i.id,
         i.category_id,
@@ -322,13 +328,15 @@ class InspirationSqflite {
       LEFT JOIN inspiration_translations fb
         ON i.id = fb.inspiration_id AND fb.language_code = 'en'
       ORDER BY i.id ASC
-    ''', [userId, languageCode]);
+    ''',
+      [userId, languageCode],
+    );
   }
 
   Future<void> replaceUserInteractions(
-      String userId,
-      List<Map<String, dynamic>> interactions,
-      ) async {
+    String userId,
+    List<Map<String, dynamic>> interactions,
+  ) async {
     if (interactions.isEmpty) return;
     final db = await database;
     await db.transaction((txn) async {
@@ -367,9 +375,9 @@ class InspirationSqflite {
   }
 
   Future<Map<String, dynamic>?> getUserInteractionForInspiration(
-      String userId,
-      int inspirationId,
-      ) async {
+    String userId,
+    int inspirationId,
+  ) async {
     final db = await database;
     final result = await db.query(
       'user_inspiration_interactions',
@@ -384,18 +392,26 @@ class InspirationSqflite {
 
   Future<void> deleteRemovedCategories(List<int> firestoreIds) async {
     final db = await database;
-    final existing = await db.query('inspiration_categories',
-        columns: ['category_id']);
+    final existing = await db.query(
+      'inspiration_categories',
+      columns: ['category_id'],
+    );
     final toDelete = existing
         .map((r) => r['category_id'] as int)
         .toSet()
         .difference(firestoreIds.toSet());
 
     for (final id in toDelete) {
-      await db.delete('inspiration_category_translations',
-          where: 'category_id = ?', whereArgs: [id]);
-      await db.delete('inspiration_categories',
-          where: 'category_id = ?', whereArgs: [id]);
+      await db.delete(
+        'inspiration_category_translations',
+        where: 'category_id = ?',
+        whereArgs: [id],
+      );
+      await db.delete(
+        'inspiration_categories',
+        where: 'category_id = ?',
+        whereArgs: [id],
+      );
       debugPrint('🗑️ Inspiration category $id deleted from SQLite');
     }
   }
@@ -409,12 +425,17 @@ class InspirationSqflite {
         .difference(firestoreIds.toSet());
 
     for (final id in toDelete) {
-      await db.delete('user_inspiration_interactions',
-          where: 'inspiration_id = ?', whereArgs: [id]);
-      await db.delete('inspiration_translations',
-          where: 'inspiration_id = ?', whereArgs: [id]);
-      await db.delete('inspirations',
-          where: 'id = ?', whereArgs: [id]);
+      await db.delete(
+        'user_inspiration_interactions',
+        where: 'inspiration_id = ?',
+        whereArgs: [id],
+      );
+      await db.delete(
+        'inspiration_translations',
+        where: 'inspiration_id = ?',
+        whereArgs: [id],
+      );
+      await db.delete('inspirations', where: 'id = ?', whereArgs: [id]);
       debugPrint('🗑️ Inspiration $id deleted from SQLite');
     }
   }

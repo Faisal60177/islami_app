@@ -16,7 +16,8 @@ class TasbihPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => TasbihCubit()..load(),
-      child: const _TasbihView(), // The private widget that does all the rendering.
+      child:
+          const _TasbihView(), // The private widget that does all the rendering.
     );
   }
 }
@@ -43,22 +44,28 @@ class _TasbihViewState extends State<_TasbihView>
     WidgetsBinding.instance.addObserver(this);
 
     _ctrl = AnimationController(
-      vsync: this, // `this` works because of SingleTickerProviderStateMixin above.
-      duration: const Duration(milliseconds: 600), // How long one ring animation takes.
+      vsync:
+          this, // `this` works because of SingleTickerProviderStateMixin above.
+      duration: const Duration(
+        milliseconds: 600,
+      ), // How long one ring animation takes.
     );
     // Start with a "do nothing" animation (0 to 0) — it gets replaced by
     // `_animateTo()` the first time real progress data arrives.
-    _anim = Tween<double>(begin: 0, end: 0).animate(
-      CurvedAnimation(parent: _ctrl, curve: Curves.easeOut),
-    );
+    _anim = Tween<double>(
+      begin: 0,
+      end: 0,
+    ).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeOut));
   }
 
   // Re-targets the animation to end at a new progress value, then plays it
   // from the CURRENT visual position (`_anim.value`) — this avoids the
   // ring visually "jumping" if a new animation starts mid-flight.
   void _animateTo(double end) {
-    _anim = Tween<double>(begin: _anim.value, end: end)
-        .animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeOut));
+    _anim = Tween<double>(
+      begin: _anim.value,
+      end: end,
+    ).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeOut));
     _ctrl
       ..reset() // Rewind the controller to the start (t=0).
       ..forward(); // Play forward from 0 to 1, driving the Tween above.
@@ -80,8 +87,12 @@ class _TasbihViewState extends State<_TasbihView>
 
   @override
   void dispose() {
-    WidgetsBinding.instance.removeObserver(this); // Stop listening to lifecycle events.
-    context.read<TasbihCubit>().persistNow(); // Final safety-net save on page close.
+    WidgetsBinding.instance.removeObserver(
+      this,
+    ); // Stop listening to lifecycle events.
+    context
+        .read<TasbihCubit>()
+        .persistNow(); // Final safety-net save on page close.
     _ctrl.dispose(); // Release animation resources.
     super.dispose(); // Always call super.dispose() last.
   }
@@ -93,9 +104,15 @@ class _TasbihViewState extends State<_TasbihView>
     // — and already existed before this refactor).
     return BlocBuilder<SettingsCubit, SettingsState>(
       builder: (context, settings) {
-        _theme = getThemeById(settings.themeMode); // Resolve the active color palette.
-        final sw = MediaQuery.of(context).size.width; // Screen width, used for responsive sizing.
-        final sh = MediaQuery.of(context).size.height; // Screen height, same purpose.
+        _theme = getThemeById(
+          settings.themeMode,
+        ); // Resolve the active color palette.
+        final sw = MediaQuery.of(
+          context,
+        ).size.width; // Screen width, used for responsive sizing.
+        final sh = MediaQuery.of(
+          context,
+        ).size.height; // Screen height, same purpose.
 
         // MultiBlocListener lets us react to TasbihCubit state CHANGES with
         // side effects (things that are NOT "just render different pixels"
@@ -109,15 +126,18 @@ class _TasbihViewState extends State<_TasbihView>
               // `listenWhen` is a filter — without it, this listener would
               // fire on EVERY state change (even unrelated ones like mode
               // changes), re-triggering the animation unnecessarily.
-              listenWhen: (prev, curr) => prev.current != curr.current || prev.target != curr.target,
+              listenWhen: (prev, curr) =>
+                  prev.current != curr.current || prev.target != curr.target,
               listener: (context, state) => _animateTo(state.progress),
             ),
             // Listener #2: whenever `justCompleted` flips from false to
             // true (i.e. a round was JUST finished, not "is still true
             // from before"), show the celebration dialog exactly once.
             BlocListener<TasbihCubit, TasbihState>(
-              listenWhen: (prev, curr) => !prev.justCompleted && curr.justCompleted,
-              listener: (context, state) => _showCompletionFlash(context, state),
+              listenWhen: (prev, curr) =>
+                  !prev.justCompleted && curr.justCompleted,
+              listener: (context, state) =>
+                  _showCompletionFlash(context, state),
             ),
           ],
           // BlocBuilder: rebuilds ONLY the widgets returned here, and ONLY
@@ -140,13 +160,18 @@ class _TasbihViewState extends State<_TasbihView>
                 backgroundColor: _theme.background,
                 appBar: _buildAppBar(context, state, sw),
                 body: SingleChildScrollView(
-                  padding: EdgeInsets.symmetric(horizontal: sw * 0.05, vertical: sw * 0.03),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: sw * 0.05,
+                    vertical: sw * 0.03,
+                  ),
                   child: Column(
                     children: [
                       _buildDhikrSelector(context, state, sw),
                       SizedBox(height: sh * 0.014),
                       _buildActiveDhikrBanner(state, sw),
-                      SizedBox(height: sh * 0.02), // Vertical spacer, sized relative to screen height.
+                      SizedBox(
+                        height: sh * 0.02,
+                      ), // Vertical spacer, sized relative to screen height.
                       _buildProgressRing(context, state, sw),
                       SizedBox(height: sh * 0.02),
                       _buildStatsRow(state, sw),
@@ -156,7 +181,8 @@ class _TasbihViewState extends State<_TasbihView>
                       _buildButtons(context, state, sw),
                       SizedBox(height: sh * 0.022),
                       // Only render the history card if there's something to show.
-                      if (state.history.isNotEmpty) _buildHistory(context, state, sw),
+                      if (state.history.isNotEmpty)
+                        _buildHistory(context, state, sw),
                       SizedBox(height: sh * 0.02),
                     ],
                   ),
@@ -169,8 +195,11 @@ class _TasbihViewState extends State<_TasbihView>
     );
   }
 
-
-  PreferredSizeWidget _buildAppBar(BuildContext context, TasbihState state, double sw) {
+  PreferredSizeWidget _buildAppBar(
+    BuildContext context,
+    TasbihState state,
+    double sw,
+  ) {
     // `switch` expression (Dart 3 syntax) picks a value based on the enum
     // — cleaner than a chain of if/else or a classic switch statement.
     final modeColor = switch (state.mode) {
@@ -190,16 +219,22 @@ class _TasbihViewState extends State<_TasbihView>
     };
 
     return AppBar(
-      backgroundColor: _theme.background, // Match the page background (no visual seam).
+      backgroundColor:
+          _theme.background, // Match the page background (no visual seam).
       elevation: 0, // No drop shadow under the app bar.
       leading: IconButton(
         icon: Icon(Icons.arrow_back, color: _theme.textHigh),
         onPressed: () {
-          context.read<TasbihCubit>().persistNow(); // Save before leaving the page.
+          context
+              .read<TasbihCubit>()
+              .persistNow(); // Save before leaving the page.
           Navigator.pop(context); // Go back to the previous screen.
         },
       ),
-      title: Text('Tasbih Counter', style: TextStyle(color: _theme.textHigh, fontWeight: FontWeight.w600)),
+      title: Text(
+        'Tasbih Counter',
+        style: TextStyle(color: _theme.textHigh, fontWeight: FontWeight.w600),
+      ),
       actions: [
         // Tappable pill showing the current feedback mode; opens the mode sheet.
         GestureDetector(
@@ -208,16 +243,28 @@ class _TasbihViewState extends State<_TasbihView>
             margin: const EdgeInsets.only(right: 6),
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
-              color: modeColor.withOpacity(0.12), // Faint tinted background.
-              borderRadius: BorderRadius.circular(20), // Fully rounded "pill" shape.
-              border: Border.all(color: modeColor.withOpacity(0.4)),
+              color: modeColor.withValues(
+                alpha: 0.12,
+              ), // Faint tinted background.
+              borderRadius: BorderRadius.circular(
+                20,
+              ), // Fully rounded "pill" shape.
+              border: Border.all(color: modeColor.withValues(alpha: 0.4)),
             ),
             child: Row(
-              mainAxisSize: MainAxisSize.min, // Row only as wide as its children need.
+              mainAxisSize:
+                  MainAxisSize.min, // Row only as wide as its children need.
               children: [
                 Icon(modeIcon, color: modeColor, size: 15),
                 const SizedBox(width: 5), // Small horizontal gap.
-                Text(modeLabel, style: TextStyle(color: modeColor, fontSize: sw * 0.028, fontWeight: FontWeight.w600)),
+                Text(
+                  modeLabel,
+                  style: TextStyle(
+                    color: modeColor,
+                    fontSize: sw * 0.028,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ],
             ),
           ),
@@ -226,34 +273,55 @@ class _TasbihViewState extends State<_TasbihView>
         Container(
           margin: const EdgeInsets.only(right: 12),
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-          decoration: BoxDecoration(color: _theme.cardColor, borderRadius: BorderRadius.circular(20)),
-          child: Text('Total: ${state.totalEver}', // Directly reads from Cubit state — always in sync.
-              style: TextStyle(color: _theme.textLow, fontSize: sw * 0.028, fontWeight: FontWeight.w600)),
+          decoration: BoxDecoration(
+            color: _theme.cardColor,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Text(
+            'Total: ${state.totalEver}', // Directly reads from Cubit state — always in sync.
+            style: TextStyle(
+              color: _theme.textLow,
+              fontSize: sw * 0.028,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
         ),
       ],
     );
   }
 
-  Widget _buildDhikrSelector(BuildContext context, TasbihState state, double sw) {
-
+  Widget _buildDhikrSelector(
+    BuildContext context,
+    TasbihState state,
+    double sw,
+  ) {
     final chipMaxWidth = sw * 0.42;
     return SizedBox(
       height: sw * 0.12,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: state.dhikrOptions.length,
-        separatorBuilder: (_, __) => SizedBox(width: sw * 0.025),
+        separatorBuilder: (_, _) => SizedBox(width: sw * 0.025),
         itemBuilder: (context, i) {
           final active = i == state.dhikrIndex;
           return GestureDetector(
             onTap: () => context.read<TasbihCubit>().selectDhikr(i),
             child: Container(
-              constraints: BoxConstraints(maxWidth: chipMaxWidth, minWidth: sw * 0.24),
+              constraints: BoxConstraints(
+                maxWidth: chipMaxWidth,
+                minWidth: sw * 0.24,
+              ),
               alignment: Alignment.center,
-              padding: EdgeInsets.symmetric(horizontal: sw * 0.035, vertical: sw * 0.02),
+              padding: EdgeInsets.symmetric(
+                horizontal: sw * 0.035,
+                vertical: sw * 0.02,
+              ),
               decoration: BoxDecoration(
                 color: active ? _theme.accent : _theme.surface,
-                border: Border.all(color: active ? _theme.accent : _theme.cardColor, width: 1.5),
+                border: Border.all(
+                  color: active ? _theme.accent : _theme.cardColor,
+                  width: 1.5,
+                ),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
@@ -276,15 +344,14 @@ class _TasbihViewState extends State<_TasbihView>
     );
   }
 
-
   Widget _buildActiveDhikrBanner(TasbihState state, double sw) {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.symmetric(horizontal: sw * 0.05, vertical: sw * 0.03),
       decoration: BoxDecoration(
-        color: _theme.accent.withOpacity(0.14),
+        color: _theme.accent.withValues(alpha: 0.14),
         borderRadius: BorderRadius.circular(sw * 0.03),
-        border: Border.all(color: _theme.accent.withOpacity(0.35)),
+        border: Border.all(color: _theme.accent.withValues(alpha: 0.35)),
       ),
       child: Text(
         state.activeDhikr,
@@ -302,33 +369,45 @@ class _TasbihViewState extends State<_TasbihView>
     );
   }
 
-  Widget _buildProgressRing(BuildContext context, TasbihState state, double sw) {
-    final size = sw * 0.65; // Ring diameter as a fraction of screen width (responsive).
+  Widget _buildProgressRing(
+    BuildContext context,
+    TasbihState state,
+    double sw,
+  ) {
+    final size =
+        sw * 0.65; // Ring diameter as a fraction of screen width (responsive).
     final stroke = size * 0.065; // Ring thickness scales with the ring size.
 
     return GestureDetector(
       // Tapping ANYWHERE on the ring counts as one tap — calls the Cubit.
       onTap: () => context.read<TasbihCubit>().Increament(),
       child: Stack(
-        alignment: Alignment.center, // All children centered on top of each other.
+        alignment:
+            Alignment.center, // All children centered on top of each other.
         children: [
           // Decorative outer ring (always fully visible, never animated).
           Container(
             width: size + 16,
             height: size + 16,
-            decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: _theme.cardColor, width: 1)),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: _theme.cardColor, width: 1),
+            ),
           ),
 
           AnimatedBuilder(
             animation: _anim,
-            builder: (_, __) => SizedBox(
+            builder: (_, _) => SizedBox(
               width: size,
               height: size,
               child: CustomPaint(
                 painter: RingPainter(
-                  progress: _anim.value, // Current animated value (0.0–1.0), NOT state.progress directly.
+                  progress: _anim
+                      .value, // Current animated value (0.0–1.0), NOT state.progress directly.
                   trackColor: _theme.cardColor,
-                  progressColor: state.justCompleted ? _gold : _theme.accent, // Gold flash right after completion.
+                  progressColor: state.justCompleted
+                      ? _gold
+                      : _theme.accent, // Gold flash right after completion.
                   strokeWidth: stroke,
                 ),
               ),
@@ -337,17 +416,39 @@ class _TasbihViewState extends State<_TasbihView>
           Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('${state.current}',
-                  style: TextStyle(color: _theme.textHigh, fontSize: size * 0.26, fontWeight: FontWeight.w800, height: 1)),
-              Text('of ${state.target}', style: TextStyle(color: _theme.textLow, fontSize: size * 0.08)),
+              Text(
+                '${state.current}',
+                style: TextStyle(
+                  color: _theme.textHigh,
+                  fontSize: size * 0.26,
+                  fontWeight: FontWeight.w800,
+                  height: 1,
+                ),
+              ),
+              Text(
+                'of ${state.target}',
+                style: TextStyle(color: _theme.textLow, fontSize: size * 0.08),
+              ),
               // Only show the "rounds completed" badge once at least 1 round is done.
               if (state.rounds > 0) ...[
                 SizedBox(height: size * 0.03),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
-                  decoration: BoxDecoration(color: _gold, borderRadius: BorderRadius.circular(20)),
-                  child: Text('${state.rounds}× completed',
-                      style: TextStyle(color: _theme.background, fontSize: size * 0.065, fontWeight: FontWeight.w700)),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 3,
+                  ),
+                  decoration: BoxDecoration(
+                    color: _gold,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    '${state.rounds}× completed',
+                    style: TextStyle(
+                      color: _theme.background,
+                      fontSize: size * 0.065,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
                 ),
               ],
             ],
@@ -362,7 +463,10 @@ class _TasbihViewState extends State<_TasbihView>
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(color: _theme.cardColor),
               ),
-              child: Text('Tap ring to count', style: TextStyle(color: _theme.textLow, fontSize: sw * 0.028)),
+              child: Text(
+                'Tap ring to count',
+                style: TextStyle(color: _theme.textLow, fontSize: sw * 0.028),
+              ),
             ),
           ),
         ],
@@ -378,21 +482,41 @@ class _TasbihViewState extends State<_TasbihView>
     ];
     return Row(
       children: items
-          .map((item) => Expanded( // Each chip takes equal width (1/3 of the row).
-        child: Container(
-          margin: EdgeInsets.symmetric(horizontal: sw * 0.012),
-          padding: EdgeInsets.symmetric(vertical: sw * 0.01, horizontal: sw * 0.01),
-          decoration: BoxDecoration(color: _theme.accent, borderRadius: BorderRadius.circular(sw * 0.03)),
-          child: Column(
-            children: [
-              Text(item.$2, // `.$2` accesses the 2nd positional field of the record.
-                  style: TextStyle(color: Colors.white, fontSize: sw * 0.05, fontWeight: FontWeight.w700)),
-              Text(item.$1, // `.$1` accesses the 1st positional field (the label).
-                  style: TextStyle(color: Colors.white.withOpacity(0.85), fontSize: sw * 0.026)),
-            ],
-          ),
-        ),
-      ))
+          .map(
+            (item) => Expanded(
+              // Each chip takes equal width (1/3 of the row).
+              child: Container(
+                margin: EdgeInsets.symmetric(horizontal: sw * 0.012),
+                padding: EdgeInsets.symmetric(
+                  vertical: sw * 0.01,
+                  horizontal: sw * 0.01,
+                ),
+                decoration: BoxDecoration(
+                  color: _theme.accent,
+                  borderRadius: BorderRadius.circular(sw * 0.03),
+                ),
+                child: Column(
+                  children: [
+                    Text(
+                      item.$2, // `.$2` accesses the 2nd positional field of the record.
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: sw * 0.05,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    Text(
+                      item.$1, // `.$1` accesses the 1st positional field (the label).
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.85),
+                        fontSize: sw * 0.026,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          )
           .toList(),
     );
   }
@@ -400,35 +524,53 @@ class _TasbihViewState extends State<_TasbihView>
   Widget _buildTargetRow(BuildContext context, TasbihState state, double sw) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: sw * 0.04, vertical: sw * 0.03),
-      decoration: BoxDecoration(color: _theme.surface, borderRadius: BorderRadius.circular(sw * 0.03)),
+      decoration: BoxDecoration(
+        color: _theme.surface,
+        borderRadius: BorderRadius.circular(sw * 0.03),
+      ),
       child: Row(
         children: [
-          Text('Target', style: TextStyle(color: _theme.textLow, fontSize: sw * 0.038)),
+          Text(
+            'Target',
+            style: TextStyle(color: _theme.textLow, fontSize: sw * 0.038),
+          ),
           SizedBox(width: sw * 0.02),
           Expanded(
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
-              reverse: true, // Keeps content right-aligned by default, like the old Spacer() look.
+              reverse:
+                  true, // Keeps content right-aligned by default, like the old Spacer() look.
               child: Row(
-                mainAxisSize: MainAxisSize.min, // Row is only as wide as its children need — scroll view handles overflow.
+                mainAxisSize: MainAxisSize
+                    .min, // Row is only as wide as its children need — scroll view handles overflow.
                 children: [
-                  ...state.presets.map((p) { // Spread a mapped list of widgets directly into `children`.
+                  ...state.presets.map((p) {
+                    // Spread a mapped list of widgets directly into `children`.
                     final active = state.target == p;
                     return GestureDetector(
-                      onTap: () => context.read<TasbihCubit>().setTarget(p), // Directly sets the new target via the Cubit.
+                      onTap: () => context.read<TasbihCubit>().setTarget(
+                        p,
+                      ), // Directly sets the new target via the Cubit.
                       child: Container(
                         margin: EdgeInsets.only(left: sw * 0.02),
-                        padding: EdgeInsets.symmetric(horizontal: sw * 0.035, vertical: sw * 0.015),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: sw * 0.035,
+                          vertical: sw * 0.015,
+                        ),
                         decoration: BoxDecoration(
                           color: active ? _theme.accent : _theme.cardColor,
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: Text('$p',
-                            style: TextStyle(
-                              color: active ? _theme.background : _theme.textLow,
-                              fontSize: sw * 0.032,
-                              fontWeight: active ? FontWeight.w700 : FontWeight.normal,
-                            )),
+                        child: Text(
+                          '$p',
+                          style: TextStyle(
+                            color: active ? _theme.background : _theme.textLow,
+                            fontSize: sw * 0.032,
+                            fontWeight: active
+                                ? FontWeight.w700
+                                : FontWeight.normal,
+                          ),
+                        ),
                       ),
                     );
                   }),
@@ -437,13 +579,22 @@ class _TasbihViewState extends State<_TasbihView>
                     onTap: () => _showCustomTargetDialog(context, state),
                     child: Container(
                       margin: EdgeInsets.only(left: sw * 0.02),
-                      padding: EdgeInsets.symmetric(horizontal: sw * 0.035, vertical: sw * 0.015),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: sw * 0.035,
+                        vertical: sw * 0.015,
+                      ),
                       decoration: BoxDecoration(
                         color: _theme.cardColor,
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: _theme.accent.withOpacity(0.4)),
+                        border: Border.all(
+                          color: _theme.accent.withValues(alpha: 0.4),
+                        ),
                       ),
-                      child: Icon(Icons.edit, color: _theme.textLow, size: sw * 0.04),
+                      child: Icon(
+                        Icons.edit,
+                        color: _theme.textLow,
+                        size: sw * 0.04,
+                      ),
                     ),
                   ),
                 ],
@@ -458,13 +609,18 @@ class _TasbihViewState extends State<_TasbihView>
   // Dialog with a text field for entering a custom target count.
   void _showCustomTargetDialog(BuildContext context, TasbihState state) {
     final cubit = context.read<TasbihCubit>();
-    final ctrl = TextEditingController(text: '${state.target}'); // Pre-fill with the current target.
+    final ctrl = TextEditingController(
+      text: '${state.target}',
+    ); // Pre-fill with the current target.
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
         backgroundColor: _theme.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text('Set custom target', style: TextStyle(color: _theme.textHigh)),
+        title: Text(
+          'Set custom target',
+          style: TextStyle(color: _theme.textHigh),
+        ),
         content: TextField(
           controller: ctrl,
           keyboardType: TextInputType.number, // Shows the numeric keyboard.
@@ -472,22 +628,30 @@ class _TasbihViewState extends State<_TasbihView>
           decoration: InputDecoration(
             labelText: 'Count',
             labelStyle: TextStyle(color: _theme.textLow),
-            enabledBorder:
-            OutlineInputBorder(borderSide: BorderSide(color: _theme.cardColor), borderRadius: BorderRadius.circular(8)),
-            focusedBorder:
-            OutlineInputBorder(borderSide: BorderSide(color: _theme.accent), borderRadius: BorderRadius.circular(8)),
+            enabledBorder: OutlineInputBorder(
+              borderSide: BorderSide(color: _theme.cardColor),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderSide: BorderSide(color: _theme.accent),
+              borderRadius: BorderRadius.circular(8),
+            ),
           ),
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(dialogContext), // Close without applying.
+            onPressed: () =>
+                Navigator.pop(dialogContext), // Close without applying.
             child: Text('Cancel', style: TextStyle(color: _theme.textLow)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: _theme.accent),
             onPressed: () {
-              final v = int.tryParse(ctrl.text); // Returns null if the text isn't a valid integer.
-              if (v != null && v > 0) cubit.setTarget(v); // Only apply valid, positive values.
+              final v = int.tryParse(
+                ctrl.text,
+              ); // Returns null if the text isn't a valid integer.
+              if (v != null && v > 0)
+                cubit.setTarget(v); // Only apply valid, positive values.
               Navigator.pop(dialogContext);
             },
             child: Text('Set', style: TextStyle(color: _theme.background)),
@@ -497,27 +661,38 @@ class _TasbihViewState extends State<_TasbihView>
     );
   }
 
-
   Widget _buildButtons(BuildContext context, TasbihState state, double sw) {
-    final cubit = context.read<TasbihCubit>(); // Cached once, reused by both buttons below.
+    final cubit = context
+        .read<TasbihCubit>(); // Cached once, reused by both buttons below.
     return Row(
       children: [
         Expanded(
           child: GestureDetector(
             onTap: () {
-              if (state.rounds > 0) cubit.saveToHistory(); // Save progress before wiping it.
+              if (state.rounds > 0)
+                cubit.saveToHistory(); // Save progress before wiping it.
               cubit.resetFull();
             },
             child: Container(
               padding: EdgeInsets.symmetric(vertical: sw * 0.038),
-              decoration: BoxDecoration(border: Border.all(color: _red, width: 1.5), borderRadius: BorderRadius.circular(sw * 0.03)),
+              decoration: BoxDecoration(
+                border: Border.all(color: _red, width: 1.5),
+                borderRadius: BorderRadius.circular(sw * 0.03),
+              ),
               alignment: Alignment.center,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(Icons.refresh_rounded, color: _red, size: sw * 0.05),
                   const SizedBox(width: 6),
-                  Text('Reset', style: TextStyle(color: _red, fontSize: sw * 0.038, fontWeight: FontWeight.w600)),
+                  Text(
+                    'Reset',
+                    style: TextStyle(
+                      color: _red,
+                      fontSize: sw * 0.038,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -525,19 +700,34 @@ class _TasbihViewState extends State<_TasbihView>
         ),
         SizedBox(width: sw * 0.03), // Horizontal gap between the two buttons.
         Expanded(
-          flex: 2, // Twice as wide as the Reset button — this is the primary action.
+          flex:
+              2, // Twice as wide as the Reset button — this is the primary action.
           child: GestureDetector(
             onTap: () => cubit.Increament(), // Same action as tapping the ring.
             child: Container(
               padding: EdgeInsets.symmetric(vertical: sw * 0.038),
-              decoration: BoxDecoration(color: _theme.accent, borderRadius: BorderRadius.circular(sw * 0.03)),
+              decoration: BoxDecoration(
+                color: _theme.accent,
+                borderRadius: BorderRadius.circular(sw * 0.03),
+              ),
               alignment: Alignment.center,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.add_rounded, color: _theme.background, size: sw * 0.06),
+                  Icon(
+                    Icons.add_rounded,
+                    color: _theme.background,
+                    size: sw * 0.06,
+                  ),
                   const SizedBox(width: 6),
-                  Text('Count', style: TextStyle(color: _theme.background, fontSize: sw * 0.042, fontWeight: FontWeight.w700)),
+                  Text(
+                    'Count',
+                    style: TextStyle(
+                      color: _theme.background,
+                      fontSize: sw * 0.042,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -546,36 +736,76 @@ class _TasbihViewState extends State<_TasbihView>
       ],
     );
   }
+
   Widget _buildHistory(BuildContext context, TasbihState state, double sw) {
     return Container(
       padding: EdgeInsets.all(sw * 0.04),
-      decoration: BoxDecoration(color: _theme.surface, borderRadius: BorderRadius.circular(sw * 0.03)),
+      decoration: BoxDecoration(
+        color: _theme.surface,
+        borderRadius: BorderRadius.circular(sw * 0.03),
+      ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start, // Left-align text inside this column.
+        crossAxisAlignment:
+            CrossAxisAlignment.start, // Left-align text inside this column.
         children: [
           Row(
             children: [
-              Text('Session history', style: TextStyle(color: _theme.textLow, fontSize: sw * 0.035, fontWeight: FontWeight.w600)),
+              Text(
+                'Session history',
+                style: TextStyle(
+                  color: _theme.textLow,
+                  fontSize: sw * 0.035,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
               const Spacer(),
               GestureDetector(
                 onTap: () => context.read<TasbihCubit>().clearHistory(),
-                child: Text('Clear', style: TextStyle(color: _red, fontSize: sw * 0.03)),
+                child: Text(
+                  'Clear',
+                  style: TextStyle(color: _red, fontSize: sw * 0.03),
+                ),
               ),
             ],
           ),
           SizedBox(height: sw * 0.02),
-          ...state.history.take(8).map((e) => Padding(
-            padding: EdgeInsets.symmetric(vertical: sw * 0.015),
-            child: Row(
-              children: [
-                Container(width: sw * 0.02, height: sw * 0.02, decoration: BoxDecoration(color: _theme.accent, shape: BoxShape.circle)),
-                SizedBox(width: sw * 0.025),
-                Expanded(child: Text(e.dhikr, style: TextStyle(color: _theme.textHigh, fontSize: sw * 0.033))),
-                Text('${e.target} × ${e.rounds} = ${e.total}', // `e.total` is the computed getter on HistoryEntry.
-                    style: TextStyle(color: _theme.textLow, fontSize: sw * 0.03, fontWeight: FontWeight.w600)),
-              ],
-            ),
-          )),
+          ...state.history
+              .take(8)
+              .map(
+                (e) => Padding(
+                  padding: EdgeInsets.symmetric(vertical: sw * 0.015),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: sw * 0.02,
+                        height: sw * 0.02,
+                        decoration: BoxDecoration(
+                          color: _theme.accent,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      SizedBox(width: sw * 0.025),
+                      Expanded(
+                        child: Text(
+                          e.dhikr,
+                          style: TextStyle(
+                            color: _theme.textHigh,
+                            fontSize: sw * 0.033,
+                          ),
+                        ),
+                      ),
+                      Text(
+                        '${e.target} × ${e.rounds} = ${e.total}', // `e.total` is the computed getter on HistoryEntry.
+                        style: TextStyle(
+                          color: _theme.textLow,
+                          fontSize: sw * 0.03,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
         ],
       ),
     );
@@ -592,14 +822,25 @@ class _TasbihViewState extends State<_TasbihView>
         child: Padding(
           padding: const EdgeInsets.all(28),
           child: Column(
-            mainAxisSize: MainAxisSize.min, // Only take as much vertical space as content needs.
+            mainAxisSize: MainAxisSize
+                .min, // Only take as much vertical space as content needs.
             children: [
               const Text('🎉', style: TextStyle(fontSize: 48)),
               const SizedBox(height: 12),
-              Text('Round Complete!', style: TextStyle(color: _theme.textHigh, fontSize: 20, fontWeight: FontWeight.w700)),
+              Text(
+                'Round Complete!',
+                style: TextStyle(
+                  color: _theme.textHigh,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
               const SizedBox(height: 6),
-              Text('${state.target} × ${state.rounds} = ${state.target * state.rounds} ${state.activeDhikr}',
-                  textAlign: TextAlign.center, style: TextStyle(color: _theme.textLow, fontSize: 14)),
+              Text(
+                '${state.target} × ${state.rounds} = ${state.target * state.rounds} ${state.activeDhikr}',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: _theme.textLow, fontSize: 14),
+              ),
               const SizedBox(height: 20),
               Row(
                 children: [
@@ -612,9 +853,18 @@ class _TasbihViewState extends State<_TasbihView>
                       },
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 12),
-                        decoration: BoxDecoration(border: Border.all(color: _theme.accent), borderRadius: BorderRadius.circular(10)),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: _theme.accent),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                         alignment: Alignment.center,
-                        child: Text('Continue', style: TextStyle(color: _theme.accent, fontWeight: FontWeight.w600)),
+                        child: Text(
+                          'Continue',
+                          style: TextStyle(
+                            color: _theme.accent,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       ),
                     ),
                   ),
@@ -629,9 +879,18 @@ class _TasbihViewState extends State<_TasbihView>
                       },
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 12),
-                        decoration: BoxDecoration(color: _theme.accent, borderRadius: BorderRadius.circular(10)),
+                        decoration: BoxDecoration(
+                          color: _theme.accent,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                         alignment: Alignment.center,
-                        child: Text('Finish', style: TextStyle(color: _theme.background, fontWeight: FontWeight.w700)),
+                        child: Text(
+                          'Finish',
+                          style: TextStyle(
+                            color: _theme.background,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
                       ),
                     ),
                   ),
@@ -644,21 +903,27 @@ class _TasbihViewState extends State<_TasbihView>
     );
   }
 
-
   void _showModeSheet(BuildContext context, TasbihState state) {
     final cubit = context.read<TasbihCubit>();
     // A list of records (tuples): (mode, icon, label, description) — one
     // per selectable row, avoids repeating similar Container code 3 times.
     final modes = [
       (ClickMode.sound, Icons.volume_up_rounded, 'Sound', 'Play a click sound'),
-      (ClickMode.vibrate, Icons.vibration_rounded, 'Vibrate', 'Haptic feedback'),
+      (
+        ClickMode.vibrate,
+        Icons.vibration_rounded,
+        'Vibrate',
+        'Haptic feedback',
+      ),
       (ClickMode.mute, Icons.volume_off_rounded, 'Muted', 'No feedback'),
     ];
 
     showModalBottomSheet(
       context: context,
       backgroundColor: _theme.surface,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       builder: (sheetContext) => Padding(
         padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
         child: Column(
@@ -667,16 +932,35 @@ class _TasbihViewState extends State<_TasbihView>
           children: [
             // Small grey "handle" bar, a common visual convention for bottom sheets.
             Center(
-              child: Container(width: 36, height: 4, decoration: BoxDecoration(color: _theme.cardColor, borderRadius: BorderRadius.circular(2))),
+              child: Container(
+                width: 36,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: _theme.cardColor,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
             ),
             const SizedBox(height: 16),
-            Text('Feedback Mode', style: TextStyle(color: _theme.textHigh, fontSize: 16, fontWeight: FontWeight.w700)),
+            Text(
+              'Feedback Mode',
+              style: TextStyle(
+                color: _theme.textHigh,
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
             const SizedBox(height: 4),
-            Text('Choose how the counter responds when you tap', style: TextStyle(color: _theme.textLow, fontSize: 12)),
+            Text(
+              'Choose how the counter responds when you tap',
+              style: TextStyle(color: _theme.textLow, fontSize: 12),
+            ),
             const SizedBox(height: 16),
             // Build one selectable row per mode.
             ...modes.map((m) {
-              final active = state.mode == m.$1; // `.$1` = the ClickMode field of the record.
+              final active =
+                  state.mode ==
+                  m.$1; // `.$1` = the ClickMode field of the record.
               return GestureDetector(
                 onTap: () {
                   cubit.setMode(m.$1); // Tell the Cubit to switch modes.
@@ -684,38 +968,68 @@ class _TasbihViewState extends State<_TasbihView>
                 },
                 child: Container(
                   margin: const EdgeInsets.only(bottom: 10),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
                   decoration: BoxDecoration(
                     color: active ? _theme.cardColor : _theme.background,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: active ? _theme.accent : _theme.cardColor, width: active ? 1.5 : 1),
+                    border: Border.all(
+                      color: active ? _theme.accent : _theme.cardColor,
+                      width: active ? 1.5 : 1,
+                    ),
                   ),
                   child: Row(
                     children: [
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: active ? _theme.accent.withOpacity(0.2) : _theme.cardColor,
+                          color: active
+                              ? _theme.accent.withValues(alpha: 0.2)
+                              : _theme.cardColor,
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: Icon(m.$2, color: active ? _theme.accent : _theme.textLow, size: 20), // `.$2` = the IconData field.
+                        child: Icon(
+                          m.$2,
+                          color: active ? _theme.accent : _theme.textLow,
+                          size: 20,
+                        ), // `.$2` = the IconData field.
                       ),
                       const SizedBox(width: 14),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(m.$3, // `.$3` = the label field.
-                                style: TextStyle(
-                                    color: active ? _theme.textHigh : _theme.textLow,
-                                    fontWeight: active ? FontWeight.w700 : FontWeight.normal,
-                                    fontSize: 14)),
-                            Text(m.$4, style: TextStyle(color: _theme.textLow, fontSize: 11)), // `.$4` = the description field.
+                            Text(
+                              m.$3, // `.$3` = the label field.
+                              style: TextStyle(
+                                color: active
+                                    ? _theme.textHigh
+                                    : _theme.textLow,
+                                fontWeight: active
+                                    ? FontWeight.w700
+                                    : FontWeight.normal,
+                                fontSize: 14,
+                              ),
+                            ),
+                            Text(
+                              m.$4,
+                              style: TextStyle(
+                                color: _theme.textLow,
+                                fontSize: 11,
+                              ),
+                            ), // `.$4` = the description field.
                           ],
                         ),
                       ),
                       // Checkmark shown only on the currently active mode.
-                      if (active) Icon(Icons.check_circle_rounded, color: _theme.accent, size: 20),
+                      if (active)
+                        Icon(
+                          Icons.check_circle_rounded,
+                          color: _theme.accent,
+                          size: 20,
+                        ),
                     ],
                   ),
                 ),

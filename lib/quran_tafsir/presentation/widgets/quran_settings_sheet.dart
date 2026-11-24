@@ -33,7 +33,7 @@ class QuranSettingsSheet extends StatelessWidget {
                     width: 40,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: Colors.grey.withOpacity(0.4),
+                      color: Colors.grey.withValues(alpha: 0.4),
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -102,7 +102,8 @@ class _ReciterTabState extends ConsumerState<_ReciterTab> {
         Expanded(
           child: recitersAsync.when(
             loading: () => const Center(child: CircularProgressIndicator()),
-            error: (e, st) => const Center(child: Text('Failed to load reciters')),
+            error: (e, st) =>
+                const Center(child: Text('Failed to load reciters')),
             data: (reciters) {
               final filtered = reciters
                   .where((r) => r.reciterName.toLowerCase().contains(_query))
@@ -121,8 +122,9 @@ class _ReciterTabState extends ConsumerState<_ReciterTab> {
                         value: reciter.id,
                         groupValue: preferences.reciterId,
                         title: Text(reciter.reciterName),
-                        subtitle:
-                        reciter.style != null ? Text(reciter.style!) : null,
+                        subtitle: reciter.style != null
+                            ? Text(reciter.style!)
+                            : null,
                         onChanged: (id) {
                           if (id == null) return;
                           ref
@@ -163,8 +165,9 @@ class _TranslationTabState extends ConsumerState<_TranslationTab> {
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (e, st) => const Center(child: Text('—')),
       data: (preferences) {
-        final hasTransliteration =
-        preferences.translationIds.contains(_kTransliterationResourceId);
+        final hasTransliteration = preferences.translationIds.contains(
+          _kTransliterationResourceId,
+        );
 
         return Column(
           children: [
@@ -203,13 +206,15 @@ class _TranslationTabState extends ConsumerState<_TranslationTab> {
               child: translationsAsync.when(
                 loading: () => const Center(child: CircularProgressIndicator()),
                 error: (e, st) =>
-                const Center(child: Text('Failed to load translations')),
+                    const Center(child: Text('Failed to load translations')),
                 data: (translations) {
                   final filtered = translations
                       .where((t) => t.id != _kTransliterationResourceId)
-                      .where((t) =>
-                  t.name.toLowerCase().contains(_query) ||
-                      t.languageName.toLowerCase().contains(_query))
+                      .where(
+                        (t) =>
+                            t.name.toLowerCase().contains(_query) ||
+                            t.languageName.toLowerCase().contains(_query),
+                      )
                       .toList();
 
                   return ListView.builder(
@@ -217,18 +222,20 @@ class _TranslationTabState extends ConsumerState<_TranslationTab> {
                     itemCount: filtered.length,
                     itemBuilder: (context, index) {
                       final TranslationResource t = filtered[index];
-                      final isSelected =
-                      preferences.translationIds.contains(t.id);
+                      final isSelected = preferences.translationIds.contains(
+                        t.id,
+                      );
                       return CheckboxListTile(
                         value: isSelected,
                         title: Text(t.name),
                         subtitle: Text(
                           '${t.languageName[0].toUpperCase()}${t.languageName.substring(1)}'
-                              '${t.authorName.isNotEmpty ? " · ${t.authorName}" : ""}',
+                          '${t.authorName.isNotEmpty ? " · ${t.authorName}" : ""}',
                         ),
                         onChanged: (checked) {
-                          final current =
-                          List<int>.from(preferences.translationIds);
+                          final current = List<int>.from(
+                            preferences.translationIds,
+                          );
                           if (checked == true) {
                             if (!current.contains(t.id)) current.add(t.id);
                           } else {
@@ -272,7 +279,9 @@ class _ArabicTab extends ConsumerWidget {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.4),
+                color: Theme.of(
+                  context,
+                ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
@@ -302,20 +311,27 @@ class _ArabicTab extends ConsumerWidget {
                   onPressed: preferences.arabicFontSize <= 18
                       ? null
                       : () => ref
-                      .read(quranPreferencesProvider.notifier)
-                      .updateArabicFontSize(preferences.arabicFontSize - 2),
+                            .read(quranPreferencesProvider.notifier)
+                            .updateArabicFontSize(
+                              preferences.arabicFontSize - 2,
+                            ),
                 ),
                 Text(
                   preferences.arabicFontSize.toInt().toString(),
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
                 IconButton(
                   icon: const Icon(Icons.add_circle_outline),
                   onPressed: preferences.arabicFontSize >= 40
                       ? null
                       : () => ref
-                      .read(quranPreferencesProvider.notifier)
-                      .updateArabicFontSize(preferences.arabicFontSize + 2),
+                            .read(quranPreferencesProvider.notifier)
+                            .updateArabicFontSize(
+                              preferences.arabicFontSize + 2,
+                            ),
                 ),
               ],
             ),

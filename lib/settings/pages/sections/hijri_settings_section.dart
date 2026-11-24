@@ -12,10 +12,14 @@ import 'package:muslim_app/home/home_page.dart';
 class HijriSettingsSection extends StatelessWidget {
   final AppThemeOption theme;
   final AppLocalizations l10n;
-  const HijriSettingsSection({super.key, required this.theme, required this.l10n});
+  const HijriSettingsSection({
+    super.key,
+    required this.theme,
+    required this.l10n,
+  });
 
   String _hijriDateWithOffset(int offset) {
-    final now  = DateTime.now().add(Duration(days: offset));
+    final now = DateTime.now().add(Duration(days: offset));
     final hijri = HijriCalendar.fromDate(now);
     return "${hijri.hDay} ${hijri.longMonthName} ${hijri.hYear} AH";
   }
@@ -24,19 +28,20 @@ class HijriSettingsSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<SettingsCubit, SettingsState>(
       builder: (context, state) {
-        final cubit  = context.read<SettingsCubit>();
+        final cubit = context.read<SettingsCubit>();
         final offset = state.hijriOffset;
-        final thm    = getThemeById(state.themeMode);
+        final thm = getThemeById(state.themeMode);
 
         return Container(
           decoration: BoxDecoration(
             color: thm.surface,
             borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: thm.accent.withOpacity(0.15)),
+            border: Border.all(color: thm.accent.withValues(alpha: 0.15)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(thm.isDark ? 0.3 : 0.06),
-                blurRadius: 12, offset: const Offset(0, 4),
+                color: Colors.black.withValues(alpha: thm.isDark ? 0.3 : 0.06),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
               ),
             ],
           ),
@@ -49,15 +54,17 @@ class HijriSettingsSection extends StatelessWidget {
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      const Color(0xFFD4AF37).withOpacity(0.12),
-                      const Color(0xFFD4AF37).withOpacity(0.04),
+                      const Color(0xFFD4AF37).withValues(alpha: 0.12),
+                      const Color(0xFFD4AF37).withValues(alpha: 0.04),
                     ],
                   ),
-                  borderRadius:
-                  const BorderRadius.vertical(top: Radius.circular(18)),
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(18),
+                  ),
                   border: Border(
                     bottom: BorderSide(
-                        color: const Color(0xFFD4AF37).withOpacity(0.20)),
+                      color: const Color(0xFFD4AF37).withValues(alpha: 0.20),
+                    ),
                   ),
                 ),
                 child: Column(
@@ -67,10 +74,15 @@ class HijriSettingsSection extends StatelessWidget {
                         Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFD4AF37).withOpacity(0.12),
+                            color: const Color(
+                              0xFFD4AF37,
+                            ).withValues(alpha: 0.12),
                             borderRadius: BorderRadius.circular(10),
                           ),
-                          child: const Text('🌙', style: TextStyle(fontSize: 18)),
+                          child: const Text(
+                            '🌙',
+                            style: TextStyle(fontSize: 18),
+                          ),
                         ),
                         const SizedBox(width: 12),
                         Column(
@@ -87,7 +99,9 @@ class HijriSettingsSection extends StatelessWidget {
                             Text(
                               'Fine-tune moon sighting discrepancy',
                               style: TextStyle(
-                                  color: thm.textLow, fontSize: 11),
+                                color: thm.textLow,
+                                fontSize: 11,
+                              ),
                             ),
                           ],
                         ),
@@ -97,24 +111,32 @@ class HijriSettingsSection extends StatelessWidget {
                     // Live date preview
                     AnimatedSwitcher(
                       duration: const Duration(milliseconds: 300),
-                      transitionBuilder: (child, anim) =>
-                          FadeTransition(opacity: anim,
-                              child: SlideTransition(
-                                position: Tween<Offset>(
-                                  begin: const Offset(0, 0.1),
-                                  end: Offset.zero,
-                                ).animate(anim),
-                                child: child,
-                              )),
+                      transitionBuilder: (child, anim) => FadeTransition(
+                        opacity: anim,
+                        child: SlideTransition(
+                          position: Tween<Offset>(
+                            begin: const Offset(0, 0.1),
+                            end: Offset.zero,
+                          ).animate(anim),
+                          child: child,
+                        ),
+                      ),
                       child: Container(
                         key: ValueKey(offset),
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 10),
+                          horizontal: 16,
+                          vertical: 10,
+                        ),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFD4AF37).withOpacity(0.10),
+                          color: const Color(
+                            0xFFD4AF37,
+                          ).withValues(alpha: 0.10),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                              color: const Color(0xFFD4AF37).withOpacity(0.30)),
+                            color: const Color(
+                              0xFFD4AF37,
+                            ).withValues(alpha: 0.30),
+                          ),
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -146,10 +168,11 @@ class HijriSettingsSection extends StatelessWidget {
                     Text(
                       'Day Offset',
                       style: TextStyle(
-                          color: thm.textLow,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: 0.5),
+                        color: thm.textLow,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.5,
+                      ),
                     ),
                     const SizedBox(height: 12),
                     Row(
@@ -166,32 +189,31 @@ class HijriSettingsSection extends StatelessWidget {
                             decoration: BoxDecoration(
                               color: isSelected
                                   ? const Color(0xFFD4AF37)
-                                  : thm.cardColor.withOpacity(0.5),
+                                  : thm.cardColor.withValues(alpha: 0.5),
                               borderRadius: BorderRadius.circular(14),
                               border: Border.all(
                                 color: isSelected
                                     ? const Color(0xFFD4AF37)
-                                    : thm.textLow.withOpacity(0.2),
+                                    : thm.textLow.withValues(alpha: 0.2),
                                 width: isSelected ? 2 : 1,
                               ),
                               boxShadow: isSelected
                                   ? [
-                                BoxShadow(
-                                  color: const Color(0xFFD4AF37)
-                                      .withOpacity(0.30),
-                                  blurRadius: 12,
-                                  offset: const Offset(0, 4),
-                                )
-                              ]
+                                      BoxShadow(
+                                        color: const Color(
+                                          0xFFD4AF37,
+                                        ).withValues(alpha: 0.30),
+                                        blurRadius: 12,
+                                        offset: const Offset(0, 4),
+                                      ),
+                                    ]
                                   : [],
                             ),
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Text(
-                                  val == 0
-                                      ? '0'
-                                      : (val > 0 ? '+$val' : '$val'),
+                                  val == 0 ? '0' : (val > 0 ? '+$val' : '$val'),
                                   style: TextStyle(
                                     color: isSelected
                                         ? Colors.black
@@ -201,7 +223,9 @@ class HijriSettingsSection extends StatelessWidget {
                                   ),
                                 ),
                                 Text(
-                                  val == 0 ? 'Default' : (val > 0 ? 'days' : 'days'),
+                                  val == 0
+                                      ? 'Default'
+                                      : (val > 0 ? 'days' : 'days'),
                                   style: TextStyle(
                                     color: isSelected
                                         ? Colors.black87
@@ -225,7 +249,7 @@ class HijriSettingsSection extends StatelessWidget {
                             ? 'Shifted $offset day(s) forward'
                             : 'Shifted ${-offset} day(s) backward',
                         style: TextStyle(
-                          color: const Color(0xFFD4AF37).withOpacity(0.7),
+                          color: const Color(0xFFD4AF37).withValues(alpha: 0.7),
                           fontSize: 11,
                           fontStyle: FontStyle.italic,
                         ),
@@ -262,9 +286,13 @@ class HijriSettingsPage extends StatelessWidget {
               icon: Icon(Icons.arrow_back_ios_rounded, color: thm.accent),
               onPressed: () => Navigator.pop(context),
             ),
-            title: Text('Hijri Calendar',
-                style: TextStyle(
-                    color: thm.textHigh, fontWeight: FontWeight.w700)),
+            title: Text(
+              'Hijri Calendar',
+              style: TextStyle(
+                color: thm.textHigh,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
           ),
           body: SingleChildScrollView(
             padding: const EdgeInsets.all(16),

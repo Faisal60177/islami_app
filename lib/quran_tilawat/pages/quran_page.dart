@@ -63,7 +63,7 @@ class _QuranPageBodyState extends State<_QuranPageBody>
   late TabController _tabCtrl;
 
   final List<Widget> _navPages = const [
-    PrayerTimesPage(),
+    HomePage(),
     ToolsPage(),
     QuranPage(),
     DuasPage(),
@@ -98,11 +98,11 @@ class _QuranPageBodyState extends State<_QuranPageBody>
   Widget build(BuildContext context) {
     return BlocBuilder<SettingsCubit, SettingsState>(
       builder: (ctx, settings) {
-        final l10n  = AppLocalizations(settings.languageCode);
+        final l10n = AppLocalizations(settings.languageCode);
         final theme = getThemeById(settings.themeMode);
-        final mq    = MediaQuery.of(context);
-        final sw    = mq.size.width;
-        final rsw   = sw.clamp(320.0, 420.0);
+        final mq = MediaQuery.of(context);
+        final sw = mq.size.width;
+        final rsw = sw.clamp(320.0, 420.0);
 
         return Scaffold(
           backgroundColor: theme.background,
@@ -124,41 +124,50 @@ class _QuranPageBodyState extends State<_QuranPageBody>
 
                 // ── Scrollable content ───────────────────────────────
                 Expanded(
-                          child: TabBarView(
-                            controller: _tabCtrl,
-                            children: const [
-                              SurahListTab(),
-                              ParaListTab(),
-                              BookmarkTab(),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
+                  child: TabBarView(
+                    controller: _tabCtrl,
+                    children: const [
+                      SurahListTab(),
+                      ParaListTab(),
+                      BookmarkTab(),
+                    ],
                   ),
+                ),
+              ],
+            ),
+          ),
           bottomNavigationBar: _buildNav(context, theme, rsw, sw, l10n),
         );
       },
     );
   }
 
-  Widget _buildNav(BuildContext context, AppThemeOption theme,
-      double rsw, double sw, AppLocalizations l10n) {
+  Widget _buildNav(
+    BuildContext context,
+    AppThemeOption theme,
+    double rsw,
+    double sw,
+    AppLocalizations l10n,
+  ) {
     final items = [
       (l10n.today, 'assets/icons/today.png'),
       (l10n.tools, 'assets/icons/features.png'),
       (l10n.quran, 'assets/icons/quran_tilawat.png'),
-      (l10n.duas,  'assets/icons/duas.png'),
-      (l10n.menu,  'assets/icons/menu.png'),
+      (l10n.duas, 'assets/icons/duas.png'),
+      (l10n.menu, 'assets/icons/menu.png'),
     ];
-    final iconSz  = (sw * 0.058).clamp(22.0, 28.0);
+    final iconSz = (sw * 0.058).clamp(22.0, 28.0);
     final labelSz = (sw * 0.024).clamp(9.0, 11.5);
 
     return Container(
       decoration: BoxDecoration(
         color: theme.surface,
         border: Border(
-            top: BorderSide(color: theme.accent.withOpacity(0.18), width: 0.8)),
+          top: BorderSide(
+            color: theme.accent.withValues(alpha: 0.18),
+            width: 0.8,
+          ),
+        ),
         boxShadow: const [BoxShadow(color: Colors.black54, blurRadius: 20)],
       ),
       child: SafeArea(
@@ -168,29 +177,35 @@ class _QuranPageBodyState extends State<_QuranPageBody>
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: items.asMap().entries.map((e) {
-              final i      = e.key;
-              final label  = e.value.$1;
-              final asset  = e.value.$2;
+              final i = e.key;
+              final label = e.value.$1;
+              final asset = e.value.$2;
               final active = i == 2;
               return GestureDetector(
                 onTap: () {
                   if (!active) {
-                    Navigator.pushReplacement(context,
-                        MaterialPageRoute(builder: (_) => _navPages[i]));
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (_) => _navPages[i]),
+                    );
                   }
                 },
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 220),
                   padding: EdgeInsets.symmetric(
-                      horizontal: rsw * 0.028, vertical: rsw * 0.014),
+                    horizontal: rsw * 0.028,
+                    vertical: rsw * 0.014,
+                  ),
                   decoration: BoxDecoration(
                     color: active
-                        ? theme.accent.withOpacity(0.15)
+                        ? theme.accent.withValues(alpha: 0.15)
                         : Colors.transparent,
                     borderRadius: BorderRadius.circular(rsw * 0.034),
                     border: active
                         ? Border.all(
-                        color: theme.accent.withOpacity(0.35), width: 0.8)
+                            color: theme.accent.withValues(alpha: 0.35),
+                            width: 0.8,
+                          )
                         : null,
                   ),
                   child: Column(
@@ -198,13 +213,16 @@ class _QuranPageBodyState extends State<_QuranPageBody>
                     children: [
                       Image.asset(asset, width: iconSz, height: iconSz),
                       const SizedBox(height: 3),
-                      Text(label,
-                          style: TextStyle(
-                            fontSize: labelSz,
-                            fontWeight:
-                            active ? FontWeight.w700 : FontWeight.w400,
-                            color: active ? theme.accent : theme.textLow,
-                          )),
+                      Text(
+                        label,
+                        style: TextStyle(
+                          fontSize: labelSz,
+                          fontWeight: active
+                              ? FontWeight.w700
+                              : FontWeight.w400,
+                          color: active ? theme.accent : theme.textLow,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -236,7 +254,10 @@ class _QuranHeader extends StatelessWidget {
       decoration: BoxDecoration(
         color: theme.surface,
         border: Border(
-          bottom: BorderSide(color: theme.accent.withOpacity(0.12), width: 0.8),
+          bottom: BorderSide(
+            color: theme.accent.withValues(alpha: 0.12),
+            width: 0.8,
+          ),
         ),
       ),
       // ✅ extra vertical padding so it doesn't feel cramped against the cards below
@@ -264,8 +285,11 @@ class _QuranHeader extends StatelessWidget {
             onTap: onSearchTap,
             child: Container(
               padding: EdgeInsets.all(rsw * 0.018),
-              child: Icon(Icons.search_rounded,
-                  color: theme.accent, size: rsw * 0.062),
+              child: Icon(
+                Icons.search_rounded,
+                color: theme.accent,
+                size: rsw * 0.062,
+              ),
             ),
           ),
         ],
@@ -281,8 +305,11 @@ class _QuickActionsRow extends StatelessWidget {
 
   const _QuickActionsRow({required this.theme, required this.rsw});
 
-  void _goToLastRead(BuildContext context, int lastReadPage,
-      List<dynamic> surahs) {
+  void _goToLastRead(
+    BuildContext context,
+    int lastReadPage,
+    List<dynamic> surahs,
+  ) {
     if (surahs.isEmpty) return;
     var s = surahs.first;
     for (final x in surahs) {
@@ -304,7 +331,7 @@ class _QuickActionsRow extends StatelessWidget {
     return BlocBuilder<QuranCubit, QuranState>(
       builder: (_, state) {
         final lastReadPage = state is QuranLoaded ? state.lastReadPage : 3;
-        final surahs       = state is QuranLoaded ? state.surahs : const [];
+        final surahs = state is QuranLoaded ? state.surahs : const [];
 
         return Padding(
           // ✅ gap from header above
@@ -322,8 +349,7 @@ class _QuickActionsRow extends StatelessWidget {
                   label: 'Last Read',
                   theme: theme,
                   rsw: rsw,
-                  onTap: () =>
-                      _goToLastRead(context, lastReadPage, surahs),
+                  onTap: () => _goToLastRead(context, lastReadPage, surahs),
                 ),
               ),
               SizedBox(width: rsw * 0.028),
@@ -344,8 +370,12 @@ class _QuickActionsRow extends StatelessWidget {
   }
 
   // ✅ Fixed: now correctly finds the surah and pushes QuranReaderPage
-  void _showGoToPageSheet(BuildContext context, AppThemeOption theme,
-      double rsw, List<dynamic> surahs) {
+  void _showGoToPageSheet(
+    BuildContext context,
+    AppThemeOption theme,
+    double rsw,
+    List<dynamic> surahs,
+  ) {
     final ctrl = TextEditingController();
     final cubit = context.read<QuranCubit>();
 
@@ -368,15 +398,19 @@ class _QuickActionsRow extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Go to Page',
-                  style: TextStyle(
-                      color: theme.textHigh,
-                      fontSize: rsw * 0.040,
-                      fontWeight: FontWeight.w700)),
+              Text(
+                'Go to Page',
+                style: TextStyle(
+                  color: theme.textHigh,
+                  fontSize: rsw * 0.040,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
               SizedBox(height: rsw * 0.008),
-              Text('Enter a quran_tilawat page number from 1 to 611',
-                  style: TextStyle(
-                      color: theme.textLow, fontSize: rsw * 0.026)),
+              Text(
+                'Enter a quran_tilawat page number from 1 to 611',
+                style: TextStyle(color: theme.textLow, fontSize: rsw * 0.026),
+              ),
               SizedBox(height: rsw * 0.026),
               TextField(
                 controller: ctrl,
@@ -393,7 +427,9 @@ class _QuickActionsRow extends StatelessWidget {
                     borderSide: BorderSide.none,
                   ),
                   contentPadding: EdgeInsets.symmetric(
-                      horizontal: rsw * 0.030, vertical: rsw * 0.026),
+                    horizontal: rsw * 0.030,
+                    vertical: rsw * 0.026,
+                  ),
                 ),
               ),
               SizedBox(height: rsw * 0.026),
@@ -412,8 +448,8 @@ class _QuickActionsRow extends StatelessWidget {
                     if (n == null || n < 1 || n > 611) {
                       ScaffoldMessenger.of(sheetCtx).showSnackBar(
                         const SnackBar(
-                            content:
-                            Text('Enter a valid page number (1–611)')),
+                          content: Text('Enter a valid page number (1–611)'),
+                        ),
                       );
                       return;
                     }
@@ -434,16 +470,21 @@ class _QuickActionsRow extends StatelessWidget {
                         builder: (_) => BlocProvider.value(
                           value: cubit,
                           child: QuranReaderPage(
-                              initialPage: imagePage, surah: s),
+                            initialPage: imagePage,
+                            surah: s,
+                          ),
                         ),
                       ),
                     );
                   },
-                  child: Text('Go',
-                      style: TextStyle(
-                          color: theme.textHigh,
-                          fontSize: rsw * 0.034,
-                          fontWeight: FontWeight.w700)),
+                  child: Text(
+                    'Go',
+                    style: TextStyle(
+                      color: theme.textHigh,
+                      fontSize: rsw * 0.034,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -479,7 +520,9 @@ class _ActionCard extends StatelessWidget {
           color: theme.surface,
           borderRadius: BorderRadius.circular(rsw * 0.032),
           border: Border.all(
-              color: theme.accent.withOpacity(0.16), width: 0.8),
+            color: theme.accent.withValues(alpha: 0.16),
+            width: 0.8,
+          ),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -521,14 +564,23 @@ class _QuranTabBar extends StatelessWidget {
       margin: EdgeInsets.symmetric(horizontal: rsw * 0.040),
       decoration: BoxDecoration(
         border: Border(
-          bottom: BorderSide(color: theme.accent.withOpacity(0.12), width: 1),
+          bottom: BorderSide(
+            color: theme.accent.withValues(alpha: 0.12),
+            width: 1,
+          ),
         ),
       ),
       child: Row(
         children: [
           _TabBtn(ctrl: ctrl, index: 0, label: 'Surah', theme: theme, rsw: rsw),
           _TabBtn(ctrl: ctrl, index: 1, label: 'Para', theme: theme, rsw: rsw),
-          _TabBtn(ctrl: ctrl, index: 2, label: 'Bookmark', theme: theme, rsw: rsw),
+          _TabBtn(
+            ctrl: ctrl,
+            index: 2,
+            label: 'Bookmark',
+            theme: theme,
+            rsw: rsw,
+          ),
         ],
       ),
     );
@@ -555,7 +607,7 @@ class _TabBtn extends StatelessWidget {
     return Expanded(
       child: AnimatedBuilder(
         animation: ctrl,
-        builder: (_, __) {
+        builder: (_, _) {
           final active = ctrl.index == index;
           return GestureDetector(
             onTap: () => ctrl.animateTo(index),

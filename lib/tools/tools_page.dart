@@ -44,7 +44,7 @@ class _ToolsPageState extends State<ToolsPage>
   late final AnimationController _ctrl;
 
   final List<Widget> _pages = const [
-    PrayerTimesPage(),
+    HomePage(),
     ToolsPage(),
     QuranPage(),
     DuasPage(),
@@ -69,192 +69,246 @@ class _ToolsPageState extends State<ToolsPage>
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<SettingsCubit, SettingsState>(
-        builder: (context, settings) {
-          final theme = getThemeById(settings.themeMode);
-          final l10n = AppLocalizations(settings.languageCode);
+      builder: (context, settings) {
+        final theme = getThemeById(settings.themeMode);
+        final l10n = AppLocalizations(settings.languageCode);
 
-          final bgDeep     = Color.lerp(theme.background, Colors.black,
-              theme.isDark ? 0.30 : 0.0)!;
-          final bgBase     = theme.background;
-          final surface    = theme.surface;
-          final cardColor  = theme.cardColor;
-          final accent     = theme.accent;
-          final accentSoft = theme.primary.withOpacity(0.55);
-          final textHi     = theme.textHigh;
-          final textLo     = theme.textLow;
+        final bgDeep = Color.lerp(
+          theme.background,
+          Colors.black,
+          theme.isDark ? 0.30 : 0.0,
+        )!;
+        final bgBase = theme.background;
+        final surface = theme.surface;
+        final cardColor = theme.cardColor;
+        final accent = theme.accent;
+        final accentSoft = theme.primary.withValues(alpha: 0.55);
+        final textHi = theme.textHigh;
+        final textLo = theme.textLow;
 
-          final sw = MediaQuery.of(context).size.width;
-          final sh = MediaQuery.of(context).size.height;
+        final sw = MediaQuery.of(context).size.width;
+        final sh = MediaQuery.of(context).size.height;
 
-          final rsw = sw.clamp(320.0, 420.0);
+        final rsw = sw.clamp(320.0, 420.0);
 
-          // Responsive grid columns
-          final cols = sw > 900 ? 5 : sw > 600 ? 4 : 3;
+        // Responsive grid columns
+        final cols = sw > 900
+            ? 5
+            : sw > 600
+            ? 4
+            : 3;
 
-          // Sections data (lambdas capture context lazily – safe)
-          final sections = [
-            _Section(l10n.knowledge, l10n.learnExplore, accent, [
-              _Tool(l10n.tilawat,       'assets/icons/quran_tilawat.png',
-                      () => _push(QuranPage())),
-              _Tool(l10n.tafsir,       'assets/icons/quran_tafsir.png',
-                      () => _push(QuranTafsirPage())),
-              _Tool(l10n.duas,        'assets/icons/duas.png',
-                      () => _push(DuasPage())),
-              _Tool(l10n.masail,      'assets/icons/masail.png',
-                      () => _push(MasailPage())),
-            ]),
-            _Section(l10n.amal, l10n.worshipReflect, accent, [
-              _Tool(l10n.tasbih,      'assets/icons/tasbih.png',
-                      () => _push(TasbihPage())),
-              _Tool(l10n.prayerTimes,'assets/icons/prayer_time.png',
-                      () => _push(PrayerTimesPage())),
-              _Tool(l10n.alarm,'assets/icons/alarm.png',
-                      () => _push(AlarmListPage(theme: theme, l10n: l10n,))),
-              _Tool(l10n.inspiration, 'assets/icons/inspiration.png',
-                      () => _push(InspirationPage())),
-            ]),
-            _Section(l10n.tools, l10n.utilities, const Color(0xFF64B5F6), [
-              _Tool(l10n.qibla,       'assets/icons/qibla.png',
-                      () => _push(QiblaPage())),
-              _Tool(l10n.calendar,    'assets/icons/calendar.png',
-                      () => _push(MonthlyCalendarPage())),
-              _Tool(l10n.notification,'assets/icons/notification.png',
-                      () => _push(NotificationPage())),
-              _Tool(l10n.menu,        'assets/icons/menu.png',
-                      () => _push(MenuPage())),
-            ]),
-          ];
+        // Sections data (lambdas capture context lazily – safe)
+        final sections = [
+          _Section(l10n.knowledge, l10n.learnExplore, accent, [
+            _Tool(
+              l10n.tilawat,
+              'assets/icons/quran_tilawat.png',
+              () => _push(QuranPage()),
+            ),
+            _Tool(
+              l10n.tafsir,
+              'assets/icons/quran_tafsir.png',
+              () => _push(QuranTafsirPage()),
+            ),
+            _Tool(l10n.duas, 'assets/icons/duas.png', () => _push(DuasPage())),
+            _Tool(
+              l10n.masail,
+              'assets/icons/masail.png',
+              () => _push(MasailPage()),
+            ),
+          ]),
+          _Section(l10n.amal, l10n.worshipReflect, accent, [
+            _Tool(
+              l10n.tasbih,
+              'assets/icons/tasbih.png',
+              () => _push(TasbihPage()),
+            ),
+            _Tool(
+              l10n.prayerTimes,
+              'assets/icons/prayer_time.png',
+              () => _push(HomePage()),
+            ),
+            _Tool(
+              l10n.alarm,
+              'assets/icons/alarm.png',
+              () => _push(AlarmListPage(theme: theme, l10n: l10n)),
+            ),
+            _Tool(
+              l10n.inspiration,
+              'assets/icons/inspiration.png',
+              () => _push(InspirationPage()),
+            ),
+          ]),
+          _Section(l10n.tools, l10n.utilities, const Color(0xFF64B5F6), [
+            _Tool(
+              l10n.qibla,
+              'assets/icons/qibla.png',
+              () => _push(QiblaPage()),
+            ),
+            _Tool(
+              l10n.calendar,
+              'assets/icons/calendar.png',
+              () => _push(MonthlyCalendarPage()),
+            ),
+            _Tool(
+              l10n.notification,
+              'assets/icons/notification.png',
+              () => _push(NotificationPage()),
+            ),
+            _Tool(l10n.menu, 'assets/icons/menu.png', () => _push(MenuPage())),
+          ]),
+        ];
 
-
-          return Scaffold(
-            backgroundColor: bgBase,
-            extendBodyBehindAppBar: true,
-            appBar: _buildAppBar(l10n, theme),
-            body: Stack(
-              children: [
-                // ── Decorative top radial glow ──
-                Positioned(
-                  top: -80, left: -60,
-                  child: Container(
-                    width: sw * 0.7, height: sw * 0.7,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: RadialGradient(colors: [
-                        accent.withOpacity(0.15),
+        return Scaffold(
+          backgroundColor: bgBase,
+          extendBodyBehindAppBar: true,
+          appBar: _buildAppBar(l10n, theme),
+          body: Stack(
+            children: [
+              // ── Decorative top radial glow ──
+              Positioned(
+                top: -80,
+                left: -60,
+                child: Container(
+                  width: sw * 0.7,
+                  height: sw * 0.7,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: RadialGradient(
+                      colors: [
+                        accent.withValues(alpha: 0.15),
                         Colors.transparent,
-                      ]),
+                      ],
                     ),
                   ),
                 ),
+              ),
 
-                SafeArea(
-                  child: CustomScrollView(
-                    physics: const ClampingScrollPhysics(),
-                    slivers: [
-                      // ── Header greeting ──
-                      SliverToBoxAdapter(
-                        child: Padding(
-                          padding: EdgeInsets.fromLTRB(sw * 0.05, 20, sw * 0.05, 4),
-                          child: _FadeSlide(
-                            delay: 0,
-                            controller: _ctrl,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text('بِسْمِ اللهِ الرَّحْمَٰنِ الرَّحِيْمِ',
-                                    style: TextStyle(
-                                      fontFamily: 'Amiri',
-                                      fontSize: sw * 0.07,
-                                      color: accent.withOpacity(0.85),
-                                      letterSpacing: 1.5,
-                                    )),
-                                const SizedBox(height: 2),
-                                Text(l10n.yourToolkit,
-                                    style: TextStyle(
-                                      fontSize: sw * 0.038,
-                                      color: textLo,
-                                      fontWeight: FontWeight.w400,
-                                      letterSpacing: 0.4,
-                                    )),
-                              ],
-                            ),
+              SafeArea(
+                child: CustomScrollView(
+                  physics: const ClampingScrollPhysics(),
+                  slivers: [
+                    // ── Header greeting ──
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: EdgeInsets.fromLTRB(
+                          sw * 0.05,
+                          20,
+                          sw * 0.05,
+                          4,
+                        ),
+                        child: _FadeSlide(
+                          delay: 0,
+                          controller: _ctrl,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'بِسْمِ اللهِ الرَّحْمَٰنِ الرَّحِيْمِ',
+                                style: TextStyle(
+                                  fontFamily: 'Amiri',
+                                  fontSize: sw * 0.07,
+                                  color: accent.withValues(alpha: 0.85),
+                                  letterSpacing: 1.5,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                l10n.yourToolkit,
+                                style: TextStyle(
+                                  fontSize: sw * 0.038,
+                                  color: textLo,
+                                  fontWeight: FontWeight.w400,
+                                  letterSpacing: 0.4,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
+                    ),
 
-                      // Thin accent divider
-                      SliverToBoxAdapter(
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: sw * 0.05, vertical: 14),
-                          child: _FadeSlide(
-                            delay: 0.05,
-                            controller: _ctrl,
-                            child: Container(
-                              height: 1,
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(colors: [
+                    // Thin accent divider
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: sw * 0.05,
+                          vertical: 14,
+                        ),
+                        child: _FadeSlide(
+                          delay: 0.05,
+                          controller: _ctrl,
+                          child: Container(
+                            height: 1,
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
                                   Colors.transparent,
-                                  accent.withOpacity(0.4),
+                                  accent.withValues(alpha: 0.4),
                                   Colors.transparent,
-                                ]),
+                                ],
                               ),
                             ),
                           ),
                         ),
                       ),
+                    ),
 
-                      // ── Sections ──
-                      ...sections
-                          .asMap()
-                          .entries
-                          .map((e) {
-                        final idx = e.key;
-                        final sec = e.value;
-                        return SliverToBoxAdapter(
-                          child: _FadeSlide(
-                            delay: 0.1 + idx * 0.15,
-                            controller: _ctrl,
-                            child: _SectionBlock(
-                              section: sec,
-                              cols: cols,
-                              sw: sw,
-                              textHi: textHi,
-                              textLo: textLo,
-                              cardColor: cardColor,
-                            ),
+                    // ── Sections ──
+                    ...sections.asMap().entries.map((e) {
+                      final idx = e.key;
+                      final sec = e.value;
+                      return SliverToBoxAdapter(
+                        child: _FadeSlide(
+                          delay: 0.1 + idx * 0.15,
+                          controller: _ctrl,
+                          child: _SectionBlock(
+                            section: sec,
+                            cols: cols,
+                            sw: sw,
+                            textHi: textHi,
+                            textLo: textLo,
+                            cardColor: cardColor,
                           ),
-                        );
-                      }),
+                        ),
+                      );
+                    }),
 
-                      const SliverToBoxAdapter(child: SizedBox(height: 24)),
-                    ],
-                  ),
+                    const SliverToBoxAdapter(child: SizedBox(height: 24)),
+                  ],
                 ),
-              ],
-            ),
-            bottomNavigationBar: _buildNav(
-              sw: sw, rsw: rsw,
-              surface: surface, accentSoft: accentSoft,
-              accent: accent, textLo: textLo, l10n: l10n,
-            ),
-          );
-        }
+              ),
+            ],
+          ),
+          bottomNavigationBar: _buildNav(
+            sw: sw,
+            rsw: rsw,
+            surface: surface,
+            accentSoft: accentSoft,
+            accent: accent,
+            textLo: textLo,
+            l10n: l10n,
+          ),
+        );
+      },
     );
   }
 
-  void _push(Widget page) =>
-      Navigator.push(context, _fadeRoute(page));
+  void _push(Widget page) => Navigator.push(context, _fadeRoute(page));
 
   Route _fadeRoute(Widget page) => PageRouteBuilder(
-    pageBuilder: (_, a, __) => page,
-    transitionsBuilder: (_, a, __, child) =>
+    pageBuilder: (_, a, _) => page,
+    transitionsBuilder: (_, a, _, child) =>
         FadeTransition(opacity: a, child: child),
     transitionDuration: const Duration(milliseconds: 260),
   );
 
   // ── AppBar ──────────────────────────────────────────────────────────────
-  PreferredSizeWidget _buildAppBar(AppLocalizations l10n, AppThemeOption theme) => AppBar(
+  PreferredSizeWidget _buildAppBar(
+    AppLocalizations l10n,
+    AppThemeOption theme,
+  ) => AppBar(
     backgroundColor: Colors.transparent,
     elevation: 0,
     centerTitle: true,
@@ -264,7 +318,7 @@ class _ToolsPageState extends State<ToolsPage>
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [theme.surface, theme.background.withOpacity(0)],
+          colors: [theme.surface, theme.background.withValues(alpha: 0)],
         ),
       ),
     ),
@@ -272,10 +326,17 @@ class _ToolsPageState extends State<ToolsPage>
       mainAxisSize: MainAxisSize.min,
       children: [
         Container(
-          width: 6, height: 6,
+          width: 6,
+          height: 6,
           decoration: BoxDecoration(
-            color: theme.accent, shape: BoxShape.circle,
-            boxShadow: [BoxShadow(color: theme.accent.withOpacity(0.5), blurRadius: 6)],
+            color: theme.accent,
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: theme.accent.withValues(alpha: 0.5),
+                blurRadius: 6,
+              ),
+            ],
           ),
         ),
         const SizedBox(width: 10),
@@ -290,16 +351,22 @@ class _ToolsPageState extends State<ToolsPage>
         ),
         const SizedBox(width: 10),
         Container(
-          width: 6, height: 6,
+          width: 6,
+          height: 6,
           decoration: BoxDecoration(
-            color: theme.accent, shape: BoxShape.circle,
-            boxShadow: [BoxShadow(color: theme.accent.withOpacity(0.5), blurRadius: 6)],
+            color: theme.accent,
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: theme.accent.withValues(alpha: 0.5),
+                blurRadius: 6,
+              ),
+            ],
           ),
         ),
       ],
     ),
   );
-
 
   // ── Bottom nav ─────────────────────────────────────────────────────────────
   Widget _buildNav({
@@ -315,18 +382,22 @@ class _ToolsPageState extends State<ToolsPage>
       (l10n.today, 'assets/icons/today.png'),
       (l10n.tools, 'assets/icons/features.png'),
       (l10n.quran, 'assets/icons/quran_tilawat.png'),
-      (l10n.duas,  'assets/icons/duas.png'),
-      (l10n.menu,  'assets/icons/menu.png'),
+      (l10n.duas, 'assets/icons/duas.png'),
+      (l10n.menu, 'assets/icons/menu.png'),
     ];
 
-    final iconSz  = (sw * 0.058).clamp(22.0, 28.0);
-    final labelSz = (sw * 0.024).clamp(9.0,  11.5);
+    final iconSz = (sw * 0.058).clamp(22.0, 28.0);
+    final labelSz = (sw * 0.024).clamp(9.0, 11.5);
 
     return Container(
       decoration: BoxDecoration(
-        color:  surface,
+        color: surface,
         border: Border(
-            top: BorderSide(color: accentSoft.withOpacity(0.22), width: 0.8)),
+          top: BorderSide(
+            color: accentSoft.withValues(alpha: 0.22),
+            width: 0.8,
+          ),
+        ),
         boxShadow: const [BoxShadow(color: Colors.black54, blurRadius: 20)],
       ),
       child: SafeArea(
@@ -336,9 +407,9 @@ class _ToolsPageState extends State<ToolsPage>
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: items.asMap().entries.map((e) {
-              final i      = e.key;
-              final label  = e.value.$1;
-              final asset  = e.value.$2;
+              final i = e.key;
+              final label = e.value.$1;
+              final asset = e.value.$2;
               final active = i == 1;
 
               return GestureDetector(
@@ -353,15 +424,19 @@ class _ToolsPageState extends State<ToolsPage>
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 220),
                   padding: EdgeInsets.symmetric(
-                      horizontal: rsw * 0.032, vertical: rsw * 0.016),
+                    horizontal: rsw * 0.032,
+                    vertical: rsw * 0.016,
+                  ),
                   decoration: BoxDecoration(
                     color: active
-                        ? accentSoft.withOpacity(0.22)
+                        ? accentSoft.withValues(alpha: 0.22)
                         : Colors.transparent,
                     borderRadius: BorderRadius.circular(rsw * 0.038),
                     border: active
                         ? Border.all(
-                        color: accentSoft.withOpacity(0.40), width: 0.8)
+                            color: accentSoft.withValues(alpha: 0.40),
+                            width: 0.8,
+                          )
                         : null,
                   ),
                   child: Column(
@@ -374,9 +449,11 @@ class _ToolsPageState extends State<ToolsPage>
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                          fontSize:      labelSz,
-                          fontWeight:    active ? FontWeight.w700 : FontWeight.w400,
-                          color:         active ? accent : textLo,
+                          fontSize: labelSz,
+                          fontWeight: active
+                              ? FontWeight.w700
+                              : FontWeight.w400,
+                          color: active ? accent : textLo,
                           letterSpacing: 0.2,
                         ),
                       ),
@@ -413,8 +490,7 @@ class _SectionBlock extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.symmetric(
-          horizontal: sw * 0.04, vertical: 6),
+      padding: EdgeInsets.symmetric(horizontal: sw * 0.04, vertical: 6),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -422,15 +498,16 @@ class _SectionBlock extends StatelessWidget {
           Row(
             children: [
               Container(
-                width: 3, height: 22,
+                width: 3,
+                height: 22,
                 decoration: BoxDecoration(
                   color: section.accentColor,
                   borderRadius: BorderRadius.circular(4),
                   boxShadow: [
                     BoxShadow(
-                      color: section.accentColor.withOpacity(0.5),
+                      color: section.accentColor.withValues(alpha: 0.5),
                       blurRadius: 6,
-                    )
+                    ),
                   ],
                 ),
               ),
@@ -438,18 +515,19 @@ class _SectionBlock extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(section.title,
-                      style: TextStyle(
-                        fontSize: sw * 0.045,
-                        fontWeight: FontWeight.w700,
-                        color: textHi,
-                        letterSpacing: 0.5,
-                      )),
-                  Text(section.subtitle,
-                      style: TextStyle(
-                        fontSize: sw * 0.03,
-                        color: textLo,
-                      )),
+                  Text(
+                    section.title,
+                    style: TextStyle(
+                      fontSize: sw * 0.045,
+                      fontWeight: FontWeight.w700,
+                      color: textHi,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                  Text(
+                    section.subtitle,
+                    style: TextStyle(fontSize: sw * 0.03, color: textLo),
+                  ),
                 ],
               ),
             ],
@@ -512,7 +590,10 @@ class _ToolCardState extends State<_ToolCard>
   Widget build(BuildContext context) {
     return GestureDetector(
       onTapDown: (_) => setState(() => _pressed = true),
-      onTapUp:   (_) { setState(() => _pressed = false); widget.tool.onTap(); },
+      onTapUp: (_) {
+        setState(() => _pressed = false);
+        widget.tool.onTap();
+      },
       onTapCancel: () => setState(() => _pressed = false),
       child: AnimatedScale(
         scale: _pressed ? 0.92 : 1.0,
@@ -522,24 +603,24 @@ class _ToolCardState extends State<_ToolCard>
           duration: const Duration(milliseconds: 130),
           decoration: BoxDecoration(
             color: _pressed
-                ? widget.cardColor.withOpacity(0.7)
+                ? widget.cardColor.withValues(alpha: 0.7)
                 : widget.cardColor,
             borderRadius: BorderRadius.circular(18),
             border: Border.all(
               color: _pressed
-                  ? widget.accent.withOpacity(0.55)
-                  : widget.accent.withOpacity(0.15),
+                  ? widget.accent.withValues(alpha: 0.55)
+                  : widget.accent.withValues(alpha: 0.15),
               width: 1.2,
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(_pressed ? 0.45 : 0.30),
+                color: Colors.black.withValues(alpha: _pressed ? 0.45 : 0.30),
                 blurRadius: _pressed ? 4 : 10,
                 offset: Offset(0, _pressed ? 2 : 5),
               ),
               if (!_pressed)
                 BoxShadow(
-                  color: widget.accent.withOpacity(0.06),
+                  color: widget.accent.withValues(alpha: 0.06),
                   blurRadius: 18,
                   spreadRadius: 2,
                 ),
@@ -556,7 +637,7 @@ class _ToolCardState extends State<_ToolCard>
                   child: Container(
                     margin: const EdgeInsets.all(4),
                     decoration: BoxDecoration(
-                      color: widget.accent.withOpacity(0.08),
+                      color: widget.accent.withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(14),
                     ),
                     child: Center(
@@ -600,7 +681,7 @@ class _ToolCardState extends State<_ToolCard>
 
 // ─── Fade + Slide animation helper ──────────────────────────────────────────
 class _FadeSlide extends StatelessWidget {
-  final double delay;     // 0.0 – 1.0
+  final double delay; // 0.0 – 1.0
   final AnimationController controller;
   final Widget child;
 
@@ -613,7 +694,7 @@ class _FadeSlide extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final start = delay.clamp(0.0, 0.85);
-    final end   = (delay + 0.4).clamp(0.0, 1.0);
+    final end = (delay + 0.4).clamp(0.0, 1.0);
 
     final curve = CurvedAnimation(
       parent: controller,
@@ -622,7 +703,7 @@ class _FadeSlide extends StatelessWidget {
 
     return AnimatedBuilder(
       animation: curve,
-      builder: (_, __) => Opacity(
+      builder: (_, _) => Opacity(
         opacity: curve.value,
         child: Transform.translate(
           offset: Offset(0, 22 * (1 - curve.value)),

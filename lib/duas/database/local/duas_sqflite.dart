@@ -19,7 +19,7 @@ class DuasSqflite {
 
   Future<void> initFromAssetIfNeeded() async {
     final dbPath = await getDatabasesPath();
-    final path   = join(dbPath, 'duas.db');
+    final path = join(dbPath, 'duas.db');
 
     final exists = await databaseExists(path);
     if (!exists) {
@@ -27,7 +27,7 @@ class DuasSqflite {
         await Directory(dirname(path)).create(recursive: true);
       } catch (_) {}
 
-      final data  = await rootBundle.load('assets/db/duas.db');
+      final data = await rootBundle.load('assets/db/duas.db');
       final bytes = data.buffer.asUint8List(
         data.offsetInBytes,
         data.lengthInBytes,
@@ -36,9 +36,7 @@ class DuasSqflite {
       debugPrint('✅ duas.db copied from assets');
     }
 
-    if (_database == null) {
-      _database = await _initDB();
-    }
+    _database ??= await _initDB();
   }
 
   Future<Database> _initDB() async {
@@ -135,8 +133,11 @@ class DuasSqflite {
 
   Future<void> insertCategory(Map<String, dynamic> data) async {
     final db = await database;
-    await db.insert('categories', data,
-        conflictAlgorithm: ConflictAlgorithm.replace);
+    await db.insert(
+      'categories',
+      data,
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
   }
 
   Future<void> insertCategoryTranslation({
@@ -145,21 +146,20 @@ class DuasSqflite {
     required String title,
   }) async {
     final db = await database;
-    await db.insert(
-      'category_translations',
-      {
-        'category_id':   categoryId,
-        'language_code': languageCode,
-        'title':         title,
-      },
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
+    await db.insert('category_translations', {
+      'category_id': categoryId,
+      'language_code': languageCode,
+      'title': title,
+    }, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
   // Get all categories with resolved language + COALESCE fallback to English
-  Future<List<Map<String, dynamic>>> getAllCategories(String languageCode) async {
+  Future<List<Map<String, dynamic>>> getAllCategories(
+    String languageCode,
+  ) async {
     final db = await database;
-    return await db.rawQuery('''
+    return await db.rawQuery(
+      '''
       SELECT
         c.category_id,
         c.category_icon,
@@ -170,15 +170,16 @@ class DuasSqflite {
       LEFT JOIN category_translations fallback
         ON c.category_id = fallback.category_id AND fallback.language_code = 'en'
       ORDER BY c.category_id ASC
-    ''', [languageCode]);
+    ''',
+      [languageCode],
+    );
   }
 
   // ── duas ────────────────────────────────────────────────
 
   Future<void> insertDua(Map<String, dynamic> data) async {
     final db = await database;
-    await db.insert('duas', data,
-        conflictAlgorithm: ConflictAlgorithm.replace);
+    await db.insert('duas', data, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
   Future<void> insertDuaTranslation({
@@ -191,19 +192,15 @@ class DuasSqflite {
     String? description,
   }) async {
     final db = await database;
-    await db.insert(
-      'dua_translations',
-      {
-        'dua_id':           duaId,
-        'language_code':    languageCode,
-        'title':            title,
-        'transliteration':  transliteration,
-        'translation_text': translationText,
-        'reference':        reference,
-        'description':      description, // nullable — fine if null
-      },
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
+    await db.insert('dua_translations', {
+      'dua_id': duaId,
+      'language_code': languageCode,
+      'title': title,
+      'transliteration': transliteration,
+      'translation_text': translationText,
+      'reference': reference,
+      'description': description, // nullable — fine if null
+    }, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
   // Get duas by category — JOIN resolves language, COALESCE falls back to English
@@ -213,7 +210,8 @@ class DuasSqflite {
     required String userId,
   }) async {
     final db = await database;
-    return await db.rawQuery('''
+    return await db.rawQuery(
+      '''
       SELECT
         d.id,
         d.category_id,
@@ -246,7 +244,9 @@ class DuasSqflite {
       ) cat_t ON d.category_id = cat_t.category_id
       WHERE d.category_id = ?
       ORDER BY d.id ASC
-    ''', [languageCode, userId, languageCode, categoryId]);
+    ''',
+      [languageCode, userId, languageCode, categoryId],
+    );
   }
 
   // Get ALL duas — same JOIN logic as getDuasByCategory but no WHERE filter
@@ -255,7 +255,8 @@ class DuasSqflite {
     required String userId,
   }) async {
     final db = await database;
-    return await db.rawQuery('''
+    return await db.rawQuery(
+      '''
     SELECT
       d.id,
       d.category_id,
@@ -287,9 +288,10 @@ class DuasSqflite {
         ON c2.category_id = fb2.category_id AND fb2.language_code = 'en'
     ) cat_t ON d.category_id = cat_t.category_id
     ORDER BY d.id ASC
-  ''', [languageCode, userId, languageCode]);
+  ''',
+      [languageCode, userId, languageCode],
+    );
   }
-
 
   // ── Favorites & Bookmarks ───────────────────────────────
 
@@ -300,16 +302,12 @@ class DuasSqflite {
     required bool isBookmarked,
   }) async {
     final db = await database;
-    await db.insert(
-      'user_interactions',
-      {
-        'user_id':      userId,
-        'dua_id':       duaId,
-        'is_favorite':  isFavorite ? 1 : 0,
-        'is_bookmarked':isBookmarked ? 1 : 0,
-      },
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
+    await db.insert('user_interactions', {
+      'user_id': userId,
+      'dua_id': duaId,
+      'is_favorite': isFavorite ? 1 : 0,
+      'is_bookmarked': isBookmarked ? 1 : 0,
+    }, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
   Future<List<Map<String, dynamic>>> getFavoritesForUser({
@@ -317,7 +315,8 @@ class DuasSqflite {
     required String languageCode,
   }) async {
     final db = await database;
-    return await db.rawQuery('''
+    return await db.rawQuery(
+      '''
       SELECT
         d.id,
         d.category_id,
@@ -338,7 +337,9 @@ class DuasSqflite {
       LEFT JOIN dua_translations fb
         ON d.id = fb.dua_id AND fb.language_code = 'en'
       ORDER BY d.id ASC
-    ''', [userId, languageCode]);
+    ''',
+      [userId, languageCode],
+    );
   }
 
   Future<List<Map<String, dynamic>>> getBookmarkedForUser({
@@ -346,7 +347,8 @@ class DuasSqflite {
     required String languageCode,
   }) async {
     final db = await database;
-    return await db.rawQuery('''
+    return await db.rawQuery(
+      '''
       SELECT
         d.id,
         d.category_id,
@@ -367,42 +369,63 @@ class DuasSqflite {
       LEFT JOIN dua_translations fb
         ON d.id = fb.dua_id AND fb.language_code = 'en'
       ORDER BY d.id ASC
-    ''', [userId, languageCode]);
+    ''',
+      [userId, languageCode],
+    );
   }
 
   Future<void> replaceUserInteractions(
-      String userId, List<Map<String, dynamic>> interactions) async {
+    String userId,
+    List<Map<String, dynamic>> interactions,
+  ) async {
     if (interactions.isEmpty) return;
     final db = await database;
     await db.transaction((txn) async {
-      await txn.delete('user_interactions',
-          where: 'user_id = ?', whereArgs: [userId]);
+      await txn.delete(
+        'user_interactions',
+        where: 'user_id = ?',
+        whereArgs: [userId],
+      );
       for (final row in interactions) {
-        await txn.insert('user_interactions', row,
-            conflictAlgorithm: ConflictAlgorithm.replace);
+        await txn.insert(
+          'user_interactions',
+          row,
+          conflictAlgorithm: ConflictAlgorithm.replace,
+        );
       }
     });
   }
 
   Future<List<Map<String, dynamic>>> getGuestInteractions() async {
     final db = await database;
-    return await db.query('user_interactions',
-        where: 'user_id = ?', whereArgs: ['guest']);
+    return await db.query(
+      'user_interactions',
+      where: 'user_id = ?',
+      whereArgs: ['guest'],
+    );
   }
 
   Future<void> migrateGuestToUser(String userId) async {
     final db = await database;
-    await db.update('user_interactions', {'user_id': userId},
-        where: 'user_id = ?', whereArgs: ['guest']);
+    await db.update(
+      'user_interactions',
+      {'user_id': userId},
+      where: 'user_id = ?',
+      whereArgs: ['guest'],
+    );
   }
 
   Future<Map<String, dynamic>?> getUserInteractionForDua(
-      String userId, int duaId) async {
+    String userId,
+    int duaId,
+  ) async {
     final db = await database;
-    final result = await db.query('user_interactions',
-        where: 'user_id = ? AND dua_id = ?',
-        whereArgs: [userId, duaId],
-        limit: 1);
+    final result = await db.query(
+      'user_interactions',
+      where: 'user_id = ? AND dua_id = ?',
+      whereArgs: [userId, duaId],
+      limit: 1,
+    );
     return result.isNotEmpty ? result.first : null;
   }
   // ── Sync: Delete removed rows ───────────────────────────
@@ -416,10 +439,12 @@ class DuasSqflite {
         .difference(firestoreIds.toSet());
 
     for (final id in toDelete) {
-      await db.delete('category_translations',
-          where: 'category_id = ?', whereArgs: [id]);
-      await db.delete('categories',
-          where: 'category_id = ?', whereArgs: [id]);
+      await db.delete(
+        'category_translations',
+        where: 'category_id = ?',
+        whereArgs: [id],
+      );
+      await db.delete('categories', where: 'category_id = ?', whereArgs: [id]);
       debugPrint('🗑️ duas category $id deleted from SQLite');
     }
   }
@@ -433,17 +458,14 @@ class DuasSqflite {
         .difference(firestoreIds.toSet());
 
     for (final id in toDelete) {
-      await db.delete('user_interactions',
-          where: 'dua_id = ?', whereArgs: [id]);
-      await db.delete('dua_translations',
-          where: 'dua_id = ?', whereArgs: [id]);
-      await db.delete('duas',
-          where: 'id = ?', whereArgs: [id]);
+      await db.delete(
+        'user_interactions',
+        where: 'dua_id = ?',
+        whereArgs: [id],
+      );
+      await db.delete('dua_translations', where: 'dua_id = ?', whereArgs: [id]);
+      await db.delete('duas', where: 'id = ?', whereArgs: [id]);
       debugPrint('🗑️ Dua $id deleted from SQLite');
     }
   }
-
-
-
-
 }

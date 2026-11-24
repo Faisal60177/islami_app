@@ -15,7 +15,7 @@ class VerseModel extends Verse {
   factory VerseModel.fromJson(Map<String, dynamic> json) {
     final verseKey = json['verse_key'] as String;
     final chapterId =
-        _asInt(json['chapter_id']) as int? ?? int.parse(verseKey.split(':').first);
+        _asInt(json['chapter_id']) ?? int.parse(verseKey.split(':').first);
 
     return VerseModel(
       id: _asInt(json['id']) ?? 0,
@@ -29,16 +29,17 @@ class VerseModel extends Verse {
     );
   }
 
-  static List<VerseTranslation> _parseTranslations(dynamic raw){
-    if(raw == null) return [];
+  static List<VerseTranslation> _parseTranslations(dynamic raw) {
+    if (raw == null) return [];
     final list = raw as List<dynamic>;
-    return list.map((t){
+    return list.map((t) {
       final map = t as Map<String, dynamic>;
       return VerseTranslation(
         resourceId: _asInt(map['resource_id']) ?? 0,
-          resourceName: map['resource_name'] as String? ?? '',
+        resourceName: map['resource_name'] as String? ?? '',
 
-          text: map['text'] as String? ?? '',);
+        text: map['text'] as String? ?? '',
+      );
     }).toList();
   }
 
@@ -47,7 +48,8 @@ class VerseModel extends Verse {
     final list = raw as List<dynamic>;
     return list.map((w) {
       final map = w as Map<String, dynamic>;
-      final position = _asInt(map['position']) ??
+      final position =
+          _asInt(map['position']) ??
           _positionFromLocation(map['location'] as String?);
       return Word(
         position: position,
@@ -71,20 +73,21 @@ class VerseModel extends Verse {
     return null;
   }
 
-  static VerseAudio? _parseAudio(dynamic raw){
-    if(raw == null) return null;
+  static VerseAudio? _parseAudio(dynamic raw) {
+    if (raw == null) return null;
     final map = raw as Map<String, dynamic>;
     final rawUrl = map['url'] as String?;
-    if(rawUrl == null || rawUrl.isEmpty) return null;
+    if (rawUrl == null || rawUrl.isEmpty) return null;
 
-    return VerseAudio(url: _normalizeAudioUrl(rawUrl),
-      segments: _parseSegments(map['segments']),   // ← নতুন লাইন
+    return VerseAudio(
+      url: _normalizeAudioUrl(rawUrl),
+      segments: _parseSegments(map['segments']), // ← নতুন লাইন
     );
   }
 
-  static String _normalizeAudioUrl(String rawUrl){
+  static String _normalizeAudioUrl(String rawUrl) {
     const baseUrl = 'https://verses.quran.foundation/';
-    if(rawUrl.startsWith('http://') || rawUrl.startsWith('https://')){
+    if (rawUrl.startsWith('http://') || rawUrl.startsWith('https://')) {
       return rawUrl;
     }
     return baseUrl + rawUrl;
@@ -109,27 +112,31 @@ class VerseModel extends Verse {
       'chapter_id': chapterId,
       'text_uthmani': textUthmani,
       'translations': translations
-          .map((t) => {
-        'resource_id': t.resourceId,
-        'resource_name': t.resourceName,
-        'text': t.text,
-      })
+          .map(
+            (t) => {
+              'resource_id': t.resourceId,
+              'resource_name': t.resourceName,
+              'text': t.text,
+            },
+          )
           .toList(),
       'words': words
-          .map((w) => {
-        'position': w.position,
-        'text_uthmani': w.textUthmani,
-        'char_type_name': w.charType,
-      })
+          .map(
+            (w) => {
+              'position': w.position,
+              'text_uthmani': w.textUthmani,
+              'char_type_name': w.charType,
+            },
+          )
           .toList(),
       'audio': audio == null
           ? null
           : {
-        'url': audio!.url,
-        'segments': audio!.segments
-            .map((s) => [s.wordStart, s.wordEnd, s.startMs, s.endMs])
-            .toList(),
-      },
+              'url': audio!.url,
+              'segments': audio!.segments
+                  .map((s) => [s.wordStart, s.wordEnd, s.startMs, s.endMs])
+                  .toList(),
+            },
     };
   }
 
@@ -146,5 +153,4 @@ class VerseModel extends Verse {
       );
     }).toList();
   }
-
 }

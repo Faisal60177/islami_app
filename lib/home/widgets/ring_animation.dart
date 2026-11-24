@@ -3,14 +3,14 @@ import 'dart:async';
 import 'dart:math' as math;
 
 class PrayerRingWidget extends StatefulWidget {
-  final String   topLabel;
-  final String   bottomLabel;
+  final String topLabel;
+  final String bottomLabel;
   final DateTime periodStart;
   final DateTime periodEnd;
-  final bool     isProhibited;
-  final double   size;
-  final Color?   accentColor;
-  final Color?   prohibitedColor;
+  final bool isProhibited;
+  final double size;
+  final Color? accentColor;
+  final Color? prohibitedColor;
 
   const PrayerRingWidget({
     super.key,
@@ -30,7 +30,6 @@ class PrayerRingWidget extends StatefulWidget {
 
 class _PrayerRingWidgetState extends State<PrayerRingWidget>
     with SingleTickerProviderStateMixin {
-
   Timer? _ticker;
   late AnimationController _pulse;
   Duration _remaining = Duration.zero;
@@ -48,7 +47,8 @@ class _PrayerRingWidgetState extends State<PrayerRingWidget>
 
   void _scheduleTick() {
     _ticker?.cancel();
-    final msUntilNextSecond = 1000 - (DateTime.now().millisecondsSinceEpoch % 1000);
+    final msUntilNextSecond =
+        1000 - (DateTime.now().millisecondsSinceEpoch % 1000);
     _ticker = Timer(Duration(milliseconds: msUntilNextSecond), () {
       if (!mounted) return;
       setState(_updateRemaining);
@@ -91,10 +91,10 @@ class _PrayerRingWidgetState extends State<PrayerRingWidget>
   }
 
   double _progress() {
-    final startMs   = widget.periodStart.millisecondsSinceEpoch;
-    final endMs     = widget.periodEnd.millisecondsSinceEpoch;
-    final nowMs     = DateTime.now().millisecondsSinceEpoch;
-    final totalMs   = endMs - startMs;
+    final startMs = widget.periodStart.millisecondsSinceEpoch;
+    final endMs = widget.periodEnd.millisecondsSinceEpoch;
+    final nowMs = DateTime.now().millisecondsSinceEpoch;
+    final totalMs = endMs - startMs;
     if (totalMs <= 0) return 0;
     final elapsedMs = nowMs - startMs;
     return (elapsedMs / totalMs).clamp(0.0, 1.0);
@@ -102,27 +102,28 @@ class _PrayerRingWidgetState extends State<PrayerRingWidget>
 
   @override
   Widget build(BuildContext context) {
-    final sz       = widget.size;
+    final sz = widget.size;
     final progress = _progress();
 
-    final normalColor     = widget.accentColor     ?? Colors.white;
+    final normalColor = widget.accentColor ?? Colors.white;
     final prohibitedColor = widget.prohibitedColor ?? const Color(0xFFFF4444);
 
     final arcColor = widget.isProhibited ? prohibitedColor : normalColor;
     final trackColor = widget.isProhibited
-        ? prohibitedColor.withOpacity(0.20)
-        : normalColor.withOpacity(0.18);
+        ? prohibitedColor.withValues(alpha: 0.20)
+        : normalColor.withValues(alpha: 0.18);
 
     return SizedBox(
-      width: sz, height: sz,
+      width: sz,
+      height: sz,
       child: AnimatedBuilder(
         animation: _pulse,
-        builder: (_, __) => CustomPaint(
+        builder: (_, _) => CustomPaint(
           painter: _RingPainter(
-            progress:     progress,
+            progress: progress,
             pulseOpacity: _pulse.value,
-            arcColor:     arcColor,
-            trackColor:   trackColor,
+            arcColor: arcColor,
+            trackColor: trackColor,
             isProhibited: widget.isProhibited,
           ),
           child: Center(
@@ -133,18 +134,20 @@ class _PrayerRingWidgetState extends State<PrayerRingWidget>
                   widget.topLabel,
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: widget.isProhibited ? const Color(0xFFFF7070) : Colors.white,
-                    fontSize:      sz * 0.095,
-                    fontWeight:    FontWeight.w700,
+                    color: widget.isProhibited
+                        ? const Color(0xFFFF7070)
+                        : Colors.white,
+                    fontSize: sz * 0.095,
+                    fontWeight: FontWeight.w700,
                     letterSpacing: 0.3,
-                    height:        1.1,
+                    height: 1.1,
                   ),
                 ),
                 SizedBox(height: sz * 0.018),
                 Text(
                   widget.bottomLabel,
                   style: TextStyle(
-                    color:    Colors.white.withOpacity(0.65),
+                    color: Colors.white.withValues(alpha: 0.65),
                     fontSize: sz * 0.058,
                     fontWeight: FontWeight.w400,
                   ),
@@ -153,11 +156,13 @@ class _PrayerRingWidgetState extends State<PrayerRingWidget>
                 Text(
                   _formatCountdown(),
                   style: TextStyle(
-                    color: widget.isProhibited ? const Color(0xFFFF7070) : Colors.white,
-                    fontSize:      sz * 0.118,
-                    fontWeight:    FontWeight.w700,
+                    color: widget.isProhibited
+                        ? const Color(0xFFFF7070)
+                        : Colors.white,
+                    fontSize: sz * 0.118,
+                    fontWeight: FontWeight.w700,
                     letterSpacing: 1.8,
-                    fontFeatures:  const [FontFeature.tabularFigures()],
+                    fontFeatures: const [FontFeature.tabularFigures()],
                   ),
                 ),
               ],
@@ -172,9 +177,9 @@ class _PrayerRingWidgetState extends State<PrayerRingWidget>
 class _RingPainter extends CustomPainter {
   final double progress;
   final double pulseOpacity;
-  final Color  arcColor;
-  final Color  trackColor;
-  final bool   isProhibited;
+  final Color arcColor;
+  final Color trackColor;
+  final bool isProhibited;
 
   _RingPainter({
     required this.progress,
@@ -186,29 +191,31 @@ class _RingPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final cx     = size.width  / 2;
-    final cy     = size.height / 2;
-    final radius = size.width  * 0.42;
+    final cx = size.width / 2;
+    final cy = size.height / 2;
+    final radius = size.width * 0.42;
     const stroke = 6.0;
-    final rect   = Rect.fromCircle(center: Offset(cx, cy), radius: radius);
+    final rect = Rect.fromCircle(center: Offset(cx, cy), radius: radius);
 
     final glowColor = isProhibited
-        ? Colors.red.withOpacity(0.06 + 0.04 * pulseOpacity)
-        : Colors.white.withOpacity(0.04 + 0.03 * pulseOpacity);
+        ? Colors.red.withValues(alpha: 0.06 + 0.04 * pulseOpacity)
+        : Colors.white.withValues(alpha: 0.04 + 0.03 * pulseOpacity);
 
     canvas.drawCircle(
-      Offset(cx, cy), radius + 8,
+      Offset(cx, cy),
+      radius + 8,
       Paint()
-        ..color       = glowColor
-        ..style       = PaintingStyle.stroke
+        ..color = glowColor
+        ..style = PaintingStyle.stroke
         ..strokeWidth = 16,
     );
 
     canvas.drawCircle(
-      Offset(cx, cy), radius,
+      Offset(cx, cy),
+      radius,
       Paint()
-        ..color       = trackColor
-        ..style       = PaintingStyle.stroke
+        ..color = trackColor
+        ..style = PaintingStyle.stroke
         ..strokeWidth = stroke,
     );
 
@@ -218,28 +225,35 @@ class _RingPainter extends CustomPainter {
       final arcPaint = Paint()
         ..shader = SweepGradient(
           startAngle: -math.pi / 2,
-          endAngle:   arcEnd,
-          colors: [
-            arcColor.withOpacity(0.55),
-            arcColor,
-          ],
+          endAngle: arcEnd,
+          colors: [arcColor.withValues(alpha: 0.55), arcColor],
         ).createShader(rect)
-        ..style       = PaintingStyle.stroke
+        ..style = PaintingStyle.stroke
         ..strokeWidth = stroke
-        ..strokeCap   = StrokeCap.round;
+        ..strokeCap = StrokeCap.round;
 
-      canvas.drawArc(rect, -math.pi / 2, 2 * math.pi * progress, false, arcPaint);
+      canvas.drawArc(
+        rect,
+        -math.pi / 2,
+        2 * math.pi * progress,
+        false,
+        arcPaint,
+      );
 
       final dotX = cx + radius * math.cos(arcEnd);
       final dotY = cy + radius * math.sin(arcEnd);
-      canvas.drawCircle(Offset(dotX, dotY), stroke * 1.5, Paint()..color = arcColor);
+      canvas.drawCircle(
+        Offset(dotX, dotY),
+        stroke * 1.5,
+        Paint()..color = arcColor,
+      );
     }
   }
 
   @override
   bool shouldRepaint(_RingPainter old) =>
-      old.progress     != progress     ||
-          old.pulseOpacity != pulseOpacity ||
-          old.arcColor     != arcColor     ||
-          old.isProhibited != isProhibited;
+      old.progress != progress ||
+      old.pulseOpacity != pulseOpacity ||
+      old.arcColor != arcColor ||
+      old.isProhibited != isProhibited;
 }

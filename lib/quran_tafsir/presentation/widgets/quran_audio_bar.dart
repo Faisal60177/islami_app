@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:muslim_app/quran_tafsir/presentation/widgets/quran_settings_sheet.dart';
 import '../providers/audio_player_provider.dart';
+
 class QuranAudioBar extends ConsumerWidget {
   const QuranAudioBar({super.key});
 
@@ -19,8 +20,9 @@ class QuranAudioBar extends ConsumerWidget {
     final isPlaying = audioState.status == QuranAudioStatus.playing;
     final isLoading = audioState.status == QuranAudioStatus.loading;
     final verse = audioState.currentVerse!;
-    final translation =
-    verse.translations.isNotEmpty ? verse.translations.first : null;
+    final translation = verse.translations.isNotEmpty
+        ? verse.translations.first
+        : null;
 
     return Material(
       elevation: 12,
@@ -63,41 +65,45 @@ class QuranAudioBar extends ConsumerWidget {
                   ),
                   IconButton(
                     icon: const Icon(Icons.skip_previous_rounded),
-                    onPressed: () =>
-                        ref.read(quranAudioPlayerNotifierProvider.notifier).previous(),
+                    onPressed: () => ref
+                        .read(quranAudioPlayerNotifierProvider.notifier)
+                        .previous(),
                   ),
                   isLoading
                       ? const Padding(
-                    padding: EdgeInsets.all(8),
-                    child: SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    ),
-                  )
+                          padding: EdgeInsets.all(8),
+                          child: SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        )
                       : IconButton(
-                    icon: Icon(
-                      isPlaying
-                          ? Icons.pause_circle_filled
-                          : Icons.play_circle_fill,
-                      size: 34,
-                      color: colors.primary,
-                    ),
-                    onPressed: () {
-                      final notifier =
-                      ref.read(quranAudioPlayerNotifierProvider.notifier);
-                      isPlaying ? notifier.pause() : notifier.resume();
-                    },
-                  ),
+                          icon: Icon(
+                            isPlaying
+                                ? Icons.pause_circle_filled
+                                : Icons.play_circle_fill,
+                            size: 34,
+                            color: colors.primary,
+                          ),
+                          onPressed: () {
+                            final notifier = ref.read(
+                              quranAudioPlayerNotifierProvider.notifier,
+                            );
+                            isPlaying ? notifier.pause() : notifier.resume();
+                          },
+                        ),
                   IconButton(
                     icon: const Icon(Icons.skip_next_rounded),
-                    onPressed: () =>
-                        ref.read(quranAudioPlayerNotifierProvider.notifier).next(),
+                    onPressed: () => ref
+                        .read(quranAudioPlayerNotifierProvider.notifier)
+                        .next(),
                   ),
                   IconButton(
                     icon: const Icon(Icons.close_rounded),
-                    onPressed: () =>
-                        ref.read(quranAudioPlayerNotifierProvider.notifier).stop(),
+                    onPressed: () => ref
+                        .read(quranAudioPlayerNotifierProvider.notifier)
+                        .stop(),
                   ),
                 ],
               ),
@@ -109,7 +115,10 @@ class QuranAudioBar extends ConsumerWidget {
   }
 
   void _showMoreSheet(
-      BuildContext context, WidgetRef ref, QuranAudioState audioState) {
+    BuildContext context,
+    WidgetRef ref,
+    QuranAudioState audioState,
+  ) {
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -124,7 +133,7 @@ class QuranAudioBar extends ConsumerWidget {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: Colors.grey.withOpacity(0.4),
+                color: Colors.grey.withValues(alpha: 0.4),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -136,13 +145,17 @@ class QuranAudioBar extends ConsumerWidget {
             ),
             ListTile(
               leading: Icon(
-                audioState.repeatOne ? Icons.repeat_one_rounded : Icons.repeat_rounded,
+                audioState.repeatOne
+                    ? Icons.repeat_one_rounded
+                    : Icons.repeat_rounded,
               ),
               title: const Text('Repeat this Ayah'),
               trailing: Switch(
                 value: audioState.repeatOne,
                 onChanged: (_) {
-                  ref.read(quranAudioPlayerNotifierProvider.notifier).toggleRepeatOne();
+                  ref
+                      .read(quranAudioPlayerNotifierProvider.notifier)
+                      .toggleRepeatOne();
                 },
               ),
             ),
@@ -183,16 +196,20 @@ class QuranAudioBar extends ConsumerWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: speeds
-              .map((s) => RadioListTile<double>(
-            value: s,
-            groupValue: current,
-            title: Text('${s}x'),
-            onChanged: (v) {
-              if (v == null) return;
-              ref.read(quranAudioPlayerNotifierProvider.notifier).setSpeed(v);
-              Navigator.of(sheetContext).pop();
-            },
-          ))
+              .map(
+                (s) => RadioListTile<double>(
+                  value: s,
+                  groupValue: current,
+                  title: Text('${s}x'),
+                  onChanged: (v) {
+                    if (v == null) return;
+                    ref
+                        .read(quranAudioPlayerNotifierProvider.notifier)
+                        .setSpeed(v);
+                    Navigator.of(sheetContext).pop();
+                  },
+                ),
+              )
               .toList(),
         ),
       ),
@@ -212,34 +229,48 @@ class _ProgressRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer(builder: (context, ref, _) {
-      final totalMs =
-      audioState.duration.inMilliseconds == 0 ? 1 : audioState.duration.inMilliseconds;
-      final valueMs =
-      audioState.position.inMilliseconds.clamp(0, totalMs).toDouble();
+    return Consumer(
+      builder: (context, ref, _) {
+        final totalMs = audioState.duration.inMilliseconds == 0
+            ? 1
+            : audioState.duration.inMilliseconds;
+        final valueMs = audioState.position.inMilliseconds
+            .clamp(0, totalMs)
+            .toDouble();
 
-      return Row(
-        children: [
-          Text(_fmt(audioState.position), style: const TextStyle(fontSize: 10)),
-          Expanded(
-            child: SliderTheme(
-              data: SliderTheme.of(context).copyWith(
-                trackHeight: 2,
-                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
-                overlayShape: const RoundSliderOverlayShape(overlayRadius: 12),
-              ),
-              child: Slider(
-                value: valueMs,
-                max: totalMs.toDouble(),
-                onChanged: (v) => ref
-                    .read(quranAudioPlayerNotifierProvider.notifier)
-                    .seekTo(Duration(milliseconds: v.toInt())),
+        return Row(
+          children: [
+            Text(
+              _fmt(audioState.position),
+              style: const TextStyle(fontSize: 10),
+            ),
+            Expanded(
+              child: SliderTheme(
+                data: SliderTheme.of(context).copyWith(
+                  trackHeight: 2,
+                  thumbShape: const RoundSliderThumbShape(
+                    enabledThumbRadius: 6,
+                  ),
+                  overlayShape: const RoundSliderOverlayShape(
+                    overlayRadius: 12,
+                  ),
+                ),
+                child: Slider(
+                  value: valueMs,
+                  max: totalMs.toDouble(),
+                  onChanged: (v) => ref
+                      .read(quranAudioPlayerNotifierProvider.notifier)
+                      .seekTo(Duration(milliseconds: v.toInt())),
+                ),
               ),
             ),
-          ),
-          Text(_fmt(audioState.duration), style: const TextStyle(fontSize: 10)),
-        ],
-      );
-    });
+            Text(
+              _fmt(audioState.duration),
+              style: const TextStyle(fontSize: 10),
+            ),
+          ],
+        );
+      },
+    );
   }
 }

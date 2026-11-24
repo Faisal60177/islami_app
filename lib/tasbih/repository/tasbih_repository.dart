@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:flutter/cupertino.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/click_mode.dart';
 import '../models/history_entry.dart';
@@ -33,20 +32,26 @@ class TasbihRepository {
   static const _kMode = 'tasbih_mode';
   static const _kHistory = 'tasbih_history';
 
-
-
   Future<TasbihSnapshot> load() async {
     final prefs = await SharedPreferences.getInstance();
-    final histJson = prefs.getStringList(_kHistory)?? [];
+    final histJson = prefs.getStringList(_kHistory) ?? [];
 
     return TasbihSnapshot(
-        totalEver: prefs.getInt(_kTotal) ?? 0,
-        dhikrIndex: prefs.getInt(_kDhikrIndex) ?? 0,
-        target: prefs.getInt(_kTarget) ?? 100,
-        rounds: prefs.getInt(_kRounds) ?? 0,
-        current: prefs.getInt(_kCurrent) ?? 0,
-        mode: ClickMode.values[prefs.getInt(_kMode) ?? 0],
-        history: histJson.map((s) => HistoryEntry.fromJson(jsonDecode(s) as Map<String,dynamic>)).toList().reversed.take(10).toList());
+      totalEver: prefs.getInt(_kTotal) ?? 0,
+      dhikrIndex: prefs.getInt(_kDhikrIndex) ?? 0,
+      target: prefs.getInt(_kTarget) ?? 100,
+      rounds: prefs.getInt(_kRounds) ?? 0,
+      current: prefs.getInt(_kCurrent) ?? 0,
+      mode: ClickMode.values[prefs.getInt(_kMode) ?? 0],
+      history: histJson
+          .map(
+            (s) => HistoryEntry.fromJson(jsonDecode(s) as Map<String, dynamic>),
+          )
+          .toList()
+          .reversed
+          .take(10)
+          .toList(),
+    );
   }
 
   Future<void> saveSession({
@@ -57,7 +62,7 @@ class TasbihRepository {
     required int current,
     required ClickMode mode,
     required List<HistoryEntry> history,
-}) async {
+  }) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt(_kTotal, totalEver);
     await prefs.setInt(_kDhikrIndex, dhikrIndex);
@@ -65,12 +70,14 @@ class TasbihRepository {
     await prefs.setInt(_kRounds, rounds);
     await prefs.setInt(_kCurrent, current);
     await prefs.setInt(_kMode, mode.index);
-    await prefs.setStringList(_kHistory, history.map((e) => jsonEncode(e.toJson())).toList());
+    await prefs.setStringList(
+      _kHistory,
+      history.map((e) => jsonEncode(e.toJson())).toList(),
+    );
   }
 
   Future<void> clearHistory() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_kHistory);
   }
-  }
-
+}

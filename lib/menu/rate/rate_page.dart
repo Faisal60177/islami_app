@@ -13,7 +13,8 @@ class RatePage extends StatefulWidget {
   State<RatePage> createState() => _RatePageState();
 }
 
-class _RatePageState extends State<RatePage> with SingleTickerProviderStateMixin {
+class _RatePageState extends State<RatePage>
+    with SingleTickerProviderStateMixin {
   int _selectedStars = 0;
   bool _submitted = false;
   final _feedbackCtrl = TextEditingController();
@@ -23,10 +24,14 @@ class _RatePageState extends State<RatePage> with SingleTickerProviderStateMixin
   @override
   void initState() {
     super.initState();
-    _bounce = AnimationController(vsync: this, duration: const Duration(milliseconds: 400));
-    _bounceAnim = Tween<double>(begin: 1.0, end: 1.3).animate(
-      CurvedAnimation(parent: _bounce, curve: Curves.elasticOut),
+    _bounce = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 400),
     );
+    _bounceAnim = Tween<double>(
+      begin: 1.0,
+      end: 1.3,
+    ).animate(CurvedAnimation(parent: _bounce, curve: Curves.elasticOut));
   }
 
   @override
@@ -65,8 +70,11 @@ class _RatePageState extends State<RatePage> with SingleTickerProviderStateMixin
       if (await review.isAvailable()) {
         await review.requestReview();
       } else {
-        await launchUrl(Uri.parse(
-            'https://play.google.com/store/apps/details?id=com.siratalmustaqeem.muslimlife'));
+        await launchUrl(
+          Uri.parse(
+            'https://play.google.com/store/apps/details?id=com.siratalmustaqeem.muslimlife',
+          ),
+        );
       }
     }
     setState(() => _submitted = true);
@@ -86,8 +94,14 @@ class _RatePageState extends State<RatePage> with SingleTickerProviderStateMixin
               icon: Icon(Icons.arrow_back_ios_new, color: thm.accent),
               onPressed: () => Navigator.of(context).pop(),
             ),
-            title: Text('Rate Us',
-                style: TextStyle(color: thm.textHigh, fontWeight: FontWeight.w600, fontSize: 18)),
+            title: Text(
+              'Rate Us',
+              style: TextStyle(
+                color: thm.textHigh,
+                fontWeight: FontWeight.w600,
+                fontSize: 18,
+              ),
+            ),
             centerTitle: true,
             elevation: 0,
           ),
@@ -100,9 +114,13 @@ class _RatePageState extends State<RatePage> with SingleTickerProviderStateMixin
   Widget _ratingView(AppThemeOption thm) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final isWide   = constraints.maxWidth > 600;
+        final isWide = constraints.maxWidth > 600;
         final isTablet = constraints.maxWidth > 800;
-        final hPad = isTablet ? 80.0 : isWide ? 48.0 : 24.0;
+        final hPad = isTablet
+            ? 80.0
+            : isWide
+            ? 48.0
+            : 24.0;
         final maxW = isTablet ? 640.0 : double.infinity;
 
         return Center(
@@ -118,16 +136,21 @@ class _RatePageState extends State<RatePage> with SingleTickerProviderStateMixin
                   Text(
                     'Enjoying Muslim Life App?',
                     style: TextStyle(
-                        color: thm.textHigh,
-                        fontSize: isWide ? 28 : 24,
-                        fontWeight: FontWeight.w800),
+                      color: thm.textHigh,
+                      fontSize: isWide ? 28 : 24,
+                      fontWeight: FontWeight.w800,
+                    ),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 8),
                   Text(
                     'Your review helps us reach more\nMuslims around the world 🌍',
                     textAlign: TextAlign.center,
-                    style: TextStyle(color: thm.textLow, fontSize: 14, height: 1.6),
+                    style: TextStyle(
+                      color: thm.textLow,
+                      fontSize: 14,
+                      height: 1.6,
+                    ),
                   ),
                   const SizedBox(height: 36),
                   _starRow(thm, isWide),
@@ -136,13 +159,18 @@ class _RatePageState extends State<RatePage> with SingleTickerProviderStateMixin
                     duration: const Duration(milliseconds: 300),
                     child: _selectedStars > 0
                         ? Text(
-                      _ratingLabel(_selectedStars),
-                      key: ValueKey(_selectedStars),
-                      style: TextStyle(
-                          color: thm.accent, fontWeight: FontWeight.w700, fontSize: 16),
-                    )
-                        : Text('Tap a star to rate',
-                        style: TextStyle(color: thm.textLow, fontSize: 14)),
+                            _ratingLabel(_selectedStars),
+                            key: ValueKey(_selectedStars),
+                            style: TextStyle(
+                              color: thm.accent,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 16,
+                            ),
+                          )
+                        : Text(
+                            'Tap a star to rate',
+                            style: TextStyle(color: thm.textLow, fontSize: 14),
+                          ),
                   ),
                   const SizedBox(height: 32),
                   if (_selectedStars > 0 && _selectedStars < 4) ...[
@@ -165,7 +193,8 @@ class _RatePageState extends State<RatePage> with SingleTickerProviderStateMixin
   Widget _appIcon(AppThemeOption thm, bool isWide) {
     final size = isWide ? 120.0 : 100.0;
     return Container(
-      width: size, height: size,
+      width: size,
+      height: size,
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [thm.surface, thm.accent],
@@ -173,9 +202,13 @@ class _RatePageState extends State<RatePage> with SingleTickerProviderStateMixin
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(isWide ? 30 : 24),
-        border: Border.all(color: thm.accent.withOpacity(0.4), width: 2),
+        border: Border.all(color: thm.accent.withValues(alpha: 0.4), width: 2),
         boxShadow: [
-          BoxShadow(color: thm.accent.withOpacity(0.3), blurRadius: 30, spreadRadius: 2)
+          BoxShadow(
+            color: thm.accent.withValues(alpha: 0.3),
+            blurRadius: 30,
+            spreadRadius: 2,
+          ),
         ],
       ),
       child: Center(
@@ -202,7 +235,7 @@ class _RatePageState extends State<RatePage> with SingleTickerProviderStateMixin
           onTap: () => _selectStar(i + 1),
           child: AnimatedBuilder(
             animation: _bounceAnim,
-            builder: (_, __) {
+            builder: (_, _) {
               final scale = (i == _selectedStars - 1) ? _bounceAnim.value : 1.0;
               return Transform.scale(
                 scale: scale,
@@ -226,8 +259,14 @@ class _RatePageState extends State<RatePage> with SingleTickerProviderStateMixin
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Tell us what we can improve:',
-            style: TextStyle(color: thm.textHigh, fontWeight: FontWeight.w600, fontSize: 14)),
+        Text(
+          'Tell us what we can improve:',
+          style: TextStyle(
+            color: thm.textHigh,
+            fontWeight: FontWeight.w600,
+            fontSize: 14,
+          ),
+        ),
         const SizedBox(height: 10),
         TextFormField(
           controller: _feedbackCtrl,
@@ -240,7 +279,7 @@ class _RatePageState extends State<RatePage> with SingleTickerProviderStateMixin
             fillColor: thm.cardColor,
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
-              borderSide: BorderSide(color: thm.accent.withOpacity(0.3)),
+              borderSide: BorderSide(color: thm.accent.withValues(alpha: 0.3)),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
@@ -261,13 +300,19 @@ class _RatePageState extends State<RatePage> with SingleTickerProviderStateMixin
         onPressed: _submit,
         style: ElevatedButton.styleFrom(
           backgroundColor: _selectedStars > 0 ? thm.accent : thm.surface,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
           elevation: _selectedStars > 0 ? 4 : 0,
         ),
         icon: Icon(Icons.star, color: thm.accent, size: 20),
         label: Text(
           _selectedStars >= 4 ? 'Rate on Play Store' : 'Submit Feedback',
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 15),
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w700,
+            fontSize: 15,
+          ),
         ),
       ),
     );
@@ -284,15 +329,17 @@ class _RatePageState extends State<RatePage> with SingleTickerProviderStateMixin
   Widget _storeBtn(String label, String icon, Color color) {
     return GestureDetector(
       onTap: () => launchUrl(
-        Uri.parse('https://play.google.com/store/apps/details?id=com.siratalmustaqeem.muslimlife'),
+        Uri.parse(
+          'https://play.google.com/store/apps/details?id=com.siratalmustaqeem.muslimlife',
+        ),
         mode: LaunchMode.externalApplication,
       ),
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
+          color: color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: color.withOpacity(0.3)),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -300,15 +347,20 @@ class _RatePageState extends State<RatePage> with SingleTickerProviderStateMixin
             Text(icon, style: const TextStyle(fontSize: 16)),
             const SizedBox(width: 6),
             Flexible(
-              child: Text(label,
-                  style: TextStyle(color: color, fontWeight: FontWeight.w600, fontSize: 13)),
+              child: Text(
+                label,
+                style: TextStyle(
+                  color: color,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13,
+                ),
+              ),
             ),
           ],
         ),
       ),
     );
   }
-
 
   Widget _ratingBar(AppThemeOption thm, int star, double fraction) {
     return Padding(
@@ -331,8 +383,10 @@ class _RatePageState extends State<RatePage> with SingleTickerProviderStateMixin
             ),
           ),
           const SizedBox(width: 6),
-          Text('${(fraction * 100).round()}%',
-              style: TextStyle(color: thm.textLow, fontSize: 10)),
+          Text(
+            '${(fraction * 100).round()}%',
+            style: TextStyle(color: thm.textLow, fontSize: 10),
+          ),
         ],
       ),
     );
@@ -353,13 +407,23 @@ class _RatePageState extends State<RatePage> with SingleTickerProviderStateMixin
                 children: [
                   Text('⭐', style: TextStyle(fontSize: isWide ? 100 : 80)),
                   const SizedBox(height: 24),
-                  Text('JazakAllahu Khairan!',
-                      style: TextStyle(color: thm.accent, fontSize: 26, fontWeight: FontWeight.w800)),
+                  Text(
+                    'JazakAllahu Khairan!',
+                    style: TextStyle(
+                      color: thm.accent,
+                      fontSize: 26,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
                   const SizedBox(height: 8),
                   Text(
                     'May Allah reward you for\nsupporting Islamic App.',
                     textAlign: TextAlign.center,
-                    style: TextStyle(color: thm.textLow, fontSize: 15, height: 1.6),
+                    style: TextStyle(
+                      color: thm.textLow,
+                      fontSize: 15,
+                      height: 1.6,
+                    ),
                   ),
                   const SizedBox(height: 32),
                   SizedBox(
@@ -369,11 +433,18 @@ class _RatePageState extends State<RatePage> with SingleTickerProviderStateMixin
                       onPressed: () => Navigator.of(context).pop(),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: thm.accent,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
                       ),
-                      child: const Text('Back to menu',
-                          style: TextStyle(
-                              color: Colors.white, fontWeight: FontWeight.w700, fontSize: 15)),
+                      child: const Text(
+                        'Back to menu',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 15,
+                        ),
+                      ),
                     ),
                   ),
                 ],
@@ -387,12 +458,18 @@ class _RatePageState extends State<RatePage> with SingleTickerProviderStateMixin
 
   String _ratingLabel(int stars) {
     switch (stars) {
-      case 1: return '😞 We are sorry to hear that...';
-      case 2: return '😐 We will do better, InshaAllah';
-      case 3: return '🙂 Thanks! We are improving!';
-      case 4: return '😊 Great! You love it!';
-      case 5: return '🌟 Alhamdulillah! You love it!';
-      default: return '';
+      case 1:
+        return '😞 We are sorry to hear that...';
+      case 2:
+        return '😐 We will do better, InshaAllah';
+      case 3:
+        return '🙂 Thanks! We are improving!';
+      case 4:
+        return '😊 Great! You love it!';
+      case 5:
+        return '🌟 Alhamdulillah! You love it!';
+      default:
+        return '';
     }
   }
 }

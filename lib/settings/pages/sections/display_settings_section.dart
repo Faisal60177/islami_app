@@ -9,25 +9,29 @@ import '../../theme/app_themes.dart';
 class DisplaySettingsSection extends StatelessWidget {
   final AppThemeOption theme;
   final AppLocalizations l10n;
-  const DisplaySettingsSection(
-      {super.key, required this.theme, required this.l10n});
+  const DisplaySettingsSection({
+    super.key,
+    required this.theme,
+    required this.l10n,
+  });
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<SettingsCubit, SettingsState>(
       builder: (context, state) {
         final cubit = context.read<SettingsCubit>();
-        final thm   = getThemeById(state.themeMode);
+        final thm = getThemeById(state.themeMode);
 
         return Container(
           decoration: BoxDecoration(
             color: thm.surface,
             borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: thm.accent.withOpacity(0.15)),
+            border: Border.all(color: thm.accent.withValues(alpha: 0.15)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(thm.isDark ? 0.3 : 0.06),
-                blurRadius: 12, offset: const Offset(0, 4),
+                color: Colors.black.withValues(alpha: thm.isDark ? 0.3 : 0.06),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
               ),
             ],
           ),
@@ -36,17 +40,23 @@ class DisplaySettingsSection extends StatelessWidget {
               // Time format
               Padding(
                 padding: const EdgeInsets.symmetric(
-                    horizontal: 16, vertical: 14),
+                  horizontal: 16,
+                  vertical: 14,
+                ),
                 child: Row(
                   children: [
                     Container(
-                      width: 40, height: 40,
+                      width: 40,
+                      height: 40,
                       decoration: BoxDecoration(
-                        color: const Color(0xFFCE93D8).withOpacity(0.14),
+                        color: const Color(0xFFCE93D8).withValues(alpha: 0.14),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Icon(Icons.access_time_rounded,
-                          color: Color(0xFFCE93D8), size: 20),
+                      child: const Icon(
+                        Icons.access_time_rounded,
+                        color: Color(0xFFCE93D8),
+                        size: 20,
+                      ),
                     ),
                     const SizedBox(width: 14),
                     Expanded(
@@ -63,9 +73,10 @@ class DisplaySettingsSection extends StatelessWidget {
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            state.use24Hour ? '24-hour (14:30)' : '12-hour (2:30 PM)',
-                            style: TextStyle(
-                                color: thm.textLow, fontSize: 12),
+                            state.use24Hour
+                                ? '24-hour (14:30)'
+                                : '12-hour (2:30 PM)',
+                            style: TextStyle(color: thm.textLow, fontSize: 12),
                           ),
                         ],
                       ),
@@ -95,23 +106,32 @@ class DisplaySettingsSection extends StatelessWidget {
                 ),
               ),
 
-              Divider(height: 1,
-                  color: thm.accent.withOpacity(0.10), indent: 58),
+              Divider(
+                height: 1,
+                color: thm.accent.withValues(alpha: 0.10),
+                indent: 58,
+              ),
 
               // Dark header
               Padding(
                 padding: const EdgeInsets.symmetric(
-                    horizontal: 16, vertical: 12),
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 child: Row(
                   children: [
                     Container(
-                      width: 40, height: 40,
+                      width: 40,
+                      height: 40,
                       decoration: BoxDecoration(
-                        color: const Color(0xFF26C6DA).withOpacity(0.14),
+                        color: const Color(0xFF26C6DA).withValues(alpha: 0.14),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Icon(Icons.dark_mode_rounded,
-                          color: Color(0xFF26C6DA), size: 20),
+                      child: const Icon(
+                        Icons.dark_mode_rounded,
+                        color: Color(0xFF26C6DA),
+                        size: 20,
+                      ),
                     ),
                     const SizedBox(width: 14),
                     Expanded(
@@ -129,8 +149,7 @@ class DisplaySettingsSection extends StatelessWidget {
                           const SizedBox(height: 2),
                           Text(
                             'Deep dark tone in navigation bar',
-                            style: TextStyle(
-                                color: thm.textLow, fontSize: 12),
+                            style: TextStyle(color: thm.textLow, fontSize: 12),
                           ),
                         ],
                       ),
@@ -140,11 +159,12 @@ class DisplaySettingsSection extends StatelessWidget {
                       child: Switch(
                         value: state.darkHeader,
                         onChanged: (v) => cubit.toggleDarkHeader(v),
-                        activeColor: const Color(0xFF26C6DA),
-                        activeTrackColor:
-                        const Color(0xFF26C6DA).withOpacity(0.3),
+                        activeThumbColor: const Color(0xFF26C6DA),
+                        activeTrackColor: const Color(
+                          0xFF26C6DA,
+                        ).withValues(alpha: 0.3),
                         inactiveThumbColor: thm.textLow,
-                        inactiveTrackColor: thm.textLow.withOpacity(0.2),
+                        inactiveTrackColor: thm.textLow.withValues(alpha: 0.2),
                       ),
                     ),
                   ],
@@ -170,10 +190,14 @@ class DisplaySettingsSection extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: isSelected ? color.withOpacity(0.15) : Colors.transparent,
+          color: isSelected
+              ? color.withValues(alpha: 0.15)
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: isSelected ? color.withOpacity(0.6) : thm.textLow.withOpacity(0.25),
+            color: isSelected
+                ? color.withValues(alpha: 0.6)
+                : thm.textLow.withValues(alpha: 0.25),
             width: isSelected ? 1.5 : 1,
           ),
         ),
@@ -194,8 +218,11 @@ class DisplaySettingsSection extends StatelessWidget {
 class DisplaySettingsPage extends StatelessWidget {
   final AppThemeOption theme;
   final AppLocalizations l10n;
-  const DisplaySettingsPage(
-      {super.key, required this.theme, required this.l10n});
+  const DisplaySettingsPage({
+    super.key,
+    required this.theme,
+    required this.l10n,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -211,9 +238,13 @@ class DisplaySettingsPage extends StatelessWidget {
               icon: Icon(Icons.arrow_back_ios_rounded, color: thm.accent),
               onPressed: () => Navigator.pop(context),
             ),
-            title: Text('Display',
-                style: TextStyle(
-                    color: thm.textHigh, fontWeight: FontWeight.w700)),
+            title: Text(
+              'Display',
+              style: TextStyle(
+                color: thm.textHigh,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
           ),
           body: SingleChildScrollView(
             padding: const EdgeInsets.all(16),

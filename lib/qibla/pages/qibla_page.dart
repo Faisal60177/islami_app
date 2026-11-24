@@ -20,7 +20,6 @@ class QiblaPage extends StatefulWidget {
 
 class _QiblaPageState extends State<QiblaPage>
     with SingleTickerProviderStateMixin, WidgetsBindingObserver {
-
   static const double _kaabaLat = 21.4225;
   static const double _kaabaLng = 39.8262;
 
@@ -60,9 +59,10 @@ class _QiblaPageState extends State<QiblaPage>
       duration: const Duration(seconds: 2),
     )..repeat(reverse: true);
 
-    _pulse = Tween<double>(begin: 0.95, end: 1.05).animate(
-      CurvedAnimation(parent: _pulseCtrl, curve: Curves.easeInOut),
-    );
+    _pulse = Tween<double>(
+      begin: 0.95,
+      end: 1.05,
+    ).animate(CurvedAnimation(parent: _pulseCtrl, curve: Curves.easeInOut));
 
     _requestPermissionAndStart();
   }
@@ -118,12 +118,12 @@ class _QiblaPageState extends State<QiblaPage>
   //
   void _updateQiblaFromLocation(double lat, double lng) {
     final angle = _bearing(lat, lng, _kaabaLat, _kaabaLng);
-    final dist  = _haversine(lat, lng, _kaabaLat, _kaabaLng);
+    final dist = _haversine(lat, lng, _kaabaLat, _kaabaLng);
     // Only call setState if values actually changed
     if (angle != _qiblaAngle || dist != _distanceKm) {
       setState(() {
-        _qiblaAngle  = angle;
-        _distanceKm  = dist;
+        _qiblaAngle = angle;
+        _distanceKm = dist;
       });
     }
   }
@@ -133,20 +133,22 @@ class _QiblaPageState extends State<QiblaPage>
   /// Great-circle bearing from user to Kaaba, degrees [0–360)
   double _bearing(double lat1, double lng1, double lat2, double lng2) {
     final dLng = _toRad(lng2 - lng1);
-    final l1   = _toRad(lat1);
-    final l2   = _toRad(lat2);
-    final x    = math.sin(dLng) * math.cos(l2);
-    final y    = math.cos(l1) * math.sin(l2) -
+    final l1 = _toRad(lat1);
+    final l2 = _toRad(lat2);
+    final x = math.sin(dLng) * math.cos(l2);
+    final y =
+        math.cos(l1) * math.sin(l2) -
         math.sin(l1) * math.cos(l2) * math.cos(dLng);
     return (_toDeg(math.atan2(x, y)) + 360) % 360;
   }
 
   /// Haversine distance in km
   double _haversine(double lat1, double lng1, double lat2, double lng2) {
-    const R    = 6371.0;
+    const R = 6371.0;
     final dLat = _toRad(lat2 - lat1);
     final dLng = _toRad(lng2 - lng1);
-    final a    = math.pow(math.sin(dLat / 2), 2) +
+    final a =
+        math.pow(math.sin(dLat / 2), 2) +
         math.cos(_toRad(lat1)) *
             math.cos(_toRad(lat2)) *
             math.pow(math.sin(dLng / 2), 2);
@@ -159,19 +161,35 @@ class _QiblaPageState extends State<QiblaPage>
   /// Wrap angular difference into [-180, 180]
   double _angDiff(double a, double b) {
     double d = (a - b) % 360;
-    if (d >  180) d -= 360;
+    if (d > 180) d -= 360;
     if (d < -180) d += 360;
     return d;
   }
 
   String _cardinal(double deg) {
-    const dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE',
-      'S','SSW','SW','WSW','W','WNW','NW','NNW'];
+    const dirs = [
+      'N',
+      'NNE',
+      'NE',
+      'ENE',
+      'E',
+      'ESE',
+      'SE',
+      'SSE',
+      'S',
+      'SSW',
+      'SW',
+      'WSW',
+      'W',
+      'WNW',
+      'NW',
+      'NNW',
+    ];
     return dirs[((deg + 11.25) / 22.5).floor() % 16];
   }
 
   String _formatDistance(double km) {
-    final s   = km.round().toString();
+    final s = km.round().toString();
     final buf = StringBuffer();
     for (int i = 0; i < s.length; i++) {
       if (i > 0 && (s.length - i) % 3 == 0) buf.write(',');
@@ -219,12 +237,14 @@ class _QiblaPageState extends State<QiblaPage>
             ),
             title: Text(
               'Qibla Direction',
-              style: TextStyle(color: theme.textHigh, fontWeight: FontWeight.w600),
+              style: TextStyle(
+                color: theme.textHigh,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
           body: BlocBuilder<LocationCubit, LocationState>(
             builder: (context, locState) {
-
               // ── Compute Qibla angle from GPS every time location updates ─────
               // This is the ONLY place _qiblaAngle is set.
               if (locState is LocationLoaded) {
@@ -256,7 +276,9 @@ class _QiblaPageState extends State<QiblaPage>
 
               return SingleChildScrollView(
                 padding: EdgeInsets.symmetric(
-                    horizontal: sw * 0.05, vertical: sw * 0.04),
+                  horizontal: sw * 0.05,
+                  vertical: sw * 0.04,
+                ),
                 child: Column(
                   children: [
                     _buildLocationRow(locState, sw, theme),
@@ -291,29 +313,29 @@ class _QiblaPageState extends State<QiblaPage>
   //   • When the phone points away             → diff ≠ 0 → arrow rotates
   //
   Widget _buildCompass(double sw, AppThemeOption theme) {
-    final size    = sw * 0.78;
-    final heading = _compassHeading;           // live, always non-null here
-    final qibla   = _qiblaAngle!;              // non-null — guarded above
-    final diff    = _angDiff(qibla, heading);
+    final size = sw * 0.78;
+    final heading = _compassHeading; // live, always non-null here
+    final qibla = _qiblaAngle!; // non-null — guarded above
+    final diff = _angDiff(qibla, heading);
     final aligned = diff.abs() < 5.0;
 
     return Column(
       children: [
         AnimatedBuilder(
           animation: _pulse,
-          builder: (_, __) {
+          builder: (_, _) {
             final ringSize = aligned ? size * _pulse.value : size;
             return SizedBox(
-              width:  ringSize,
+              width: ringSize,
               height: ringSize,
               child: CustomPaint(
                 // KEY: pass fresh heading + qiblaAngle on every build
                 // shouldRepaint will detect the change and redraw
                 painter: _CompassPainter(
-                  heading:    heading,
+                  heading: heading,
                   qiblaAngle: qibla,
-                  aligned:    aligned,
-                  theme:      theme,
+                  aligned: aligned,
+                  theme: theme,
                 ),
               ),
             );
@@ -343,7 +365,11 @@ class _QiblaPageState extends State<QiblaPage>
 
   // ── Widgets ───────────────────────────────────────────────────────────────
 
-  Widget _buildLocationRow(LocationState state, double sw, AppThemeOption theme) {
+  Widget _buildLocationRow(
+    LocationState state,
+    double sw,
+    AppThemeOption theme,
+  ) {
     String city = '';
     if (state is LocationLoaded) {
       city = '${state.location.city}, ${state.location.country}';
@@ -382,8 +408,7 @@ class _QiblaPageState extends State<QiblaPage>
         ),
         Text(
           'distance to Makkah al-Mukarramah',
-          style: TextStyle(
-              color: theme.textLow, fontSize: sw * 0.033),
+          style: TextStyle(color: theme.textLow, fontSize: sw * 0.033),
         ),
       ],
     );
@@ -393,7 +418,9 @@ class _QiblaPageState extends State<QiblaPage>
     final deg = '${_qiblaAngle!.toStringAsFixed(1)}° from North';
     return Container(
       padding: EdgeInsets.symmetric(
-          horizontal: sw * 0.05, vertical: sw * 0.035),
+        horizontal: sw * 0.05,
+        vertical: sw * 0.035,
+      ),
       decoration: BoxDecoration(
         color: theme.accent,
         borderRadius: BorderRadius.circular(sw * 0.035),
@@ -413,15 +440,21 @@ class _QiblaPageState extends State<QiblaPage>
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Qibla Direction',
-                  style: TextStyle(
-                      color: Colors.white,
-                      fontSize: sw * 0.042,
-                      fontWeight: FontWeight.w700)),
-              Text(deg,
-                  style: TextStyle(
-                      color: Colors.white.withOpacity(0.85),
-                      fontSize: sw * 0.032)),
+              Text(
+                'Qibla Direction',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: sw * 0.042,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              Text(
+                deg,
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.85),
+                  fontSize: sw * 0.032,
+                ),
+              ),
             ],
           ),
           const Spacer(),
@@ -430,13 +463,17 @@ class _QiblaPageState extends State<QiblaPage>
               Text(
                 '${_compassHeading.toStringAsFixed(0)}°',
                 style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700).copyWith(fontSize: sw * 0.042),
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                ).copyWith(fontSize: sw * 0.042),
               ),
-              Text('heading',
-                  style: TextStyle(
-                      color: Colors.white.withOpacity(0.85),
-                      fontSize: sw * 0.028)),
+              Text(
+                'heading',
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.85),
+                  fontSize: sw * 0.028,
+                ),
+              ),
             ],
           ),
         ],
@@ -450,14 +487,14 @@ class _QiblaPageState extends State<QiblaPage>
       latStr = '${state.location.latitude.toStringAsFixed(4)}° N';
       lngStr = '${state.location.longitude.toStringAsFixed(4)}° E';
     }
-    final bearing  = '${_qiblaAngle!.toStringAsFixed(1)}°';
+    final bearing = '${_qiblaAngle!.toStringAsFixed(1)}°';
     final cardinal = _cardinal(_qiblaAngle!);
 
     final items = [
-      ('Your latitude',  latStr),
+      ('Your latitude', latStr),
       ('Your longitude', lngStr),
-      ('Qibla bearing',  bearing),
-      ('Direction',      cardinal),
+      ('Qibla bearing', bearing),
+      ('Direction', cardinal),
     ];
 
     return GridView.count(
@@ -474,19 +511,27 @@ class _QiblaPageState extends State<QiblaPage>
             borderRadius: BorderRadius.circular(sw * 0.03),
           ),
           padding: EdgeInsets.symmetric(
-              horizontal: sw * 0.04, vertical: sw * 0.02),
+            horizontal: sw * 0.04,
+            vertical: sw * 0.02,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(item.$1,
-                  style: TextStyle(
-                      color: Colors.white.withOpacity(0.85),
-                      fontSize: sw * 0.028)),
-              Text(item.$2,
-                  style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w700).copyWith(fontSize: sw * 0.038)),
+              Text(
+                item.$1,
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.85),
+                  fontSize: sw * 0.028,
+                ),
+              ),
+              Text(
+                item.$2,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                ).copyWith(fontSize: sw * 0.038),
+              ),
             ],
           ),
         );
@@ -508,15 +553,15 @@ class _QiblaPageState extends State<QiblaPage>
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.screen_rotation,
-                color: theme.accent, size: sw * 0.05),
+            Icon(Icons.screen_rotation, color: theme.accent, size: sw * 0.05),
             SizedBox(width: sw * 0.02),
             Text(
               _calibrating ? 'Calibrating...' : 'Calibrate compass',
               style: TextStyle(
-                  color: theme.accent,
-                  fontSize: sw * 0.038,
-                  fontWeight: FontWeight.w600),
+                color: theme.accent,
+                fontSize: sw * 0.038,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ],
         ),
@@ -534,17 +579,19 @@ class _QiblaPageState extends State<QiblaPage>
           children: [
             CircularProgressIndicator(color: theme.accent),
             SizedBox(height: sw * 0.06),
-            Text('Initialising compass...',
-                style: TextStyle(
-                    color: theme.textHigh,
-                    fontSize: sw * 0.045,
-                    fontWeight: FontWeight.w600)),
+            Text(
+              'Initialising compass...',
+              style: TextStyle(
+                color: theme.textHigh,
+                fontSize: sw * 0.045,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
             SizedBox(height: sw * 0.03),
             Text(
               'Move your phone in a figure-8 pattern if this takes too long.',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                  color: theme.textLow, fontSize: sw * 0.038),
+              style: TextStyle(color: theme.textLow, fontSize: sw * 0.038),
             ),
           ],
         ),
@@ -562,17 +609,19 @@ class _QiblaPageState extends State<QiblaPage>
           children: [
             CircularProgressIndicator(color: theme.accent),
             SizedBox(height: sw * 0.06),
-            Text('Getting your location...',
-                style: TextStyle(
-                    color: theme.textHigh,
-                    fontSize: sw * 0.045,
-                    fontWeight: FontWeight.w600)),
+            Text(
+              'Getting your location...',
+              style: TextStyle(
+                color: theme.textHigh,
+                fontSize: sw * 0.045,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
             SizedBox(height: sw * 0.03),
             Text(
               'Make sure GPS is enabled and you have a clear sky view.',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                  color: theme.textLow, fontSize: sw * 0.038),
+              style: TextStyle(color: theme.textLow, fontSize: sw * 0.038),
             ),
           ],
         ),
@@ -587,37 +636,43 @@ class _QiblaPageState extends State<QiblaPage>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.sensors_off,
-                color: theme.textLow, size: sw * 0.18),
+            Icon(Icons.sensors_off, color: theme.textLow, size: sw * 0.18),
             SizedBox(height: sw * 0.05),
-            Text('Location permission required',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                    color: theme.textHigh,
-                    fontSize: sw * 0.045,
-                    fontWeight: FontWeight.w600)),
+            Text(
+              'Location permission required',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: theme.textHigh,
+                fontSize: sw * 0.045,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
             SizedBox(height: sw * 0.03),
             Text(
               'Please grant location access to calculate the Qibla direction.',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                  color: theme.textLow, fontSize: sw * 0.038),
+              style: TextStyle(color: theme.textLow, fontSize: sw * 0.038),
             ),
             SizedBox(height: sw * 0.06),
             GestureDetector(
               onTap: openAppSettings,
               child: Container(
                 padding: EdgeInsets.symmetric(
-                    horizontal: sw * 0.08, vertical: sw * 0.04),
+                  horizontal: sw * 0.08,
+                  vertical: sw * 0.04,
+                ),
                 decoration: BoxDecoration(
                   color: theme.accent,
                   borderRadius: BorderRadius.circular(sw * 0.03),
                 ),
-                child: Text('Open settings',
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: sw * 0.04,
-                        fontWeight: FontWeight.w600)),
+                child: Text(
+                  'Open settings',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: sw * 0.04,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ),
             ),
           ],
@@ -633,20 +688,21 @@ class _QiblaPageState extends State<QiblaPage>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.location_off,
-                color: theme.textLow, size: sw * 0.18),
+            Icon(Icons.location_off, color: theme.textLow, size: sw * 0.18),
             SizedBox(height: sw * 0.05),
-            Text('Location not available',
-                style: TextStyle(
-                    color: theme.textHigh,
-                    fontSize: sw * 0.045,
-                    fontWeight: FontWeight.w600)),
+            Text(
+              'Location not available',
+              style: TextStyle(
+                color: theme.textHigh,
+                fontSize: sw * 0.045,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
             SizedBox(height: sw * 0.03),
             Text(
               'Enable location from the Today screen and try again.',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                  color: theme.textLow, fontSize: sw * 0.038),
+              style: TextStyle(color: theme.textLow, fontSize: sw * 0.038),
             ),
           ],
         ),
@@ -700,22 +756,20 @@ class _CompassPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final cx     = size.width / 2;
-    final cy     = size.height / 2;
+    final cx = size.width / 2;
+    final cy = size.height / 2;
     final radius = math.min(cx, cy) - 4;
 
     // ── 1. Background ─────────────────────────────────────────────────────
-    canvas.drawCircle(
-      Offset(cx, cy), radius,
-      Paint()..color = theme.surface,
-    );
+    canvas.drawCircle(Offset(cx, cy), radius, Paint()..color = theme.surface);
 
     // Border — amber when aligned, accent otherwise
     canvas.drawCircle(
-      Offset(cx, cy), radius,
+      Offset(cx, cy),
+      radius,
       Paint()
-        ..color       = aligned ? Colors.amber : theme.accent
-        ..style       = PaintingStyle.stroke
+        ..color = aligned ? Colors.amber : theme.accent
+        ..style = PaintingStyle.stroke
         ..strokeWidth = aligned ? 3.5 : 2.5,
     );
 
@@ -730,7 +784,7 @@ class _CompassPainter extends CustomPainter {
 
     final tickOuter = radius - 2.0;
     for (int i = 0; i < 72; i++) {
-      final isMajor   = i % 9 == 0;          // every 45° is major
+      final isMajor = i % 9 == 0; // every 45° is major
       final tickInner = isMajor
           ? tickOuter - radius * 0.07
           : tickOuter - radius * 0.035;
@@ -741,21 +795,19 @@ class _CompassPainter extends CustomPainter {
         Offset(0, -tickOuter),
         Offset(0, -tickInner),
         Paint()
-          ..color       = isMajor
-              ? theme.accent
-              : theme.cardColor
+          ..color = isMajor ? theme.accent : theme.cardColor
           ..strokeWidth = isMajor ? 1.5 : 0.8
-          ..strokeCap   = StrokeCap.round,
+          ..strokeCap = StrokeCap.round,
       );
       canvas.restore();
     }
 
     // Cardinal labels — drawn in the rotating frame but text is
     // counter-rotated so letters stay upright for the user
-    _cardinal(canvas, 'N', 0,            radius, const Color(0xFFE24B4A), bold: true);
-    _cardinal(canvas, 'S', math.pi,       radius, theme.textLow);
-    _cardinal(canvas, 'E', math.pi / 2,   radius, theme.textLow);
-    _cardinal(canvas, 'W', -math.pi / 2,  radius, theme.textLow);
+    _cardinal(canvas, 'N', 0, radius, const Color(0xFFE24B4A), bold: true);
+    _cardinal(canvas, 'S', math.pi, radius, theme.textLow);
+    _cardinal(canvas, 'E', math.pi / 2, radius, theme.textLow);
+    _cardinal(canvas, 'W', -math.pi / 2, radius, theme.textLow);
 
     canvas.restore(); // ← end rotating dial
 
@@ -766,14 +818,24 @@ class _CompassPainter extends CustomPainter {
     canvas.rotate(-heading * math.pi / 180);
 
     final nLen = radius * 0.58;
-    const nW   = 7.0;
+    const nW = 7.0;
 
-    canvas.drawPath(                          // red North
-      Path()..moveTo(0, -nLen)..lineTo(-nW, 0)..lineTo(nW, 0)..close(),
+    canvas.drawPath(
+      // red North
+      Path()
+        ..moveTo(0, -nLen)
+        ..lineTo(-nW, 0)
+        ..lineTo(nW, 0)
+        ..close(),
       Paint()..color = const Color(0xFFE24B4A),
     );
-    canvas.drawPath(                          // grey South
-      Path()..moveTo(0, nLen)..lineTo(-nW, 0)..lineTo(nW, 0)..close(),
+    canvas.drawPath(
+      // grey South
+      Path()
+        ..moveTo(0, nLen)
+        ..lineTo(-nW, 0)
+        ..lineTo(nW, 0)
+        ..close(),
       Paint()..color = const Color(0xFF666666),
     );
 
@@ -790,19 +852,19 @@ class _CompassPainter extends CustomPainter {
 
     canvas.save();
     canvas.translate(cx, cy);
-    canvas.rotate(qiblaScreen);               // ← only this one rotation
+    canvas.rotate(qiblaScreen); // ← only this one rotation
 
-    final aLen   = radius * 0.60;
+    final aLen = radius * 0.60;
     final aColor = aligned ? Colors.amber : const Color(0xFFFFD700);
     final aPaint = Paint()..color = aColor;
 
     // Arrow body (points upward = toward Mecca in screen space)
     canvas.drawPath(
       Path()
-        ..moveTo(0, -aLen)                    // tip
-        ..lineTo(-7, aLen * 0.15)             // bottom-left wing
-        ..lineTo(0, -aLen * 0.05)             // waist indent
-        ..lineTo(7,  aLen * 0.15)             // bottom-right wing
+        ..moveTo(0, -aLen) // tip
+        ..lineTo(-7, aLen * 0.15) // bottom-left wing
+        ..lineTo(0, -aLen * 0.05) // waist indent
+        ..lineTo(7, aLen * 0.15) // bottom-right wing
         ..close(),
       aPaint,
     );
@@ -812,7 +874,7 @@ class _CompassPainter extends CustomPainter {
       Offset(0, -aLen + 5),
       5,
       Paint()
-        ..color = Colors.white.withOpacity(0.35)
+        ..color = Colors.white.withValues(alpha: 0.35)
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3),
     );
 
@@ -829,14 +891,16 @@ class _CompassPainter extends CustomPainter {
 
     // ── 5. Center hub ─────────────────────────────────────────────────────
     canvas.drawCircle(
-      Offset(cx, cy), radius * 0.04,
+      Offset(cx, cy),
+      radius * 0.04,
       Paint()..color = Colors.white,
     );
     canvas.drawCircle(
-      Offset(cx, cy), radius * 0.04,
+      Offset(cx, cy),
+      radius * 0.04,
       Paint()
-        ..color       = theme.accent
-        ..style       = PaintingStyle.stroke
+        ..color = theme.accent
+        ..style = PaintingStyle.stroke
         ..strokeWidth = 1.5,
     );
   }
@@ -844,13 +908,13 @@ class _CompassPainter extends CustomPainter {
   // Draws a cardinal label positioned in the rotating frame.
   // The text itself is counter-rotated by +heading so it stays upright.
   void _cardinal(
-      Canvas canvas,
-      String label,
-      double angleRad,
-      double radius,
-      Color color, {
-        bool bold = false,
-      }) {
+    Canvas canvas,
+    String label,
+    double angleRad,
+    double radius,
+    Color color, {
+    bool bold = false,
+  }) {
     final r = radius * 0.74;
     final x = math.sin(angleRad) * r;
     final y = -math.cos(angleRad) * r;
@@ -859,8 +923,8 @@ class _CompassPainter extends CustomPainter {
       text: TextSpan(
         text: label,
         style: TextStyle(
-          color:      color,
-          fontSize:   13,
+          color: color,
+          fontSize: 13,
           fontWeight: bold ? FontWeight.w900 : FontWeight.w600,
         ),
       ),

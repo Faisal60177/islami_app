@@ -5,9 +5,9 @@ import 'package:timeago/timeago.dart' as timeago;
 import '../model/notification_model.dart';
 import 'type_badge.dart';
 
-const _accent   = Color(0xFF4CAF82);
-const _surface  = Color(0xFF0D2E1C);
-const _bgDeep   = Color(0xFF011A0D);
+const _accent = Color(0xFF4CAF82);
+const _surface = Color(0xFF0D2E1C);
+const _bgDeep = Color(0xFF011A0D);
 
 class NotificationTile extends StatelessWidget {
   final NotificationModel notification;
@@ -28,7 +28,7 @@ class NotificationTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final sw = MediaQuery.of(context).size.width;
-    final n  = notification;
+    final n = notification;
     final unread = !n.isRead;
 
     return Dismissible(
@@ -51,12 +51,12 @@ class NotificationTile extends StatelessWidget {
           decoration: BoxDecoration(
             color: unread
                 ? const Color(0xFF0B2E1C)
-                : _surface.withOpacity(0.75),
+                : _surface.withValues(alpha: 0.75),
             borderRadius: BorderRadius.circular(sw * 0.042),
             border: Border.all(
               color: unread
-                  ? _accent.withOpacity(0.35)
-                  : Colors.white.withOpacity(0.07),
+                  ? _accent.withValues(alpha: 0.35)
+                  : Colors.white.withValues(alpha: 0.07),
               width: unread ? 1.0 : 0.5,
             ),
           ),
@@ -88,8 +88,9 @@ class NotificationTile extends StatelessWidget {
                               Text(
                                 timeago.format(n.createdAt),
                                 style: TextStyle(
-                                    color: Colors.white30,
-                                    fontSize: sw * 0.028),
+                                  color: Colors.white30,
+                                  fontSize: sw * 0.028,
+                                ),
                               ),
                               SizedBox(width: sw * 0.010),
                               _menu(context, sw),
@@ -119,9 +120,10 @@ class NotificationTile extends StatelessWidget {
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                                color: Colors.white38,
-                                fontSize: sw * 0.032,
-                                height: 1.5),
+                              color: Colors.white38,
+                              fontSize: sw * 0.032,
+                              height: 1.5,
+                            ),
                           ),
 
                           // Source tag (hadiths)
@@ -130,7 +132,7 @@ class NotificationTile extends StatelessWidget {
                             Text(
                               '— ${n.source}',
                               style: TextStyle(
-                                color: _accent.withOpacity(0.55),
+                                color: _accent.withValues(alpha: 0.55),
                                 fontSize: sw * 0.028,
                                 fontStyle: FontStyle.italic,
                               ),
@@ -156,20 +158,23 @@ class NotificationTile extends StatelessWidget {
       padding: EdgeInsets.only(right: sw * 0.065),
       margin: EdgeInsets.only(bottom: sw * 0.032),
       decoration: BoxDecoration(
-        color: Colors.red.withOpacity(0.12),
+        color: Colors.red.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(sw * 0.042),
-        border: Border.all(color: Colors.red.withOpacity(0.25)),
+        border: Border.all(color: Colors.red.withValues(alpha: 0.25)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(Icons.delete_rounded, color: Colors.red[300], size: sw * 0.062),
           SizedBox(height: sw * 0.008),
-          Text('Delete',
-              style: TextStyle(
-                  color: Colors.red[300],
-                  fontSize: sw * 0.028,
-                  fontWeight: FontWeight.w600)),
+          Text(
+            'Delete',
+            style: TextStyle(
+              color: Colors.red[300],
+              fontSize: sw * 0.028,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
         ],
       ),
     );
@@ -183,46 +188,69 @@ class NotificationTile extends StatelessWidget {
       color: const Color(0xFF0A2E1C),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(sw * 0.032),
-        side: BorderSide(color: _accent.withOpacity(0.18)),
+        side: BorderSide(color: _accent.withValues(alpha: 0.18)),
       ),
-      icon: Icon(Icons.more_vert_rounded,
-          color: Colors.white30, size: sw * 0.048),
+      icon: Icon(
+        Icons.more_vert_rounded,
+        color: Colors.white30,
+        size: sw * 0.048,
+      ),
       onSelected: (val) {
         switch (val) {
-          case 'read':   onMarkRead();   break;
-          case 'unread': onMarkUnread(); break;
-          case 'delete': onDelete();     break;
+          case 'read':
+            onMarkRead();
+            break;
+          case 'unread':
+            onMarkUnread();
+            break;
+          case 'delete':
+            onDelete();
+            break;
           case 'share':
             Share.share(
               '${n.title}\n\n${n.body}'
-                  '${n.source != null ? '\n\n— ${n.source}' : ''}',
+              '${n.source != null ? '\n\n— ${n.source}' : ''}',
             );
         }
       },
       itemBuilder: (_) => [
         if (!n.isRead)
-          _item('read',   Icons.mark_email_read_rounded,   'Mark as read'),
+          _item('read', Icons.mark_email_read_rounded, 'Mark as read'),
         if (n.isRead)
           _item('unread', Icons.mark_email_unread_rounded, 'Mark as unread'),
-        _item('share',  Icons.share_rounded,               'Share'),
-        _item('delete', Icons.delete_rounded,              'Delete',
-            color: Colors.red[300]!),
+        _item('share', Icons.share_rounded, 'Share'),
+        _item(
+          'delete',
+          Icons.delete_rounded,
+          'Delete',
+          color: Colors.red[300]!,
+        ),
       ],
     );
   }
 
   PopupMenuItem<String> _item(
-      String val, IconData icon, String label,
-      {Color color = Colors.white70}) {
+    String val,
+    IconData icon,
+    String label, {
+    Color color = Colors.white70,
+  }) {
     return PopupMenuItem(
       value: val,
-      child: Row(children: [
-        Icon(icon, color: color, size: 18),
-        const SizedBox(width: 10),
-        Text(label,
+      child: Row(
+        children: [
+          Icon(icon, color: color, size: 18),
+          const SizedBox(width: 10),
+          Text(
+            label,
             style: TextStyle(
-                color: color, fontSize: 13, fontWeight: FontWeight.w500)),
-      ]),
+              color: color,
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -232,27 +260,39 @@ class NotificationTile extends StatelessWidget {
       builder: (_) => AlertDialog(
         backgroundColor: const Color(0xFF0A2E1C),
         shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(sw * 0.050)),
-        title: Text('Delete notification',
-            style: TextStyle(
-                color: Colors.white,
-                fontSize: sw * 0.042,
-                fontWeight: FontWeight.w700)),
+          borderRadius: BorderRadius.circular(sw * 0.050),
+        ),
+        title: Text(
+          'Delete notification',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: sw * 0.042,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
         content: Text(
-            'This will permanently remove this notification.',
-            style: TextStyle(color: Colors.white54, fontSize: sw * 0.034)),
+          'This will permanently remove this notification.',
+          style: TextStyle(color: Colors.white54, fontSize: sw * 0.034),
+        ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: Text('Cancel',
-                  style: TextStyle(color: _accent, fontSize: sw * 0.035))),
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: _accent, fontSize: sw * 0.035),
+            ),
+          ),
           TextButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: Text('Delete',
-                  style: TextStyle(
-                      color: Colors.red[300],
-                      fontSize: sw * 0.035,
-                      fontWeight: FontWeight.w700))),
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(
+              'Delete',
+              style: TextStyle(
+                color: Colors.red[300],
+                fontSize: sw * 0.035,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
         ],
       ),
     );

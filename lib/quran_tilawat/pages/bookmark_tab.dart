@@ -9,13 +9,12 @@ import '../models/bookmark_model.dart';
 import '../models/surah_model.dart';
 import 'quran_reader_page.dart';
 
-
 class BookmarkTab extends StatelessWidget {
   const BookmarkTab({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final sw  = MediaQuery.of(context).size.width;
+    final sw = MediaQuery.of(context).size.width;
     final rsw = sw.clamp(320.0, 420.0);
 
     return BlocBuilder<SettingsCubit, SettingsState>(
@@ -25,7 +24,8 @@ class BookmarkTab extends StatelessWidget {
           builder: (_, state) {
             if (state is! QuranLoaded) {
               return Center(
-                  child: CircularProgressIndicator(color: theme.accent));
+                child: CircularProgressIndicator(color: theme.accent),
+              );
             }
             final bookmarks = state.bookmarks;
             if (bookmarks.isEmpty) {
@@ -65,11 +65,11 @@ class _BookmarkTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surah = surahs.firstWhere(
-          (s) => s.number == bm.surahNumber,
+      (s) => s.number == bm.surahNumber,
       orElse: () => surahs.first,
     );
     final isQuranPage = bm.pageNumber >= 3 && bm.pageNumber <= 612;
-    final quranPage   = isQuranPage ? bm.pageNumber - 2 : bm.pageNumber;
+    final quranPage = isQuranPage ? bm.pageNumber - 2 : bm.pageNumber;
 
     return GestureDetector(
       onTap: () => Navigator.push(
@@ -77,8 +77,7 @@ class _BookmarkTile extends StatelessWidget {
         MaterialPageRoute(
           builder: (_) => BlocProvider.value(
             value: context.read<QuranCubit>(),
-            child: QuranReaderPage(
-                initialPage: bm.pageNumber, surah: surah),
+            child: QuranReaderPage(initialPage: bm.pageNumber, surah: surah),
           ),
         ),
       ),
@@ -88,7 +87,9 @@ class _BookmarkTile extends StatelessWidget {
           color: theme.surface,
           borderRadius: BorderRadius.circular(rsw * 0.032),
           border: Border.all(
-              color: const Color(0xFFFFB74D).withOpacity(0.28), width: 0.8),
+            color: const Color(0xFFFFB74D).withValues(alpha: 0.28),
+            width: 0.8,
+          ),
         ),
         child: Row(
           children: [
@@ -107,8 +108,11 @@ class _BookmarkTile extends StatelessWidget {
             SizedBox(width: rsw * 0.025),
 
             // Bookmark icon
-            Icon(Icons.bookmark_rounded,
-                color: const Color(0xFFFFB74D), size: rsw * 0.055),
+            Icon(
+              Icons.bookmark_rounded,
+              color: const Color(0xFFFFB74D),
+              size: rsw * 0.055,
+            ),
             SizedBox(width: rsw * 0.022),
 
             // Info
@@ -134,7 +138,9 @@ class _BookmarkTile extends StatelessWidget {
                           ? 'quran_tilawat page $quranPage  ·  Image ${bm.pageNumber}'
                           : 'Image page ${bm.pageNumber}',
                       style: TextStyle(
-                          color: theme.textLow, fontSize: rsw * 0.024),
+                        color: theme.textLow,
+                        fontSize: rsw * 0.024,
+                      ),
                     ),
                   ],
                 ),
@@ -143,20 +149,26 @@ class _BookmarkTile extends StatelessWidget {
 
             // Delete button
             GestureDetector(
-              onTap: () => context
-                  .read<QuranCubit>()
-                  .toggleBookmark(bm.pageNumber, surah),
+              onTap: () => context.read<QuranCubit>().toggleBookmark(
+                bm.pageNumber,
+                surah,
+              ),
               child: Container(
                 margin: EdgeInsets.all(rsw * 0.020),
                 padding: EdgeInsets.all(rsw * 0.016),
                 decoration: BoxDecoration(
-                  color: Colors.red.withOpacity(0.08),
+                  color: Colors.red.withValues(alpha: 0.08),
                   shape: BoxShape.circle,
                   border: Border.all(
-                      color: Colors.red.withOpacity(0.20), width: 0.5),
+                    color: Colors.red.withValues(alpha: 0.20),
+                    width: 0.5,
+                  ),
                 ),
-                child: Icon(Icons.delete_outline_rounded,
-                    color: Colors.red[300], size: rsw * 0.038),
+                child: Icon(
+                  Icons.delete_outline_rounded,
+                  color: Colors.red[300],
+                  size: rsw * 0.038,
+                ),
               ),
             ),
           ],
@@ -182,15 +194,18 @@ class _EmptyBookmarks extends StatelessWidget {
             width: rsw * 0.22,
             height: rsw * 0.22,
             decoration: BoxDecoration(
-              color: const Color(0xFFFFB74D).withOpacity(0.08),
+              color: const Color(0xFFFFB74D).withValues(alpha: 0.08),
               shape: BoxShape.circle,
               border: Border.all(
-                  color: const Color(0xFFFFB74D).withOpacity(0.20),
-                  width: 1),
+                color: const Color(0xFFFFB74D).withValues(alpha: 0.20),
+                width: 1,
+              ),
             ),
-            child: Icon(Icons.bookmark_border_rounded,
-                color: const Color(0xFFFFB74D).withOpacity(0.60),
-                size: rsw * 0.12),
+            child: Icon(
+              Icons.bookmark_border_rounded,
+              color: const Color(0xFFFFB74D).withValues(alpha: 0.60),
+              size: rsw * 0.12,
+            ),
           ),
           SizedBox(height: rsw * 0.040),
           Text(
