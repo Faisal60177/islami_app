@@ -1,0 +1,14 @@
+import 'package:flutter/material.dart';
+import 'package:muslim_app/features/quran_tafsir/presentation/widgets/surah_list_view.dart';
+
+class SurahListPage extends StatelessWidget {
+  const SurahListPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Quran Tafsir')),
+      body: const SurahListView(),
+    );
+  }
+}
